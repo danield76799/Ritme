@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../main.dart';
 
-const Color medicalTeal = Color(0xFF4FB2C1);
-const Color medicalTealDark = Color(0xFF3A9AA8);
+const Color primaryTeal = Color(0xFF4FB2C1);
+const Color textCharcoal = Color(0xFF333333);
+const Color backgroundColor = Color(0xFFFAFAFA);
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -12,417 +14,329 @@ class ActivityScreen extends StatefulWidget {
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
-  final _db = DatabaseHelper.instance;
+  bool _isLoading = true;
   bool _isSaving = false;
-
-  final _activityTypes = [
-    'Werk',
-    'Sociaal',
-    'Ontspanning',
-    'Sport',
-    'Huishouden',
-    'Creatief',
-    'Overig',
-  ];
-
-  String? _selectedType;
-  TimeOfDay? _startTime;
-  TimeOfDay? _endTime;
-  double _intensity = 5;
-  double _socialContact = 5;
-  double _satisfaction = 5;
-  final _notesController = TextEditingController();
 
   String get _todayDate {
     final now = DateTime.now();
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
-  String _formatTime(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  List<Map<String, dynamic>> _activiteiten = [
+    {'naam': 'Opstaan', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0},
+    {'naam': 'Eerste contact', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0},
+    {'naam': 'Werk / Hobby', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0},
+    {'naam': 'Avondeten', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0},
+    {'naam': 'Naar bed', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
-  int? _calculateDuration() {
-    if (_startTime == null || _endTime == null) return null;
-    int startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-    int endMinutes = _endTime!.hour * 60 + _endTime!.minute;
-    if (endMinutes < startMinutes) endMinutes += 24 * 60;
-    return endMinutes - startMinutes;
+  Future<void> _loadData() async {
+    // Load target times from settings
+    final settings = await db.getSettings();
+    if (settings != null) {
+      _activiteiten[0]['richttijd'] = _parseTimeOfDay(settings['target_wake_time']);
+      _activiteiten[1]['richttijd'] = _parseTimeOfDay(settings['target_first_contact']);
+      _activiteiten[2]['richttijd'] = _parseTimeOfDay(settings['target_work']);
+      _activiteiten[3]['richttijd'] = _parseTimeOfDay(settings['target_dinner']);
+      _activiteiten[4]['richttijd'] = _parseTimeOfDay(settings['target_sleep_time']);
+    }
+
+    // Load today's activities
+    final activities = await db.getSrmActivities(_todayDate);
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
-  Future<void> _pickTime(bool isStart) async {
-    final picked = await showTimePicker(
+  TimeOfDay? _parseTimeOfDay(String? timeStr) {
+    if (timeStr == null || timeStr.isEmpty) return null;
+    try {
+      final parts = timeStr.split(':');
+      return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  String _formatTijd(TimeOfDay? tijd) {
+    if (tijd == null) return '--:--';
+    final uur = tijd.hour.toString().padLeft(2, '0');
+    final minuut = tijd.minute.toString().padLeft(2, '0');
+    return '$uur:$minuut';
+  }
+
+  String _timeOfDayToString(TimeOfDay? tijd) {
+    if (tijd == null) return '';
+    return '${tijd.hour.toString().padLeft(2, '0')}:${tijd.minute.toString().padLeft(2, '0')}';
+  }
+
+  // Bereken SRT punten: 1 punt als binnen +/- 45 minuten van richttijd
+  int _berekenSrtPunt(TimeOfDay? werkelijke, TimeOfDay? richt) {
+    if (werkelijke == null || richt == null) return 0;
+    
+    final werkelijkeMinuten = werkelijke.hour * 60 + werkelijke.minute;
+    final richtMinuten = richt.hour * 60 + richt.minute;
+    final verschil = (werkelijkeMinuten - richtMinuten).abs();
+    
+    return verschil <= 45 ? 1 : 0;
+  }
+
+  Future<void> _kiesTijd(BuildContext context, int index) async {
+    final TimeOfDay? gekozenTijd = await showTimePicker(
       context: context,
-      initialTime: isStart
-          ? (_startTime ?? TimeOfDay.now())
-          : (_endTime ?? TimeOfDay.now()),
+      initialTime: _activiteiten[index]['werkelijke_tijd'] ?? TimeOfDay.now(),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: medicalTeal,
-            ),
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(primary: primaryTeal),
           ),
           child: child!,
         );
       },
     );
-    if (picked != null) {
+
+    if (gekozenTijd != null) {
       setState(() {
-        if (isStart) {
-          _startTime = picked;
-        } else {
-          _endTime = picked;
-        }
+        _activiteiten[index]['werkelijke_tijd'] = gekozenTijd;
       });
     }
   }
 
-  Future<void> _save() async {
-    if (_selectedType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Kies een activiteit type'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-    if (_startTime == null || _endTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecteer start- en eindtijd'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
+  Future<void> _opslaan() async {
+    if (_isSaving) return;
     setState(() => _isSaving = true);
 
-    final activity = {
-      'date': _todayDate,
-      'activity_type': _selectedType,
-      'start_time': _formatTime(_startTime!),
-      'end_time': _formatTime(_endTime!),
-      'duration_minutes': _calculateDuration(),
-      'intensity': _intensity.round(),
-      'social_contact': _socialContact.round(),
-      'satisfaction': _satisfaction.round(),
-      'notes': _notesController.text.trim(),
-    };
+    int totaalSrtPunten = 0;
 
-    await _db.insertActivity(activity);
+    for (int i = 0; i < _activiteiten.length; i++) {
+      final activiteit = _activiteiten[i];
+      final werkelijke = activiteit['werkelijke_tijd'] as TimeOfDay?;
+      final richt = activiteit['richttijd'] as TimeOfDay?;
+      final pScore = activiteit['p_score'] as int;
+      
+      final srtPunt = _berekenSrtPunt(werkelijke, richt);
+      totaalSrtPunten += srtPunt;
+
+      await db.insertSrmActivityMap({
+        'date': _todayDate,
+        'activity_type': activiteit['naam'],
+        'actual_time': _timeOfDayToString(werkelijke),
+        'p_score': pScore,
+        'srt_point': srtPunt,
+      });
+    }
 
     if (mounted) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Activiteit opgeslagen!'),
-          backgroundColor: medicalTeal,
+        SnackBar(
+          content: Text('SRM activiteiten opgeslagen! SRT punten: $totaalSrtPunten/${_activiteiten.length}'),
+          backgroundColor: primaryTeal,
         ),
       );
       Navigator.pop(context);
     }
   }
 
-  Widget _buildSliderSection({
-    required String title,
-    required double value,
-    required double min,
-    required double max,
-    required int divisions,
-    required ValueChanged<double> onChanged,
-    String? label,
-    Color? activeColor,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF333333),
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (label != null)
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: activeColor ?? medicalTeal,
-            ),
-          ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          divisions: divisions,
-          activeColor: activeColor ?? medicalTeal,
-          inactiveColor: medicalTeal.withValues(alpha: 0.2),
-          label: value.round().toString(),
-          onChanged: onChanged,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(min.toInt().toString(), style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-            Text(max.toInt().toString(), style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: backgroundColor,
+        body: const Center(
+          child: CircularProgressIndicator(color: primaryTeal),
+        ),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: medicalTeal,
+        backgroundColor: primaryTeal,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Activiteit Loggen',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
+        title: const Text('SRM Meting', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+      body: Column(
+        children: [
+          // Uitleg P-Score
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('P-score (betrokkenheid anderen):', style: TextStyle(fontWeight: FontWeight.bold, color: textCharcoal)),
+                const SizedBox(height: 8),
+                Text(
+                  '0 = Alleen\n1 = Anderen aanwezig\n2 = Anderen deden ook mee\n3 = Anderen stimuleerden mij',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Nieuwe activiteit',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // ignore: deprecated_member_use
-                    DropdownButtonFormField<String>(
-                      value: _selectedType, // ignore: deprecated_member_use
-                      decoration: InputDecoration(
-                        labelText: 'Activiteit type *',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: medicalTeal, width: 2),
-                        ),
-                      ),
-                      items: _activityTypes.map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Text(type),
-                        );
-                      }).toList(),
-                      onChanged: (value) => setState(() => _selectedType = value),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () => _pickTime(true),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade400),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Starttijd',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _startTime != null
-                                        ? _formatTime(_startTime!)
-                                        : 'Selecteer',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: _startTime != null
-                                          ? const Color(0xFF333333)
-                                          : Colors.grey[400],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: InkWell(
-                            onTap: () => _pickTime(false),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade400),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Eindtijd',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _endTime != null
-                                        ? _formatTime(_endTime!)
-                                        : 'Selecteer',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: _endTime != null
-                                          ? const Color(0xFF333333)
-                                          : Colors.grey[400],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (_startTime != null && _endTime != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          'Duur: ${_calculateDuration() ?? 0} minuten',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 20),
-                    _buildSliderSection(
-                      title: 'Intensiteit',
-                      value: _intensity,
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: '${_intensity.round()}/10',
-                      onChanged: (v) => setState(() => _intensity = v),
-                    ),
-                    _buildSliderSection(
-                      title: 'Sociaal contact',
-                      value: _socialContact,
-                      min: 0,
-                      max: 10,
-                      divisions: 10,
-                      label: '${_socialContact.round()}/10',
-                      onChanged: (v) => setState(() => _socialContact = v),
-                    ),
-                    _buildSliderSection(
-                      title: 'Tevredenheid',
-                      value: _satisfaction,
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: '${_satisfaction.round()}/10',
-                      activeColor: _satisfaction >= 7 ? Colors.green : medicalTeal,
-                      onChanged: (v) => setState(() => _satisfaction = v),
-                    ),
-                    TextField(
-                      controller: _notesController,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        labelText: 'Notities (optioneel)',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: medicalTeal, width: 2),
-                        ),
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 8),
+                Text(
+                  'SRT punt: 1 punt als binnen ±45 min van richttijd',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.w500),
                 ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: FilledButton.icon(
-                  onPressed: _isSaving ? null : _save,
-                  icon: _isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.save),
-                  label: Text(_isSaving ? 'Opslaan...' : 'Opslaan'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: medicalTeal,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _activiteiten.length,
+              itemBuilder: (context, index) {
+                final activiteit = _activiteiten[index];
+                final srtPunt = _berekenSrtPunt(
+                  activiteit['werkelijke_tijd'],
+                  activiteit['richttijd'],
+                );
+                
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              activiteit['naam'],
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textCharcoal),
+                            ),
+                          ),
+                          if (activiteit['werkelijke_tijd'] != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: srtPunt == 1 ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                srtPunt == 1 ? '+1 SRT' : '0 SRT',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: srtPunt == 1 ? Colors.green : Colors.red,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Richttijd: ${_formatTijd(activiteit['richttijd'])}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          // Tijd invullen knop
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _kiesTijd(context, index),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                decoration: BoxDecoration(
+                                  color: backgroundColor,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey[300]!),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.access_time, size: 18, color: primaryTeal),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _formatTijd(activiteit['werkelijke_tijd']),
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textCharcoal),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // P-score knoppen
+                          Row(
+                            children: [0, 1, 2, 3].map((score) {
+                              bool isGeselecteerd = activiteit['p_score'] == score;
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    activiteit['p_score'] = score;
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(left: 4),
+                                  width: 36,
+                                  height: 36,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: isGeselecteerd ? primaryTeal : Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '$score',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: isGeselecteerd ? Colors.white : Colors.grey[600],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _opslaan,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryTeal,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text('Activiteiten Opslaan', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _notesController.dispose();
-    super.dispose();
   }
 }

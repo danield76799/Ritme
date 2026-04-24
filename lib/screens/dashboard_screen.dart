@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
-import '../services/notification_service.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../main.dart';
+import '../services/notification_helper.dart';
 import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -11,7 +13,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final _db = DatabaseHelper.instance;
   Map<String, dynamic>? _settings;
   bool _isLoading = true;
 
@@ -28,7 +29,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadData() async {
-    final settings = await _db.getSettings();
+    final settings = await db.getSettings();
 
     setState(() {
       _settings = settings;
@@ -37,34 +38,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _setupNotifications() async {
-    await NotificationService().requestPermissions();
-    
-    // Schedule daily mood check reminder at 20:00
-    final now = DateTime.now();
-    var scheduledTime = DateTime(now.year, now.month, now.day, 20, 0);
-    if (scheduledTime.isBefore(now)) {
-      scheduledTime = scheduledTime.add(const Duration(days: 1));
+    // Only setup notifications on mobile (not web)
+    if (!kIsWeb) {
+      await NotificationHelper.instance.initialize();
     }
-    
-    await NotificationService().showDailyReminder(
-      id: 1,
-      title: 'Dagelijkse check',
-      body: 'Hoe was je dag? Registreer je stemming en activiteiten.',
-      scheduledDate: scheduledTime,
-    );
-    
-    // Schedule morning routine reminder at 08:00
-    var morningTime = DateTime(now.year, now.month, now.day, 8, 0);
-    if (morningTime.isBefore(now)) {
-      morningTime = morningTime.add(const Duration(days: 1));
-    }
-    
-    await NotificationService().showDailyReminder(
-      id: 2,
-      title: 'Goedemorgen!',
-      body: 'Start je dag met een positief ritme. Registreer je stemming.',
-      scheduledDate: morningTime,
-    );
   }
 
   Future<void> _logout() async {
@@ -105,6 +82,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             tooltip: 'Statistieken',
           ),
           IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings');
+            },
+            tooltip: 'Instellingen',
+          ),
+          IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _logout,
             tooltip: 'Uitloggen',
@@ -140,9 +124,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        _buildTimeChip(Icons.wb_sunny_outlined, 'Opstaan', _settings?['target_wake_time'] ?? '07:00'),
+                        _buildTimeChip(Icons.wb_sunny_outlined, 'Opstaan', _settings?['target_opstaan'] ?? '08:00'),
                         const SizedBox(width: 12),
-                        _buildTimeChip(Icons.nightlight_round, 'Slapen', _settings?['target_sleep_time'] ?? '23:00'),
+                        _buildTimeChip(Icons.nightlight_round, 'Slapen', _settings?['target_slapen'] ?? '23:00'),
                       ],
                     ),
                   ],

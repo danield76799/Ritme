@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../main.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
@@ -9,13 +10,18 @@ class MedicationScreen extends StatefulWidget {
 }
 
 class _MedicationScreenState extends State<MedicationScreen> {
-  final _db = DatabaseHelper.instance;
   final Color primaryTeal = const Color(0xFF4FB2C1);
   final Color textCharcoal = const Color(0xFF333333);
   final Color backgroundColor = const Color(0xFFFAFAFA);
 
   List<Map<String, dynamic>> _medications = [];
+  Map<int, int> _intakeAmounts = {}; // medication_id -> amount taken
   bool _isLoading = true;
+
+  String get _todayDate {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
 
   @override
   void initState() {
@@ -24,36 +30,45 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _loadMedications() async {
-    final meds = await _db.getMedications();
+    final meds = await db.getMedicationConfigs();
+    final intakes = await db.getMedicationIntake(_todayDate);
+    
+    // Build intake map for today
+    Map<int, int> intakeMap = {};
+    for (var intake in intakes) {
+      intakeMap[intake['medication_id']] = intake['aantal_ingenomen'];
+    }
+    
     setState(() {
       _medications = meds;
+      _intakeAmounts = intakeMap;
       _isLoading = false;
     });
   }
 
   void _changeAmount(int index, int change) {
+    final medId = _medications[index]['id'];
     setState(() {
-      int newAmount = (_medications[index]['aantal_ingenomen'] ?? 0) + change;
+      int newAmount = (_intakeAmounts[medId] ?? 0) + change;
       if (newAmount >= 0) {
-        _medications[index]['aantal_ingenomen'] = newAmount;
+        _intakeAmounts[medId] = newAmount;
       }
     });
   }
 
   Future<void> _save() async {
-    final today = DateTime.now().toIso8601String().split('T')[0];
+    if (_isLoading) return;
     
     for (int i = 0; i < _medications.length; i++) {
       final med = _medications[i];
-      final amount = med['aantal_ingenomen'] ?? 0;
+      final medId = med['id'];
+      final amount = _intakeAmounts[medId] ?? 0;
       
       if (amount > 0) {
-        await _db.upsertMedicationIntake({
-          'medication_id': med['id'],
-          'date': today,
-          'time_slot': 'morning',
-          'taken': amount,
-          'taken_at': DateTime.now().toIso8601String(),
+        await db.insertMedicationIntakeMap({
+          'date': _todayDate,
+          'medication_id': medId,
+          'aantal_ingenomen': amount,
         });
       }
     }
@@ -124,6 +139,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       itemCount: _medications.length,
                       itemBuilder: (context, index) {
                         final medicijn = _medications[index];
+                        final medId = medicijn['id'];
+                        final amount = _intakeAmounts[medId] ?? 0;
+                        
                         return Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(16),
@@ -145,12 +163,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    medicijn['name'] ?? 'Onbekend',
+                                    medicijn['naam'] ?? 'Onbekend',
                                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textCharcoal),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '${medicijn['dosage'] ?? ''} ${medicijn['frequency'] ?? ''}',
+                                    '${medicijn['dosering'] ?? ''} ${medicijn['eenheid'] ?? ''}',
                                     style: TextStyle(fontSize: 14, color: primaryTeal),
                                   ),
                                 ],
@@ -165,7 +183,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                     width: 30,
                                     alignment: Alignment.center,
                                     child: Text(
-                                      '${medicijn['aantal_ingenomen'] ?? 0}',
+                                      '$amount',
                                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textCharcoal),
                                     ),
                                   ),

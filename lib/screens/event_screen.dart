@@ -1,324 +1,225 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../main.dart';
 
-const Color medicalTeal = Color(0xFF4FB2C1);
-const Color medicalTealDark = Color(0xFF3A9AA8);
-
-class EventScreen extends StatefulWidget {
-  const EventScreen({super.key});
-
+class GebeurtenisScherm extends StatefulWidget {
   @override
-  State<EventScreen> createState() => _EventScreenState();
+  _GebeurtenisSchermState createState() => _GebeurtenisSchermState();
 }
 
-class _EventScreenState extends State<EventScreen> {
-  final _db = DatabaseHelper.instance;
-  bool _isSaving = false;
+class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
+  final Color primaryTeal = const Color(0xFF4FB2C1);
+  final Color textCharcoal = const Color(0xFF333333);
+  final Color backgroundColor = const Color(0xFFFAFAFA);
 
-  DateTime _selectedDate = DateTime.now();
-  final _descriptionController = TextEditingController();
-  final _eventTypeController = TextEditingController();
-  double _impactLevel = 0;
+  final TextEditingController _omschrijvingController = TextEditingController();
+  double _invloedWaarde = 0;
 
-  final _eventTypes = [
-    'Positief',
-    'Negatief',
-    'Neutraal',
-    'Stressvol',
-    'Verrassend',
-    'Belangrijk',
-    'Routine',
-  ];
-
-  String get _formattedDate {
-    return '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+  String get _todayDate {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: medicalTeal,
-            ),
+  Color _haalKleurOp(double waarde) {
+    if (waarde > 0) return Colors.green;
+    if (waarde < 0) return Colors.orange;
+    return primaryTeal;
+  }
+
+  String _haalLabelOp(double waarde) {
+    if (waarde == 4) return 'Uiterst positief';
+    if (waarde > 0) return 'Positief';
+    if (waarde == -4) return 'Uiterst negatief';
+    if (waarde < 0) return 'Negatief';
+    return 'Neutraal';
+  }
+
+  Future<void> _opslaan() async {
+    if (_omschrijvingController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vul eerst een korte omschrijving in.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final event = {
+        'date': _todayDate,
+        'omschrijving': _omschrijvingController.text.trim(),
+        'invloed': _invloedWaarde.round(),
+      };
+      
+      await db.insertLifeEventMap(event);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gebeurtenis succesvol toegevoegd aan je Life Chart!'),
+            backgroundColor: primaryTeal,
           ),
-          child: child!,
         );
-      },
-    );
-    if (picked != null) {
-      setState(() => _selectedDate = picked);
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fout bij opslaan: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _save() async {
-    if (_descriptionController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Omschrijving is verplicht'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-    if (_eventTypeController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Event type is verplicht'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    final event = {
-      'date': _formattedDate,
-      'event_type': _eventTypeController.text.trim(),
-      'impact_level': _impactLevel.round(),
-      'description': _descriptionController.text.trim(),
-      'category': null,
-    };
-
-    await _db.insertLifeEvent(event);
-
-    if (mounted) {
-      setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gebeurtenis opgeslagen!'),
-          backgroundColor: medicalTeal,
-        ),
-      );
-      Navigator.pop(context);
-    }
-  }
-
-  String _impactLabel(double value) {
-    if (value <= -3) return 'Zeer negatief';
-    if (value <= -1) return 'Negatief';
-    if (value == 0) return 'Neutraal';
-    if (value <= 3) return 'Positief';
-    return 'Zeer positief';
-  }
-
-  Color _impactColor(double value) {
-    if (value < -1) return Colors.redAccent;
-    if (value < 1) return Colors.grey;
-    if (value <= 3) return Colors.lightGreen;
-    return Colors.green;
+  @override
+  void dispose() {
+    _omschrijvingController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: medicalTeal,
+        backgroundColor: primaryTeal,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Life Event',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
+        title: Text('Gebeurtenis Loggen', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                'Ingrijpende gebeurtenis',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textCharcoal),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Noteer hier belangrijke gebeurtenissen (bijv. ruzie met collega, dochter geslaagd) en de invloed daarvan.',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+              SizedBox(height: 32),
+
+              // --- OMSCHRIJVING VELD ---
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
+                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Nieuwe gebeurtenis',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    InkWell(
-                      onTap: _pickDate,
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade400),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.calendar_today, color: medicalTeal),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Datum',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // ignore: deprecated_member_use
-                    DropdownButtonFormField<String>(
-                      value: _eventTypeController.text.isNotEmpty ? _eventTypeController.text : null, // ignore: deprecated_member_use
-                      decoration: InputDecoration(
-                        labelText: 'Event type *',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: medicalTeal, width: 2),
-                        ),
-                      ),
-                      items: _eventTypes.map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Text(type),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _eventTypeController.text = value ?? '';
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: 'Omschrijving *',
-                        hintText: 'Beschrijf wat er is gebeurd...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: medicalTeal, width: 2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Impact',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${_impactLabel(_impactLevel)} (${_impactLevel.round()})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: _impactColor(_impactLevel),
-                      ),
-                    ),
-                    Slider(
-                      value: _impactLevel,
-                      min: -4,
-                      max: 4,
-                      divisions: 8,
-                      activeColor: _impactColor(_impactLevel),
-                      inactiveColor: medicalTeal.withValues(alpha: 0.2),
-                      label: _impactLevel.round().toString(),
-                      onChanged: (v) => setState(() => _impactLevel = v),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('-4', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                        Text('0', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                        Text('+4', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: FilledButton.icon(
-                  onPressed: _isSaving ? null : _save,
-                  icon: _isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.save),
-                  label: Text(_isSaving ? 'Opslaan...' : 'Opslaan'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: medicalTeal,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                child: TextField(
+                  controller: _omschrijvingController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'Wat is er gebeurd?',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.all(16),
                   ),
                 ),
               ),
+
+              SizedBox(height: 32),
+
+              // --- INVLOED SCHUIFREGELAAR ---
+              Text(
+                'Invloed op stemming',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textCharcoal),
+              ),
+              SizedBox(height: 16),
+
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      _invloedWaarde > 0 ? '+${_invloedWaarde.round()}' : '${_invloedWaarde.round()}',
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: _haalKleurOp(_invloedWaarde),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      _haalLabelOp(_invloedWaarde),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600], fontStyle: FontStyle.italic),
+                    ),
+                    SizedBox(height: 24),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: _haalKleurOp(_invloedWaarde),
+                        inactiveTrackColor: Colors.grey[200],
+                        thumbColor: _haalKleurOp(_invloedWaarde),
+                        valueIndicatorColor: _haalKleurOp(_invloedWaarde),
+                        trackHeight: 8.0,
+                        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 16.0),
+                      ),
+                      child: Slider(
+                        value: _invloedWaarde,
+                        min: -4,
+                        max: 4,
+                        divisions: 8,
+                        label: _invloedWaarde > 0 ? '+${_invloedWaarde.round()}' : '${_invloedWaarde.round()}',
+                        onChanged: (double nieuweWaarde) {
+                          setState(() {
+                            _invloedWaarde = nieuweWaarde;
+                          });
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('-4 (Negatief)', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                          Text('0', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                          Text('+4 (Positief)', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 32),
+
+              // --- OPSLAAN KNOP ---
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _opslaan,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryTeal,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text('Opslaan in Life Chart', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              SizedBox(height: 16),
             ],
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _descriptionController.dispose();
-    _eventTypeController.dispose();
-    super.dispose();
   }
 }

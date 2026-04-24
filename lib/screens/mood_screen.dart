@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../main.dart';
 
-const Color medicalTeal = Color(0xFF4FB2C1);
-const Color medicalTealDark = Color(0xFF3A9AA8);
+const Color primaryTeal = Color(0xFF4FB2C1);
+const Color textCharcoal = Color(0xFF333333);
+const Color backgroundColor = Color(0xFFFAFAFA);
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -12,15 +14,11 @@ class MoodScreen extends StatefulWidget {
 }
 
 class _MoodScreenState extends State<MoodScreen> {
-  final _db = DatabaseHelper.instance;
   bool _isLoading = true;
   bool _isSaving = false;
 
-  double _moodScore = 0;
-  double _sleepQuality = 5;
-  double _energyLevel = 5;
-  double _irritability = 5;
-  final _notesController = TextEditingController();
+  double _stemmingWaarde = 0;
+  bool _ontstemdeManie = false;
 
   String get _todayDate {
     final now = DateTime.now();
@@ -34,234 +32,265 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Future<void> _loadExistingData() async {
-    final log = await _db.getDailyLog(_todayDate);
+    final log = await db.getDailyLog(_todayDate);
     if (log != null && mounted) {
       setState(() {
-        _moodScore = (log['mood_score'] ?? 0).toDouble();
-        _sleepQuality = (log['sleep_quality'] ?? 5).toDouble();
-        _energyLevel = (log['energy_level'] ?? 5).toDouble();
-        _irritability = (log['irritability'] ?? 5).toDouble();
-        _notesController.text = log['notes'] ?? '';
+        _stemmingWaarde = (log['stemming_avond'] ?? log['stemming_ochtend'] ?? 0).toDouble();
+        _ontstemdeManie = (log['ontstemde_manie'] ?? false) == 1;
       });
     }
     setState(() => _isLoading = false);
   }
 
-  Future<void> _save() async {
+  String _haalBeschrijvingOp(double waarde) {
+    int w = waarde.round();
+    switch (w) {
+      case 5:
+        return 'In de war, psychotisch, opname noodzakelijk.';
+      case 4:
+        return 'Fors manisch, tegen de grens van een psychose.';
+      case 3:
+        return 'Druk, veel dingen tegelijk doen, veel praten, kort slapen.';
+      case 2:
+        return 'Gehele dag te druk, minder slaap nodig.';
+      case 1:
+        return 'Momenten op de dag drukker, actiever dan gewoonlijk.';
+      case 0:
+        return 'Stabiel.';
+      case -1:
+        return 'Dingen met tegenzin doen, stemming licht gedaald.';
+      case -2:
+        return 'Sommige dingen blijven liggen, stemming licht somber.';
+      case -3:
+        return 'Stemming gehele dag somber.';
+      case -4:
+        return 'Alles kost veel moeite, neiging om hele dag op bed te liggen.';
+      case -5:
+        return 'Niet in staat voor zichzelf te zorgen, opname noodzakelijk.';
+      default:
+        return '';
+    }
+  }
+
+  Color _haalKleurOp(double waarde) {
+    if (waarde > 0) return Colors.orange;
+    if (waarde < 0) return Colors.blue;
+    return Colors.green;
+  }
+
+  Future<void> _opslaan() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
     final log = {
       'date': _todayDate,
-      'mood_score': _moodScore.round(),
-      'sleep_quality': _sleepQuality.round(),
-      'energy_level': _energyLevel.round(),
-      'irritability': _irritability.round(),
-      'notes': _notesController.text.trim(),
+      'stemming_avond': _stemmingWaarde.round(),
+      'ontstemde_manie': _ontstemdeManie ? 1 : 0,
     };
 
-    await _db.upsertDailyLog(log);
+    await db.upsertDailyLog(log);
 
     if (mounted) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Stemming opgeslagen!'),
-          backgroundColor: medicalTeal,
+          backgroundColor: primaryTeal,
         ),
       );
       Navigator.pop(context);
     }
   }
 
-  String _moodLabel(double value) {
-    if (value <= -4) return 'Zeer somber';
-    if (value <= -2) return 'Somber';
-    if (value < 0) return 'Eneergieig';
-    if (value == 0) return 'Neutraal';
-    if (value <= 2) return 'Goed';
-    if (value <= 4) return 'Blij';
-    return 'Zeer blij';
-  }
-
-  Color _moodColor(double value) {
-    if (value < -2) return Colors.redAccent;
-    if (value < 0) return Colors.orangeAccent;
-    if (value == 0) return Colors.grey;
-    if (value <= 2) return Colors.lightGreen;
-    return Colors.green;
-  }
-
-  Widget _buildSliderSection({
-    required String title,
-    required double value,
-    required double min,
-    required double max,
-    required int divisions,
-    required ValueChanged<double> onChanged,
-    String? label,
-    Color? activeColor,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF333333),
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (label != null)
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: activeColor ?? medicalTeal,
-            ),
-          ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          divisions: divisions,
-          activeColor: activeColor ?? medicalTeal,
-          inactiveColor: medicalTeal.withValues(alpha: 0.2),
-          label: value.round().toString(),
-          onChanged: onChanged,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(min.toInt().toString(), style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-            Text(max.toInt().toString(), style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: medicalTeal)),
+      return Scaffold(
+        backgroundColor: backgroundColor,
+        body: const Center(
+          child: CircularProgressIndicator(color: primaryTeal),
+        ),
       );
     }
 
+    Color kleur = _haalKleurOp(_stemmingWaarde);
+    String beschrijving = _haalBeschrijvingOp(_stemmingWaarde);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: medicalTeal,
+        backgroundColor: primaryTeal,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Dagelijkse Check-in',
+          'Stemming',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header with logo
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    'assets/logo.jpg',
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Mood slider card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 8,
+                      blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'Hoe voel je je vandaag?',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
+                        color: textCharcoal,
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSliderSection(
-                      title: 'Stemming',
-                      value: _moodScore,
-                      min: -5,
-                      max: 5,
-                      divisions: 10,
-                      label: _moodLabel(_moodScore),
-                      activeColor: _moodColor(_moodScore),
-                      onChanged: (v) => setState(() => _moodScore = v),
-                    ),
-                    _buildSliderSection(
-                      title: 'Slaapkwaliteit',
-                      value: _sleepQuality,
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: '${_sleepQuality.round()}/10',
-                      onChanged: (v) => setState(() => _sleepQuality = v),
-                    ),
-                    _buildSliderSection(
-                      title: 'Energie niveau',
-                      value: _energyLevel,
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: '${_energyLevel.round()}/10',
-                      onChanged: (v) => setState(() => _energyLevel = v),
-                    ),
-                    _buildSliderSection(
-                      title: 'Prikkelbaarheid',
-                      value: _irritability,
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: '${_irritability.round()}/10',
-                      activeColor: _irritability > 6 ? Colors.orange : medicalTeal,
-                      onChanged: (v) => setState(() => _irritability = v),
                     ),
                     const SizedBox(height: 8),
-                    TextField(
-                      controller: _notesController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: 'Notities (optioneel)',
-                        hintText: 'Iets wat je wilt onthouden...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: medicalTeal, width: 2),
+                    Text(
+                      beschrijving,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Value display
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: kleur.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(40),
+                        border: Border.all(color: kleur, width: 3),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _stemmingWaarde.round().toString(),
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: kleur,
+                          ),
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Mood slider
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: kleur,
+                        inactiveTrackColor: kleur.withValues(alpha: 0.2),
+                        thumbColor: kleur,
+                        overlayColor: kleur.withValues(alpha: 0.2),
+                        trackHeight: 8,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 14,
+                        ),
+                      ),
+                      child: Slider(
+                        value: _stemmingWaarde,
+                        min: -5,
+                        max: 5,
+                        divisions: 10,
+                        onChanged: (value) {
+                          setState(() {
+                            _stemmingWaarde = value;
+                          });
+                        },
+                      ),
+                    ),
+
+                    // Scale labels
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Somber',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          'Manisch',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Ontstemde manie checkbox
+                    CheckboxListTile(
+                      value: _ontstemdeManie,
+                      onChanged: (value) {
+                        setState(() {
+                          _ontstemdeManie = value ?? false;
+                        });
+                      },
+                      title: const Text(
+                        'Ontstemde manie',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Manische episode met depressieve kenmerken',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: primaryTeal,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
+
+              // Save button
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: FilledButton.icon(
-                  onPressed: _isSaving ? null : _save,
+                  onPressed: _isSaving ? null : _opslaan,
                   icon: _isSaving
                       ? const SizedBox(
                           width: 20,
@@ -274,7 +303,7 @@ class _MoodScreenState extends State<MoodScreen> {
                       : const Icon(Icons.save),
                   label: Text(_isSaving ? 'Opslaan...' : 'Opslaan'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: medicalTeal,
+                    backgroundColor: primaryTeal,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -287,11 +316,5 @@ class _MoodScreenState extends State<MoodScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _notesController.dispose();
-    super.dispose();
   }
 }

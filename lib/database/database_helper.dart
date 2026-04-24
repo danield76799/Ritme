@@ -1,7 +1,8 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
+import 'database_repository.dart';
 
-class DatabaseHelper {
+class DatabaseHelper implements DatabaseRepository {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
 
@@ -9,402 +10,274 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('ritme.db');
+    _database = await _initDB('ritme_app.db');
     return _database!;
   }
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+    final path = p.join(dbPath, filePath);
+    return await openDatabase(path, version: 1, onCreate: _createDB);
   }
 
   Future _createDB(Database db, int version) async {
-    // 1. settings - gebruiker + target tijden
     await db.execute('''
       CREATE TABLE settings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE,
-        pin_hash TEXT,
-        target_wake_time TEXT,
-        target_sleep_time TEXT,
-        target_morning_routine INTEGER,
-        target_evening_routine INTEGER,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        username TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
+        target_opstaan TEXT,
+        target_contact TEXT,
+        target_werk TEXT,
+        target_eten TEXT,
+        target_slapen TEXT
       )
     ''');
 
-    // 2. daily_logs - dagelijkse stemming/slaap
     await db.execute('''
       CREATE TABLE daily_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL UNIQUE,
-        mood_score INTEGER,
-        sleep_quality INTEGER,
-        sleep_hours REAL,
-        wake_time TEXT,
-        sleep_time TEXT,
-        energy_level INTEGER,
-        irritability INTEGER,
-        notes TEXT,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        date TEXT PRIMARY KEY,
+        uren_slaap REAL,
+        stemming_ochtend INTEGER,
+        stemming_avond INTEGER,
+        ontstemde_manie INTEGER DEFAULT 0,
+        stemmingsomslagen INTEGER DEFAULT 0,
+        alcohol_middelen INTEGER DEFAULT 0,
+        menstruatie INTEGER DEFAULT 0,
+        andere_klachten TEXT
       )
     ''');
 
-    // 3. srm_activities - activiteiten metingen
     await db.execute('''
       CREATE TABLE srm_activities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         activity_type TEXT NOT NULL,
-        start_time TEXT,
-        end_time TEXT,
-        duration_minutes INTEGER,
-        intensity INTEGER,
-        social_contact INTEGER,
-        satisfaction INTEGER,
-        notes TEXT,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        actual_time TEXT,
+        p_score INTEGER,
+        srt_point INTEGER
       )
     ''');
 
-    // 4. medication_config - medicatie setup
     await db.execute('''
       CREATE TABLE medication_config (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        dosage TEXT,
-        frequency TEXT,
-        morning_time TEXT,
-        afternoon_time TEXT,
-        evening_time TEXT,
-        active INTEGER NOT NULL DEFAULT 1,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        naam TEXT NOT NULL,
+        dosering TEXT,
+        eenheid TEXT
       )
     ''');
 
-    // 5. medication_intake - inname tracking
     await db.execute('''
       CREATE TABLE medication_intake (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        medication_id INTEGER NOT NULL,
         date TEXT NOT NULL,
-        time_slot TEXT NOT NULL,
-        taken INTEGER NOT NULL DEFAULT 0,
-        taken_at TEXT,
-        skipped INTEGER NOT NULL DEFAULT 0,
-        notes TEXT,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        medication_id INTEGER,
+        aantal_ingenomen INTEGER,
         FOREIGN KEY (medication_id) REFERENCES medication_config(id)
       )
     ''');
 
-    // 6. life_events - life chart gebeurtenissen
     await db.execute('''
       CREATE TABLE life_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
-        event_type TEXT NOT NULL,
-        impact_level INTEGER,
-        description TEXT,
-        category TEXT,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        omschrijving TEXT,
+        invloed INTEGER
       )
     ''');
-
-    // Insert default user voor eerste gebruik
-    await db.insert('settings', {
-      'username': 'gebruiker',
-      'pin_hash': null,
-      'target_wake_time': '07:00',
-      'target_sleep_time': '23:00',
-      'target_morning_routine': 30,
-      'target_evening_routine': 30,
-    });
   }
 
-  // Settings queries
+  // ===================
+  // SETTINGS
+  // ===================
+  
+  @override
   Future<Map<String, dynamic>?> getSettings() async {
     final db = await database;
     final results = await db.query('settings', limit: 1);
     return results.isNotEmpty ? results.first : null;
   }
 
-  Future<bool> validateLogin(String username, String pin) async {
+  @override
+  Future<int> insertSettings(Map<String, dynamic> settings) async {
     final db = await database;
-    final results = await db.query(
-      'settings',
-      where: 'username = ? AND pin_hash = ?',
-      whereArgs: [username, pin],
-      limit: 1,
-    );
-    return results.isNotEmpty;
+    return await db.insert('settings', settings);
   }
 
+  @override
+  Future<int> updateSettings(String username, Map<String, dynamic> settings) async {
+    final db = await database;
+    return await db.update('settings', settings, where: 'username = ?', whereArgs: [username]);
+  }
+
+  @override
+  Future<int> updateSettingsMap(Map<String, dynamic> settings) async {
+    final db = await database;
+    return await db.update('settings', settings, where: 'username = ?', whereArgs: ['user']);
+  }
+
+  @override
   Future<bool> hasPinSet() async {
+    final settings = await getSettings();
+    return settings != null && settings['password_hash'] != null;
+  }
+
+  @override
+  Future<bool> updatePin(String pin) async {
+    const username = 'user';
+    return await setPin(username, pin);
+  }
+
+  Future<bool> setPin(String username, String passwordHash) async {
+    final db = await database;
+    final existing = await getSettings();
+    if (existing != null) {
+      await db.update('settings', {'password_hash': passwordHash}, where: 'username = ?', whereArgs: [username]);
+    } else {
+      await db.insert('settings', {'username': username, 'password_hash': passwordHash});
+    }
+    return true;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> validateLoginPin(String pin) async {
     final db = await database;
     final results = await db.query(
       'settings',
-      where: 'pin_hash IS NOT NULL',
+      where: 'username = ? AND password_hash = ?',
+      whereArgs: ['user', pin],
       limit: 1,
     );
-    return results.isNotEmpty;
+    return results.isNotEmpty ? results.first : null;
   }
 
-  Future<int> updatePin(String pin) async {
+  // ===================
+  // DAILY LOGS
+  // ===================
+  
+  @override
+  Future<int> insertDailyLog(String date, Map<String, dynamic> data) async {
     final db = await database;
-    return await db.update(
-      'settings',
-      {'pin_hash': pin, 'updated_at': DateTime.now().toIso8601String()},
-      where: 'id = 1',
-    );
+    data['date'] = date;
+    return await db.insert('daily_logs', data, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<int> updateSettings(Map<String, dynamic> values) async {
+  @override
+  Future<List<Map<String, dynamic>>> getDailyLogs() async {
     final db = await database;
-    values['updated_at'] = DateTime.now().toIso8601String();
-    return await db.update(
-      'settings',
-      values,
-      where: 'id = 1',
-    );
+    return await db.query('daily_logs', orderBy: 'date ASC');
   }
 
-  // Daily logs queries
-  Future<int> insertDailyLog(Map<String, dynamic> log) async {
-    final db = await database;
-    return await db.insert('daily_logs', log);
-  }
-
-  Future<int> updateDailyLog(String date, Map<String, dynamic> log) async {
-    final db = await database;
-    log['updated_at'] = DateTime.now().toIso8601String();
-    return await db.update(
-      'daily_logs',
-      log,
-      where: 'date = ?',
-      whereArgs: [date],
-    );
-  }
-
-  Future<int> upsertDailyLog(Map<String, dynamic> log) async {
-    final existing = await getDailyLog(log['date'] as String);
-    if (existing != null) {
-      return await updateDailyLog(log['date'] as String, log);
-    } else {
-      return await insertDailyLog(log);
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> getDailyLogs({int limit = 30}) async {
-    final db = await database;
-    return await db.query(
-      'daily_logs',
-      orderBy: 'date DESC',
-      limit: limit,
-    );
-  }
-
+  @override
   Future<Map<String, dynamic>?> getDailyLog(String date) async {
     final db = await database;
-    final results = await db.query(
-      'daily_logs',
-      where: 'date = ?',
-      whereArgs: [date],
-      limit: 1,
-    );
+    final results = await db.query('daily_logs', where: 'date = ?', whereArgs: [date], limit: 1);
     return results.isNotEmpty ? results.first : null;
   }
 
-  // SRM Activities queries
-  Future<int> insertActivity(Map<String, dynamic> activity) async {
-    final db = await database;
-    return await db.insert('srm_activities', activity);
+  @override
+  Future<int> upsertDailyLog(Map<String, dynamic> data) async {
+    final date = data['date'] as String;
+    return await insertDailyLog(date, data);
   }
 
-  Future<int> updateActivity(int id, Map<String, dynamic> activity) async {
+  // ===================
+  // SRM ACTIVITIES
+  // ===================
+  
+  @override
+  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint) async {
     final db = await database;
-    return await db.update(
-      'srm_activities',
-      activity,
-      where: 'id = ?',
-      whereArgs: [id],
+    return await db.insert('srm_activities', {
+      'date': date,
+      'activity_type': activityType,
+      'actual_time': actualTime,
+      'p_score': pScore,
+      'srt_point': srtPoint,
+    });
+  }
+
+  @override
+  Future<int> insertSrmActivityMap(Map<String, dynamic> data) async {
+    return await insertSrmActivity(
+      data['date'] as String,
+      data['activity_type'] as String,
+      data['actual_time'] as String?,
+      data['p_score'] as int?,
+      data['srt_point'] as int?,
     );
   }
 
-  Future<int> deleteActivity(int id) async {
+  @override
+  Future<List<Map<String, dynamic>>> getSrmActivities(String date) async {
     final db = await database;
-    return await db.delete(
-      'srm_activities',
-      where: 'id = ?',
-      whereArgs: [id],
+    return await db.query('srm_activities', where: 'date = ?', whereArgs: [date]);
+  }
+
+  // ===================
+  // MEDICATION CONFIG
+  // ===================
+  
+  @override
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
+    final db = await database;
+    return await db.insert('medication_config', {'naam': naam, 'dosering': dosering, 'eenheid': eenheid});
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationConfigs() async {
+    final db = await database;
+    return await db.query('medication_config');
+  }
+
+  // ===================
+  // MEDICATION INTAKE
+  // ===================
+  
+  @override
+  Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
+    final db = await database;
+    return await db.insert('medication_intake', {'date': date, 'medication_id': medicationId, 'aantal_ingenomen': aantal});
+  }
+
+  @override
+  Future<int> insertMedicationIntakeMap(Map<String, dynamic> data) async {
+    return await insertMedicationIntake(
+      data['date'] as String,
+      data['medication_id'] as int,
+      data['aantal_ingenomen'] as int,
     );
   }
 
-  Future<List<Map<String, dynamic>>> getActivities(String date) async {
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationIntake(String date) async {
     final db = await database;
-    return await db.query(
-      'srm_activities',
-      where: 'date = ?',
-      whereArgs: [date],
-      orderBy: 'start_time ASC',
+    return await db.query('medication_intake', where: 'date = ?', whereArgs: [date]);
+  }
+
+  // ===================
+  // LIFE EVENTS
+  // ===================
+  
+  @override
+  Future<int> insertLifeEvent(String date, String omschrijving, int invloed) async {
+    final db = await database;
+    return await db.insert('life_events', {'date': date, 'omschrijving': omschrijving, 'invloed': invloed});
+  }
+
+  @override
+  Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
+    return await insertLifeEvent(
+      data['date'] as String,
+      data['omschrijving'] as String,
+      data['invloed'] as int,
     );
   }
 
-  // Medication queries
-  Future<int> insertMedication(Map<String, dynamic> med) async {
+  @override
+  Future<List<Map<String, dynamic>>> getLifeEvents(String date) async {
     final db = await database;
-    return await db.insert('medication_config', med);
-  }
-
-  Future<List<Map<String, dynamic>>> getMedications() async {
-    final db = await database;
-    return await db.query(
-      'medication_config',
-      where: 'active = 1',
-      orderBy: 'name ASC',
-    );
-  }
-
-  Future<int> updateMedication(int id, Map<String, dynamic> med) async {
-    final db = await database;
-    med['updated_at'] = DateTime.now().toIso8601String();
-    return await db.update(
-      'medication_config',
-      med,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<int> deactivateMedication(int id) async {
-    final db = await database;
-    return await db.update(
-      'medication_config',
-      {
-        'active': 0,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<Map<String, dynamic>?> getMedicationById(int id) async {
-    final db = await database;
-    final results = await db.query(
-      'medication_config',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-    return results.isNotEmpty ? results.first : null;
-  }
-
-  Future<int> insertMedicationIntake(Map<String, dynamic> intake) async {
-    final db = await database;
-    return await db.insert('medication_intake', intake);
-  }
-
-  Future<Map<String, dynamic>?> getMedicationIntake(int medicationId, String date, String timeSlot) async {
-    final db = await database;
-    final results = await db.query(
-      'medication_intake',
-      where: 'medication_id = ? AND date = ? AND time_slot = ?',
-      whereArgs: [medicationId, date, timeSlot],
-      limit: 1,
-    );
-    return results.isNotEmpty ? results.first : null;
-  }
-
-  Future<int> upsertMedicationIntake(Map<String, dynamic> intake) async {
-    final existing = await getMedicationIntake(
-      intake['medication_id'] as int,
-      intake['date'] as String,
-      intake['time_slot'] as String,
-    );
-    if (existing != null) {
-      final db = await database;
-      return await db.update(
-        'medication_intake',
-        {
-          'taken': intake['taken'],
-          'taken_at': intake['taken_at'],
-          'skipped': intake['skipped'] ?? 0,
-          'notes': intake['notes'],
-        },
-        where: 'id = ?',
-        whereArgs: [existing['id']],
-      );
-    } else {
-      return await insertMedicationIntake(intake);
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> getMedicationIntakesForDate(String date) async {
-    final db = await database;
-    return await db.query(
-      'medication_intake',
-      where: 'date = ?',
-      whereArgs: [date],
-    );
-  }
-
-  // Life events queries
-  Future<int> insertLifeEvent(Map<String, dynamic> event) async {
-    final db = await database;
-    return await db.insert('life_events', event);
-  }
-
-  Future<int> updateLifeEvent(int id, Map<String, dynamic> event) async {
-    final db = await database;
-    return await db.update(
-      'life_events',
-      event,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<int> deleteLifeEvent(int id) async {
-    final db = await database;
-    return await db.delete(
-      'life_events',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<List<Map<String, dynamic>>> getLifeEvents({int limit = 50}) async {
-    final db = await database;
-    return await db.query(
-      'life_events',
-      orderBy: 'date DESC',
-      limit: limit,
-    );
-  }
-
-  Future<Map<String, dynamic>?> getLifeEventById(int id) async {
-    final db = await database;
-    final results = await db.query(
-      'life_events',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-    return results.isNotEmpty ? results.first : null;
-  }
-
-  Future close() async {
-    final db = await instance.database;
-    db.close();
+    return await db.query('life_events', where: 'date = ?', whereArgs: [date]);
   }
 }

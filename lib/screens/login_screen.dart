@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../main.dart';
 import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,7 +12,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _pinController = TextEditingController();
-  final _db = DatabaseHelper.instance;
   final Color primaryTeal = const Color(0xFF4FB2C1);
   bool _isFirstTime = false;
   String _errorMessage = '';
@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _checkSetup() async {
-    final pinSet = await _db.hasPinSet();
+    final pinSet = await db.hasPinSet();
     setState(() {
       _isFirstTime = !pinSet;
       _isLoading = false;
@@ -52,7 +52,18 @@ class _LoginScreenState extends State<LoginScreen> {
         });
         return;
       }
-      await _db.updatePin(pin);
+      await db.updatePin(pin);
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+      }
+      return;
+    }
+
+    final isValid = await db.validateLoginPin(pin);
+    if (isValid != null) {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -60,54 +71,10 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } else {
-      final valid = await _db.validateLogin('gebruiker', pin);
-      if (valid) {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
-          );
-        }
-      } else {
-        setState(() {
-          _errorMessage = 'Onjuiste PIN';
-        });
-        _pinController.clear();
-      }
+      setState(() {
+        _errorMessage = 'Ongeldige PIN';
+      });
     }
-  }
-
-  Future<void> _resetPin() async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('PIN Resetten'),
-        content: const Text(
-          'Weet je zeker dat je je PIN wilt resetten?\n\n'
-          'Je moet daarna een nieuwe PIN instellen.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuleren'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _db.updatePin('');
-              if (mounted) {
-                Navigator.pop(context);
-                setState(() {
-                  _isFirstTime = true;
-                  _errorMessage = 'PIN is gereset. Stel een nieuwe PIN in.';
-                });
-                _pinController.clear();
-              }
-            },
-            child: const Text('Reset', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -118,144 +85,132 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: primaryTeal,
-        body: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
-      );
-    }
-
     return Scaffold(
-      backgroundColor: primaryTeal,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- LOGO ---
-              Center(
-                child: Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(24),
+      backgroundColor: const Color(0xFFF5F9FA),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF4FB2C1),
+              ),
+            )
+          : SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/logo.jpg',
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Ritme',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: primaryTeal,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _isFirstTime
+                            ? 'Stel een PIN in om te beginnen'
+                            : 'Voer je PIN in',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _pinController,
+                              keyboardType: TextInputType.number,
+                              obscureText: true,
+                              maxLength: 6,
+                              decoration: InputDecoration(
+                                labelText: 'PIN',
+                                hintText: _isFirstTime
+                                    ? 'Minimaal 4 cijfers'
+                                    : 'Voer je PIN in',
+                                prefixIcon: const Icon(Icons.pin),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: primaryTeal,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              onSubmitted: (_) => _login(),
+                            ),
+                            const SizedBox(height: 16),
+                            if (_errorMessage.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.red[200]!),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.error_outline,
+                                        color: Colors.red[700], size: 20),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _errorMessage,
+                                        style:
+                                            TextStyle(color: Colors.red[700]),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryTeal,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: _login,
+                                child: Text(
+                                  _isFirstTime ? 'PIN Instellen' : 'Inloggen',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.favorite, color: Colors.white, size: 48),
                 ),
               ),
-              const SizedBox(height: 24),
-              
-              // --- TITELS ---
-              const Text(
-                'Ritme',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 40, 
-                  fontWeight: FontWeight.bold, 
-                  color: Colors.white,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Sociaal Ritme Therapie',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16, 
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ),
-              
-              const SizedBox(height: 64),
-              
-              // --- PIN INVULVELD ---
-              TextField(
-                controller: _pinController,
-                keyboardType: TextInputType.number,
-                obscureText: true,
-                maxLength: 6,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-                decoration: InputDecoration(
-                  hintText: _isFirstTime ? 'Kies een PIN' : 'Voer PIN in',
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.15),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                  counterText: '',
-                ),
-                onSubmitted: (_) => _login(),
-              ),
-              
-              if (_errorMessage.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(
-                  _errorMessage,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-              
-              const SizedBox(height: 16),
-              
-              // --- INLOGGEN KNOP ---
-              ElevatedButton(
-                onPressed: _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: primaryTeal,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  _isFirstTime ? 'Start' : 'Inloggen',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              
-              if (!_isFirstTime) ...[
-                const SizedBox(height: 24),
-                Center(
-                  child: TextButton(
-                    onPressed: _resetPin,
-                    child: Text(
-                      'PIN vergeten?',
-                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
-                    ),
-                  ),
-                ),
-              ],
-              
-              if (_isFirstTime) ...[
-                const SizedBox(height: 16),
-                Text(
-                  'Welkom! Kies een PIN om te beginnen.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.7),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }
