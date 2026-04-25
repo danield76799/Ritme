@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'pages/splash_screen.dart';
+import 'screens/login_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../services/notification_helper.dart';
 import '../screens/login_screen.dart';
@@ -52,7 +54,7 @@ class RitmeApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      home: const LoginScreen(),
+      home: const SplashScreen(),
       routes: {
         '/mood': (context) => const MoodScreen(),
         '/activity': (context) => const ActivityScreen(),

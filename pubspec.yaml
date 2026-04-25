@@ -64,15 +64,16 @@ dev_dependencies:
 flutter_native_splash:
   color: "#4FB2C1"
   image: assets/logo.jpg
-  branding: assets/logo.jpg
   android: true
   ios: true
+  web: false
 
 # App Icon config
 flutter_launcher_icons:
-  image_path: "assets/logo.jpg"
-  android: true
+  android: "launcher_icon"
   ios: true
+  image_path: "assets/logo.jpg"
+  remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
