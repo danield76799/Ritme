@@ -12,6 +12,7 @@
 -keep class androidx.biometric.** { *; }
 -keep class androidx.core.hardware.fingerprint.** { *; }
 -dontwarn androidx.biometric.**
+-keep class androidx.fragment.app.** { *; }
 
 # Flutter Secure Storage
 -keep class com.it_nomads.fluttersecurestorage.** { *; }
@@ -45,3 +46,24 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+# Keep Kotlin metadata
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes Exceptions
+-keepattributes InnerClasses
+-keepattributes EnclosingMethod
+
+# Keep all native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep setters in Views so that animations can still work
+-keepclassmembers public class * extends android.view.View {
+    void set*(***);
+    *** get*();
+}
+
+# Keep all application classes
+-keep class com.ritme.ritme.** { *; }
