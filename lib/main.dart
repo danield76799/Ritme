@@ -10,6 +10,7 @@ import 'screens/medication_screen.dart';
 import 'screens/event_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/medication_schedule_screen.dart';
 import 'database/database_repository.dart';
 import 'database/database_helper.dart';
 import 'database/hive_database_helper.dart';
@@ -64,6 +65,7 @@ class RitmeApp extends StatelessWidget {
         '/medication': (context) => const MedicationScreen(),
         '/event': (context) => GebeurtenisScherm(),
         '/settings': (context) => InstellingenScherm(),
+        '/medication-schedule': (context) => const MedicationScheduleScreen(),
       },
     );
   }

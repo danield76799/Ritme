@@ -28,6 +28,14 @@ abstract class DatabaseRepository {
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid);
   Future<List<Map<String, dynamic>>> getMedicationConfigs();
 
+  // Medication Schedule
+  Future<List<Map<String, dynamic>>> getMedicationSchedules();
+  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek);
+  Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data);
+  Future<int> deleteMedicationSchedule(int id);
+  Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday();
+  Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed);
+
   // Medication Intake
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal);
   Future<int> insertMedicationIntakeMap(Map<String, dynamic> data);

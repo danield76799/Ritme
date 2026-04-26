@@ -10,6 +10,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   static const String _srmActivitiesBox = 'srm_activities';
   static const String _medicationConfigBox = 'medication_config';
   static const String _medicationIntakeBox = 'medication_intake';
+  static const String _medicationScheduleBox = 'medication_schedule';
   static const String _lifeEventsBox = 'life_events';
 
   HiveDatabaseHelper._init();
@@ -20,6 +21,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_srmActivitiesBox);
     await Hive.openBox(_medicationConfigBox);
     await Hive.openBox(_medicationIntakeBox);
+    await Hive.openBox(_medicationScheduleBox);
     await Hive.openBox(_lifeEventsBox);
   }
 
@@ -28,6 +30,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Box get _srmActivities => Hive.box(_srmActivitiesBox);
   Box get _medicationConfig => Hive.box(_medicationConfigBox);
   Box get _medicationIntake => Hive.box(_medicationIntakeBox);
+  Box get _medicationSchedule => Hive.box(_medicationScheduleBox);
   Box get _lifeEvents => Hive.box(_lifeEventsBox);
 
   // ===================
@@ -233,6 +236,68 @@ class HiveDatabaseHelper implements DatabaseRepository {
     return _medicationConfig.values
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
+  }
+
+  // ===================
+  // MEDICATION SCHEDULE
+  // ===================
+  
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationSchedules() async {
+    return _medicationSchedule.values
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+  }
+
+  @override
+  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
+    final id = DateTime.now().millisecondsSinceEpoch;
+    await _medicationSchedule.put(id, {
+      'medication_id': medicationId,
+      'reminder_time': reminderTime,
+      'days_of_week': daysOfWeek,
+      'enabled': 1,
+    });
+    return id;
+  }
+
+  @override
+  Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data) async {
+    await _medicationSchedule.put(id, data);
+    return 1;
+  }
+
+  @override
+  Future<int> deleteMedicationSchedule(int id) async {
+    await _medicationSchedule.delete(id);
+    return 1;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async {
+    final today = DateTime.now().weekday;
+    final allSchedules = _medicationSchedule.values
+        .where((e) => e['enabled'] == 1)
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+    
+    return allSchedules.where((schedule) {
+      final days = (schedule['days_of_week'] as String).split(',');
+      return days.contains(today.toString());
+    }).toList();
+  }
+
+  @override
+  Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
+    final id = DateTime.now().millisecondsSinceEpoch;
+    await _medicationIntake.put(id, {
+      'date': date,
+      'medication_id': medicationId,
+      'aantal_ingenomen': 1,
+      'confirmed': confirmed,
+      'confirmed_at': confirmed == 1 ? DateTime.now().toIso8601String() : null,
+    });
+    return id;
   }
 
   // ===================

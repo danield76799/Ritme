@@ -219,6 +219,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   _buildActionCard(
                     context, 
+                    icon: Icons.schedule, 
+                    iconColor: Colors.tealAccent, 
+                    title: 'Medicatie Schema', 
+                    subtitle: 'Herinneringen',
+                    route: '/medication-schedule',
+                  ),
+                  _buildActionCard(
+                    context, 
                     icon: Icons.calendar_today_outlined, 
                     iconColor: Colors.purpleAccent, 
                     title: 'Gebeurtenis', 
