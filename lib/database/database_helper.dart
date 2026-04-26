@@ -70,11 +70,24 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
+      CREATE TABLE medication_schedule (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        medication_id INTEGER,
+        reminder_time TEXT NOT NULL,
+        days_of_week TEXT DEFAULT '1,2,3,4,5,6,7',
+        enabled INTEGER DEFAULT 1,
+        FOREIGN KEY (medication_id) REFERENCES medication_config(id)
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE medication_intake (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         medication_id INTEGER,
         aantal_ingenomen INTEGER,
+        confirmed INTEGER DEFAULT 0,
+        confirmed_at TEXT,
         FOREIGN KEY (medication_id) REFERENCES medication_config(id)
       )
     ''');
@@ -305,6 +318,79 @@ class DatabaseHelper implements DatabaseRepository {
   Future<List<Map<String, dynamic>>> getMedicationConfigs() async {
     final db = await database;
     return await db.query('medication_config');
+  }
+
+  // ===================
+  // MEDICATION SCHEDULE
+  // ===================
+  
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationSchedules() async {
+    final db = await database;
+    return await db.query('medication_schedule');
+  }
+
+  @override
+  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
+    final db = await database;
+    return await db.insert('medication_schedule', {
+      'medication_id': medicationId,
+      'reminder_time': reminderTime,
+      'days_of_week': daysOfWeek,
+      'enabled': 1,
+    });
+  }
+
+  @override
+  Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('medication_schedule', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> deleteMedicationSchedule(int id) async {
+    final db = await database;
+    return await db.delete('medication_schedule', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async {
+    final db = await database;
+    final today = DateTime.now().weekday; // 1= Monday, 7=Sunday
+    final allSchedules = await db.query('medication_schedule', where: 'enabled = ?', whereArgs: [1]);
+    
+    return allSchedules.where((schedule) {
+      final days = (schedule['days_of_week'] as String).split(',');
+      return days.contains(today.toString());
+    }).toList();
+  }
+
+  @override
+  Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
+    final db = await database;
+    final existing = await db.query(
+      'medication_intake',
+      where: 'date = ? AND medication_id = ?',
+      whereArgs: [date, medicationId],
+      limit: 1,
+    );
+    
+    if (existing.isNotEmpty) {
+      return await db.update(
+        'medication_intake',
+        {'confirmed': confirmed, 'confirmed_at': DateTime.now().toIso8601String()},
+        where: 'date = ? AND medication_id = ?',
+        whereArgs: [date, medicationId],
+      );
+    } else {
+      return await db.insert('medication_intake', {
+        'date': date,
+        'medication_id': medicationId,
+        'aantal_ingenomen': 1,
+        'confirmed': confirmed,
+        'confirmed_at': confirmed == 1 ? DateTime.now().toIso8601String() : null,
+      });
+    }
   }
 
   // ===================
