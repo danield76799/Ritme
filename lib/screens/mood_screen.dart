@@ -196,7 +196,7 @@ class _MoodScreenState extends State<MoodScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Geef aan hoe je stemming is op ${DateFormat('d MMMM', 'nl_NL').format(_geselecteerdeDatum)}',
+                          'Geef aan hoe je stemming is op ${DateFormat('d MMMM').format(_geselecteerdeDatum)}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
