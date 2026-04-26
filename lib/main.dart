@@ -31,12 +31,10 @@ void main() async {
     db = DatabaseHelper.instance;
     
     // Initialize notifications for mobile
-    if (!kIsWeb) {
-      try {
-        await NotificationHelper.instance.initialize();
-      } catch (e) {
-        debugPrint('Notification initialization error: $e');
-      }
+    try {
+      await NotificationHelper.instance.initialize();
+    } catch (e) {
+      debugPrint('Notification initialization error: $e');
     }
   }
   
