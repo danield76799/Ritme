@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'database_repository.dart';
@@ -219,6 +220,81 @@ class DatabaseHelper implements DatabaseRepository {
   // MEDICATION CONFIG
   // ===================
   
+  @override
+  Future<String> exportDatabaseToJson() async {
+    final db = await database;
+    
+    final Map<String, dynamic> result = {
+      'export_date': DateTime.now().toIso8601String(),
+      'app_version': '1.2.0',
+      'tables': <String, dynamic>{},
+    };
+    
+    // Export all tables
+    (result['tables'] as Map<String, dynamic>)['settings'] = await db.query('settings');
+    (result['tables'] as Map<String, dynamic>)['daily_logs'] = await db.query('daily_logs');
+    (result['tables'] as Map<String, dynamic>)['srm_activities'] = await db.query('srm_activities');
+    (result['tables'] as Map<String, dynamic>)['medication_config'] = await db.query('medication_config');
+    (result['tables'] as Map<String, dynamic>)['medication_intake'] = await db.query('medication_intake');
+    (result['tables'] as Map<String, dynamic>)['life_events'] = await db.query('life_events');
+    
+    return jsonEncode(result);
+  }
+
+  @override
+  Future<void> importDatabaseFromJson(String jsonString) async {
+    final data = jsonDecode(jsonString) as Map<String, dynamic>;
+    final tables = data['tables'] as Map<String, dynamic>;
+    
+    final db = await database;
+    
+    // Clear all data first
+    await clearAllData();
+    
+    // Import each table
+    if (tables['settings'] != null) {
+      for (var row in tables['settings'] as List) {
+        await db.insert('settings', row as Map<String, dynamic>);
+      }
+    }
+    if (tables['daily_logs'] != null) {
+      for (var row in tables['daily_logs'] as List) {
+        await db.insert('daily_logs', row as Map<String, dynamic>);
+      }
+    }
+    if (tables['srm_activities'] != null) {
+      for (var row in tables['srm_activities'] as List) {
+        await db.insert('srm_activities', row as Map<String, dynamic>);
+      }
+    }
+    if (tables['medication_config'] != null) {
+      for (var row in tables['medication_config'] as List) {
+        await db.insert('medication_config', row as Map<String, dynamic>);
+      }
+    }
+    if (tables['medication_intake'] != null) {
+      for (var row in tables['medication_intake'] as List) {
+        await db.insert('medication_intake', row as Map<String, dynamic>);
+      }
+    }
+    if (tables['life_events'] != null) {
+      for (var row in tables['life_events'] as List) {
+        await db.insert('life_events', row as Map<String, dynamic>);
+      }
+    }
+  }
+
+  @override
+  Future<void> clearAllData() async {
+    final db = await database;
+    await db.delete('daily_logs');
+    await db.delete('srm_activities');
+    await db.delete('medication_intake');
+    await db.delete('medication_config');
+    await db.delete('life_events');
+    await db.delete('settings');
+  }
+
   @override
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
     final db = await database;

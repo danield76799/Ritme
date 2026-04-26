@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import '../main.dart';
-
-const Color primaryTeal = Color(0xFF4FB2C1);
-const Color textCharcoal = Color(0xFF333333);
-const Color backgroundColor = Color(0xFFFAFAFA);
+import '../widgets/datum_navigator.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -14,307 +11,438 @@ class MoodScreen extends StatefulWidget {
 }
 
 class _MoodScreenState extends State<MoodScreen> {
+  final Color primaryTeal = const Color(0xFF4FB2C1);
+  final Color textCharcoal = const Color(0xFF333333);
+  final Color backgroundColor = const Color(0xFFF7F9FA);
+
+  // Datum navigatie
+  DateTime _geselecteerdeDatum = DateTime.now();
+
+  // Stemming waarden
+  double _stemmingWaarde = 50.0; // 0-100 (0=depressief, 50=neutraal, 100=manisch)
+  int _stemmingsOmslagen = 0;
   bool _isLoading = true;
-  bool _isSaving = false;
 
-  double _stemmingWaarde = 0;
-  bool _ontstemdeManie = false;
-
-  String get _todayDate {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  String get _formattedDate {
+    return '${_geselecteerdeDatum.year}-${_geselecteerdeDatum.month.toString().padLeft(2, '0')}-${_geselecteerdeDatum.day.toString().padLeft(2, '0')}';
   }
 
   @override
   void initState() {
     super.initState();
-    _loadExistingData();
+    _loadData();
   }
 
-  Future<void> _loadExistingData() async {
-    final log = await db.getDailyLog(_todayDate);
-    if (log != null && mounted) {
-      setState(() {
-        _stemmingWaarde = (log['stemming_avond'] ?? log['stemming_ochtend'] ?? 0).toDouble();
-        _ontstemdeManie = (log['ontstemde_manie'] ?? false) == 1;
-      });
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+
+    final log = await db.getDailyLog(_formattedDate);
+
+    if (log != null) {
+      // Converteer stemming_ochtend (-5 tot +5) naar 0-100 schaal
+      final stemming = log['stemming_ochtend'] as int?;
+      if (stemming != null) {
+        _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
+      }
+
+      final omslagen = log['stemmingsomslagen'] as int?;
+      if (omslagen != null) {
+        _stemmingsOmslagen = omslagen;
+      }
+    } else {
+      // Reset naar defaults
+      _stemmingWaarde = 50.0;
+      _stemmingsOmslagen = 0;
     }
+
     setState(() => _isLoading = false);
   }
 
-  String _haalBeschrijvingOp(double waarde) {
-    int w = waarde.round();
-    switch (w) {
-      case 5:
-        return 'In de war, psychotisch, opname noodzakelijk.';
-      case 4:
-        return 'Fors manisch, tegen de grens van een psychose.';
-      case 3:
-        return 'Druk, veel dingen tegelijk doen, veel praten, kort slapen.';
-      case 2:
-        return 'Gehele dag te druk, minder slaap nodig.';
-      case 1:
-        return 'Momenten op de dag drukker, actiever dan gewoonlijk.';
-      case 0:
-        return 'Stabiel.';
-      case -1:
-        return 'Dingen met tegenzin doen, stemming licht gedaald.';
-      case -2:
-        return 'Sommige dingen blijven liggen, stemming licht somber.';
-      case -3:
-        return 'Stemming gehele dag somber.';
-      case -4:
-        return 'Alles kost veel moeite, neiging om hele dag op bed te liggen.';
-      case -5:
-        return 'Niet in staat voor zichzelf te zorgen, opname noodzakelijk.';
-      default:
-        return '';
-    }
-  }
-
-  Color _haalKleurOp(double waarde) {
-    if (waarde > 0) return Colors.orange;
-    if (waarde < 0) return Colors.blue;
-    return Colors.green;
+  void _onDatumVeranderd(DateTime nieuweDatum) {
+    setState(() {
+      _geselecteerdeDatum = nieuweDatum;
+    });
+    _loadData();
   }
 
   Future<void> _opslaan() async {
-    if (_isSaving) return;
-    setState(() => _isSaving = true);
+    // Converteer 0-100 terug naar -5 tot +5
+    final stemming = ((_stemmingWaarde / 100) * 10 - 5).round();
 
-    final log = {
-      'date': _todayDate,
-      'stemming_avond': _stemmingWaarde.round(),
-      'ontstemde_manie': _ontstemdeManie ? 1 : 0,
-    };
-
-    await db.upsertDailyLog(log);
+    await db.upsertDailyLog({
+      'date': _formattedDate,
+      'stemming_ochtend': stemming,
+      'stemmingsomslagen': _stemmingsOmslagen,
+    });
 
     if (mounted) {
-      setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Stemming opgeslagen!'),
+        SnackBar(
+          content: Text('Stemming voor ${_formattedDate} opgeslagen!'),
           backgroundColor: primaryTeal,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
-      Navigator.pop(context);
     }
+  }
+
+  String _getStemmingLabel(double waarde) {
+    if (waarde <= 10) return 'Uiterst depressief';
+    if (waarde <= 25) return 'Depressief';
+    if (waarde <= 40) return 'Neerslachtig';
+    if (waarde <= 60) return 'Neutraal';
+    if (waarde <= 75) return 'Opgewekt';
+    if (waarde <= 90) return 'Manisch';
+    return 'Uiterst manisch';
+  }
+
+  Color _getStemmingKleur(double waarde) {
+    if (waarde <= 25) return Colors.blue[700]!;
+    if (waarde <= 40) return Colors.blue[400]!;
+    if (waarde <= 60) return Colors.grey[500]!;
+    if (waarde <= 75) return Colors.orange[400]!;
+    return Colors.red[400]!;
+  }
+
+  void _veranderOmslagen(int change) {
+    setState(() {
+      _stemmingsOmslagen = (_stemmingsOmslagen + change).clamp(0, 10);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: backgroundColor,
-        body: const Center(
-          child: CircularProgressIndicator(color: primaryTeal),
-        ),
-      );
-    }
-
-    Color kleur = _haalKleurOp(_stemmingWaarde);
-    String beschrijving = _haalBeschrijvingOp(_stemmingWaarde);
-
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: primaryTeal,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text(
           'Stemming',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with logo
-              Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    'assets/logo.jpg',
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.contain,
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator(color: primaryTeal))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Datum Navigator
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: DatumNavigator(
+                      geselecteerdeDatum: _geselecteerdeDatum,
+                      onDatumVeranderd: _onDatumVeranderd,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-              // Mood slider card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Hoe voel je je vandaag?',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: textCharcoal,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      beschrijving,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Value display
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: kleur.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(40),
-                        border: Border.all(color: kleur, width: 3),
-                      ),
-                      child: Center(
-                        child: Text(
-                          _stemmingWaarde.round().toString(),
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: kleur,
-                          ),
+                  // Stemming Slider Kaart
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-
-                    // Mood slider
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: kleur,
-                        inactiveTrackColor: kleur.withValues(alpha: 0.2),
-                        thumbColor: kleur,
-                        overlayColor: kleur.withValues(alpha: 0.2),
-                        trackHeight: 8,
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 14,
-                        ),
-                      ),
-                      child: Slider(
-                        value: _stemmingWaarde,
-                        min: -5,
-                        max: 5,
-                        divisions: 10,
-                        onChanged: (value) {
-                          setState(() {
-                            _stemmingWaarde = value;
-                          });
-                        },
-                      ),
-                    ),
-
-                    // Scale labels
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: primaryTeal.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.sentiment_satisfied_outlined,
+                                color: primaryTeal,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Hoe voel je je?',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: textCharcoal,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         Text(
-                          'Somber',
+                          'Geef aan hoe je stemming is op ${DateFormat('d MMMM', 'nl_NL').format(_geselecteerdeDatum)}',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.blue[700],
-                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            color: Colors.grey[600],
                           ),
                         ),
-                        Text(
-                          'Manisch',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.orange[700],
-                            fontWeight: FontWeight.w500,
+                        const SizedBox(height: 24),
+
+                        // Stemming waarde display
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: _getStemmingKleur(_stemmingWaarde).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                _stemmingWaarde.round().toString(),
+                                style: TextStyle(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  color: _getStemmingKleur(_stemmingWaarde),
+                                ),
+                              ),
+                              Text(
+                                _getStemmingLabel(_stemmingWaarde),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: _getStemmingKleur(_stemmingWaarde),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Slider
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: primaryTeal,
+                            inactiveTrackColor: Colors.grey[200],
+                            thumbColor: primaryTeal,
+                            overlayColor: primaryTeal.withOpacity(0.2),
+                            trackHeight: 8,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 12,
+                              elevation: 4,
+                            ),
+                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+                          ),
+                          child: Slider(
+                            value: _stemmingWaarde,
+                            min: 0,
+                            max: 100,
+                            divisions: 100,
+                            onChanged: (value) {
+                              setState(() {
+                                _stemmingWaarde = value;
+                              });
+                            },
+                          ),
+                        ),
+
+                        // Labels onder slider
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                children: [
+                                  Icon(Icons.sentiment_very_dissatisfied, color: Colors.blue[700], size: 20),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Depressief',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Icon(Icons.sentiment_neutral, color: Colors.grey[500], size: 20),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Neutraal',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Icon(Icons.sentiment_very_satisfied, color: Colors.red[400], size: 20),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Manisch',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 24),
 
-                    // Ontstemde manie checkbox
-                    CheckboxListTile(
-                      value: _ontstemdeManie,
-                      onChanged: (value) {
-                        setState(() {
-                          _ontstemdeManie = value ?? false;
-                        });
-                      },
-                      title: const Text(
-                        'Ontstemde manie',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                  // Stemmingsomslagen Kaart
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
-                      subtitle: const Text(
-                        'Manische episode met depressieve kenmerken',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      controlAffinity: ListTileControlAffinity.leading,
-                      contentPadding: EdgeInsets.zero,
-                      activeColor: primaryTeal,
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Save button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: FilledButton.icon(
-                  onPressed: _isSaving ? null : _opslaan,
-                  icon: _isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: primaryTeal.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.swap_vert,
+                                color: primaryTeal,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Stemmingsschommelingen',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: textCharcoal,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Aantal plotselinge grote veranderingen in stemming vandaag',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
                           ),
-                        )
-                      : const Icon(Icons.save),
-                  label: Text(_isSaving ? 'Opslaan...' : 'Opslaan'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: primaryTeal,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Teller
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(Icons.remove, color: textCharcoal),
+                              ),
+                              onPressed: () => _veranderOmslagen(-1),
+                            ),
+                            Container(
+                              width: 80,
+                              alignment: Alignment.center,
+                              child: Text(
+                                '$_stemmingsOmslagen',
+                                style: TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  color: _stemmingsOmslagen > 0 ? Colors.orange[700] : textCharcoal,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: primaryTeal.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(Icons.add, color: primaryTeal),
+                              ),
+                              onPressed: () => _veranderOmslagen(1),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: Text(
+                            _stemmingsOmslagen == 0
+                                ? 'Geen schommelingen'
+                                : _stemmingsOmslagen == 1
+                                    ? '1 schommeling'
+                                    : '$_stemmingsOmslagen schommelingen',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                  const SizedBox(height: 32),
+
+                  // Opslaan knop
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _opslaan,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryTeal,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: const Text(
+                        'Stemming Opslaan',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

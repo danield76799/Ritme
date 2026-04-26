@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import '../main.dart';
+import '../widgets/datum_navigator.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
@@ -14,210 +15,220 @@ class _MedicationScreenState extends State<MedicationScreen> {
   final Color textCharcoal = const Color(0xFF333333);
   final Color backgroundColor = const Color(0xFFFAFAFA);
 
-  List<Map<String, dynamic>> _medications = [];
-  Map<int, int> _intakeAmounts = {}; // medication_id -> amount taken
+  DateTime _selectedDate = DateTime.now();
+  List<Map<String, dynamic>> _configs = [];
+  Map<int, int> _intakesForDay = {}; // configId -> count
   bool _isLoading = true;
 
-  String get _todayDate {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  String get _formattedDate {
+    return DateFormat('yyyy-MM-dd').format(_selectedDate);
   }
 
   @override
   void initState() {
     super.initState();
-    _loadMedications();
+    _loadData();
   }
 
-  Future<void> _loadMedications() async {
-    final meds = await db.getMedicationConfigs();
-    final intakes = await db.getMedicationIntake(_todayDate);
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
     
-    // Build intake map for today
+    final configs = await db.getMedicationConfigs();
+    final intakes = await db.getMedicationIntake(_formattedDate);
+
     Map<int, int> intakeMap = {};
     for (var intake in intakes) {
       intakeMap[intake['medication_id']] = intake['aantal_ingenomen'];
     }
-    
+
     setState(() {
-      _medications = meds;
-      _intakeAmounts = intakeMap;
+      _configs = configs;
+      _intakesForDay = intakeMap;
       _isLoading = false;
     });
   }
 
-  void _changeAmount(int index, int change) {
-    final medId = _medications[index]['id'];
+  void _onDatumVeranderd(DateTime nieuweDatum) {
     setState(() {
-      int newAmount = (_intakeAmounts[medId] ?? 0) + change;
-      if (newAmount >= 0) {
-        _intakeAmounts[medId] = newAmount;
-      }
+      _selectedDate = nieuweDatum;
     });
+    _loadData();
   }
 
-  Future<void> _save() async {
-    if (_isLoading) return;
-    
-    for (int i = 0; i < _medications.length; i++) {
-      final med = _medications[i];
-      final medId = med['id'];
-      final amount = _intakeAmounts[medId] ?? 0;
-      
-      if (amount > 0) {
-        await db.insertMedicationIntakeMap({
-          'date': _todayDate,
-          'medication_id': medId,
-          'aantal_ingenomen': amount,
-        });
-      }
-    }
+  // --- DATABASE ACTIES ---
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Medicatie inname succesvol opgeslagen!'),
-          backgroundColor: primaryTeal,
+  Future<void> _addMedication(String name, double dosage, String unit) async {
+    await db.insertMedicationConfig(name, dosage.toString(), unit);
+    _loadData();
+  }
+
+  Future<void> _updateIntake(int configId, int change) async {
+    int current = _intakesForDay[configId] ?? 0;
+    int newVal = current + change;
+    if (newVal < 0) return;
+
+    await db.insertMedicationIntakeMap({
+      'medication_id': configId,
+      'date': _formattedDate,
+      'aantal_ingenomen': newVal,
+    });
+    _loadData();
+  }
+
+  // --- UI DIALOG ---
+
+  void _showAddMedicationDialog() {
+    String name = '';
+    double dosage = 0;
+    String unit = 'mg';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nieuwe Medicatie'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              decoration: const InputDecoration(labelText: 'Naam (bijv. Lithium)'),
+              onChanged: (v) => name = v,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Dosering'),
+              keyboardType: TextInputType.number,
+              onChanged: (v) => dosage = double.tryParse(v) ?? 0,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Eenheid (mg, ml, stuks)'),
+              onChanged: (v) => unit = v,
+            ),
+          ],
         ),
-      );
-      Navigator.pop(context);
-    }
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuleer'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (name.isNotEmpty) _addMedication(name, dosage, unit);
+              Navigator.pop(context);
+            },
+            child: const Text('Opslaan'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: backgroundColor,
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: primaryTeal,
-        elevation: 0,
         title: const Text(
-          'Medicatie Loggen',
+          'Medicatie Logboek',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
+        backgroundColor: primaryTeal,
+        elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Wat heb je vandaag ingenomen?',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textCharcoal),
+      body: Column(
+        children: [
+          // Datum Navigator
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.white,
+            child: DatumNavigator(
+              geselecteerdeDatum: _selectedDate,
+              onDatumVeranderd: _onDatumVeranderd,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Noteer hieronder het totaal aantal tabletten / capsules dat je per dag hebt ingenomen.',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 24),
-            
-            Expanded(
-              child: _medications.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.medication_outlined, size: 64, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Geen medicatie ingesteld',
-                            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                          ),
-                        ],
+          ),
+          
+          // Content
+          Expanded(
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(color: primaryTeal),
+                  )
+                : _configs.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.medication_outlined, size: 64, color: Colors.grey[400]),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Nog geen medicatie toegevoegd.\nKlik op de + om te beginnen.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _configs.length,
+                        itemBuilder: (context, i) => _buildMedCard(_configs[i]),
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: _medications.length,
-                      itemBuilder: (context, index) {
-                        final medicijn = _medications[index];
-                        final medId = medicijn['id'];
-                        final amount = _intakeAmounts[medId] ?? 0;
-                        
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    medicijn['naam'] ?? 'Onbekend',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textCharcoal),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${medicijn['dosering'] ?? ''} ${medicijn['eenheid'] ?? ''}',
-                                    style: TextStyle(fontSize: 14, color: primaryTeal),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
-                                    onPressed: () => _changeAmount(index, -1),
-                                  ),
-                                  Container(
-                                    width: 30,
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      '$amount',
-                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textCharcoal),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.add_circle, color: primaryTeal),
-                                    onPressed: () => _changeAmount(index, 1),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddMedicationDialog,
+        backgroundColor: primaryTeal,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildMedCard(Map<String, dynamic> config) {
+    int configId = config['id'];
+    int count = _intakesForDay[configId] ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        title: Text(
+          config['naam'] ?? 'Onbekend',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textCharcoal),
+        ),
+        subtitle: Text(
+          '${config['dosering'] ?? ''} ${config['eenheid'] ?? ''}',
+          style: TextStyle(fontSize: 14, color: primaryTeal),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
+              onPressed: () => _updateIntake(configId, -1),
             ),
-            
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryTeal,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Opslaan',
-                  style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+            Container(
+              width: 30,
+              alignment: Alignment.center,
+              child: Text(
+                '$count',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textCharcoal),
               ),
             ),
-            const SizedBox(height: 16),
+            IconButton(
+              icon: Icon(Icons.add_circle, color: primaryTeal),
+              onPressed: () => _updateIntake(configId, 1),
+            ),
           ],
         ),
       ),

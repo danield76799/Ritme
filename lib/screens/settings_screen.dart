@@ -1,5 +1,10 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
 import '../main.dart';
 
 class InstellingenScherm extends StatefulWidget {
@@ -9,115 +14,403 @@ class InstellingenScherm extends StatefulWidget {
 
 class _InstellingenSchermState extends State<InstellingenScherm> {
   final Color primaryTeal = const Color(0xFF4FB2C1);
-  final TextEditingController _pinController = TextEditingController();
-  
-  Map<String, TimeOfDay?> _richttijden = {
-    'target_opstaan': TimeOfDay(hour: 8, minute: 0),
-    'target_contact': TimeOfDay(hour: 9, minute: 0),
-    'target_werk': TimeOfDay(hour: 9, minute: 0),
-    'target_eten': TimeOfDay(hour: 18, minute: 0),
-    'target_slapen': TimeOfDay(hour: 23, minute: 0),
-  };
+  final Color textCharcoal = const Color(0xFF333333);
+  final Color backgroundColor = const Color(0xFFF7F9FA);
 
-  @override
-  void initState() {
-    super.initState();
-    _laadInstellingen();
-  }
+  bool _isExporting = false;
+  bool _isImporting = false;
 
-  Future<void> _laadInstellingen() async {
-    final settings = await db.getSettings();
-    if (settings != null) {
-      setState(() {
-        _pinController.text = settings['password_hash'] ?? '';
-        _richttijden.keys.forEach((key) {
-          if (settings[key] != null && settings[key].toString().isNotEmpty) {
-            final parts = settings[key].toString().split(':');
-            _richttijden[key] = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-          }
-        });
-      });
-    }
-  }
+  Future<void> _exportBackup() async {
+    setState(() => _isExporting = true);
 
-  Future<void> _kiesTijd(String key) async {
-    final TimeOfDay? gekozen = await showTimePicker(
-      context: context,
-      initialTime: _richttijden[key] ?? TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: ThemeData.light().copyWith(colorScheme: ColorScheme.light(primary: primaryTeal)),
-        child: child!,
-      ),
-    );
-    if (gekozen != null) {
-      setState(() => _richttijden[key] = gekozen);
-    }
-  }
+    try {
+      // Genereer JSON
+      final jsonString = await db.exportDatabaseToJson();
 
-  String _tijdNaarString(TimeOfDay? tijd) {
-    if (tijd == null) return '';
-    return '${tijd.hour.toString().padLeft(2, '0')}:${tijd.minute.toString().padLeft(2, '0')}';
-  }
+      // Sla op in temp directory
+      final tempDir = await getTemporaryDirectory();
+      final fileName = 'ritme_backup_${DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now())}.json';
+      final filePath = '${tempDir.path}/$fileName';
+      final file = File(filePath);
+      await file.writeAsString(jsonString);
 
-  Future<void> _opslaan() async {
-    final settingsMap = {
-      'username': 'Gebruiker',
-      'password_hash': _pinController.text,
-      'target_opstaan': _tijdNaarString(_richttijden['target_opstaan']),
-      'target_contact': _tijdNaarString(_richttijden['target_contact']),
-      'target_werk': _tijdNaarString(_richttijden['target_werk']),
-      'target_eten': _tijdNaarString(_richttijden['target_eten']),
-      'target_slapen': _tijdNaarString(_richttijden['target_slapen']),
-    };
-    
-    await db.updateSettingsMap(settingsMap);
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Instellingen opgeslagen!'), backgroundColor: primaryTeal),
+      // Deel het bestand
+      await Share.shareXFiles(
+        [XFile(filePath)],
+        subject: 'Ritme Backup',
+        text: 'Hier is mijn Ritme app backup van ${DateFormat('d MMMM yyyy').format(DateTime.now())}',
       );
-      Navigator.pop(context);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Backup succesvol gemaakt: $fileName'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fout bij exporteren: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isExporting = false);
+    }
+  }
+
+  Future<void> _importBackup() async {
+    if (kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Importeren is niet beschikbaar op web'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Kies bestand
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        dialogTitle: 'Kies een Ritme backup bestand',
+      );
+
+      if (result == null || result.files.single.path == null) return;
+
+      final filePath = result.files.single.path!;
+      final file = File(filePath);
+      final jsonString = await file.readAsString();
+
+      // Toon waarschuwing
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
+              const SizedBox(width: 8),
+              const Text('Waarschuwing'),
+            ],
+          ),
+          content: const Text(
+            'Dit overschrijft je huidige data.\n\n'
+            'Alle bestaande logs, medicatie, activiteiten en instellingen worden vervangen door de backup.\n\n'
+            'Weet je het zeker?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Annuleren'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Ja, overschrijven', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      setState(() => _isImporting = true);
+
+      // Importeer
+      await db.importDatabaseFromJson(jsonString);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Backup succesvol geïmporteerd!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fout bij importeren: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isImporting = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Instellingen'), backgroundColor: primaryTeal),
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: primaryTeal,
+        elevation: 0,
+        title: const Text(
+          'Instellingen',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: ListView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         children: [
-          Text('Beveiliging', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          TextField(
-            controller: _pinController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: 'Pincode voor app'),
+          // App Info
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: primaryTeal.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.settings_outlined,
+                    size: 40,
+                    color: primaryTeal,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Ritme',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: textCharcoal,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Versie 1.2.0',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: 24),
-          Text('Richttijden (SRT)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text('Stel je ideale tijden in. Dit is de basis voor je SRT-score.', style: TextStyle(color: Colors.grey)),
-          SizedBox(height: 16),
-          _bouwTijdRij('Opstaan', 'target_opstaan'),
-          _bouwTijdRij('Eerste Contact', 'target_contact'),
-          _bouwTijdRij('Werk / Hobby', 'target_werk'),
-          _bouwTijdRij('Avondeten', 'target_eten'),
-          _bouwTijdRij('Naar Bed', 'target_slapen'),
-          SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: _opslaan,
-            style: ElevatedButton.styleFrom(backgroundColor: primaryTeal, padding: EdgeInsets.symmetric(vertical: 16)),
-            child: Text('Opslaan', style: TextStyle(fontSize: 18, color: Colors.white)),
-          )
+          const SizedBox(height: 24),
+
+          // Gegevensbeheer Sectie
+          Text(
+            'Gegevensbeheer',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Backup maken
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.backup_outlined,
+                  color: Colors.green[700],
+                ),
+              ),
+              title: Text(
+                'Maak een Backup',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: textCharcoal,
+                ),
+              ),
+              subtitle: Text(
+                'Exporteer al je data naar een bestand',
+                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              ),
+              trailing: _isExporting
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: primaryTeal,
+                      ),
+                    )
+                  : Icon(Icons.chevron_right, color: Colors.grey[400]),
+              onTap: _isExporting ? null : _exportBackup,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Backup terugzetten
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.restore_outlined,
+                  color: Colors.orange[700],
+                ),
+              ),
+              title: Text(
+                'Zet een Backup terug',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: textCharcoal,
+                ),
+              ),
+              subtitle: Text(
+                'Importeer data uit een backup bestand',
+                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              ),
+              trailing: _isImporting
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: primaryTeal,
+                      ),
+                    )
+                  : Icon(Icons.chevron_right, color: Colors.grey[400]),
+              onTap: _isImporting ? null : _importBackup,
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Overige instellingen
+          Text(
+            'Overige',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: primaryTeal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.info_outline,
+                      color: primaryTeal,
+                    ),
+                  ),
+                  title: Text(
+                    'Over Ritme',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: textCharcoal,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'SRT Tracker voor dagelijkse monitoring',
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  ),
+                  onTap: () {
+                    showAboutDialog(
+                      context: context,
+                      applicationName: 'Ritme',
+                      applicationVersion: '1.2.0',
+                      applicationIcon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primaryTeal.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.favorite, color: primaryTeal),
+                      ),
+                      children: [
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Ritme is een SRT (Social Rhythm Therapy) tracker ontworpen om dagelijkse activiteiten, stemming en medicatie bij te houden.',
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _bouwTijdRij(String label, String key) {
-    return ListTile(
-      title: Text(label),
-      trailing: Text(_tijdNaarString(_richttijden[key]), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryTeal)),
-      onTap: () => _kiesTijd(key),
     );
   }
 }

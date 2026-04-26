@@ -70,56 +70,224 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     });
   }
 
-  Future<void> _exportPdf() async {
+  Future<void> _genereerEnDeelPdf() async {
     final pdf = pw.Document();
+    
+    // Haal logs van afgelopen 30 dagen op
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+    
+    final allLogs = await db.getDailyLogs();
+    final recentLogs = allLogs.where((log) {
+      if (log['date'] == null) return false;
+      try {
+        final logDate = DateTime.parse(log['date']);
+        return logDate.isAfter(thirtyDaysAgo) || logDate.isAtSameMomentAs(thirtyDaysAgo);
+      } catch (e) {
+        return false;
+      }
+    }).toList();
+    
+    // Bereken KPIs voor afgelopen 30 dagen
+    double gemStemming30 = 0.0;
+    double gemSlaap30 = 0.0;
+    int logCount30 = 0;
+    int eventCount30 = 0;
+    
+    if (recentLogs.isNotEmpty) {
+      double totaalStemming = 0;
+      double totaalSlaap = 0;
+      int stemCount = 0;
+      
+      for (var log in recentLogs) {
+        if (log['stemming_ochtend'] != null) {
+          totaalStemming += log['stemming_ochtend'];
+          stemCount++;
+        }
+        if (log['uren_slaap'] != null) totaalSlaap += log['uren_slaap'];
+        
+        final events = await db.getLifeEvents(log['date']);
+        eventCount30 += events.length;
+      }
+      
+      gemStemming30 = stemCount > 0 ? totaalStemming / stemCount : 0.0;
+      gemSlaap30 = recentLogs.length > 0 ? totaalSlaap / recentLogs.length : 0.0;
+      logCount30 = recentLogs.length;
+    }
     
     pdf.addPage(
       pw.Page(
+        pageFormat: PdfPageFormat.a4,
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Header(
-              level: 0,
-              child: pw.Text('Ritme - Life Chart Export',
-                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            // Header
+            pw.Text(
+              'Ritme App - Digitaal Life Chart Rapport',
+              style: pw.TextStyle(
+                fontSize: 28,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColor.fromHex('#4FB2C1'),
+              ),
             ),
+            pw.SizedBox(height: 8),
+            pw.Text(
+              'Gegenereerd op: ${now.day}-${now.month}-${now.year}',
+              style: pw.TextStyle(
+                fontSize: 14,
+                color: PdfColors.grey600,
+              ),
+            ),
+            pw.Divider(thickness: 2, color: PdfColor.fromHex('#4FB2C1')),
             pw.SizedBox(height: 20),
-            pw.Text('Samenvatting',
-              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 10),
-            pw.Table.fromTextArray(
-              data: [
-                ['Metric', 'Waarde'],
-                ['Gemiddelde stemming', _gemStemming.toStringAsFixed(2)],
-                ['Gemiddelde slaap (uren)', _gemSlaap.toStringAsFixed(2)],
-                ['Activiteiten gelogd', '$_aantalActiviteiten'],
-                ['Gebeurtenissen', '$_aantalGebeurtenissen'],
-                ['Totale dagen tracking', '${_logs.length}'],
+            
+            // Sectie 1: KPI Samenvatting
+            pw.Text(
+              'KPI Samenvatting (Laatste 30 dagen)',
+              style: pw.TextStyle(
+                fontSize: 18,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey800,
+              ),
+            ),
+            pw.SizedBox(height: 12),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(12),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.grey100,
+                borderRadius: pw.BorderRadius.circular(8),
+              ),
+              child: pw.Column(
+                children: [
+                  _buildKpiRow('Gemiddelde stemming', gemStemming30.toStringAsFixed(2)),
+                  _buildKpiRow('Gemiddelde slaap (uren)', gemSlaap30.toStringAsFixed(2)),
+                  _buildKpiRow('Aantal gelogde dagen', '$logCount30'),
+                  _buildKpiRow('Aantal gebeurtenissen', '$eventCount30'),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 24),
+            
+            // Sectie 2: Logboek
+            pw.Text(
+              'Logboek (Laatste 30 dagen)',
+              style: pw.TextStyle(
+                fontSize: 18,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey800,
+              ),
+            ),
+            pw.SizedBox(height: 12),
+            
+            // Tabel met logs
+            pw.Table(
+              border: pw.TableBorder.all(color: PdfColors.grey300, width: 1),
+              children: [
+                // Header rij
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(color: PdfColor.fromHex('#4FB2C1')),
+                  children: [
+                    _buildTableHeader('Datum'),
+                    _buildTableHeader('Stemming'),
+                    _buildTableHeader('Slaap (uren)'),
+                    _buildTableHeader('Activiteiten/Gebeurtenissen'),
+                  ],
+                ),
+                // Data rijen
+                ...recentLogs.reversed.map((log) {
+                  final date = log['date'] ?? '-';
+                  final stemming = log['stemming_ochtend']?.toString() ?? '-';
+                  final slaap = log['uren_slaap']?.toString() ?? '-';
+                  
+                  // Haal activiteiten en gebeurtenissen op voor deze dag
+                  String activiteiten = '-';
+                  if (log['activiteiten'] != null && log['activiteiten'] is List) {
+                    final acts = log['activiteiten'] as List;
+                    if (acts.isNotEmpty) {
+                      activiteiten = acts.take(2).join(', ');
+                      if (acts.length > 2) activiteiten += '...';
+                    }
+                  }
+                  
+                  return pw.TableRow(
+                    children: [
+                      _buildTableCell(date),
+                      _buildTableCell(stemming),
+                      _buildTableCell(slaap),
+                      _buildTableCell(activiteiten),
+                    ],
+                  );
+                }).toList(),
               ],
             ),
+            
             pw.SizedBox(height: 20),
-            pw.Text('Laatste 7 dagen stemming:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 10),
-            pw.Table.fromTextArray(
-              headers: ['Datum', 'Stemming', 'Slaap (uren)'],
-              data: _logs.take(7).map((log) => [
-                log['date'] ?? '-',
-                '${log['stemming_ochtend'] ?? log['stemming_avond'] ?? '-' }',
-                '${log['uren_slaap'] ?? '-' }',
-              ]).toList(),
+            pw.Text(
+              'Dit rapport is gegenereerd door de Ritme App.',
+              style: pw.TextStyle(
+                fontSize: 10,
+                color: PdfColors.grey500,
+                fontStyle: pw.FontStyle.italic,
+              ),
             ),
-            pw.SizedBox(height: 20),
-            pw.Text('Geexporteerd op: ${DateTime.now().toString().split('.')[0]}',
-              style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
           ],
         ),
       ),
     );
 
-    // Share the PDF
+    // Deel de PDF
     await Printing.sharePdf(
       bytes: await pdf.save(),
-      filename: 'ritme_lifechart_${DateTime.now().toIso8601String().split('T')[0]}.pdf',
+      filename: 'life_chart_rapport_${now.day}-${now.month}-${now.year}.pdf',
+    );
+  }
+  
+  pw.Widget _buildKpiRow(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            label,
+            style: pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
+          ),
+          pw.Text(
+            value,
+            style: pw.TextStyle(
+              fontSize: 14,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.grey800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  pw.Widget _buildTableHeader(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(8),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(
+          fontWeight: pw.FontWeight.bold,
+          color: PdfColors.white,
+          fontSize: 11,
+        ),
+        textAlign: pw.TextAlign.center,
+      ),
+    );
+  }
+  
+  pw.Widget _buildTableCell(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(8),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(fontSize: 10, color: PdfColors.grey800),
+        textAlign: pw.TextAlign.center,
+      ),
     );
   }
 
@@ -135,7 +303,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
-            onPressed: _exportPdf,
+            onPressed: _genereerEnDeelPdf,
             tooltip: 'Exporteer als PDF',
           ),
         ],

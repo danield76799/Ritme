@@ -22,6 +22,9 @@ abstract class DatabaseRepository {
   Future<List<Map<String, dynamic>>> getSrmActivities(String date);
 
   // Medication Config
+  Future<String> exportDatabaseToJson();
+  Future<void> importDatabaseFromJson(String jsonString);
+  Future<void> clearAllData();
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid);
   Future<List<Map<String, dynamic>>> getMedicationConfigs();
 

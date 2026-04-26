@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'database_repository.dart';
 
@@ -153,6 +154,73 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // MEDICATION CONFIG
   // ===================
   
+  @override
+  Future<String> exportDatabaseToJson() async {
+    final Map<String, dynamic> result = {
+      'export_date': DateTime.now().toIso8601String(),
+      'app_version': '1.2.0',
+      'tables': <String, dynamic>{},
+    };
+    
+    (result['tables'] as Map<String, dynamic>)['settings'] = _settings.values.toList();
+    (result['tables'] as Map<String, dynamic>)['daily_logs'] = _dailyLogs.values.toList();
+    (result['tables'] as Map<String, dynamic>)['srm_activities'] = _srmActivities.values.toList();
+    (result['tables'] as Map<String, dynamic>)['medication_config'] = _medicationConfig.values.toList();
+    (result['tables'] as Map<String, dynamic>)['medication_intake'] = _medicationIntake.values.toList();
+    (result['tables'] as Map<String, dynamic>)['life_events'] = _lifeEvents.values.toList();
+    
+    return jsonEncode(result);
+  }
+
+  @override
+  Future<void> importDatabaseFromJson(String jsonString) async {
+    final data = jsonDecode(jsonString) as Map<String, dynamic>;
+    final tables = data['tables'] as Map<String, dynamic>;
+    
+    await clearAllData();
+    
+    if (tables['settings'] != null) {
+      for (var row in tables['settings'] as List) {
+        await _settings.put(row['id'] ?? DateTime.now().millisecondsSinceEpoch, row);
+      }
+    }
+    if (tables['daily_logs'] != null) {
+      for (var row in tables['daily_logs'] as List) {
+        await _dailyLogs.put(row['date'], row);
+      }
+    }
+    if (tables['srm_activities'] != null) {
+      for (var row in tables['srm_activities'] as List) {
+        await _srmActivities.put(DateTime.now().millisecondsSinceEpoch, row);
+      }
+    }
+    if (tables['medication_config'] != null) {
+      for (var row in tables['medication_config'] as List) {
+        await _medicationConfig.put(DateTime.now().millisecondsSinceEpoch, row);
+      }
+    }
+    if (tables['medication_intake'] != null) {
+      for (var row in tables['medication_intake'] as List) {
+        await _medicationIntake.put(DateTime.now().millisecondsSinceEpoch, row);
+      }
+    }
+    if (tables['life_events'] != null) {
+      for (var row in tables['life_events'] as List) {
+        await _lifeEvents.put(DateTime.now().millisecondsSinceEpoch, row);
+      }
+    }
+  }
+
+  @override
+  Future<void> clearAllData() async {
+    await _dailyLogs.clear();
+    await _srmActivities.clear();
+    await _medicationIntake.clear();
+    await _medicationConfig.clear();
+    await _lifeEvents.clear();
+    await _settings.clear();
+  }
+
   @override
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
     final id = DateTime.now().millisecondsSinceEpoch;
