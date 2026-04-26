@@ -11,6 +11,8 @@ import 'screens/event_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/medication_schedule_screen.dart';
+import 'screens/weight_screen.dart';
+import 'screens/appointments_screen.dart';
 import 'database/database_repository.dart';
 import 'database/database_helper.dart';
 import 'database/hive_database_helper.dart';
@@ -66,6 +68,8 @@ class RitmeApp extends StatelessWidget {
         '/event': (context) => GebeurtenisScherm(),
         '/settings': (context) => InstellingenScherm(),
         '/medication-schedule': (context) => const MedicationScheduleScreen(),
+        '/weight': (context) => const WeightScreen(),
+        '/appointments': (context) => const AppointmentsScreen(),
       },
     );
   }
