@@ -12,6 +12,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
   static const String _medicationIntakeBox = 'medication_intake';
   static const String _medicationScheduleBox = 'medication_schedule';
   static const String _lifeEventsBox = 'life_events';
+  static const String _weightLogsBox = 'weight_logs';
+  static const String _medicalAppointmentsBox = 'medical_appointments';
 
   HiveDatabaseHelper._init();
 
@@ -23,6 +25,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_medicationIntakeBox);
     await Hive.openBox(_medicationScheduleBox);
     await Hive.openBox(_lifeEventsBox);
+    await Hive.openBox(_weightLogsBox);
+    await Hive.openBox(_medicalAppointmentsBox);
   }
 
   Box get _settings => Hive.box(_settingsBox);
@@ -32,6 +36,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Box get _medicationIntake => Hive.box(_medicationIntakeBox);
   Box get _medicationSchedule => Hive.box(_medicationScheduleBox);
   Box get _lifeEvents => Hive.box(_lifeEventsBox);
+  Box get _weightLogs => Hive.box(_weightLogsBox);
+  Box get _medicalAppointments => Hive.box(_medicalAppointmentsBox);
 
   // ===================
   // SETTINGS
@@ -358,5 +364,74 @@ class HiveDatabaseHelper implements DatabaseRepository {
         .where((e) => e['date'] == date)
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
+  }
+
+  // ===================
+  // WEIGHT LOGS
+  // ===================
+  
+  Future<int> insertWeightLog(String date, double weight, String? notes) async {
+    final id = DateTime.now().millisecondsSinceEpoch;
+    await _weightLogs.put(id, {
+      'id': id,
+      'date': date,
+      'weight': weight,
+      'notes': notes,
+    });
+    return id;
+  }
+
+  Future<List<Map<String, dynamic>>> getWeightLogs() async {
+    return _weightLogs.values
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList()
+        ..sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
+  }
+
+  Future<Map<String, dynamic>?> getLatestWeightLog() async {
+    final logs = await getWeightLogs();
+    return logs.isNotEmpty ? logs.first : null;
+  }
+
+  Future<int> deleteWeightLog(int id) async {
+    await _weightLogs.delete(id);
+    return 1;
+  }
+
+  // ===================
+  // MEDICAL APPOINTMENTS
+  // ===================
+  
+  Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
+    final id = DateTime.now().millisecondsSinceEpoch;
+    data['id'] = id;
+    await _medicalAppointments.put(id, data);
+    return id;
+  }
+
+  Future<List<Map<String, dynamic>>> getMedicalAppointments() async {
+    return _medicalAppointments.values
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList()
+        ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
+  }
+
+  Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    return _medicalAppointments.values
+        .where((e) => (e['appointment_date'] as String).compareTo(today) >= 0)
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList()
+        ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
+  }
+
+  Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
+    await _medicalAppointments.put(id, data);
+    return 1;
+  }
+
+  Future<int> deleteMedicalAppointment(int id) async {
+    await _medicalAppointments.delete(id);
+    return 1;
   }
 }

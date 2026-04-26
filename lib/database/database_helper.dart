@@ -18,7 +18,34 @@ class DatabaseHelper implements DatabaseRepository {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, filePath);
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(path, version: 2, onCreate: _createDB, onUpgrade: _upgradeDB);
+  }
+
+  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE weight_logs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL,
+          weight REAL NOT NULL,
+          notes TEXT
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE medical_appointments (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          doctor_name TEXT,
+          location TEXT,
+          appointment_date TEXT NOT NULL,
+          appointment_time TEXT,
+          notes TEXT,
+          reminder_enabled INTEGER DEFAULT 1,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+    }
   }
 
   Future _createDB(Database db, int version) async {
@@ -93,11 +120,25 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE life_events (
+      CREATE TABLE weight_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
-        omschrijving TEXT,
-        invloed INTEGER
+        weight REAL NOT NULL,
+        notes TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE medical_appointments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        doctor_name TEXT,
+        location TEXT,
+        appointment_date TEXT NOT NULL,
+        appointment_time TEXT,
+        notes TEXT,
+        reminder_enabled INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
   }
@@ -250,6 +291,8 @@ class DatabaseHelper implements DatabaseRepository {
     (result['tables'] as Map<String, dynamic>)['medication_config'] = await db.query('medication_config');
     (result['tables'] as Map<String, dynamic>)['medication_intake'] = await db.query('medication_intake');
     (result['tables'] as Map<String, dynamic>)['life_events'] = await db.query('life_events');
+    (result['tables'] as Map<String, dynamic>)['weight_logs'] = await db.query('weight_logs');
+    (result['tables'] as Map<String, dynamic>)['medical_appointments'] = await db.query('medical_appointments');
     
     return jsonEncode(result);
   }
@@ -295,6 +338,16 @@ class DatabaseHelper implements DatabaseRepository {
         await db.insert('life_events', row as Map<String, dynamic>);
       }
     }
+    if (tables['weight_logs'] != null) {
+      for (var row in tables['weight_logs'] as List) {
+        await db.insert('weight_logs', row as Map<String, dynamic>);
+      }
+    }
+    if (tables['medical_appointments'] != null) {
+      for (var row in tables['medical_appointments'] as List) {
+        await db.insert('medical_appointments', row as Map<String, dynamic>);
+      }
+    }
   }
 
   @override
@@ -305,6 +358,8 @@ class DatabaseHelper implements DatabaseRepository {
     await db.delete('medication_intake');
     await db.delete('medication_config');
     await db.delete('life_events');
+    await db.delete('weight_logs');
+    await db.delete('medical_appointments');
     await db.delete('settings');
   }
 
@@ -441,5 +496,65 @@ class DatabaseHelper implements DatabaseRepository {
   Future<List<Map<String, dynamic>>> getLifeEvents(String date) async {
     final db = await database;
     return await db.query('life_events', where: 'date = ?', whereArgs: [date]);
+  }
+
+  // ===================
+  // WEIGHT LOGS
+  // ===================
+  
+  Future<int> insertWeightLog(String date, double weight, String? notes) async {
+    final db = await database;
+    return await db.insert('weight_logs', {'date': date, 'weight': weight, 'notes': notes});
+  }
+
+  Future<List<Map<String, dynamic>>> getWeightLogs() async {
+    final db = await database;
+    return await db.query('weight_logs', orderBy: 'date DESC');
+  }
+
+  Future<Map<String, dynamic>?> getLatestWeightLog() async {
+    final db = await database;
+    final results = await db.query('weight_logs', orderBy: 'date DESC', limit: 1);
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  Future<int> deleteWeightLog(int id) async {
+    final db = await database;
+    return await db.delete('weight_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ===================
+  // MEDICAL APPOINTMENTS
+  // ===================
+  
+  Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('medical_appointments', data);
+  }
+
+  Future<List<Map<String, dynamic>>> getMedicalAppointments() async {
+    final db = await database;
+    return await db.query('medical_appointments', orderBy: 'appointment_date ASC');
+  }
+
+  Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
+    final db = await database;
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    return await db.query(
+      'medical_appointments',
+      where: 'appointment_date >= ?',
+      whereArgs: [today],
+      orderBy: 'appointment_date ASC',
+    );
+  }
+
+  Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('medical_appointments', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteMedicalAppointment(int id) async {
+    final db = await database;
+    return await db.delete('medical_appointments', where: 'id = ?', whereArgs: [id]);
   }
 }
