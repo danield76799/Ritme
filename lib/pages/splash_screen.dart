@@ -43,11 +43,11 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ],
           ),
-          child: Center(
-            child: Image.asset(
-              'assets/logo.jpg',
-              width: 100,
-              height: 100,
+          child: const Center(
+            child: Icon(
+              Icons.favorite,
+              size: 80,
+              color: Color(0xFF4FB2C1),
             ),
           ),
         ),
