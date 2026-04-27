@@ -143,8 +143,8 @@ class _WeightScreenState extends State<WeightScreen> {
                   children: [
                     // Datum navigator
                     DatumNavigator(
-                      selectedDate: _selectedDate,
-                      onDateChanged: (date) {
+                      geselecteerdeDatum: _selectedDate,
+                      onDatumVeranderd: (date) {
                         setState(() => _selectedDate = date);
                       },
                     ),
