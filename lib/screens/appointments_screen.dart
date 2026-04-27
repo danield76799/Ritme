@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
+import '../service_locator.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -24,7 +25,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   Future<void> _loadAppointments() async {
-    final appointments = await DatabaseHelper.instance.getMedicalAppointments();
+    final appointments = await db.getMedicalAppointments();
     setState(() {
       _appointments = appointments;
       _isLoading = false;
@@ -38,7 +39,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     );
 
     if (result != null) {
-      await DatabaseHelper.instance.insertMedicalAppointment(result);
+      await db.insertMedicalAppointment(result);
       _loadAppointments();
     }
   }
@@ -50,7 +51,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     );
 
     if (result != null) {
-      await DatabaseHelper.instance.updateMedicalAppointment(appointment['id'], result);
+      await db.updateMedicalAppointment(appointment['id'], result);
       _loadAppointments();
     }
   }
@@ -80,7 +81,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     );
 
     if (confirmed == true) {
-      await DatabaseHelper.instance.deleteMedicalAppointment(id);
+      await db.deleteMedicalAppointment(id);
       _loadAppointments();
     }
   }

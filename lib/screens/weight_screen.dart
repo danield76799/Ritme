@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
+import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 
 class WeightScreen extends StatefulWidget {
@@ -27,7 +28,7 @@ class _WeightScreenState extends State<WeightScreen> {
   }
 
   Future<void> _loadWeightLogs() async {
-    final logs = await DatabaseHelper.instance.getWeightLogs();
+    final logs = await db.getWeightLogs();
     setState(() {
       _weightLogs = logs;
       _isLoading = false;
@@ -93,7 +94,7 @@ class _WeightScreenState extends State<WeightScreen> {
 
     if (result != null) {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-      await DatabaseHelper.instance.insertWeightLog(
+      await db.insertWeightLog(
         dateStr,
         result['weight'],
         result['notes'].isEmpty ? null : result['notes'],
@@ -103,7 +104,7 @@ class _WeightScreenState extends State<WeightScreen> {
   }
 
   Future<void> _deleteWeightLog(int id) async {
-    await DatabaseHelper.instance.deleteWeightLog(id);
+    await db.deleteWeightLog(id);
     _loadWeightLogs();
   }
 

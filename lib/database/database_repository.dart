@@ -45,4 +45,17 @@ abstract class DatabaseRepository {
   Future<int> insertLifeEvent(String date, String omschrijving, int invloed);
   Future<int> insertLifeEventMap(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getLifeEvents(String date);
+
+  // Weight Logs
+  Future<int> insertWeightLog(String date, double weight, String? notes);
+  Future<List<Map<String, dynamic>>> getWeightLogs();
+  Future<Map<String, dynamic>?> getLatestWeightLog();
+  Future<int> deleteWeightLog(int id);
+
+  // Medical Appointments
+  Future<int> insertMedicalAppointment(Map<String, dynamic> data);
+  Future<List<Map<String, dynamic>>> getMedicalAppointments();
+  Future<List<Map<String, dynamic>>> getUpcomingAppointments();
+  Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data);
+  Future<int> deleteMedicalAppointment(int id);
 }

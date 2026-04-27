@@ -370,6 +370,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // WEIGHT LOGS
   // ===================
   
+  @override
   Future<int> insertWeightLog(String date, double weight, String? notes) async {
     final id = DateTime.now().millisecondsSinceEpoch;
     await _weightLogs.put(id, {
@@ -402,6 +403,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // MEDICAL APPOINTMENTS
   // ===================
   
+  @override
   Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
     final id = DateTime.now().millisecondsSinceEpoch;
     data['id'] = id;
