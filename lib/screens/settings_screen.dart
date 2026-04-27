@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import '../main.dart';
+import '../service_locator.dart';
 
 class InstellingenScherm extends StatefulWidget {
   @override

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../main.dart';
+import '../service_locator.dart';
 
 class GebeurtenisScherm extends StatefulWidget {
   @override

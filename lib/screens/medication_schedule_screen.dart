@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../main.dart';
+import '../service_locator.dart';
 
 class MedicationScheduleScreen extends StatefulWidget {
   const MedicationScheduleScreen({super.key});
