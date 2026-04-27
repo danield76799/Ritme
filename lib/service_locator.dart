@@ -4,9 +4,12 @@ import 'database/database_repository.dart';
 import 'database/database_helper.dart';
 import 'database/hive_database_helper.dart';
 
-// Service locator - selects the right database based on platform
+// Service locator - exports the db instance for use across the app
+export 'database/database_repository.dart';
+
 late DatabaseRepository db;
 
+/// Initialize the appropriate database based on platform
 Future<void> initDatabase() async {
   if (kIsWeb) {
     // Use Hive for web
