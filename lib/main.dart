@@ -13,27 +13,16 @@ import 'screens/settings_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/weight_screen.dart';
 import 'screens/appointments_screen.dart';
-import 'database/database_repository.dart';
-import 'database/database_helper.dart';
-import 'database/hive_database_helper.dart';
-
-// Service locator - selects the right database based on platform
-late DatabaseRepository db;
+import 'service_locator.dart'; // Use centralized db
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize the appropriate database
-  if (kIsWeb) {
-    // Use Hive for web
-    await Hive.initFlutter();
-    await HiveDatabaseHelper.init();
-    db = HiveDatabaseHelper.instance;
-  } else {
-    // Use SQLite for mobile
-    db = DatabaseHelper.instance;
-    
-    // Initialize notifications for mobile
+  await initDatabase();
+  
+  // Initialize notifications for mobile only
+  if (!kIsWeb) {
     try {
       await NotificationHelper.instance.initialize();
     } catch (e) {
