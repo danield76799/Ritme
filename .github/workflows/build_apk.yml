@@ -39,7 +39,7 @@ jobs:
     - name: Build APK
       run: flutter build apk --release
     
-    - name: Upload APK
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ritme-release-apk
@@ -50,16 +50,20 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: build/app/outputs/flutter-apk/app-release.apk
-        tag_name: v${{ github.run_number }}
-        name: Ritme v${{ github.run_number }}
+        tag_name: v1.3.0-build${{ github.run_number }}
+        name: Ritme v1.3.0 (Build ${{ github.run_number }})
         body: |
-          ## Ritme - SRT Tracker
+          ## Ritme - SRT Tracker v1.3.0
           
           **Nieuwe features:**
           - Gewicht tracking met grafiek
           - Medische afspraken met notities
           - Medicatie schema met herinneringen
           - Verbeterde UI/UX
+          
+          **Build info:**
+          - Build nummer: ${{ github.run_number }}
+          - Commit: ${{ github.sha }}
           
           **Let op:** Dit is een automatische build.
         draft: false
