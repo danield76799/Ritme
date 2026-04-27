@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../main.dart';
+import '../service_locator.dart';
 import '../services/notification_helper.dart';
 import 'login_screen.dart';
 

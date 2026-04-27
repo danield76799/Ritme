@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../main.dart';
+import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 
 const Color primaryTeal = Color(0xFF4FB2C1);

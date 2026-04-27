@@ -245,3 +245,5 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen> {
     );
   }
 }
+
+import '../service_locator.dart';
