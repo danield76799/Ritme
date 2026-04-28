@@ -65,6 +65,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final today = DateTime.now();
     final dateStr = '${today.day}/${today.month}/${today.year}';
     final username = _settings?['username']?.toString() ?? 'gebruiker';
+    
+    // Dynamische groet gebaseerd op tijd van dag
+    String _getGreeting(String name) {
+      final hour = DateTime.now().hour;
+      if (hour < 12) {
+        return 'Goedemorgen, $name!';
+      } else if (hour < 17) {
+        return 'Goedemiddag, $name!';
+      } else if (hour < 21) {
+        return 'Goedenavond, $name!';
+      } else {
+        return 'Goedenacht, $name!';
+      }
+    }
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -129,7 +143,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Hallo, $username!',
+                        _getGreeting(username),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 26,
