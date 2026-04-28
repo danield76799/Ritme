@@ -8,7 +8,7 @@ import 'screens/mood_screen.dart';
 import 'screens/activity_screen.dart';
 import 'screens/medication_screen.dart';
 import 'screens/event_screen.dart';
-import 'screens/statistics_screen.dart';
+import 'screens/statistics_screen.dart' show StatistiekenScherm;
 import 'screens/insights_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/medication_schedule_screen.dart';
@@ -61,6 +61,7 @@ class RitmeApp extends StatelessWidget {
         '/weight': (context) => const WeightScreen(),
         '/appointments': (context) => const AppointmentsScreen(),
         '/insights': (context) => const InsightsScreen(),
+        '/statistics': (context) => StatistiekenScherm(),
       },
     );
   }
