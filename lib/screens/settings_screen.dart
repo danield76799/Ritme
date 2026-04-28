@@ -19,6 +19,66 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
 
   bool _isExporting = false;
   bool _isImporting = false;
+  bool _isSavingName = false;
+  final _naamController = TextEditingController();
+  String _huidigeNaam = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _laadNaam();
+  }
+
+  Future<void> _laadNaam() async {
+    final settings = await db.getSettings();
+    if (settings != null) {
+      _huidigeNaam = settings['username']?.toString() ?? '';
+      _naamController.text = _huidigeNaam;
+      setState(() {});
+    }
+  }
+
+  Future<void> _opslaanNaam() async {
+    if (_naamController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vul een naam in'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSavingName = true);
+
+    try {
+      final settings = await db.getSettings();
+      if (settings != null) {
+        settings['username'] = _naamController.text.trim();
+        await db.updateSettingsMap(settings);
+      }
+      setState(() => _huidigeNaam = _naamController.text.trim());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Naam opgeslagen: ${_huidigeNaam}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fout bij opslaan: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isSavingName = false);
+    }
+  }
 
   Future<void> _exportBackup() async {
     setState(() => _isExporting = true);
@@ -212,6 +272,98 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                     fontSize: 14,
                     color: Colors.grey[600],
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Profiel Sectie
+          Text(
+            'Profiel',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Je naam',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: textCharcoal,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Deze naam wordt gebruikt voor de persoonlijke begroeting',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _naamController,
+                        decoration: InputDecoration(
+                          hintText: 'Voer je naam in',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: _isSavingName ? null : _opslaanNaam,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryTeal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isSavingName
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Opslaan',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
               ],
             ),
