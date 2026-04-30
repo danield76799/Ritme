@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../service_locator.dart';
+import '../theme/app_theme.dart';
 
 class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
@@ -198,7 +199,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Samenvatting gekopieerd naar klembord!'),
-          AppTheme.backgroundColor: Colors.green,
+          backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -244,7 +245,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: primaryTeal.withValues(alpha: 0.1),
+                      color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -367,7 +368,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppTheme.primaryTeal, primaryTeal.withValues(alpha: 0.8)],
+                        colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -414,7 +415,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                                 icon: const Icon(Icons.copy, size: 18),
                                 label: const Text('Kopieer Rapport'),
                                 style: ElevatedButton.styleFrom(
-                                  AppTheme.backgroundColor: Colors.white,
+                                  backgroundColor: Colors.white,
                                   foregroundColor: AppTheme.primaryTeal,
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(
@@ -430,7 +431,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                                 icon: const Icon(Icons.open_in_browser, size: 18),
                                 label: const Text('Open Gemini'),
                                 style: ElevatedButton.styleFrom(
-                                  AppTheme.backgroundColor: Colors.white.withValues(alpha: 0.2),
+                                  backgroundColor: Colors.white.withValues(alpha: 0.2),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(

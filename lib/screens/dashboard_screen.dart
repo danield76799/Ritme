@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
+import '../theme/app_theme.dart';
 import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -123,14 +124,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppTheme.primaryTeal, primaryTeal.withValues(alpha: 0.8)],
+                    colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryTeal.withValues(alpha: 0.3),
+                      color: AppTheme.primaryTeal.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -333,7 +334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onPressed: () {
           _showNotImplemented('Nieuwe dagelijkse log');
         },
-        AppTheme.backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'Log Toevoegen',
