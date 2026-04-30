@@ -5,6 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../service_locator.dart';
+import '../theme/app_theme.dart';
 
 class StatistiekenScherm extends StatefulWidget {
   @override

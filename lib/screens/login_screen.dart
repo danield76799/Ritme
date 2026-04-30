@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../service_locator.dart';
+import '../theme/app_theme.dart';
 import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
