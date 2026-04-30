@@ -70,7 +70,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
   Future<void> _addMedicatie() async {
     if (_naamController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Vul een naam in'), AppTheme.backgroundColor: Colors.red),
+        SnackBar(content: Text('Vul een naam in'), backgroundColor: Colors.red),
       );
       return;
     }
@@ -94,7 +94,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
   Future<void> _addSchedule(int medicationId, String medicatieNaam) async {
     if (_selectedDagen.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Selecteer minimaal één dag'), AppTheme.backgroundColor: Colors.red),
+        SnackBar(content: Text('Selecteer minimaal één dag'), backgroundColor: Colors.red),
       );
       return;
     }
