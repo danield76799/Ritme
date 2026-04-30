@@ -225,22 +225,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     subtitle: 'SRM meting',
                     route: '/activity',
                   ),
-                  _buildActionCard(
-                    context, 
-                    icon: Icons.medication_outlined, 
-                    iconColor: Colors.redAccent, 
-                    title: 'Medicatie', 
-                    subtitle: 'Inname loggen',
-                    route: '/medication',
-                  ),
-                  _buildActionCard(
-                    context, 
-                    icon: Icons.schedule, 
-                    iconColor: Colors.tealAccent, 
-                    title: 'Medicatie Schema', 
-                    subtitle: 'Herinneringen',
-                    route: '/medication-schedule',
-                  ),
+                  _buildMedicatieCard(context),
                   _buildActionCard(
                     context, 
                     icon: Icons.monitor_weight, 
@@ -443,6 +428,93 @@ class _DashboardScreenState extends State<DashboardScreen> {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMedicatieCard(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'log') {
+              Navigator.pushNamed(context, '/medication');
+            } else if (value == 'schema') {
+              Navigator.pushNamed(context, '/medication-schedule');
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'log',
+              child: Row(
+                children: [
+                  Icon(Icons.medication_outlined, color: Colors.redAccent),
+                  const SizedBox(width: 12),
+                  Text('Inname loggen'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'schema',
+              child: Row(
+                children: [
+                  Icon(Icons.schedule, color: Colors.tealAccent),
+                  const SizedBox(width: 12),
+                  Text('Schema beheren'),
+                ],
+              ),
+            ),
+          ],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.medication_outlined, color: Colors.redAccent, size: 36),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Medicatie',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppTheme.textCharcoal,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Inname & Schema',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
