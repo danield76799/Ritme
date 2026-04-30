@@ -124,7 +124,7 @@ backgroundColor: AppTheme.primaryTeal,
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Schema verwijderd'), AppTheme.backgroundColor: Colors.orange),
+        SnackBar(content: Text('Schema verwijderd'), backgroundColor: Colors.orange),
       );
     }
   }
@@ -215,7 +215,7 @@ backgroundColor: AppTheme.primaryTeal,
                     label: Text(entry.value),
                     selected: isSelected,
                     onSelected: (_) => _toggleDag(dagIndex),
-                    selectedColor: primaryTeal.withValues(alpha: 0.2),
+                    selectedColor: AppTheme.primaryTeal.withValues(alpha: 0.2),
                     checkmarkColor: AppTheme.primaryTeal,
                     labelStyle: TextStyle(
                       color: isSelected ? AppTheme.primaryTeal : AppTheme.textCharcoal,
@@ -316,7 +316,7 @@ backgroundColor: AppTheme.primaryTeal,
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: primaryTeal.withValues(alpha: 0.1),
+                              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                             ),
                             child: Row(

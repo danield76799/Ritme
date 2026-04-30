@@ -280,7 +280,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: primaryTeal.withValues(alpha: 0.1),
+                                      color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(Icons.monitor_weight, color: AppTheme.primaryTeal),
