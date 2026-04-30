@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import '../service_locator.dart';
 
@@ -111,7 +112,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$medicatieNaam toegevoegd om ${_tijdController.text}'),
-          AppTheme.backgroundColor: AppTheme.primaryTeal,
+backgroundColor: AppTheme.primaryTeal,
         ),
       );
     }
@@ -166,7 +167,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           ),
           ElevatedButton(
             onPressed: _addMedicatie,
-            style: ElevatedButton.styleFrom(AppTheme.backgroundColor: AppTheme.primaryTeal),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
             child: Text('Toevoegen', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -233,7 +234,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           ),
           ElevatedButton(
             onPressed: () => _addSchedule(medicationId, medicatieNaam),
-            style: ElevatedButton.styleFrom(AppTheme.backgroundColor: AppTheme.primaryTeal),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
             child: Text('Schema Toevoegen', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -256,7 +257,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddMedicatieDialog,
-        AppTheme.backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Medicatie Toevoegen', style: TextStyle(color: Colors.white)),
       ),

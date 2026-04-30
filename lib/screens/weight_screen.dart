@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
@@ -82,7 +83,7 @@ class _WeightScreenState extends State<WeightScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              AppTheme.backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: AppTheme.primaryTeal,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
@@ -189,7 +190,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                 dotData: FlDotData(show: true),
                                 belowBarData: BarAreaData(
                                   show: true,
-                                  color: primaryTeal.withValues(alpha: 0.1),
+                                  color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                                 ),
                               ),
                             ],
@@ -327,7 +328,7 @@ class _WeightScreenState extends State<WeightScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addWeightLog,
-        AppTheme.backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'Gewicht loggen',
@@ -354,14 +355,14 @@ class _WeightScreenState extends State<WeightScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryTeal, primaryTeal.withValues(alpha: 0.8)],
+          colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: primaryTeal.withValues(alpha: 0.3),
+            color: AppTheme.primaryTeal.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
