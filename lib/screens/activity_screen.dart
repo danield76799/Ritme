@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
-
-const Color primaryTeal = Color(0xFF4FB2C1);
-const Color textCharcoal = Color(0xFF333333);
-const Color backgroundColor = Color(0xFFF7F9FA);
+import '../utils/app_theme.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -26,7 +23,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     {'naam': 'Opstaan', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
     {'naam': 'Eerste contact', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
     {'naam': 'Werk / Hobby', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
-    {'naam': 'Avondeten', 'richtijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
+    {'naam': 'Avondeten', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
     {'naam': 'Naar bed', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
   ];
 
@@ -115,13 +112,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Activiteiten',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -136,7 +133,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: primaryTeal))
+                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
                 : ListView.separated(
                     padding: const EdgeInsets.all(12),
                     itemCount: _activiteiten.length,
@@ -163,7 +160,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDone ? primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade100,
+          color: isDone ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade100,
         ),
       ),
       child: Material(
@@ -180,7 +177,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isDone ? primaryTeal : Colors.grey.shade100,
+                    color: isDone ? AppTheme.primaryTeal : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -200,7 +197,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: isDone ? textCharcoal : Colors.grey[600],
+                          color: isDone ? AppTheme.textCharcoal : Colors.grey[600],
                           decoration: isDone ? null : TextDecoration.none,
                         ),
                       ),
@@ -217,11 +214,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           ],
                           if (werkTijd != null) ...[
                             const SizedBox(width: 8),
-                            Icon(Icons.check_circle, size: 12, color: primaryTeal),
+                            Icon(Icons.check_circle, size: 12, color: AppTheme.primaryTeal),
                             const SizedBox(width: 4),
                             Text(
                               _formatTijd(werkTijd),
-                              style: TextStyle(fontSize: 11, color: primaryTeal, fontWeight: FontWeight.w500),
+                              style: TextStyle(fontSize: 11, color: AppTheme.primaryTeal, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ],

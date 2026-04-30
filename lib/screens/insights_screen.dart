@@ -11,9 +11,9 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  final Color textCharcoal = const Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFF7F9FA);
+
+
+
 
   bool _isLoading = true;
   Map<String, dynamic> _weeklyStats = {};
@@ -198,7 +198,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Samenvatting gekopieerd naar klembord!'),
-          backgroundColor: Colors.green,
+          AppTheme.backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -216,9 +216,9 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
           'Inzichten & Patronen',
@@ -234,7 +234,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -244,12 +244,12 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: primaryTeal.withOpacity(0.1),
+                      color: primaryTeal.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.insights, color: primaryTeal, size: 28),
+                        Icon(Icons.insights, color: AppTheme.primaryTeal, size: 28),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -260,7 +260,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: textCharcoal,
+                                  color: AppTheme.textCharcoal,
                                 ),
                               ),
                               Text(
@@ -284,7 +284,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: textCharcoal,
+                      color: AppTheme.textCharcoal,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -311,7 +311,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: textCharcoal,
+                      color: AppTheme.textCharcoal,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -339,7 +339,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -352,7 +352,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                                   inzicht,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: textCharcoal,
+                                    color: AppTheme.textCharcoal,
                                     height: 1.4,
                                   ),
                                 ),
@@ -367,7 +367,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [primaryTeal, primaryTeal.withOpacity(0.8)],
+                        colors: [AppTheme.primaryTeal, primaryTeal.withValues(alpha: 0.8)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -381,7 +381,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Icon(Icons.psychology, color: Colors.white, size: 24),
@@ -401,7 +401,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                         Text(
                           'Kopieer je anonieme weekrapport en plak het in Google Gemini voor gepersonaliseerde tips.',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontSize: 14,
                           ),
                         ),
@@ -414,8 +414,8 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                                 icon: const Icon(Icons.copy, size: 18),
                                 label: const Text('Kopieer Rapport'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: primaryTeal,
+                                  AppTheme.backgroundColor: Colors.white,
+                                  foregroundColor: AppTheme.primaryTeal,
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
@@ -430,7 +430,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                                 icon: const Icon(Icons.open_in_browser, size: 18),
                                 label: const Text('Open Gemini'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white.withOpacity(0.2),
+                                  AppTheme.backgroundColor: Colors.white.withValues(alpha: 0.2),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(
@@ -484,7 +484,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -516,3 +516,6 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
     );
   }
 }
+
+
+

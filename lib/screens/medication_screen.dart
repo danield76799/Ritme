@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
+import '../utils/app_theme.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
@@ -11,9 +12,6 @@ class MedicationScreen extends StatefulWidget {
 }
 
 class _MedicationScreenState extends State<MedicationScreen> {
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  static const Color textCharcoal = Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFF7F9FA);
 
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _configs = [];
@@ -118,13 +116,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Medicatie',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -145,7 +143,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: primaryTeal))
+                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
                 : _configs.isEmpty
                     ? _buildEmptyState()
                     : _buildMedList(),
@@ -205,10 +203,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
             height: 48,
             margin: const EdgeInsets.only(left: 12),
             decoration: BoxDecoration(
-              color: primaryTeal.withValues(alpha: 0.1),
+              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.medication, color: primaryTeal, size: 24),
+            child: Icon(Icons.medication, color: AppTheme.primaryTeal, size: 24),
           ),
           // Name & dosage
           Expanded(
@@ -222,7 +220,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF333333),
+                      color: AppTheme.textCharcoal,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -250,7 +248,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
+                    color: AppTheme.textCharcoal,
                   ),
                 ),
               ),
@@ -281,7 +279,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: isPrimary ? primaryTeal : Colors.grey.shade100,
+            color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

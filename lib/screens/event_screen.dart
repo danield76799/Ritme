@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../service_locator.dart';
+import '../utils/app_theme.dart';
 
 class GebeurtenisScherm extends StatefulWidget {
   @override
@@ -8,9 +8,6 @@ class GebeurtenisScherm extends StatefulWidget {
 }
 
 class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  final Color textCharcoal = const Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFFAFAFA);
 
   final TextEditingController _omschrijvingController = TextEditingController();
   double _invloedWaarde = 0;
@@ -23,7 +20,7 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
   Color _haalKleurOp(double waarde) {
     if (waarde > 0) return Colors.green;
     if (waarde < 0) return Colors.orange;
-    return primaryTeal;
+    return AppTheme.primaryTeal;
   }
 
   String _haalLabelOp(double waarde) {
@@ -58,7 +55,7 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Gebeurtenis succesvol toegevoegd aan je Life Chart!'),
-            backgroundColor: primaryTeal,
+            backgroundColor: AppTheme.primaryTeal,
           ),
         );
         Navigator.pop(context);
@@ -84,12 +81,12 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColorAlt,
       appBar: AppBar(
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: Text('Gebeurtenis Loggen', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -99,29 +96,29 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
             children: [
               Text(
                 'Ingrijpende gebeurtenis',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textCharcoal),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 'Noteer hier belangrijke gebeurtenissen (bijv. ruzie met collega, dochter geslaagd) en de invloed daarvan.',
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
 
               // --- OMSCHRIJVING VELD ---
               Container(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
                   ],
                 ),
                 child: TextField(
                   controller: _omschrijvingController,
                   maxLines: 3,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Wat is er gebeurd?',
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.all(16),
@@ -129,22 +126,22 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
                 ),
               ),
 
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
 
               // --- INVLOED SCHUIFREGELAAR ---
               Text(
                 'Invloed op stemming',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textCharcoal),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               Container(
-                padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
                   ],
                 ),
                 child: Column(
@@ -157,12 +154,12 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
                         color: _haalKleurOp(_invloedWaarde),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       _haalLabelOp(_invloedWaarde),
                       style: TextStyle(fontSize: 16, color: Colors.grey[600], fontStyle: FontStyle.italic),
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         activeTrackColor: _haalKleurOp(_invloedWaarde),
@@ -170,7 +167,7 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
                         thumbColor: _haalKleurOp(_invloedWaarde),
                         valueIndicatorColor: _haalKleurOp(_invloedWaarde),
                         trackHeight: 8.0,
-                        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 16.0),
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16.0),
                       ),
                       child: Slider(
                         value: _invloedWaarde,
@@ -200,7 +197,7 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
                 ),
               ),
 
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
 
               // --- OPSLAAN KNOP ---
               SizedBox(
@@ -208,14 +205,14 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
                 child: ElevatedButton(
                   onPressed: _opslaan,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryTeal,
-                    padding: EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: AppTheme.primaryTeal,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text('Opslaan in Life Chart', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: const Text('Opslaan in Life Chart', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
             ],
           ),
         ),

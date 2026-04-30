@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../database/database_helper.dart';
 import '../service_locator.dart';
+import '../utils/app_theme.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -13,10 +13,6 @@ class AppointmentsScreen extends StatefulWidget {
 class _AppointmentsScreenState extends State<AppointmentsScreen> {
   List<Map<String, dynamic>> _appointments = [];
   bool _isLoading = true;
-  
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  final Color textCharcoal = const Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFF7F9FA);
 
   @override
   void initState() {
@@ -60,9 +56,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Afspraak verwijderen'),
-        content: const Text('Weet je zeker dat je deze afspraak wilt verwijderen?'),
+        title: const Text('Afspraak verwijderen?'),
+        content: const Text('Deze actie kan niet ongedaan worden.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -70,10 +65,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -88,17 +80,17 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
   List<Map<String, dynamic>> _getUpcomingAppointments() {
     final today = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(today);
     return _appointments.where((apt) {
-      final aptDate = DateTime.parse(apt['appointment_date']);
-      return aptDate.isAfter(today) || aptDate.isAtSameMomentAs(today);
+      return apt['appointment_date'].compareTo(todayStr) >= 0;
     }).toList();
   }
 
   List<Map<String, dynamic>> _getPastAppointments() {
     final today = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(today);
     return _appointments.where((apt) {
-      final aptDate = DateTime.parse(apt['appointment_date']);
-      return aptDate.isBefore(today);
+      return apt['appointment_date'].compareTo(todayStr) < 0;
     }).toList();
   }
 
@@ -108,9 +100,9 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final past = _getPastAppointments();
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
           'Medische Afspraken',
@@ -122,14 +114,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF4FB2C1)))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Aankomende afspraken
                     if (upcoming.isNotEmpty) ...[
                       Row(
                         children: [
@@ -137,7 +128,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                             width: 4,
                             height: 24,
                             decoration: BoxDecoration(
-                              color: primaryTeal,
+                              color: AppTheme.primaryTeal,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -145,7 +136,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           Text(
                             'Aankomende afspraken',
                             style: TextStyle(
-                              color: textCharcoal,
+                              color: AppTheme.textCharcoal,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -156,8 +147,6 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                       ...upcoming.map((apt) => _buildAppointmentCard(apt, isUpcoming: true)),
                       const SizedBox(height: 24),
                     ],
-
-                    // Verleden afspraken
                     if (past.isNotEmpty) ...[
                       Row(
                         children: [
@@ -183,7 +172,6 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                       const SizedBox(height: 16),
                       ...past.map((apt) => _buildAppointmentCard(apt, isUpcoming: false)),
                     ],
-
                     if (_appointments.isEmpty)
                       Center(
                         child: Column(
@@ -217,7 +205,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addAppointment,
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'Afspraak toevoegen',
@@ -231,7 +219,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final date = DateTime.parse(appointment['appointment_date']);
     final time = appointment['appointment_time']?.toString() ?? '';
     final daysUntil = date.difference(DateTime.now()).inDays;
-    
+
     String daysText;
     if (daysUntil == 0) {
       daysText = 'Vandaag';
@@ -248,7 +236,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -261,15 +249,14 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Datum indicator
               Container(
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: isUpcoming 
-                      ? [primaryTeal, primaryTeal.withOpacity(0.8)]
-                      : [Colors.grey[400]!, Colors.grey[500]!],
+                    colors: isUpcoming
+                        ? [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)]
+                        : [Colors.grey[400]!, Colors.grey[500]!],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -289,7 +276,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                     Text(
                       DateFormat('MMM').format(date).toUpperCase(),
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
@@ -298,18 +285,16 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              
-              // Details
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      appointment['title'],
+                      appointment['title'] ?? '',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: textCharcoal,
+                        color: AppTheme.textCharcoal,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -320,10 +305,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           const SizedBox(width: 4),
                           Text(
                             appointment['doctor_name'],
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
+                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -334,10 +316,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           const SizedBox(width: 4),
                           Text(
                             appointment['location'],
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
+                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -347,9 +326,9 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: isUpcoming 
-                              ? primaryTeal.withOpacity(0.1)
-                              : Colors.grey[200],
+                            color: isUpcoming
+                                ? AppTheme.primaryTeal.withValues(alpha: 0.1)
+                                : Colors.grey[200],
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -357,7 +336,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: isUpcoming ? primaryTeal : Colors.grey[600],
+                              color: isUpcoming ? AppTheme.primaryTeal : Colors.grey[600],
                             ),
                           ),
                         ),
@@ -366,7 +345,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
+                              color: Colors.orange.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
@@ -391,8 +370,6 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                   ],
                 ),
               ),
-              
-              // Delete button
               IconButton(
                 icon: Icon(Icons.delete_outline, color: Colors.grey[400]),
                 onPressed: () => _deleteAppointment(appointment['id']),
@@ -407,7 +384,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
 class _AppointmentDialog extends StatefulWidget {
   final Map<String, dynamic>? appointment;
-  
+
   const _AppointmentDialog({this.appointment});
 
   @override
@@ -427,7 +404,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
   void initState() {
     super.initState();
     if (widget.appointment != null) {
-      _titleController.text = widget.appointment!['title'];
+      _titleController.text = widget.appointment!['title'] ?? '';
       _doctorController.text = widget.appointment!['doctor_name'] ?? '';
       _locationController.text = widget.appointment!['location'] ?? '';
       _notesController.text = widget.appointment!['notes'] ?? '';
@@ -476,8 +453,6 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               ),
             ),
             const SizedBox(height: 12),
-            
-            // Datum picker
             InkWell(
               onTap: () async {
                 final date = await showDatePicker(
@@ -500,8 +475,6 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               ),
             ),
             const SizedBox(height: 12),
-            
-            // Tijd picker
             InkWell(
               onTap: () async {
                 final time = await showTimePicker(
@@ -518,13 +491,12 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                   prefixIcon: const Icon(Icons.access_time),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(_selectedTime != null 
-                  ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
-                  : 'Selecteer tijd'),
+                child: Text(_selectedTime != null
+                    ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
+                    : 'Selecteer tijd'),
               ),
             ),
             const SizedBox(height: 12),
-            
             TextField(
               controller: _notesController,
               maxLines: 3,
@@ -535,14 +507,12 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               ),
             ),
             const SizedBox(height: 12),
-            
-            // Reminder toggle
             SwitchListTile(
               title: const Text('Herinnering'),
               subtitle: const Text('Krijg een melding voor de afspraak'),
               value: _reminderEnabled,
               onChanged: (value) => setState(() => _reminderEnabled = value),
-              activeColor: const Color(0xFF4FB2C1),
+              activeColor: AppTheme.primaryTeal,
             ),
           ],
         ),
@@ -560,16 +530,16 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 'doctor_name': _doctorController.text.isEmpty ? null : _doctorController.text,
                 'location': _locationController.text.isEmpty ? null : _locationController.text,
                 'appointment_date': DateFormat('yyyy-MM-dd').format(_selectedDate),
-                'appointment_time': _selectedTime != null 
-                  ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
-                  : null,
+                'appointment_time': _selectedTime != null
+                    ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
+                    : null,
                 'notes': _notesController.text.isEmpty ? null : _notesController.text,
                 'reminder_enabled': _reminderEnabled ? 1 : 0,
               });
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4FB2C1),
+            backgroundColor: AppTheme.primaryTeal,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
