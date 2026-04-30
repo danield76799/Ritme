@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
+import '../utils/app_theme.dart';
 
 class InstellingenScherm extends StatefulWidget {
   @override
@@ -13,9 +14,6 @@ class InstellingenScherm extends StatefulWidget {
 }
 
 class _InstellingenSchermState extends State<InstellingenScherm> {
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  final Color textCharcoal = const Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFF7F9FA);
 
   bool _isExporting = false;
   bool _isImporting = false;
@@ -61,7 +59,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Naam opgeslagen: ${_huidigeNaam}'),
+            content: Text('Naam opgeslagen: $_huidigeNaam'),
             backgroundColor: Colors.green,
           ),
         );
@@ -215,9 +213,9 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
           'Instellingen',
@@ -236,7 +234,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -247,13 +245,13 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: primaryTeal.withOpacity(0.1),
+                    color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.settings_outlined,
                     size: 40,
-                    color: primaryTeal,
+                    color: AppTheme.primaryTeal,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -262,7 +260,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: textCharcoal,
+                    color: AppTheme.textCharcoal,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -296,7 +294,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -310,7 +308,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: textCharcoal,
+                    color: AppTheme.textCharcoal,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -340,7 +338,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                     ElevatedButton(
                       onPressed: _isSavingName ? null : _opslaanNaam,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryTeal,
+                        backgroundColor: AppTheme.primaryTeal,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -389,7 +387,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -412,7 +410,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                 'Maak een Backup',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: textCharcoal,
+                  color: AppTheme.textCharcoal,
                 ),
               ),
               subtitle: Text(
@@ -425,7 +423,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: primaryTeal,
+                        color: AppTheme.primaryTeal,
                       ),
                     )
                   : Icon(Icons.chevron_right, color: Colors.grey[400]),
@@ -441,7 +439,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -464,7 +462,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                 'Zet een Backup terug',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: textCharcoal,
+                  color: AppTheme.textCharcoal,
                 ),
               ),
               subtitle: Text(
@@ -477,7 +475,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: primaryTeal,
+                        color: AppTheme.primaryTeal,
                       ),
                     )
                   : Icon(Icons.chevron_right, color: Colors.grey[400]),
@@ -504,7 +502,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -517,19 +515,19 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                   leading: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: primaryTeal.withOpacity(0.1),
+                      color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       Icons.info_outline,
-                      color: primaryTeal,
+                      color: AppTheme.primaryTeal,
                     ),
                   ),
                   title: Text(
                     'Over Ritme',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: textCharcoal,
+                      color: AppTheme.textCharcoal,
                     ),
                   ),
                   subtitle: Text(
@@ -544,10 +542,10 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                       applicationIcon: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: primaryTeal.withOpacity(0.1),
+                          color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(Icons.favorite, color: primaryTeal),
+                        child: Icon(Icons.favorite, color: AppTheme.primaryTeal),
                       ),
                       children: [
                         const SizedBox(height: 16),

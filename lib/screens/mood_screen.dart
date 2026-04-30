@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
+import '../utils/app_theme.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -11,9 +12,6 @@ class MoodScreen extends StatefulWidget {
 }
 
 class _MoodScreenState extends State<MoodScreen> {
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  static const Color textCharcoal = Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFF7F9FA);
 
   DateTime _geselecteerdeDatum = DateTime.now();
   double _stemmingWaarde = 50.0;
@@ -68,7 +66,7 @@ class _MoodScreenState extends State<MoodScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Opgeslagen!'),
-          backgroundColor: primaryTeal,
+          backgroundColor: AppTheme.primaryTeal,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           duration: const Duration(seconds: 1),
@@ -104,13 +102,13 @@ class _MoodScreenState extends State<MoodScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Stemming',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -121,7 +119,7 @@ class _MoodScreenState extends State<MoodScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : Column(
               children: [
                 Container(color: Colors.white, child: DatumNavigator(geselecteerdeDatum: _geselecteerdeDatum, onDatumVeranderd: _onDatumVeranderd)),
@@ -275,7 +273,7 @@ class _MoodScreenState extends State<MoodScreen> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: isPrimary ? primaryTeal : Colors.grey.shade100,
+            color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, size: 18, color: isPrimary ? Colors.white : Colors.grey[600]),
@@ -284,3 +282,4 @@ class _MoodScreenState extends State<MoodScreen> {
     );
   }
 }
+

@@ -12,9 +12,9 @@ class StatistiekenScherm extends StatefulWidget {
 }
 
 class _StatistiekenSchermState extends State<StatistiekenScherm> {
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  final Color textCharcoal = const Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFFAFAFA);
+
+
+
 
   List<Map<String, dynamic>> _logs = [];
   bool _isLoading = true;
@@ -294,12 +294,12 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: Text('Statistieken (Life Chart)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
@@ -309,7 +309,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -320,7 +320,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                     SizedBox(height: 16),
                     _bouwSlaapGrafiek(),
                     SizedBox(height: 32),
-                    Text('Samenvatting', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textCharcoal)),
+                    Text('Samenvatting', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal)),
                     SizedBox(height: 16),
                     GridView.count(
                       crossAxisCount: 2,
@@ -376,7 +376,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
               dotData: FlDotData(show: true),
               belowBarData: BarAreaData(
                 show: true,
-                color: Colors.orange.withOpacity(0.1),
+                color: Colors.orange.withValues(alpha: 0.1),
               ),
             ),
           ],
@@ -436,12 +436,12 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textCharcoal)),
+          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textCharcoal)),
           SizedBox(height: 16),
           Expanded(child: child),
         ],
@@ -457,7 +457,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textCharcoal)),
+          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textCharcoal)),
           SizedBox(height: 24),
           Center(child: Text('Nog geen data beschikbaar', style: TextStyle(color: Colors.grey[600]))),
           SizedBox(height: 16),
@@ -471,7 +471,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -484,3 +484,5 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     );
   }
 }
+
+

@@ -10,9 +10,9 @@ class MedicationScheduleScreen extends StatefulWidget {
 }
 
 class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  final Color textCharcoal = const Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFF7F9FA);
+
+
+
 
   List<Map<String, dynamic>> _medications = [];
   List<Map<String, dynamic>> _schedules = [];
@@ -69,7 +69,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
   Future<void> _addMedicatie() async {
     if (_naamController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Vul een naam in'), backgroundColor: Colors.red),
+        SnackBar(content: Text('Vul een naam in'), AppTheme.backgroundColor: Colors.red),
       );
       return;
     }
@@ -93,7 +93,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
   Future<void> _addSchedule(int medicationId, String medicatieNaam) async {
     if (_selectedDagen.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Selecteer minimaal één dag'), backgroundColor: Colors.red),
+        SnackBar(content: Text('Selecteer minimaal één dag'), AppTheme.backgroundColor: Colors.red),
       );
       return;
     }
@@ -111,7 +111,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$medicatieNaam toegevoegd om ${_tijdController.text}'),
-          backgroundColor: primaryTeal,
+          AppTheme.backgroundColor: AppTheme.primaryTeal,
         ),
       );
     }
@@ -123,7 +123,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Schema verwijderd'), backgroundColor: Colors.orange),
+        SnackBar(content: Text('Schema verwijderd'), AppTheme.backgroundColor: Colors.orange),
       );
     }
   }
@@ -135,7 +135,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Nieuwe Medicatie', style: TextStyle(color: primaryTeal)),
+        title: Text('Nieuwe Medicatie', style: TextStyle(color: AppTheme.primaryTeal)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -166,7 +166,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           ),
           ElevatedButton(
             onPressed: _addMedicatie,
-            style: ElevatedButton.styleFrom(backgroundColor: primaryTeal),
+            style: ElevatedButton.styleFrom(AppTheme.backgroundColor: AppTheme.primaryTeal),
             child: Text('Toevoegen', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -182,7 +182,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('$medicatieNaam - Schema', style: TextStyle(color: primaryTeal)),
+        title: Text('$medicatieNaam - Schema', style: TextStyle(color: AppTheme.primaryTeal)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -196,7 +196,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                 decoration: InputDecoration(
                   hintText: '21:00',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  suffixIcon: Icon(Icons.access_time, color: primaryTeal),
+                  suffixIcon: Icon(Icons.access_time, color: AppTheme.primaryTeal),
                 ),
                 keyboardType: TextInputType.datetime,
               ),
@@ -214,10 +214,10 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                     label: Text(entry.value),
                     selected: isSelected,
                     onSelected: (_) => _toggleDag(dagIndex),
-                    selectedColor: primaryTeal.withOpacity(0.2),
-                    checkmarkColor: primaryTeal,
+                    selectedColor: primaryTeal.withValues(alpha: 0.2),
+                    checkmarkColor: AppTheme.primaryTeal,
                     labelStyle: TextStyle(
-                      color: isSelected ? primaryTeal : textCharcoal,
+                      color: isSelected ? AppTheme.primaryTeal : AppTheme.textCharcoal,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   );
@@ -233,7 +233,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           ),
           ElevatedButton(
             onPressed: () => _addSchedule(medicationId, medicatieNaam),
-            style: ElevatedButton.styleFrom(backgroundColor: primaryTeal),
+            style: ElevatedButton.styleFrom(AppTheme.backgroundColor: AppTheme.primaryTeal),
             child: Text('Schema Toevoegen', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -244,9 +244,9 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
           'Medicatie Schema',
@@ -256,12 +256,12 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddMedicatieDialog,
-        backgroundColor: primaryTeal,
+        AppTheme.backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Medicatie Toevoegen', style: TextStyle(color: Colors.white)),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : _medications.isEmpty
               ? Center(
                   child: Column(
@@ -302,7 +302,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -315,7 +315,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: primaryTeal.withOpacity(0.1),
+                              color: primaryTeal.withValues(alpha: 0.1),
                               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                             ),
                             child: Row(
@@ -326,7 +326,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: Icon(Icons.medication, color: primaryTeal, size: 24),
+                                  child: Icon(Icons.medication, color: AppTheme.primaryTeal, size: 24),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -338,7 +338,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          color: textCharcoal,
+                                          color: AppTheme.textCharcoal,
                                         ),
                                       ),
                                       if (dosering != null)
@@ -353,7 +353,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                                   ),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.add_alarm, color: primaryTeal),
+                                  icon: Icon(Icons.add_alarm, color: AppTheme.primaryTeal),
                                   onPressed: () => _showAddScheduleDialog(medicationId, naam),
                                   tooltip: 'Schema toevoegen',
                                 ),
@@ -393,8 +393,8 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
                                         color: enabled 
-                                            ? Colors.green.withOpacity(0.1) 
-                                            : Colors.grey.withOpacity(0.1),
+                                            ? Colors.green.withValues(alpha: 0.1) 
+                                            : Colors.grey.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Icon(
@@ -413,7 +413,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
                                             style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
-                                              color: enabled ? textCharcoal : Colors.grey,
+                                              color: enabled ? AppTheme.textCharcoal : Colors.grey,
                                             ),
                                           ),
                                           Text(
@@ -443,3 +443,5 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
     );
   }
 }
+
+

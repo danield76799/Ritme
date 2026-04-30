@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'pages/splash_screen.dart';
 import 'screens/login_screen.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'services/notification_helper.dart';
 import 'screens/mood_screen.dart';
 import 'screens/activity_screen.dart';
@@ -14,7 +14,8 @@ import 'screens/settings_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/weight_screen.dart';
 import 'screens/appointments_screen.dart';
-import 'service_locator.dart'; // Use centralized db
+import 'service_locator.dart';
+import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,14 +43,7 @@ class RitmeApp extends StatelessWidget {
     return MaterialApp(
       title: 'Ritme - SRT Tracker',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4FB2C1),
-          primary: const Color(0xFF4FB2C1),
-        ),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-      ),
+      theme: AppTheme.lightTheme,
       home: const SplashScreen(),
       routes: {
         '/mood': (context) => const MoodScreen(),

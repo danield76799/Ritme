@@ -16,9 +16,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
 
   // Kleuren uit huisstijl
-  final Color primaryTeal = const Color(0xFF4FB2C1);
-  final Color textCharcoal = const Color(0xFF333333);
-  final Color backgroundColor = const Color(0xFFF7F9FA);
+
+
+
 
   @override
   void initState() {
@@ -55,9 +55,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: AppTheme.backgroundColor,
         body: const Center(
-          child: CircularProgressIndicator(color: Color(0xFF4FB2C1)),
+          child: CircularProgressIndicator(color: AppTheme.primaryTeal),
         ),
       );
     }
@@ -81,9 +81,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: primaryTeal,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
           'Ritme',
@@ -123,14 +123,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [primaryTeal, primaryTeal.withOpacity(0.8)],
+                    colors: [AppTheme.primaryTeal, primaryTeal.withValues(alpha: 0.8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryTeal.withOpacity(0.3),
+                      color: primaryTeal.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -155,7 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       dateStr,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 15,
                       ),
                     ),
@@ -181,7 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     width: 4,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: primaryTeal,
+                      color: AppTheme.primaryTeal,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -189,7 +189,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     'Vandaag',
                     style: TextStyle(
-                      color: textCharcoal,
+                      color: AppTheme.textCharcoal,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -275,7 +275,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     width: 4,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: primaryTeal,
+                      color: AppTheme.primaryTeal,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -283,7 +283,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     'Overzicht',
                     style: TextStyle(
-                      color: textCharcoal,
+                      color: AppTheme.textCharcoal,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -333,7 +333,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onPressed: () {
           _showNotImplemented('Nieuwe dagelijkse log');
         },
-        backgroundColor: primaryTeal,
+        AppTheme.backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'Log Toevoegen',
@@ -347,10 +347,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -366,7 +366,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 11,
                 ),
               ),
@@ -402,7 +402,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -416,7 +416,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: iconColor, size: 36),
@@ -427,7 +427,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: textCharcoal,
+                color: AppTheme.textCharcoal,
               ),
               textAlign: TextAlign.center,
             ),
@@ -460,7 +460,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -471,7 +471,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: color, size: 26),
@@ -493,7 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   text: TextSpan(
                     text: value,
                     style: TextStyle(
-                      color: textCharcoal,
+                      color: AppTheme.textCharcoal,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
@@ -528,10 +528,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: primaryTeal)),
+            child: Text('OK', style: TextStyle(color: AppTheme.primaryTeal)),
           ),
         ],
       ),
     );
   }
 }
+
+

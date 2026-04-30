@@ -15,7 +15,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _pinController = TextEditingController();
-  final Color primaryTeal = const Color(0xFF4FB2C1);
+
   final LocalAuthentication _localAuth = LocalAuthentication();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   
@@ -169,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: primaryTeal),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
             child: const Text('Ja, inschakelen', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -291,11 +291,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FA),
+      backgroundColor: AppTheme.backgroundColor,
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: Color(0xFF4FB2C1),
+                color: AppTheme.primaryTeal,
               ),
             )
           : SafeArea(
@@ -320,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: primaryTeal,
+                          color: AppTheme.primaryTeal,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -348,11 +348,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                foregroundColor: primaryTeal,
+                                foregroundColor: AppTheme.primaryTeal,
                                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: primaryTeal),
+                                  side: BorderSide(color: AppTheme.primaryTeal),
                                 ),
                               ),
                             ),
@@ -386,7 +386,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: primaryTeal,
+                                    color: AppTheme.primaryTeal,
                                     width: 2,
                                   ),
                                 ),
@@ -423,7 +423,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               height: 50,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: primaryTeal,
+                                  backgroundColor: AppTheme.primaryTeal,
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -466,3 +466,5 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+
