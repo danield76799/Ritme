@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
-import '../utils/app_theme.dart';
 
 class InstellingenScherm extends StatefulWidget {
   @override

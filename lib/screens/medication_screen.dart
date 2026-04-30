@@ -3,7 +3,6 @@ import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
-import '../utils/app_theme.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
