@@ -214,7 +214,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: Icons.sentiment_satisfied_alt, 
                     iconColor: Colors.orange, 
                     title: 'Stemming', 
-                    subtitle: 'Dagelijkse check',
                     route: '/mood',
                   ),
                   _buildActionCard(
@@ -222,7 +221,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: Icons.directions_walk, 
                     iconColor: Colors.green, 
                     title: 'Activiteit', 
-                    subtitle: 'SRM meting',
                     route: '/activity',
                   ),
                   _buildMedicatieCard(context),
@@ -231,7 +229,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: Icons.monitor_weight, 
                     iconColor: Colors.blueAccent, 
                     title: 'Gewicht', 
-                    subtitle: 'Wekelijks bijhouden',
                     route: '/weight',
                   ),
                   _buildActionCard(
@@ -239,7 +236,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: Icons.calendar_today_outlined, 
                     iconColor: Colors.purpleAccent, 
                     title: 'Afspraken', 
-                    subtitle: 'Medische afspraken',
                     route: '/appointments',
                   ),
                   _buildActionCard(
@@ -247,7 +243,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: Icons.event_note, 
                     iconColor: Colors.orangeAccent, 
                     title: 'Gebeurtenis', 
-                    subtitle: 'Life chart',
                     route: '/event',
                   ),
                 ],
@@ -308,7 +303,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.insights,
                 iconColor: Colors.teal,
                 title: 'Inzichten & Patronen',
-                subtitle: 'AI-analyse van je week',
                 route: '/insights',
               ),
               const SizedBox(height: 80),
@@ -376,7 +370,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required IconData icon, 
     required Color iconColor, 
     required String title, 
-    required String subtitle, 
     required String route,
   }) {
     return GestureDetector(
@@ -415,15 +408,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
                 color: AppTheme.textCharcoal,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[600],
               ),
               textAlign: TextAlign.center,
             ),
@@ -504,14 +488,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'Inname & Schema',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
               ],
             ),
           ),
