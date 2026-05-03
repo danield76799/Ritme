@@ -13,6 +13,7 @@ import 'screens/insights_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/weight_screen.dart';
+import 'screens/sociaal_ritme_meter_screen.dart';
 import 'screens/appointments_screen.dart';
 import 'service_locator.dart';
 import 'utils/app_theme.dart';
@@ -53,6 +54,7 @@ class RitmeApp extends StatelessWidget {
         '/settings': (context) => InstellingenScherm(),
         '/medication-schedule': (context) => const MedicationScheduleScreen(),
         '/weight': (context) => const WeightScreen(),
+        '/sociaal-ritme': (context) => const SociaalRitmeMeterScreen(),
         '/appointments': (context) => const AppointmentsScreen(),
         '/insights': (context) => const InsightsScreen(),
         '/statistics': (context) => StatistiekenScherm(),
