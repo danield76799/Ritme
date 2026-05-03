@@ -374,7 +374,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, route);
+        try {
+          Navigator.pushNamed(context, route);
+        } catch (e) {
+          // Fallback als de route niet bestaat
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Route $route niet gevonden'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       },
       child: Container(
         decoration: BoxDecoration(
