@@ -43,18 +43,13 @@ jobs:
     
     - name: Generate debug keystore
       run: |
-        keytool -genkey -v -keystore debug.keystore -alias androiddebugkey \
+        keytool -genkey -v -keystore android/app/debug.keystore -alias androiddebugkey \
           -keyalg RSA -keysize 2048 -validity 10000 \
           -dname "CN=Android Debug,O=Android,C=US" \
           -storepass android -keypass android
     
-    - name: Build signed APK
-      run: |
-        flutter build apk --release \
-          --keystore debug.keystore \
-          --keystore-password android \
-          --keystore-alias androiddebugkey \
-          --keystore-key-password android
+    - name: Build APK
+      run: flutter build apk --release
     
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
