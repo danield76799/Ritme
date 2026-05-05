@@ -81,8 +81,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       setState(() {
         _settings = settings;
-        _sleepQuality = sleepScore;
-        _rhythmStability = stability;
+        _sleepQuality = sleepScore.toDouble();
+        _rhythmStability = stability.toDouble();
         _weeklyActivities = activityCount;
         _lastUpdated = DateTime.now();
         _isLoading = false;
