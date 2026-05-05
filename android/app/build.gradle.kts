@@ -20,6 +20,15 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("ritme-release.keystore")
+            storePassword = "ritmerelease"
+            keyAlias = "ritme"
+            keyPassword = "ritmerelease"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.ritme.ritme.v2"
         minSdk = flutter.minSdkVersion
@@ -34,9 +43,8 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Use the release signing config with our fixed keystore
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
