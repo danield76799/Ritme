@@ -244,13 +244,37 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint) async {
     final db = await database;
-    return await db.insert('srm_activities', {
-      'date': date,
-      'activity_type': activityType,
-      'actual_time': actualTime,
-      'p_score': pScore,
-      'srt_point': srtPoint,
-    });
+
+    // Check if record already exists for this date + activity
+    final existing = await db.query(
+      'srm_activities',
+      where: 'date = ? AND activity_type = ?',
+      whereArgs: [date, activityType],
+      limit: 1,
+    );
+
+    if (existing.isNotEmpty) {
+      // Update existing record
+      return await db.update(
+        'srm_activities',
+        {
+          'actual_time': actualTime,
+          'p_score': pScore,
+          'srt_point': srtPoint,
+        },
+        where: 'date = ? AND activity_type = ?',
+        whereArgs: [date, activityType],
+      );
+    } else {
+      // Insert new record
+      return await db.insert('srm_activities', {
+        'date': date,
+        'activity_type': activityType,
+        'actual_time': actualTime,
+        'p_score': pScore,
+        'srt_point': srtPoint,
+      });
+    }
   }
 
   @override
@@ -455,7 +479,27 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
     final db = await database;
-    return await db.insert('medication_intake', {'date': date, 'medication_id': medicationId, 'aantal_ingenomen': aantal});
+
+    // Check if record already exists for this date + medication
+    final existing = await db.query(
+      'medication_intake',
+      where: 'date = ? AND medication_id = ?',
+      whereArgs: [date, medicationId],
+      limit: 1,
+    );
+
+    if (existing.isNotEmpty) {
+      // Update existing record
+      return await db.update(
+        'medication_intake',
+        {'aantal_ingenomen': aantal},
+        where: 'date = ? AND medication_id = ?',
+        whereArgs: [date, medicationId],
+      );
+    } else {
+      // Insert new record
+      return await db.insert('medication_intake', {'date': date, 'medication_id': medicationId, 'aantal_ingenomen': aantal});
+    }
   }
 
   @override
