@@ -55,6 +55,36 @@ class _MoodScreenState extends State<MoodScreen> {
 
   Future<void> _opslaan() async {
     final stemming = ((_stemmingWaarde / 100) * 10 - 5).round();
+    
+    // Validatie: stemming moet tussen -5 en 5 zijn
+    if (stemming < -5 || stemming > 5) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Stemming waarde moet tussen -5 en 5 zijn'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+      return;
+    }
+    
+    // Validatie: omslagen moet tussen 0 en 10 zijn
+    if (_stemmingsOmslagen < 0 || _stemmingsOmslagen > 10) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Aantal omslagen moet tussen 0 en 10 zijn'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+      return;
+    }
 
     await db.upsertDailyLog({
       'date': _formattedDate,
