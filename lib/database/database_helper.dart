@@ -567,6 +567,7 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  @override
   Future<List<Map<String, dynamic>>> getMedicationIntake(String date) async {
     final db = await database;
     return await db.query('medication_intake', where: 'date = ?', whereArgs: [date]);
@@ -601,22 +602,26 @@ class DatabaseHelper implements DatabaseRepository {
   // WEIGHT LOGS
   // ===================
   
+  @override
   Future<int> insertWeightLog(String date, double weight, String? notes) async {
     final db = await database;
     return await db.insert('weight_logs', {'date': date, 'weight': weight, 'notes': notes});
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getWeightLogs() async {
     final db = await database;
     return await db.query('weight_logs', orderBy: 'date DESC');
   }
 
+  @override
   Future<Map<String, dynamic>?> getLatestWeightLog() async {
     final db = await database;
     final results = await db.query('weight_logs', orderBy: 'date DESC', limit: 1);
     return results.isNotEmpty ? results.first : null;
   }
 
+  @override
   Future<int> deleteWeightLog(int id) async {
     final db = await database;
     return await db.delete('weight_logs', where: 'id = ?', whereArgs: [id]);
@@ -626,16 +631,19 @@ class DatabaseHelper implements DatabaseRepository {
   // MEDICAL APPOINTMENTS
   // ===================
   
+  @override
   Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
     final db = await database;
     return await db.insert('medical_appointments', data);
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getMedicalAppointments() async {
     final db = await database;
     return await db.query('medical_appointments', orderBy: 'appointment_date ASC');
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
     final db = await database;
     final today = DateTime.now().toIso8601String().split('T')[0];
@@ -647,11 +655,13 @@ class DatabaseHelper implements DatabaseRepository {
     );
   }
 
+  @override
   Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
     final db = await database;
     return await db.update('medical_appointments', data, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<int> deleteMedicalAppointment(int id) async {
     final db = await database;
     return await db.delete('medical_appointments', where: 'id = ?', whereArgs: [id]);
