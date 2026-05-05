@@ -13,6 +13,8 @@ abstract class DatabaseRepository {
   // Daily Logs
   Future<int> insertDailyLog(String date, Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getDailyLogs();
+  Future<List<Map<String, dynamic>>> getDailyLogsForWeek();
+  Future<List<Map<String, dynamic>>> getDailyLogsForWeek();
   Future<Map<String, dynamic>?> getDailyLog(String date);
   Future<int> upsertDailyLog(Map<String, dynamic> data);
 
