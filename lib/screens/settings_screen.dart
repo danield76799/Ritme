@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../utils/app_theme.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
+import '../widgets/app_scaffold.dart';
 
 class InstellingenScherm extends StatefulWidget {
   @override
@@ -212,17 +213,10 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
-        elevation: 0,
-        title: const Text(
-          'Instellingen',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+    return AppScaffold(
+      title: 'Instellingen',
+      currentRoute: '/settings',
+      bottomNavIndex: 0,
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -265,7 +259,7 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Versie 1.2.0',
+                  'Versie 1.2.1',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -508,55 +502,51 @@ class _InstellingenSchermState extends State<InstellingenScherm> {
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.info_outline,
+                  color: AppTheme.primaryTeal,
+                ),
+              ),
+              title: Text(
+                'Over Ritme',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textCharcoal,
+                ),
+              ),
+              subtitle: Text(
+                'SRT Tracker voor dagelijkse monitoring',
+                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              ),
+              onTap: () {
+                showAboutDialog(
+                  context: context,
+                  applicationName: 'Ritme',
+                  applicationVersion: '1.2.1',
+                  applicationIcon: Container(
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      Icons.info_outline,
-                      color: AppTheme.primaryTeal,
+                    child: Icon(Icons.favorite, color: AppTheme.primaryTeal),
+                  ),
+                  children: [
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Ritme is een SRT (Social Rhythm Therapy) tracker ontworpen om dagelijkse activiteiten, stemming en medicatie bij te houden.',
                     ),
-                  ),
-                  title: Text(
-                    'Over Ritme',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textCharcoal,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'SRT Tracker voor dagelijkse monitoring',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                  ),
-                  onTap: () {
-                    showAboutDialog(
-                      context: context,
-                      applicationName: 'Ritme',
-                      applicationVersion: '1.2.0',
-                      applicationIcon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.favorite, color: AppTheme.primaryTeal),
-                      ),
-                      children: [
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Ritme is een SRT (Social Rhythm Therapy) tracker ontworpen om dagelijkse activiteiten, stemming en medicatie bij te houden.',
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ],

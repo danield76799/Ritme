@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../utils/app_theme.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
-import '../theme/app_theme.dart';
+import '../widgets/app_drawer.dart';
+import '../widgets/bottom_nav_bar.dart';
 import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -16,11 +17,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _settings;
   bool _isLoading = true;
-
-  // Kleuren uit huisstijl
-
-
-
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -51,6 +48,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
+  }
+
+  void _onBottomNavTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        // Already on home
+        break;
+      case 1:
+        Navigator.pushNamed(context, '/mood');
+        break;
+      case 2:
+        Navigator.pushNamed(context, '/activity');
+        break;
+      case 3:
+        Navigator.pushNamed(context, '/medication');
+        break;
+      case 4:
+        Navigator.pushNamed(context, '/statistics');
+        break;
+    }
   }
 
   @override
@@ -87,18 +108,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            tooltip: 'Menu',
+          ),
+        ),
         title: const Text(
           'Ritme',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.white),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.bar_chart, color: Colors.white),
-            onPressed: () {
-              Navigator.pushNamed(context, '/statistics');
-            },
-            tooltip: 'Statistieken',
-          ),
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {
@@ -112,6 +133,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             tooltip: 'Uitloggen',
           ),
         ],
+      ),
+      drawer: const AppDrawer(currentRoute: '/'),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onBottomNavTap,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
