@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:intl/intl.dart';
-import '../theme/app_theme.dart';
+import '../widgets/app_scaffold.dart';
+import '../utils/app_theme.dart';
+import '../widgets/app_scaffold.dart';
 import '../service_locator.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/datum_navigator.dart';
+import '../widgets/app_scaffold.dart';
 
 class SociaalRitmeMeterScreen extends StatefulWidget {
   const SociaalRitmeMeterScreen({super.key});
