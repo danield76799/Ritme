@@ -580,6 +580,25 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
     final db = await database;
+    
+    // Check of er al een entry is voor deze datum/medicatie
+    final existing = await db.query(
+      'medication_intake',
+      where: 'date = ? AND medication_id = ?',
+      whereArgs: [date, medicationId],
+      limit: 1,
+    );
+    
+    if (existing.isNotEmpty) {
+      // Update bestaande entry in plaats van nieuwe toe te voegen
+      return await db.update(
+        'medication_intake',
+        {'aantal_ingenomen': aantal},
+        where: 'date = ? AND medication_id = ?',
+        whereArgs: [date, medicationId],
+      );
+    }
+    
     return await db.insert('medication_intake', {'date': date, 'medication_id': medicationId, 'aantal_ingenomen': aantal});
   }
 
