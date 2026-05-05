@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'database_repository.dart';
+import '../utils/security_helper.dart';
 
 class DatabaseHelper implements DatabaseRepository {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -209,7 +210,9 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<bool> updatePin(String pin) async {
     const username = 'user';
-    return await setPin(username, pin);
+    // Hash de PIN voor veilige opslag
+    final hashedPin = SecurityHelper.hashPin(pin);
+    return await setPin(username, hashedPin);
   }
 
   Future<bool> setPin(String username, String passwordHash) async {
@@ -226,13 +229,22 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<Map<String, dynamic>?> validateLoginPin(String pin) async {
     final db = await database;
+    // Haal de opgeslagen hash op
     final results = await db.query(
       'settings',
-      where: 'username = ? AND password_hash = ?',
-      whereArgs: ['user', pin],
+      where: 'username = ?',
+      whereArgs: ['user'],
       limit: 1,
     );
-    return results.isNotEmpty ? results.first : null;
+    
+    if (results.isEmpty) return null;
+    
+    final storedHash = results.first['password_hash'] as String?;
+    if (storedHash == null) return null;
+    
+    // Verifieer de PIN tegen de hash
+    final isValid = SecurityHelper.verifyPin(pin, storedHash);
+    return isValid ? results.first : null;
   }
 
   // ===================
@@ -249,7 +261,21 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<List<Map<String, dynamic>>> getDailyLogs() async {
     final db = await database;
-    return await db.query('daily_logs', orderBy: 'date ASC');
+    return await db.query('daily_logs', orderBy: 'date DESC');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDailyLogsForWeek() async {
+    final db = await database;
+    final now = DateTime.now();
+    final weekAgo = now.subtract(const Duration(days: 7));
+    final weekAgoStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
+    return await db.query(
+      'daily_logs',
+      where: 'date >= ?',
+      whereArgs: [weekAgoStr],
+      orderBy: 'date DESC',
+    );
   }
 
   @override
