@@ -132,15 +132,36 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
-    await _srmActivities.put(id, {
-      'date': date,
-      'activity_type': activityType,
-      'actual_time': actualTime,
-      'p_score': pScore,
-      'srt_point': srtPoint,
-    });
-    return id;
+    // Find existing record for this date + activity
+    final existing = _srmActivities.values.where((e) =>
+      e['date'] == date && e['activity_type'] == activityType
+    ).toList();
+
+    if (existing.isNotEmpty) {
+      // Update existing record - use first found record's key
+      final key = _srmActivities.keyAt(
+        _srmActivities.values.toList().indexOf(existing.first)
+      );
+      await _srmActivities.put(key, {
+        'date': date,
+        'activity_type': activityType,
+        'actual_time': actualTime,
+        'p_score': pScore,
+        'srt_point': srtPoint,
+      });
+      return key;
+    } else {
+      // Insert new record
+      final id = DateTime.now().millisecondsSinceEpoch;
+      await _srmActivities.put(id, {
+        'date': date,
+        'activity_type': activityType,
+        'actual_time': actualTime,
+        'p_score': pScore,
+        'srt_point': srtPoint,
+      });
+      return id;
+    }
   }
 
   @override
@@ -312,20 +333,57 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
-    await _medicationIntake.put(id, {
-      'date': date,
-      'medication_id': medicationId,
-      'aantal_ingenomen': aantal,
-    });
-    return id;
+    // Find existing record for this date + medication
+    final existing = _medicationIntake.values.where((e) =>
+      e['date'] == date && e['medication_id'] == medicationId
+    ).toList();
+
+    if (existing.isNotEmpty) {
+      // Update existing record - use first found record's key
+      final key = _medicationIntake.keyAt(
+        _medicationIntake.values.toList().indexOf(existing.first)
+      );
+      await _medicationIntake.put(key, {
+        'date': date,
+        'medication_id': medicationId,
+        'aantal_ingenomen': aantal,
+      });
+      return key;
+    } else {
+      // Insert new record
+      final id = DateTime.now().millisecondsSinceEpoch;
+      await _medicationIntake.put(id, {
+        'date': date,
+        'medication_id': medicationId,
+        'aantal_ingenomen': aantal,
+      });
+      return id;
+    }
   }
 
   @override
   Future<int> insertMedicationIntakeMap(Map<String, dynamic> data) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
-    await _medicationIntake.put(id, data);
-    return id;
+    final date = data['date'] as String;
+    final medicationId = data['medication_id'] as int;
+
+    // Find existing record for this date + medication
+    final existing = _medicationIntake.values.where((e) =>
+      e['date'] == date && e['medication_id'] == medicationId
+    ).toList();
+
+    if (existing.isNotEmpty) {
+      // Update existing record - use first found record's key
+      final key = _medicationIntake.keyAt(
+        _medicationIntake.values.toList().indexOf(existing.first)
+      );
+      await _medicationIntake.put(key, data);
+      return key;
+    } else {
+      // Insert new record
+      final id = DateTime.now().millisecondsSinceEpoch;
+      await _medicationIntake.put(id, data);
+      return id;
+    }
   }
 
   @override
