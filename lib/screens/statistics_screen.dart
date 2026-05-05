@@ -99,6 +99,28 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     if (recentLogs.isNotEmpty) {
       double totaalStemming = 0;
       double totaalSlaap = 0;
+      
+      for (var log in recentLogs) {
+        if (log['stemming_ochtend'] != null) {
+          totaalStemming += log['stemming_ochtend'];
+          logCount30++;
+        }
+        if (log['uren_slaap'] != null) {
+          totaalSlaap += log['uren_slaap'];
+        }
+      }
+      
+      // Division by zero protection
+      gemStemming30 = logCount30 > 0 ? totaalStemming / logCount30 : 0.0;
+      gemSlaap30 = recentLogs.length > 0 ? totaalSlaap / recentLogs.length : 0.0;
+      
+      // Tel events
+      for (var log in recentLogs) {
+        final events = await db.getLifeEvents(log['date']);
+        eventCount30 += events.length;
+      }
+    }
+      double totaalSlaap = 0;
       int stemCount = 0;
       
       for (var log in recentLogs) {
