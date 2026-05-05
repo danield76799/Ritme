@@ -20,6 +20,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
   bool _isLoading = true;
   Map<String, dynamic> _weeklyStats = {};
   List<String> _insights = [];
+  DateTime? _lastCacheTime;
+  static const Duration _cacheDuration = Duration(minutes: 5);
 
   @override
   void initState() {
@@ -28,16 +30,35 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Future<void> _laadData() async {
+    // Check cache - alleen verversen als cache verlopen is
+    if (_lastCacheTime != null && 
+        DateTime.now().difference(_lastCacheTime!) < _cacheDuration &&
+        _insights.isNotEmpty) {
+      return; // Gebruik cached data
+    }
+    
     setState(() => _isLoading = true);
 
-    final stats = await _berekenWeekstats();
-    final inzichten = _genereerInzichten(stats);
+    try {
+      final stats = await _berekenWeekstats();
+      final inzichten = _genereerInzichten(stats);
 
-    setState(() {
-      _weeklyStats = stats;
-      _insights = inzichten;
-      _isLoading = false;
-    });
+      if (mounted) {
+        setState(() {
+          _weeklyStats = stats;
+          _insights = inzichten;
+          _isLoading = false;
+          _lastCacheTime = DateTime.now();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _insights = ['Fout bij laden van inzichten: $e'];
+        });
+      }
+    }
   }
 
   Future<Map<String, dynamic>> _berekenWeekstats() async {
