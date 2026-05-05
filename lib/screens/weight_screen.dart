@@ -76,8 +76,23 @@ class _WeightScreenState extends State<WeightScreen> {
           ElevatedButton(
             onPressed: () {
               if (weightController.text.isNotEmpty) {
+                final weight = double.tryParse(weightController.text.replaceAll(',', '.'));
+                
+                // Validatie: gewicht moet realistisch zijn (20-300 kg)
+                if (weight == null || weight < 20 || weight > 300) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Gewicht moet tussen 20 en 300 kg zijn'),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                  return;
+                }
+                
                 Navigator.pop(context, {
-                  'weight': double.parse(weightController.text.replaceAll(',', '.')),
+                  'weight': weight,
                   'notes': notesController.text,
                 });
               }
