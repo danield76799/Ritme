@@ -35,9 +35,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final settings = await db.getSettings();
       
       // Haal echte data op uit de database
-      final dailyLogs = await db.getDailyLogs();
       final now = DateTime.now();
       final weekAgo = now.subtract(const Duration(days: 7));
+      final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      
+      // Haal alle dagelijkse logs op
+      final dailyLogs = await db.getDailyLogs();
       
       // Bereken slaapkwaliteit (gemiddelde van laatste 7 dagen)
       double totalSleep = 0;
@@ -68,7 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final sleepScore = avgSleep > 0 ? ((avgSleep / 8) * 10).clamp(0, 10) : 0;
       
       // Ritme stabiliteit: percentage geplande vs daadwerkelijke activiteiten
-      final srmActivities = await db.getSrmActivities('${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}');
+      final srmActivities = await db.getSrmActivities(todayStr);
       int onTimeCount = 0;
       for (var activity in srmActivities) {
         if (activity['actual_time'] != null && activity['p_score'] != null && activity['p_score'] as int >= 3) {
