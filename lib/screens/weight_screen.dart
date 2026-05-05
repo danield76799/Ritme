@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../widgets/app_scaffold.dart';
+import '../utils/app_theme.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:intl/intl.dart';
+import '../widgets/app_scaffold.dart';
 import '../service_locator.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/datum_navigator.dart';
+import '../widgets/app_scaffold.dart';
 
 class WeightScreen extends StatefulWidget {
   const WeightScreen({super.key});

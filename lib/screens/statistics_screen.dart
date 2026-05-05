@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../widgets/app_scaffold.dart';
+import '../utils/app_theme.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:pdf/pdf.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:pdf/widgets.dart' as pw;
+import '../widgets/app_scaffold.dart';
 import 'package:printing/printing.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../widgets/app_scaffold.dart';
 import '../service_locator.dart';
-import '../theme/app_theme.dart';
+import '../widgets/app_scaffold.dart';
+import '../utils/app_theme.dart';
+import '../widgets/app_scaffold.dart';
 
 class StatistiekenScherm extends StatefulWidget {
   @override

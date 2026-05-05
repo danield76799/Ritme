@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../utils/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
+import '../widgets/app_scaffold.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -101,23 +102,16 @@ class _MoodScreenState extends State<MoodScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        title: const Text(
-          'Stemming',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+    return AppScaffold(
+      title: 'Stemming',
+      currentRoute: '/mood',
+      bottomNavIndex: 1,
+      actions: [
+        TextButton(
+          onPressed: _opslaan,
+          child: const Text('Opslaan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
         ),
-        backgroundColor: AppTheme.primaryTeal,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          TextButton(
-            onPressed: _opslaan,
-            child: const Text('Opslaan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
+      ],
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : Column(

@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../widgets/app_scaffold.dart';
+import '../utils/app_theme.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:flutter/services.dart';
+import '../widgets/app_scaffold.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/app_scaffold.dart';
 import '../service_locator.dart';
-import '../theme/app_theme.dart';
+import '../widgets/app_scaffold.dart';
+import '../utils/app_theme.dart';
+import '../widgets/app_scaffold.dart';
 
 class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
