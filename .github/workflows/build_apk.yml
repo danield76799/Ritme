@@ -55,16 +55,16 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: build/app/outputs/flutter-apk/app-release.apk
-        tag_name: v1.3.0-build${{ github.run_number }}
-        name: Ritme v1.3.0 (Build ${{ github.run_number }})
+        tag_name: v1.2.1-build${{ github.run_number }}
+        name: Ritme v1.2.1 (Build ${{ github.run_number }})
         body: |
-          ## Ritme - SRT Tracker v1.3.0
+          ## Ritme - SRT Tracker v1.2.1
           
           **Nieuwe features:**
-          - Gewicht tracking met grafiek
-          - Medische afspraken met notities
-          - Medicatie schema met herinneringen
-          - Verbeterde UI/UX
+          - Verbeterde navigatie met drawer menu
+          - Bottom navigation bar voor snelle toegang
+          - Consistente AppScaffold widget
+          - Betere UX/UI over alle schermen
           
           **Build info:**
           - Build nummer: ${{ github.run_number }}
