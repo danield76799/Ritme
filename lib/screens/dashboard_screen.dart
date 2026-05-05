@@ -16,11 +16,12 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _settings;
   bool _isLoading = true;
-
-  // Kleuren uit huisstijl
-
-
-
+  
+  // Dynamische data voor overview
+  double _sleepQuality = 0.0;
+  double _rhythmStability = 0.0;
+  int _weeklyActivities = 0;
+  DateTime? _lastUpdated;
 
   @override
   void initState() {
@@ -30,16 +31,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadData() async {
-    final settings = await db.getSettings();
+    try {
+      final settings = await db.getSettings();
+      
+      // Haal echte data op uit de database
+      final dailyLogs = await db.getDailyLogs();
+      final now = DateTime.now();
+      final weekAgo = now.subtract(const Duration(days: 7));
+      
+      // Bereken slaapkwaliteit (gemiddelde van laatste 7 dagen)
+      double totalSleep = 0;
+      int sleepCount = 0;
+      int activityCount = 0;
+      
+      for (var log in dailyLogs) {
+        final logDate = DateTime.parse(log['date'] as String);
+        
+        if (logDate.isAfter(weekAgo)) {
+          // Tel activiteiten
+          if (log['activity_type'] != null) {
+            activityCount++;
+          }
+          
+          // Slaapkwaliteit
+          final sleep = log['uren_slaap'] as double?;
+          if (sleep != null && sleep > 0) {
+            totalSleep += sleep;
+            sleepCount++;
+          }
+        }
+      }
+      
+      // Bereken gemiddelden
+      final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0;
+      // Slaapkwaliteit score: 0-10 (8 uur = 10, minder = lager)
+      final sleepScore = avgSleep > 0 ? ((avgSleep / 8) * 10).clamp(0, 10) : 0;
+      
+      // Ritme stabiliteit: percentage geplande vs daadwerkelijke activiteiten
+      final srmActivities = await db.getSrmActivities('${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}');
+      int onTimeCount = 0;
+      for (var activity in srmActivities) {
+        if (activity['actual_time'] != null && activity['p_score'] != null && activity['p_score'] as int >= 3) {
+          onTimeCount++;
+        }
+      }
+      final stability = srmActivities.isNotEmpty ? (onTimeCount / srmActivities.length * 100) : 0;
 
-    setState(() {
-      _settings = settings;
-      _isLoading = false;
-    });
+      setState(() {
+        _settings = settings;
+        _sleepQuality = sleepScore;
+        _rhythmStability = stability;
+        _weeklyActivities = activityCount;
+        _lastUpdated = DateTime.now();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _setupNotifications() async {
-    // Only setup notifications on mobile (not web)
     if (!kIsWeb) {
       await NotificationHelper.instance.initialize();
     }
@@ -51,6 +104,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
+  }
+
+  String _getGreeting(String name) {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Goedemorgen, $name!';
+    } else if (hour < 17) {
+      return 'Goedemiddag, $name!';
+    } else if (hour < 21) {
+      return 'Goedenavond, $name!';
+    } else {
+      return 'Goedenacht, $name!';
+    }
+  }
+
+  String _formatLastUpdated() {
+    if (_lastUpdated == null) return '';
+    final now = DateTime.now();
+    final diff = now.difference(_lastUpdated!);
+    
+    if (diff.inSeconds < 60) {
+      return 'Zojuist bijgewerkt';
+    } else if (diff.inMinutes < 60) {
+      return '${diff.inMinutes} min geleden bijgewerkt';
+    } else if (diff.inHours < 24) {
+      return '${diff.inHours} uur geleden bijgewerkt';
+    } else {
+      return '${diff.inDays} dagen geleden bijgewerkt';
+    }
   }
 
   @override
@@ -67,20 +149,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final today = DateTime.now();
     final dateStr = '${today.day}/${today.month}/${today.year}';
     final username = _settings?['username']?.toString() ?? 'gebruiker';
-    
-    // Dynamische groet gebaseerd op tijd van dag
-    String _getGreeting(String name) {
-      final hour = DateTime.now().hour;
-      if (hour < 12) {
-        return 'Goedemorgen, $name!';
-      } else if (hour < 17) {
-        return 'Goedemiddag, $name!';
-      } else if (hour < 21) {
-        return 'Goedenavond, $name!';
-      } else {
-        return 'Goedenacht, $name!';
-      }
-    }
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -114,199 +182,219 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- WELKOMST BANNER ---
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryTeal.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          color: AppTheme.primaryTeal,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- WELKOMST BANNER ---
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        _getGreeting(username),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryTeal.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _getGreeting(username),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      dateStr,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 15,
+                      const SizedBox(height: 4),
+                      Text(
+                        dateStr,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          _buildTimeChip(Icons.wb_sunny_outlined, 'Opstaan', _settings?['target_opstaan'] ?? '08:00'),
+                          _buildTimeChip(Icons.nightlight_round, 'Slapen', _settings?['target_slapen'] ?? '23:00'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 28),
+                
+                // --- VANDAAG SECTIE ---
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryTeal,
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        _buildTimeChip(Icons.wb_sunny_outlined, 'Opstaan', _settings?['target_opstaan'] ?? '08:00'),
-                        _buildTimeChip(Icons.nightlight_round, 'Slapen', _settings?['target_slapen'] ?? '23:00'),
-                      ],
+                    const SizedBox(width: 12),
+                    Text(
+                      'Vandaag',
+                      style: TextStyle(
+                        color: AppTheme.textCharcoal,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              
-              const SizedBox(height: 28),
-              
-              // --- VANDAAG SECTIE ---
-              Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryTeal,
-                      borderRadius: BorderRadius.circular(2),
+                const SizedBox(height: 16),
+                
+                // Grid met de 4 knoppen
+                GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  shrinkWrap: true,
+                  childAspectRatio: 1.15,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildActionCard(
+                      context, 
+                      icon: Icons.sentiment_satisfied_alt, 
+                      iconColor: Colors.orange, 
+                      title: 'Stemming', 
+                      route: '/mood',
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Vandaag',
-                    style: TextStyle(
-                      color: AppTheme.textCharcoal,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                    _buildActionCard(
+                      context, 
+                      icon: Icons.directions_walk, 
+                      iconColor: Colors.green, 
+                      title: 'Activiteit', 
+                      route: '/activity',
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Grid met de 4 knoppen
-              GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                shrinkWrap: true,
-                childAspectRatio: 1.15,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildActionCard(
-                    context, 
-                    icon: Icons.sentiment_satisfied_alt, 
-                    iconColor: Colors.orange, 
-                    title: 'Stemming', 
-                    route: '/mood',
-                  ),
-                  _buildActionCard(
-                    context, 
-                    icon: Icons.directions_walk, 
-                    iconColor: Colors.green, 
-                    title: 'Activiteit', 
-                    route: '/activity',
-                  ),
-                  _buildMedicatieCard(context),
-                  _buildActionCard(
-                    context, 
-                    icon: Icons.monitor_weight, 
-                    iconColor: Colors.blueAccent, 
-                    title: 'Gewicht', 
-                    route: '/weight',
-                  ),
-                  _buildActionCard(
-                    context, 
-                    icon: Icons.calendar_today_outlined, 
-                    iconColor: Colors.purpleAccent, 
-                    title: 'Afspraken', 
-                    route: '/appointments',
-                  ),
-                  _buildActionCard(
-                    context, 
-                    icon: Icons.schedule, 
-                    iconColor: Colors.teal, 
-                    title: 'Sociaal Ritme', 
-                    route: '/sociaal-ritme',
-                  ),
-                ],
-              ),
+                    _buildMedicatieCard(context),
+                    _buildActionCard(
+                      context, 
+                      icon: Icons.monitor_weight, 
+                      iconColor: Colors.blueAccent, 
+                      title: 'Gewicht', 
+                      route: '/weight',
+                    ),
+                    _buildActionCard(
+                      context, 
+                      icon: Icons.calendar_today_outlined, 
+                      iconColor: Colors.purpleAccent, 
+                      title: 'Afspraken', 
+                      route: '/appointments',
+                    ),
+                    _buildActionCard(
+                      context, 
+                      icon: Icons.schedule, 
+                      iconColor: Colors.teal, 
+                      title: 'Sociaal Ritme', 
+                      route: '/sociaal-ritme',
+                    ),
+                  ],
+                ),
 
-              const SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-              // --- OVERZICHT SECTIE ---
-              Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryTeal,
-                      borderRadius: BorderRadius.circular(2),
+                // --- OVERZICHT SECTIE ---
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryTeal,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Overzicht',
-                    style: TextStyle(
-                      color: AppTheme.textCharcoal,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Overzicht',
+                            style: TextStyle(
+                              color: AppTheme.textCharcoal,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (_lastUpdated != null)
+                            Text(
+                              _formatLastUpdated(),
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 12,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              _buildOverviewCard(
-                icon: Icons.show_chart,
-                title: 'Slaapkwaliteit',
-                value: '7.2',
-                unit: '/10',
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 12),
-              _buildOverviewCard(
-                icon: Icons.schedule,
-                title: 'Ritme stabiliteit',
-                value: '82',
-                unit: '%',
-                color: Colors.green,
-              ),
-              const SizedBox(height: 12),
-              _buildOverviewCard(
-                icon: Icons.local_activity,
-                title: 'Activiteiten deze week',
-                value: '24',
-                unit: '',
-                color: Colors.orange,
-              ),
-              const SizedBox(height: 12),
-              _buildActionCard(
-                context,
-                icon: Icons.insights,
-                iconColor: Colors.teal,
-                title: 'Inzichten & Patronen',
-                route: '/insights',
-              ),
-              const SizedBox(height: 80),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                _buildOverviewCard(
+                  icon: Icons.show_chart,
+                  title: 'Slaapkwaliteit',
+                  value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
+                  unit: '/10',
+                  color: Colors.blue,
+                ),
+                const SizedBox(height: 12),
+                _buildOverviewCard(
+                  icon: Icons.schedule,
+                  title: 'Ritme stabiliteit',
+                  value: _rhythmStability > 0 ? _rhythmStability.round().toString() : '-',
+                  unit: '%',
+                  color: Colors.green,
+                ),
+                const SizedBox(height: 12),
+                _buildOverviewCard(
+                  icon: Icons.local_activity,
+                  title: 'Activiteiten deze week',
+                  value: _weeklyActivities > 0 ? _weeklyActivities.toString() : '-',
+                  unit: '',
+                  color: Colors.orange,
+                ),
+                const SizedBox(height: 12),
+                _buildActionCard(
+                  context,
+                  icon: Icons.insights,
+                  iconColor: Colors.teal,
+                  title: 'Inzichten & Patronen',
+                  route: '/insights',
+                ),
+                const SizedBox(height: 80),
+              ],
+            ),
           ),
         ),
       ),
@@ -324,182 +412,120 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildTimeChip(IconData icon, String label, String value) {
+  Widget _buildTimeChip(IconData icon, String label, String time) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
-          width: 1,
-        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: Colors.white, size: 18),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 11,
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          const SizedBox(width: 6),
+          Text(
+            '$label: $time',
+            style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionCard(BuildContext context, {
-    required IconData icon, 
-    required Color iconColor, 
-    required String title, 
+  Widget _buildActionCard(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String title,
     required String route,
   }) {
     return GestureDetector(
-      onTap: () {
-        try {
-          Navigator.pushNamed(context, route);
-        } catch (e) {
-          // Fallback als de route niet bestaat
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Route $route niet gevonden'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      },
+      onTap: () => Navigator.pushNamed(context, route),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 32),
               ),
-              child: Icon(icon, color: iconColor, size: 36),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: AppTheme.textCharcoal,
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AppTheme.textCharcoal,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildMedicatieCard(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-        child: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'log') {
-              Navigator.pushNamed(context, '/medication');
-            } else if (value == 'schema') {
-              Navigator.pushNamed(context, '/medication-schedule');
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'log',
-              child: Row(
-                children: [
-                  Icon(Icons.medication_outlined, color: Colors.redAccent),
-                  const SizedBox(width: 12),
-                  Text('Inname loggen'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'schema',
-              child: Row(
-                children: [
-                  Icon(Icons.schedule, color: Colors.tealAccent),
-                  const SizedBox(width: 12),
-                  Text('Schema beheren'),
-                ],
-              ),
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/medication'),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.medication_outlined, color: Colors.redAccent, size: 36),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Medicatie',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: AppTheme.textCharcoal,
-                  ),
-                  textAlign: TextAlign.center,
+                child: Icon(Icons.medication_outlined, color: Colors.redAccent, size: 36),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Medicatie',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AppTheme.textCharcoal,
                 ),
-                const SizedBox(height: 4),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+            ],
           ),
         ),
       ),
@@ -595,5 +621,3 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
-
-
