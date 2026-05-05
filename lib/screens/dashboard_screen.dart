@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
-import '../theme/app_theme.dart';
 import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
