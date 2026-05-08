@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'database_repository.dart';
+import '../utils/logger.dart';
 
 class DatabaseHelper implements DatabaseRepository {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -16,9 +17,14 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = p.join(dbPath, filePath);
-    return await openDatabase(path, version: 2, onCreate: _createDB, onUpgrade: _upgradeDB);
+    try {
+      final dbPath = await getDatabasesPath();
+      final path = p.join(dbPath, filePath);
+      return await openDatabase(path, version: 2, onCreate: _createDB, onUpgrade: _upgradeDB);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to initialize database', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {

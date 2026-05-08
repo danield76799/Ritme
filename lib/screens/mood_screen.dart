@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 import '../widgets/app_scaffold.dart';
+import '../utils/logger.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -18,6 +19,7 @@ class _MoodScreenState extends State<MoodScreen> {
   double _stemmingWaarde = 50.0;
   int _stemmingsOmslagen = 0;
   bool _isLoading = true;
+  String? _errorMessage;
 
   String get _formattedDate {
     return '${_geselecteerdeDatum.year}-${_geselecteerdeDatum.month.toString().padLeft(2, '0')}-${_geselecteerdeDatum.day.toString().padLeft(2, '0')}';
@@ -30,20 +32,30 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    final log = await db.getDailyLog(_formattedDate);
+    try {
+      final log = await db.getDailyLog(_formattedDate);
 
-    if (log != null) {
-      final stemming = log['stemming_ochtend'] as int?;
-      if (stemming != null) {
-        _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
+      if (log != null) {
+        final stemming = log['stemming_ochtend'] as int?;
+        if (stemming != null) {
+          _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
+        }
+        final omslagen = log['stemmingsomslagen'] as int?;
+        if (omslagen != null) _stemmingsOmslagen = omslagen;
+      } else {
+        _stemmingWaarde = 50.0;
+        _stemmingsOmslagen = 0;
       }
-      final omslagen = log['stemmingsomslagen'] as int?;
-      if (omslagen != null) _stemmingsOmslagen = omslagen;
-    } else {
-      _stemmingWaarde = 50.0;
-      _stemmingsOmslagen = 0;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to load mood data', error: e, stackTrace: stackTrace);
+      setState(() {
+        _errorMessage = 'Kon gegevens niet laden. Probeer opnieuw.';
+      });
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -55,24 +67,38 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Future<void> _opslaan() async {
-    final stemming = ((_stemmingWaarde / 100) * 10 - 5).round();
+    try {
+      final stemming = ((_stemmingWaarde / 100) * 10 - 5).round();
 
-    await db.upsertDailyLog({
-      'date': _formattedDate,
-      'stemming_ochtend': stemming,
-      'stemmingsomslagen': _stemmingsOmslagen,
-    });
+      await db.upsertDailyLog({
+        'date': _formattedDate,
+        'stemming_ochtend': stemming,
+        'stemmingsomslagen': _stemmingsOmslagen,
+      });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Opgeslagen!'),
-          backgroundColor: AppTheme.primaryTeal,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 1),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Opgeslagen!'),
+            backgroundColor: AppTheme.primaryTeal,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to save mood data', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Kon gegevens niet opslaan. Probeer opnieuw.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
     }
   }
 
