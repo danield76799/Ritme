@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_scaffold.dart';
 import '../utils/app_theme.dart';
-import '../widgets/app_scaffold.dart';
 import 'package:intl/intl.dart';
-import '../widgets/app_scaffold.dart';
 import '../service_locator.dart';
-import '../widgets/app_scaffold.dart';
 import '../widgets/datum_navigator.dart';
 import '../widgets/app_scaffold.dart';
+import '../utils/logger.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -18,6 +15,7 @@ class ActivityScreen extends StatefulWidget {
 
 class _ActivityScreenState extends State<ActivityScreen> {
   bool _isLoading = true;
+  String? _errorMessage;
   DateTime _geselecteerdeDatum = DateTime.now();
 
   String get _formattedDate {
@@ -39,25 +37,35 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    final settings = await db.getSettings();
-    if (settings != null) {
-      _activiteiten[0]['richttijd'] = _parseTimeOfDay(settings['target_wake_time']);
-      _activiteiten[1]['richttijd'] = _parseTimeOfDay(settings['target_first_contact']);
-      _activiteiten[2]['richttijd'] = _parseTimeOfDay(settings['target_work']);
-      _activiteiten[3]['richttijd'] = _parseTimeOfDay(settings['target_dinner']);
-      _activiteiten[4]['richttijd'] = _parseTimeOfDay(settings['target_sleep_time']);
-    }
-
-    final activities = await db.getSrmActivities(_formattedDate);
-    
-    for (var activity in activities) {
-      final index = _activiteiten.indexWhere((a) => a['naam'] == activity['activity_type']);
-      if (index != -1) {
-        _activiteiten[index]['werkelijke_tijd'] = _parseTimeOfDay(activity['actual_time']);
-        _activiteiten[index]['p_score'] = activity['p_score'] ?? 0;
+    try {
+      final settings = await db.getSettings();
+      if (settings != null) {
+        _activiteiten[0]['richttijd'] = _parseTimeOfDay(settings['target_wake_time']);
+        _activiteiten[1]['richttijd'] = _parseTimeOfDay(settings['target_first_contact']);
+        _activiteiten[2]['richttijd'] = _parseTimeOfDay(settings['target_work']);
+        _activiteiten[3]['richttijd'] = _parseTimeOfDay(settings['target_dinner']);
+        _activiteiten[4]['richttijd'] = _parseTimeOfDay(settings['target_sleep_time']);
       }
+
+      final activities = await db.getSrmActivities(_formattedDate);
+      
+      for (var activity in activities) {
+        final index = _activiteiten.indexWhere((a) => a['naam'] == activity['activity_type']);
+        if (index != -1) {
+          _activiteiten[index]['werkelijke_tijd'] = _parseTimeOfDay(activity['actual_time']);
+          _activiteiten[index]['p_score'] = activity['p_score'] ?? 0;
+        }
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to load activity data', error: e, stackTrace: stackTrace);
+      setState(() {
+        _errorMessage = 'Kon activiteitengegevens niet laden. Probeer opnieuw.';
+      });
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -101,17 +109,31 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   Future<void> _toggleActivity(int index) async {
-    final activity = _activiteiten[index];
-    String name = activity['naam'];
-    TimeOfDay nu = TimeOfDay.now();
-    String timeStr = '${nu.hour.toString().padLeft(2, '0')}:${nu.minute.toString().padLeft(2, '0')}';
+    try {
+      final activity = _activiteiten[index];
+      String name = activity['naam'];
+      TimeOfDay nu = TimeOfDay.now();
+      String timeStr = '${nu.hour.toString().padLeft(2, '0')}:${nu.minute.toString().padLeft(2, '0')}';
 
-    int currentScore = activity['p_score'] ?? 0;
-    int newScore = currentScore == 0 ? 1 : 0;
+      int currentScore = activity['p_score'] ?? 0;
+      int newScore = currentScore == 0 ? 1 : 0;
 
-    await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
+      await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
 
-    _loadData();
+      _loadData();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to toggle activity', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Kon activiteit niet opslaan. Probeer opnieuw.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
   }
 
   @override

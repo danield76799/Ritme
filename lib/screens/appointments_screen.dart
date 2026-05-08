@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_scaffold.dart';
 import '../utils/app_theme.dart';
-import '../widgets/app_scaffold.dart';
 import 'package:intl/intl.dart';
-import '../widgets/app_scaffold.dart';
 import '../service_locator.dart';
-import '../widgets/app_scaffold.dart';
+import '../utils/logger.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -17,6 +14,7 @@ class AppointmentsScreen extends StatefulWidget {
 class _AppointmentsScreenState extends State<AppointmentsScreen> {
   List<Map<String, dynamic>> _appointments = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -25,361 +23,228 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   Future<void> _loadAppointments() async {
-    final appointments = await db.getMedicalAppointments();
     setState(() {
-      _appointments = appointments;
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final appointments = await db.getMedicalAppointments();
+      setState(() {
+        _appointments = appointments;
+        _isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to load appointments', error: e, stackTrace: stackTrace);
+      setState(() {
+        _errorMessage = 'Kon afspraken niet laden. Probeer opnieuw.';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _addAppointment() async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => _AppointmentDialog(),
-    );
+    try {
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => _AppointmentDialog(),
+      );
 
-    if (result != null) {
-      await db.insertMedicalAppointment(result);
-      _loadAppointments();
+      if (result != null) {
+        await db.insertMedicalAppointment(result);
+        _loadAppointments();
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to add appointment', error: e, stackTrace: stackTrace);
+      _showError('Kon afspraak niet toevoegen.');
     }
   }
 
   Future<void> _editAppointment(Map<String, dynamic> appointment) async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => _AppointmentDialog(appointment: appointment),
-    );
+    try {
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => _AppointmentDialog(appointment: appointment),
+      );
 
-    if (result != null) {
-      await db.updateMedicalAppointment(appointment['id'], result);
-      _loadAppointments();
+      if (result != null) {
+        await db.updateMedicalAppointment(appointment['id'], result);
+        _loadAppointments();
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to edit appointment', error: e, stackTrace: stackTrace);
+      _showError('Kon afspraak niet bewerken.');
     }
   }
 
   Future<void> _deleteAppointment(int id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Afspraak verwijderen?'),
-        content: const Text('Deze actie kan niet ongedaan worden.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuleren'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Afspraak verwijderen?'),
+          content: const Text('Deze actie kan niet ongedaan worden.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Annuleren'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
 
-    if (confirmed == true) {
-      await db.deleteMedicalAppointment(id);
-      _loadAppointments();
+      if (confirmed == true) {
+        await db.deleteMedicalAppointment(id);
+        _loadAppointments();
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to delete appointment', error: e, stackTrace: stackTrace);
+      _showError('Kon afspraak niet verwijderen.');
     }
   }
 
-  List<Map<String, dynamic>> _getUpcomingAppointments() {
-    final today = DateTime.now();
-    final todayStr = DateFormat('yyyy-MM-dd').format(today);
-    return _appointments.where((apt) {
-      return apt['appointment_date'].compareTo(todayStr) >= 0;
-    }).toList();
-  }
-
-  List<Map<String, dynamic>> _getPastAppointments() {
-    final today = DateTime.now();
-    final todayStr = DateFormat('yyyy-MM-dd').format(today);
-    return _appointments.where((apt) {
-      return apt['appointment_date'].compareTo(todayStr) < 0;
-    }).toList();
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final upcoming = _getUpcomingAppointments();
-    final past = _getPastAppointments();
-
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
+        title: const Text('Afspraken', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
-        title: const Text(
-          'Medische Afspraken',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
-          : SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (upcoming.isNotEmpty) ...[
-                      Row(
-                        children: [
-                          Container(
-                            width: 4,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryTeal,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Aankomende afspraken',
-                            style: TextStyle(
-                              color: AppTheme.textCharcoal,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      ...upcoming.map((apt) => _buildAppointmentCard(apt, isUpcoming: true)),
-                      const SizedBox(height: 24),
-                    ],
-                    if (past.isNotEmpty) ...[
-                      Row(
-                        children: [
-                          Container(
-                            width: 4,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[400],
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Verleden afspraken',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      ...past.map((apt) => _buildAppointmentCard(apt, isUpcoming: false)),
-                    ],
-                    if (_appointments.isEmpty)
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 80),
-                            Icon(Icons.calendar_today_outlined, size: 80, color: Colors.grey[300]),
-                            const SizedBox(height: 20),
-                            Text(
-                              'Nog geen afspraken',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[500],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Voeg je eerste medische afspraak toe',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[400],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+          : _errorMessage != null
+              ? _buildErrorWidget()
+              : _appointments.isEmpty
+                  ? _buildEmptyState()
+                  : _buildAppointmentsList(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addAppointment,
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Afspraak toevoegen',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        label: const Text('Nieuwe afspraak', style: TextStyle(color: Colors.white)),
       ),
     );
   }
 
-  Widget _buildAppointmentCard(Map<String, dynamic> appointment, {required bool isUpcoming}) {
-    final date = DateTime.parse(appointment['appointment_date']);
-    final time = appointment['appointment_time']?.toString() ?? '';
-    final daysUntil = date.difference(DateTime.now()).inDays;
-
-    String daysText;
-    if (daysUntil == 0) {
-      daysText = 'Vandaag';
-    } else if (daysUntil == 1) {
-      daysText = 'Morgen';
-    } else {
-      daysText = 'Over $daysUntil dagen';
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage!,
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadAppointments,
+            child: const Text('Opnieuw proberen'),
           ),
         ],
       ),
-      child: InkWell(
-        onTap: () => _editAppointment(appointment),
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isUpcoming
-                        ? [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)]
-                        : [Colors.grey[400]!, Colors.grey[500]!],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      DateFormat('d').format(date),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      DateFormat('MMM').format(date).toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      appointment['title'] ?? '',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textCharcoal,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    if (appointment['doctor_name'] != null)
-                      Row(
-                        children: [
-                          Icon(Icons.person_outline, size: 14, color: Colors.grey[500]),
-                          const SizedBox(width: 4),
-                          Text(
-                            appointment['doctor_name'],
-                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    if (appointment['location'] != null)
-                      Row(
-                        children: [
-                          Icon(Icons.location_on_outlined, size: 14, color: Colors.grey[500]),
-                          const SizedBox(width: 4),
-                          Text(
-                            appointment['location'],
-                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isUpcoming
-                                ? AppTheme.primaryTeal.withValues(alpha: 0.1)
-                                : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            isUpcoming ? daysText : DateFormat('d MMM yyyy').format(date),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: isUpcoming ? AppTheme.primaryTeal : Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                        if (time.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.access_time, size: 12, color: Colors.orange[700]),
-                                const SizedBox(width: 4),
-                                Text(
-                                  time,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange[700],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete_outline, color: Colors.grey[400]),
-                onPressed: () => _deleteAppointment(appointment['id']),
-              ),
-            ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.calendar_today_outlined, size: 48, color: Colors.grey[400]),
+          const SizedBox(height: 12),
+          Text(
+            'Geen afspraken',
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
+          const SizedBox(height: 4),
+          Text(
+            'Tik + om een afspraak toe te voegen',
+            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppointmentsList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _appointments.length,
+      itemBuilder: (context, index) {
+        final appointment = _appointments[index];
+        return _buildAppointmentCard(appointment);
+      },
+    );
+  }
+
+  Widget _buildAppointmentCard(Map<String, dynamic> appointment) {
+    final title = appointment['title'] ?? 'Onbekend';
+    final doctor = appointment['doctor_name'] ?? '';
+    final location = appointment['location'] ?? '';
+    final date = appointment['appointment_date'] ?? '';
+    final time = appointment['appointment_time'] ?? '';
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(Icons.calendar_today, color: AppTheme.primaryTeal),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (doctor.isNotEmpty) Text('Dokter: $doctor'),
+            if (location.isNotEmpty) Text('Locatie: $location'),
+            Text('$date ${time.isNotEmpty ? 'om $time' : ''}'),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              onPressed: () => _editAppointment(appointment),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+              onPressed: () => _deleteAppointment(appointment['id']),
+            ),
+          ],
         ),
       ),
     );
@@ -396,129 +261,67 @@ class _AppointmentDialog extends StatefulWidget {
 }
 
 class _AppointmentDialogState extends State<_AppointmentDialog> {
-  final _titleController = TextEditingController();
-  final _doctorController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _notesController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
-  TimeOfDay? _selectedTime;
-  bool _reminderEnabled = true;
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _titleController;
+  late TextEditingController _doctorController;
+  late TextEditingController _locationController;
+  late TextEditingController _dateController;
+  late TextEditingController _timeController;
 
   @override
   void initState() {
     super.initState();
-    if (widget.appointment != null) {
-      _titleController.text = widget.appointment!['title'] ?? '';
-      _doctorController.text = widget.appointment!['doctor_name'] ?? '';
-      _locationController.text = widget.appointment!['location'] ?? '';
-      _notesController.text = widget.appointment!['notes'] ?? '';
-      _selectedDate = DateTime.parse(widget.appointment!['appointment_date']);
-      if (widget.appointment!['appointment_time'] != null) {
-        final parts = widget.appointment!['appointment_time'].toString().split(':');
-        _selectedTime = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-      }
-      _reminderEnabled = widget.appointment!['reminder_enabled'] == 1;
-    }
+    _titleController = TextEditingController(text: widget.appointment?['title'] ?? '');
+    _doctorController = TextEditingController(text: widget.appointment?['doctor_name'] ?? '');
+    _locationController = TextEditingController(text: widget.appointment?['location'] ?? '');
+    _dateController = TextEditingController(text: widget.appointment?['appointment_date'] ?? '');
+    _timeController = TextEditingController(text: widget.appointment?['appointment_time'] ?? '');
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _doctorController.dispose();
+    _locationController.dispose();
+    _dateController.dispose();
+    _timeController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text(widget.appointment == null ? 'Afspraak toevoegen' : 'Afspraak bewerken'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                labelText: 'Titel *',
-                prefixIcon: const Icon(Icons.title),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      title: Text(widget.appointment == null ? 'Nieuwe afspraak' : 'Afspraak bewerken'),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Titel *'),
+                validator: (value) => value?.isEmpty == true ? 'Titel is verplicht' : null,
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _doctorController,
-              decoration: InputDecoration(
-                labelText: 'Dokter/Arts',
-                prefixIcon: const Icon(Icons.person_outline),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              TextFormField(
+                controller: _doctorController,
+                decoration: const InputDecoration(labelText: 'Dokter'),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _locationController,
-              decoration: InputDecoration(
-                labelText: 'Locatie',
-                prefixIcon: const Icon(Icons.location_on_outlined),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              TextFormField(
+                controller: _locationController,
+                decoration: const InputDecoration(labelText: 'Locatie'),
               ),
-            ),
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-                );
-                if (date != null) {
-                  setState(() => _selectedDate = date);
-                }
-              },
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Datum *',
-                  prefixIcon: const Icon(Icons.calendar_today),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: Text(DateFormat('d MMMM yyyy').format(_selectedDate)),
+              TextFormField(
+                controller: _dateController,
+                decoration: const InputDecoration(labelText: 'Datum (YYYY-MM-DD) *'),
+                validator: (value) => value?.isEmpty == true ? 'Datum is verplicht' : null,
               ),
-            ),
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: () async {
-                final time = await showTimePicker(
-                  context: context,
-                  initialTime: _selectedTime ?? TimeOfDay.now(),
-                );
-                if (time != null) {
-                  setState(() => _selectedTime = time);
-                }
-              },
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Tijd (optioneel)',
-                  prefixIcon: const Icon(Icons.access_time),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: Text(_selectedTime != null
-                    ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
-                    : 'Selecteer tijd'),
+              TextFormField(
+                controller: _timeController,
+                decoration: const InputDecoration(labelText: 'Tijd (HH:MM)'),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _notesController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: 'Notities',
-                prefixIcon: const Icon(Icons.notes),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SwitchListTile(
-              title: const Text('Herinnering'),
-              subtitle: const Text('Krijg een melding voor de afspraak'),
-              value: _reminderEnabled,
-              onChanged: (value) => setState(() => _reminderEnabled = value),
-              activeColor: AppTheme.primaryTeal,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: [
@@ -528,25 +331,17 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            if (_titleController.text.isNotEmpty) {
+            if (_formKey.currentState?.validate() ?? false) {
               Navigator.pop(context, {
                 'title': _titleController.text,
-                'doctor_name': _doctorController.text.isEmpty ? null : _doctorController.text,
-                'location': _locationController.text.isEmpty ? null : _locationController.text,
-                'appointment_date': DateFormat('yyyy-MM-dd').format(_selectedDate),
-                'appointment_time': _selectedTime != null
-                    ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
-                    : null,
-                'notes': _notesController.text.isEmpty ? null : _notesController.text,
-                'reminder_enabled': _reminderEnabled ? 1 : 0,
+                'doctor_name': _doctorController.text,
+                'location': _locationController.text,
+                'appointment_date': _dateController.text,
+                'appointment_time': _timeController.text,
               });
             }
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryTeal,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
+          child: const Text('Opslaan'),
         ),
       ],
     );
