@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_scaffold.dart';
 import '../utils/app_theme.dart';
-import '../widgets/app_scaffold.dart';
-import 'package:fl_chart/fl_chart.dart';
-import '../widgets/app_scaffold.dart';
-import 'package:intl/intl.dart';
-import '../widgets/app_scaffold.dart';
 import '../service_locator.dart';
-import '../widgets/app_scaffold.dart';
-import '../widgets/datum_navigator.dart';
-import '../widgets/app_scaffold.dart';
+import '../utils/logger.dart';
 
 class WeightScreen extends StatefulWidget {
   const WeightScreen({super.key});
@@ -21,107 +13,77 @@ class WeightScreen extends StatefulWidget {
 class _WeightScreenState extends State<WeightScreen> {
   List<Map<String, dynamic>> _weightLogs = [];
   bool _isLoading = true;
-  DateTime _selectedDate = DateTime.now();
-  
-
-
-
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadWeightLogs();
+    _loadData();
   }
 
-  Future<void> _loadWeightLogs() async {
-    final logs = await db.getWeightLogs();
+  Future<void> _loadData() async {
     setState(() {
-      _weightLogs = logs;
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final logs = await (db as dynamic).getWeightLogs();
+      setState(() {
+        _weightLogs = logs;
+        _isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to load weight data', error: e, stackTrace: stackTrace);
+      setState(() {
+        _errorMessage = 'Kon gewichtsgegevens niet laden.';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _addWeightLog() async {
-    final weightController = TextEditingController();
-    final notesController = TextEditingController();
-
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Gewicht toevoegen'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: weightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Gewicht (kg)',
-                prefixIcon: const Icon(Icons.monitor_weight),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: notesController,
-              maxLines: 2,
-              decoration: InputDecoration(
-                labelText: 'Notities (optioneel)',
-                prefixIcon: const Icon(Icons.notes),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuleren'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (weightController.text.isNotEmpty) {
-                Navigator.pop(context, {
-                  'weight': double.parse(weightController.text.replaceAll(',', '.')),
-                  'notes': notesController.text,
-                });
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-
-    if (result != null) {
-      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-      await db.insertWeightLog(
-        dateStr,
-        result['weight'],
-        result['notes'].isEmpty ? null : result['notes'],
+    try {
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => _WeightDialog(),
       );
-      _loadWeightLogs();
+
+      if (result != null) {
+        await (db as dynamic).insertWeightLog(
+          result['date'],
+          result['weight'],
+          result['notes'],
+        );
+        _loadData();
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to add weight log', error: e, stackTrace: stackTrace);
+      _showError('Kon gewicht niet toevoegen.');
     }
   }
 
   Future<void> _deleteWeightLog(int id) async {
-    await db.deleteWeightLog(id);
-    _loadWeightLogs();
+    try {
+      await (db as dynamic).deleteWeightLog(id);
+      _loadData();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to delete weight log', error: e, stackTrace: stackTrace);
+      _showError('Kon gewichtslog niet verwijderen.');
+    }
   }
 
-  List<FlSpot> _getChartData() {
-    final spots = <FlSpot>[];
-    for (int i = 0; i < _weightLogs.length; i++) {
-      final log = _weightLogs[i];
-      final weight = (log['weight'] as num).toDouble();
-      spots.add(FlSpot(i.toDouble(), weight));
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
     }
-    return spots;
   }
 
   @override
@@ -129,332 +91,161 @@ class _WeightScreenState extends State<WeightScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
+        title: const Text('Gewicht', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
-        title: const Text(
-          'Gewicht',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
-          : SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Datum navigator
-                    DatumNavigator(
-                      geselecteerdeDatum: _selectedDate,
-                      onDatumVeranderd: (date) {
-                        setState(() => _selectedDate = date);
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Grafiek
-                    if (_weightLogs.length >= 2)
-                      Container(
-                        height: 250,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: LineChart(
-                          LineChartData(
-                            gridData: FlGridData(show: true, drawVerticalLine: false),
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: true, reservedSize: 40),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            ),
-                            borderData: FlBorderData(show: false),
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: _getChartData(),
-                                isCurved: true,
-                                color: AppTheme.primaryTeal,
-                                barWidth: 3,
-                                dotData: FlDotData(show: true),
-                                belowBarData: BarAreaData(
-                                  show: true,
-                                  color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                    if (_weightLogs.length >= 2) const SizedBox(height: 24),
-
-                    // Statistieken
-                    if (_weightLogs.isNotEmpty)
-                      _buildStatsCard(),
-
-                    if (_weightLogs.isNotEmpty) const SizedBox(height: 24),
-
-                    // Geschiedenis
-                    Row(
-                      children: [
-                        Container(
-                          width: 4,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryTeal,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Geschiedenis',
-                          style: TextStyle(
-                            color: AppTheme.textCharcoal,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    if (_weightLogs.isEmpty)
-                      Center(
-                        child: Column(
-                          children: [
-                            Icon(Icons.monitor_weight_outlined, size: 64, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Nog geen gewicht gelogd',
-                              style: TextStyle(color: Colors.grey[500], fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _weightLogs.length,
-                        itemBuilder: (context, index) {
-                          final log = _weightLogs[index];
-                          final date = DateTime.parse(log['date']);
-                          return Dismissible(
-                            key: Key(log['id'].toString()),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 20),
-                              color: Colors.red,
-                              child: const Icon(Icons.delete, color: Colors.white),
-                            ),
-                            onDismissed: (_) => _deleteWeightLog(log['id']),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.04),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(Icons.monitor_weight, color: AppTheme.primaryTeal),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${log['weight']} kg',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppTheme.textCharcoal,
-                                          ),
-                                        ),
-                                        if (log['notes'] != null && log['notes'].toString().isNotEmpty)
-                                          Text(
-                                            log['notes'],
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  Text(
-                                    DateFormat('d MMM yyyy').format(date),
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                  ],
-                ),
-              ),
-            ),
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          : _errorMessage != null
+              ? _buildErrorWidget()
+              : _weightLogs.isEmpty
+                  ? _buildEmptyState()
+                  : _buildWeightList(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addWeightLog,
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Gewicht loggen',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        label: const Text('Toevoegen', style: TextStyle(color: Colors.white)),
       ),
     );
   }
 
-  Widget _buildStatsCard() {
-    final weights = _weightLogs.map((log) => (log['weight'] as num).toDouble()).toList();
-    final minWeight = weights.reduce((a, b) => a < b ? a : b);
-    final maxWeight = weights.reduce((a, b) => a > b ? a : b);
-    final avgWeight = weights.reduce((a, b) => a + b) / weights.length;
-    
-    double? weightChange;
-    if (_weightLogs.length >= 2) {
-      final first = (_weightLogs.first['weight'] as num).toDouble();
-      final last = (_weightLogs.last['weight'] as num).toDouble();
-      weightChange = last - first;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryTeal.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+  Widget _buildErrorWidget() {
+    return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'Statistieken',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage!,
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem('Gemiddeld', '${avgWeight.toStringAsFixed(1)} kg'),
-              ),
-              Expanded(
-                child: _buildStatItem('Min', '${minWeight.toStringAsFixed(1)} kg'),
-              ),
-              Expanded(
-                child: _buildStatItem('Max', '${maxWeight.toStringAsFixed(1)} kg'),
-              ),
-            ],
+          ElevatedButton(
+            onPressed: _loadData,
+            child: const Text('Opnieuw proberen'),
           ),
-          if (weightChange != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    weightChange <= 0 ? Icons.trending_down : Icons.trending_up,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Verandering: ${weightChange > 0 ? '+' : ''}${weightChange.toStringAsFixed(1)} kg',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.monitor_weight_outlined, size: 48, color: Colors.grey[400]),
+          const SizedBox(height: 12),
+          Text(
+            'Geen gewichtsgegevens',
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
+          const SizedBox(height: 4),
+          Text(
+            'Tik + om je gewicht toe te voegen',
+            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeightList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _weightLogs.length,
+      itemBuilder: (context, index) {
+        final log = _weightLogs[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.monitor_weight, color: AppTheme.primaryTeal),
+            ),
+            title: Text(
+              '${log['weight']} kg',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(log['date'] ?? ''),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => _deleteWeightLog(log['id']),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _WeightDialog extends StatefulWidget {
+  @override
+  State<_WeightDialog> createState() => _WeightDialogState();
+}
+
+class _WeightDialogState extends State<_WeightDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _weightController = TextEditingController();
+  final _notesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Gewicht toevoegen'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _weightController,
+              decoration: const InputDecoration(labelText: 'Gewicht (kg) *'),
+              keyboardType: TextInputType.number,
+              validator: (value) => value?.isEmpty == true ? 'Gewicht is verplicht' : null,
+            ),
+            TextFormField(
+              controller: _notesController,
+              decoration: const InputDecoration(labelText: 'Notities'),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 12,
-          ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annuleren'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_formKey.currentState?.validate() ?? false) {
+              Navigator.pop(context, {
+                'date': DateTime.now().toIso8601String().split('T')[0],
+                'weight': double.tryParse(_weightController.text) ?? 0,
+                'notes': _notesController.text,
+              });
+            }
+          },
+          child: const Text('Opslaan'),
         ),
       ],
     );
   }
 }
-
-
-

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_scaffold.dart';
-import '../service_locator.dart';
-import '../widgets/app_scaffold.dart';
 import '../utils/app_theme.dart';
-import '../widgets/app_scaffold.dart';
+import '../service_locator.dart';
+import '../utils/logger.dart';
 
 class GebeurtenisScherm extends StatefulWidget {
   @override
@@ -14,6 +12,7 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
 
   final TextEditingController _omschrijvingController = TextEditingController();
   double _invloedWaarde = 0;
+  bool _isLoading = false;
 
   String get _todayDate {
     final now = DateTime.now();
@@ -45,179 +44,108 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
       return;
     }
 
-    try {
-      final event = {
-        'date': _todayDate,
-        'omschrijving': _omschrijvingController.text.trim(),
-        'invloed': _invloedWaarde.round(),
-      };
-      
-      await db.insertLifeEventMap(event);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gebeurtenis succesvol toegevoegd aan je Life Chart!'),
-            backgroundColor: AppTheme.primaryTeal,
-          ),
-        );
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Fout bij opslaan: $e'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    }
-  }
+    setState(() => _isLoading = true);
 
-  @override
-  void dispose() {
-    _omschrijvingController.dispose();
-    super.dispose();
+    try {
+      await db.insertLifeEvent(_todayDate, _omschrijvingController.text.trim(), _invloedWaarde.toInt());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gebeurtenis opgeslagen!'),
+          backgroundColor: AppTheme.primaryTeal,
+        ),
+      );
+
+      _omschrijvingController.clear();
+      setState(() => _invloedWaarde = 0);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to save event', error: e, stackTrace: stackTrace);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kon gebeurtenis niet opslaan. Probeer opnieuw.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColorAlt,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
+        title: Text('Gebeurtenis', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
-        title: Text('Gebeurtenis Loggen', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Ingrijpende gebeurtenis',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal),
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Beschrijf een belangrijke gebeurtenis van vandaag:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            SizedBox(height: 12),
+            TextField(
+              controller: _omschrijvingController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Bijv. Goed gesprek gehad met...',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Noteer hier belangrijke gebeurtenissen (bijv. ruzie met collega, dochter geslaagd) en de invloed daarvan.',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 32),
-
-              // --- OMSCHRIJVING VELD ---
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
-                  ],
-                ),
-                child: TextField(
-                  controller: _omschrijvingController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    hintText: 'Wat is er gebeurd?',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(16),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // --- INVLOED SCHUIFREGELAAR ---
-              Text(
-                'Invloed op stemming',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal),
-              ),
-              const SizedBox(height: 16),
-
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      _invloedWaarde > 0 ? '+${_invloedWaarde.round()}' : '${_invloedWaarde.round()}',
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: _haalKleurOp(_invloedWaarde),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _haalLabelOp(_invloedWaarde),
-                      style: TextStyle(fontSize: 16, color: Colors.grey[600], fontStyle: FontStyle.italic),
-                    ),
-                    const SizedBox(height: 24),
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: _haalKleurOp(_invloedWaarde),
-                        inactiveTrackColor: Colors.grey[200],
-                        thumbColor: _haalKleurOp(_invloedWaarde),
-                        valueIndicatorColor: _haalKleurOp(_invloedWaarde),
-                        trackHeight: 8.0,
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16.0),
-                      ),
-                      child: Slider(
-                        value: _invloedWaarde,
-                        min: -4,
-                        max: 4,
-                        divisions: 8,
-                        label: _invloedWaarde > 0 ? '+${_invloedWaarde.round()}' : '${_invloedWaarde.round()}',
-                        onChanged: (double nieuweWaarde) {
-                          setState(() {
-                            _invloedWaarde = nieuweWaarde;
-                          });
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('-4 (Negatief)', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                          Text('0', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                          Text('+4 (Positief)', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                  ],
+            ),
+            SizedBox(height: 24),
+            Text(
+              'Invloed op stemming:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            SizedBox(height: 8),
+            Slider(
+              value: _invloedWaarde,
+              min: -4,
+              max: 4,
+              divisions: 8,
+              label: _haalLabelOp(_invloedWaarde),
+              onChanged: (value) {
+                setState(() => _invloedWaarde = value);
+              },
+            ),
+            Center(
+              child: Text(
+                _haalLabelOp(_invloedWaarde),
+                style: TextStyle(
+                  color: _haalKleurOp(_invloedWaarde),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
               ),
-
-              const SizedBox(height: 32),
-
-              // --- OPSLAAN KNOP ---
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _opslaan,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryTeal,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Opslaan in Life Chart', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+            SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _opslaan,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryTeal,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
+                child: _isLoading
+                    ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

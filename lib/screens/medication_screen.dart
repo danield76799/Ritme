@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_scaffold.dart';
 import '../utils/app_theme.dart';
-import '../widgets/app_scaffold.dart';
 import 'package:intl/intl.dart';
-import '../widgets/app_scaffold.dart';
 import '../service_locator.dart';
-import '../widgets/app_scaffold.dart';
 import '../widgets/datum_navigator.dart';
 import '../widgets/app_scaffold.dart';
+import '../utils/logger.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
@@ -22,6 +19,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
   List<Map<String, dynamic>> _configs = [];
   Map<int, int> _intakesForDay = {};
   bool _isLoading = true;
+  String? _errorMessage;
 
   String get _formattedDate {
     return DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -34,21 +32,32 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    
-    final configs = await db.getMedicationConfigs();
-    final intakes = await db.getMedicationIntake(_formattedDate);
-
-    Map<int, int> intakeMap = {};
-    for (var intake in intakes) {
-      intakeMap[intake['medication_id']] = intake['aantal_ingenomen'];
-    }
-
     setState(() {
-      _configs = configs;
-      _intakesForDay = intakeMap;
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+    
+    try {
+      final configs = await db.getMedicationConfigs();
+      final intakes = await db.getMedicationIntake(_formattedDate);
+
+      Map<int, int> intakeMap = {};
+      for (var intake in intakes) {
+        intakeMap[intake['medication_id']] = intake['aantal_ingenomen'];
+      }
+
+      setState(() {
+        _configs = configs;
+        _intakesForDay = intakeMap;
+        _isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to load medication data', error: e, stackTrace: stackTrace);
+      setState(() {
+        _errorMessage = 'Kon medicatiegegevens niet laden. Probeer opnieuw.';
+        _isLoading = false;
+      });
+    }
   }
 
   void _onDatumVeranderd(DateTime nieuweDatum) {
@@ -57,21 +66,49 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _addMedication(String name, double dosage, String unit) async {
-    await db.insertMedicationConfig(name, dosage.toString(), unit);
-    _loadData();
+    try {
+      await db.insertMedicationConfig(name, dosage.toString(), unit);
+      _loadData();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to add medication', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Kon medicatie niet toevoegen. Probeer opnieuw.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _updateIntake(int configId, int change) async {
-    int current = _intakesForDay[configId] ?? 0;
-    int newVal = current + change;
-    if (newVal < 0) return;
+    try {
+      int current = _intakesForDay[configId] ?? 0;
+      int newVal = current + change;
+      if (newVal < 0) return;
 
-    await db.insertMedicationIntakeMap({
-      'medication_id': configId,
-      'date': _formattedDate,
-      'aantal_ingenomen': newVal,
-    });
-    _loadData();
+      await db.insertMedicationIntakeMap({
+        'medication_id': configId,
+        'date': _formattedDate,
+        'aantal_ingenomen': newVal,
+      });
+      _loadData();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to update medication intake', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Kon inname niet bijwerken. Probeer opnieuw.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
   }
 
   void _showAddMedicationDialog() {

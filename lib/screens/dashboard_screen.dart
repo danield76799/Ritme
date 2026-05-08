@@ -6,6 +6,7 @@ import '../services/notification_helper.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'login_screen.dart';
+import '../utils/logger.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -17,6 +18,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _settings;
   bool _isLoading = true;
+  String? _errorMessage;
   int _selectedIndex = 0;
 
   @override
@@ -27,18 +29,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadData() async {
-    final settings = await db.getSettings();
+    try {
+      final settings = await db.getSettings();
 
-    setState(() {
-      _settings = settings;
-      _isLoading = false;
-    });
+      setState(() {
+        _settings = settings;
+        _isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to load dashboard data', error: e, stackTrace: stackTrace);
+      setState(() {
+        _errorMessage = 'Kon dashboardgegevens niet laden.';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _setupNotifications() async {
-    // Only setup notifications on mobile (not web)
-    if (!kIsWeb) {
-      await NotificationHelper.instance.initialize();
+    try {
+      // Only setup notifications on mobile (not web)
+      if (!kIsWeb) {
+        await NotificationHelper.instance.initialize();
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to setup notifications', error: e, stackTrace: stackTrace);
     }
   }
 
