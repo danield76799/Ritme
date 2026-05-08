@@ -17,6 +17,7 @@ import 'screens/sociaal_ritme_meter_screen.dart';
 import 'screens/appointments_screen.dart';
 import 'service_locator.dart';
 import 'utils/app_theme.dart';
+import 'utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,12 +29,84 @@ void main() async {
   if (!kIsWeb) {
     try {
       await NotificationHelper.instance.initialize();
-    } catch (e) {
-      debugPrint('Notification initialization error: $e');
+    } catch (e, stackTrace) {
+      AppLogger.error('Notification initialization error', error: e, stackTrace: stackTrace);
     }
   }
   
-  runApp(const RitmeApp());
+  // Set up error handling
+  FlutterError.onError = (FlutterErrorDetails details) {
+    AppLogger.error(
+      'Flutter error',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+    FlutterError.presentError(details);
+  };
+  
+  runApp(
+    ErrorBoundary(
+      child: const RitmeApp(),
+    ),
+  );
+}
+
+class ErrorBoundary extends StatefulWidget {
+  final Widget child;
+  
+  const ErrorBoundary({super.key, required this.child});
+  
+  @override
+  State<ErrorBoundary> createState() => _ErrorBoundaryState();
+}
+
+class _ErrorBoundaryState extends State<ErrorBoundary> {
+  FlutterErrorDetails? _error;
+  
+  @override
+  void initState() {
+    super.initState();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    if (_error != null) {
+      return MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 16),
+                const Text(
+                  'Er is iets misgegaan',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _error!.exception.toString(),
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _error = null;
+                    });
+                  },
+                  child: const Text('Opnieuw proberen'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return widget.child;
+  }
 }
 
 class RitmeApp extends StatelessWidget {
