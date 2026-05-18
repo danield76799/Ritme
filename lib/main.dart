@@ -118,6 +118,8 @@ class RitmeApp extends StatelessWidget {
       title: 'Ritme - SRT Tracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: const SplashScreen(),
       routes: {
         '/mood': (context) => const MoodScreen(),

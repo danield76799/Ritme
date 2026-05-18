@@ -116,11 +116,13 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Color _getStemmingKleur(double waarde) {
-    if (waarde <= 25) return Colors.blue[700]!;
-    if (waarde <= 40) return Colors.blue[400]!;
-    if (waarde <= 60) return Colors.grey[500]!;
-    if (waarde <= 75) return Colors.orange[400]!;
-    return Colors.red[400]!;
+    if (waarde <= 10) return Colors.grey[700]!;      // Uiterst depressief - donkergrijs
+    if (waarde <= 25) return Colors.grey[500]!;      // Depressief - grijs
+    if (waarde <= 40) return Colors.blue[300]!;      // Neerslachtig - lichtblauw
+    if (waarde <= 60) return Colors.green[400]!;     // Neutraal - groen
+    if (waarde <= 75) return Colors.orange[400]!;    // Opgewekt - oranje
+    if (waarde <= 90) return Colors.orange[700]!;    // Manisch - donkeroranje
+    return Colors.red[400]!;                           // Uiterst manisch - rood
   }
 
   void _veranderOmslagen(int change) {
