@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
+import '../widgets/weekly_mood_chart.dart';
 import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   double _rhythmStability = 0.0;
   int _weeklyActivities = 0;
   DateTime? _lastUpdated;
+  List<Map<String, dynamic>> _weeklyLogs = [];
 
   @override
   void initState() {
@@ -79,11 +81,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
       final stability = srmActivities.isNotEmpty ? (onTimeCount / srmActivities.length * 100) : 0;
 
+      // Get weekly logs for chart
+      final weeklyLogs = dailyLogs.where((log) {
+        if (log['date'] == null) return false;
+        try {
+          final logDate = DateTime.parse(log['date'] as String);
+          return logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo);
+        } catch (e) {
+          return false;
+        }
+      }).toList();
+
       setState(() {
         _settings = settings;
         _sleepQuality = sleepScore.toDouble();
         _rhythmStability = stability.toDouble();
         _weeklyActivities = activityCount;
+        _weeklyLogs = weeklyLogs;
         _lastUpdated = DateTime.now();
         _isLoading = false;
       });
@@ -385,6 +399,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   value: _weeklyActivities > 0 ? _weeklyActivities.toString() : '-',
                   unit: '',
                   color: Colors.orange,
+                ),
+                const SizedBox(height: 24),
+                
+                // --- WEEKLY MOOD CHART ---
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryTeal,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Stemming Trend',
+                      style: TextStyle(
+                        color: AppTheme.textCharcoal,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                WeeklyMoodChart(
+                  logs: _weeklyLogs,
                 ),
                 const SizedBox(height: 12),
                 _buildActionCard(
