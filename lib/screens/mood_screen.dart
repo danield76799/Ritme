@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import '../utils/app_theme.dart';
+import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
-import '../widgets/app_scaffold.dart';
-import '../utils/logger.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -19,7 +17,6 @@ class _MoodScreenState extends State<MoodScreen> {
   double _stemmingWaarde = 50.0;
   int _stemmingsOmslagen = 0;
   bool _isLoading = true;
-  String? _errorMessage;
 
   String get _formattedDate {
     return '${_geselecteerdeDatum.year}-${_geselecteerdeDatum.month.toString().padLeft(2, '0')}-${_geselecteerdeDatum.day.toString().padLeft(2, '0')}';
@@ -32,30 +29,20 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    setState(() => _isLoading = true);
 
-    try {
-      final log = await db.getDailyLog(_formattedDate);
+    final log = await db.getDailyLog(_formattedDate);
 
-      if (log != null) {
-        final stemming = log['stemming_ochtend'] as int?;
-        if (stemming != null) {
-          _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
-        }
-        final omslagen = log['stemmingsomslagen'] as int?;
-        if (omslagen != null) _stemmingsOmslagen = omslagen;
-      } else {
-        _stemmingWaarde = 50.0;
-        _stemmingsOmslagen = 0;
+    if (log != null) {
+      final stemming = log['stemming_ochtend'] as int?;
+      if (stemming != null) {
+        _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
       }
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to load mood data', error: e, stackTrace: stackTrace);
-      setState(() {
-        _errorMessage = 'Kon gegevens niet laden. Probeer opnieuw.';
-      });
+      final omslagen = log['stemmingsomslagen'] as int?;
+      if (omslagen != null) _stemmingsOmslagen = omslagen;
+    } else {
+      _stemmingWaarde = 50.0;
+      _stemmingsOmslagen = 0;
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -67,38 +54,54 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Future<void> _opslaan() async {
-    try {
-      final stemming = ((_stemmingWaarde / 100) * 10 - 5).round();
-
-      await db.upsertDailyLog({
-        'date': _formattedDate,
-        'stemming_ochtend': stemming,
-        'stemmingsomslagen': _stemmingsOmslagen,
-      });
-
+    final stemming = ((_stemmingWaarde / 100) * 10 - 5).round();
+    
+    // Validatie: stemming moet tussen -5 en 5 zijn
+    if (stemming < -5 || stemming > 5) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Opgeslagen!'),
-            backgroundColor: AppTheme.primaryTeal,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            duration: const Duration(seconds: 1),
-          ),
-        );
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to save mood data', error: e, stackTrace: stackTrace);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Kon gegevens niet opslaan. Probeer opnieuw.'),
+            content: const Text('Stemming waarde moet tussen -5 en 5 zijn'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
+      return;
+    }
+    
+    // Validatie: omslagen moet tussen 0 en 10 zijn
+    if (_stemmingsOmslagen < 0 || _stemmingsOmslagen > 10) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Aantal omslagen moet tussen 0 en 10 zijn'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+      return;
+    }
+
+    await db.upsertDailyLog({
+      'date': _formattedDate,
+      'stemming_ochtend': stemming,
+      'stemmingsomslagen': _stemmingsOmslagen,
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Opgeslagen!'),
+          backgroundColor: AppTheme.primaryTeal,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 1),
+        ),
+      );
     }
   }
 
@@ -128,16 +131,23 @@ class _MoodScreenState extends State<MoodScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Stemming',
-      currentRoute: '/mood',
-      bottomNavIndex: 1,
-      actions: [
-        TextButton(
-          onPressed: _opslaan,
-          child: const Text('Opslaan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      appBar: AppBar(
+        title: const Text(
+          'Stemming',
+          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-      ],
+        backgroundColor: AppTheme.primaryTeal,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          TextButton(
+            onPressed: _opslaan,
+            child: const Text('Opslaan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : Column(
