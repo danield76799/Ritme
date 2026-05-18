@@ -19,6 +19,10 @@ class AppTheme {
   static const Color darkText = Color(0xFFE0E0E0);
   static const Color darkTextSecondary = Color(0xFFAAAAAA);
 
+  // Common colors
+  static const Color white = Colors.white;
+  static const Color black = Colors.black;
+
   // Status colors
   static const Color success = Colors.green;
   static const Color warning = Colors.orange;
