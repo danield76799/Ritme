@@ -16,7 +16,7 @@ import 'screens/weight_screen.dart';
 import 'screens/sociaal_ritme_meter_screen.dart';
 import 'screens/appointments_screen.dart';
 import 'service_locator.dart';
-import 'utils/app_theme.dart';
+import 'theme/app_theme.dart';
 import 'utils/logger.dart';
 
 void main() async {
