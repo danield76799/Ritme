@@ -23,10 +23,6 @@ class AppTheme {
   static const Color white = Colors.white;
   static const Color black = Colors.black;
 
-  // Common colors
-  static const Color white = Colors.white;
-  static const Color black = Colors.black;
-
   // Status colors
   static const Color success = Colors.green;
   static const Color warning = Colors.orange;
