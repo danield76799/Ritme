@@ -72,6 +72,23 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   void _onDatumVeranderd(DateTime nieuweDatum) {
+    // Validatie: blokkeer toekomstige datums
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selected = DateTime(nieuweDatum.year, nieuweDatum.month, nieuweDatum.day);
+    
+    if (selected.isAfter(today)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Je kunt geen activiteiten in de toekomst loggen'),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
+    
     setState(() {
       _geselecteerdeDatum = nieuweDatum;
       _isLoading = true;

@@ -8,17 +8,27 @@ import 'database/hive_database_helper.dart';
 // Service locator - exports the db instance for use across the app
 export 'database/database_repository.dart';
 
-late DatabaseRepository db;
+DatabaseRepository? _db;
+
+/// Get the database instance (lazy initialization)
+DatabaseRepository get db {
+  if (_db == null) {
+    throw StateError('Database not initialized. Call initDatabase() first.');
+  }
+  return _db!;
+}
 
 /// Initialize the appropriate database based on platform
 Future<void> initDatabase() async {
+  if (_db != null) return; // Already initialized
+  
   if (kIsWeb) {
     // Use Hive for web
     await Hive.initFlutter();
     await HiveDatabaseHelper.init();
-    db = HiveDatabaseHelper.instance;
+    _db = HiveDatabaseHelper.instance;
   } else {
     // Use SQLite for mobile
-    db = DatabaseHelper.instance;
+    _db = DatabaseHelper.instance;
   }
 }

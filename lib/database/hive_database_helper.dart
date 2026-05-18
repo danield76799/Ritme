@@ -113,6 +113,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getDailyLogsForWeek() async {
+    final now = DateTime.now();
+    final weekAgo = now.subtract(const Duration(days: 7));
+    final logs = await getDailyLogs();
+    return logs.where((log) {
+      if (log['date'] == null) return false;
+      try {
+        final logDate = DateTime.parse(log['date']);
+        return logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo);
+      } catch (e) {
+        return false;
+      }
+    }).toList();
+  }
+
+  @override
   Future<Map<String, dynamic>?> getDailyLog(String date) async {
     final data = _dailyLogs.get(date);
     if (data == null) return null;

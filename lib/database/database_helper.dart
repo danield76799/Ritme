@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'database_repository.dart';
-import '../utils/logger.dart';
+import '../utils/security_helper.dart';
 
 class DatabaseHelper implements DatabaseRepository {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -17,20 +17,21 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   Future<Database> _initDB(String filePath) async {
-    try {
-      final dbPath = await getDatabasesPath();
-      final path = p.join(dbPath, filePath);
-      return await openDatabase(path, version: 2, onCreate: _createDB, onUpgrade: _upgradeDB);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to initialize database', error: e, stackTrace: stackTrace);
-      rethrow;
-    }
+    final dbPath = await getDatabasesPath();
+    final path = p.join(dbPath, filePath);
+    return await openDatabase(
+      path,
+      version: 3, // Version bumped for life_events table
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+      readOnly: false, // Explicitly ensure read-write mode
+    );
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('''
-        CREATE TABLE weight_logs (
+        CREATE TABLE IF NOT EXISTS weight_logs (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           date TEXT NOT NULL,
           weight REAL NOT NULL,
@@ -39,7 +40,7 @@ class DatabaseHelper implements DatabaseRepository {
       ''');
 
       await db.execute('''
-        CREATE TABLE medical_appointments (
+        CREATE TABLE IF NOT EXISTS medical_appointments (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
           doctor_name TEXT,
@@ -52,11 +53,23 @@ class DatabaseHelper implements DatabaseRepository {
         )
       ''');
     }
+    
+    // Add life_events table for version 3
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS life_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL,
+          omschrijving TEXT NOT NULL,
+          invloed INTEGER NOT NULL
+        )
+      ''');
+    }
   }
 
   Future _createDB(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE settings (
+      CREATE TABLE IF NOT EXISTS settings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
         password_hash TEXT NOT NULL,
@@ -69,7 +82,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE daily_logs (
+      CREATE TABLE IF NOT EXISTS daily_logs (
         date TEXT PRIMARY KEY,
         uren_slaap REAL,
         stemming_ochtend INTEGER,
@@ -83,7 +96,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE srm_activities (
+      CREATE TABLE IF NOT EXISTS srm_activities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         activity_type TEXT NOT NULL,
@@ -94,7 +107,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE medication_config (
+      CREATE TABLE IF NOT EXISTS medication_config (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         naam TEXT NOT NULL,
         dosering TEXT,
@@ -103,7 +116,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE medication_schedule (
+      CREATE TABLE IF NOT EXISTS medication_schedule (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         medication_id INTEGER,
         reminder_time TEXT NOT NULL,
@@ -114,7 +127,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE medication_intake (
+      CREATE TABLE IF NOT EXISTS medication_intake (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         medication_id INTEGER,
@@ -126,7 +139,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE weight_logs (
+      CREATE TABLE IF NOT EXISTS weight_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         weight REAL NOT NULL,
@@ -135,7 +148,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE medical_appointments (
+      CREATE TABLE IF NOT EXISTS medical_appointments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         doctor_name TEXT,
@@ -145,6 +158,16 @@ class DatabaseHelper implements DatabaseRepository {
         notes TEXT,
         reminder_enabled INTEGER DEFAULT 1,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
+    // FIX: Added missing life_events table
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS life_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        omschrijving TEXT NOT NULL,
+        invloed INTEGER NOT NULL
       )
     ''');
   }
@@ -187,7 +210,9 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<bool> updatePin(String pin) async {
     const username = 'user';
-    return await setPin(username, pin);
+    // Hash de PIN voor veilige opslag
+    final hashedPin = SecurityHelper.hashPin(pin);
+    return await setPin(username, hashedPin);
   }
 
   Future<bool> setPin(String username, String passwordHash) async {
@@ -204,13 +229,22 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<Map<String, dynamic>?> validateLoginPin(String pin) async {
     final db = await database;
+    // Haal de opgeslagen hash op
     final results = await db.query(
       'settings',
-      where: 'username = ? AND password_hash = ?',
-      whereArgs: ['user', pin],
+      where: 'username = ?',
+      whereArgs: ['user'],
       limit: 1,
     );
-    return results.isNotEmpty ? results.first : null;
+    
+    if (results.isEmpty) return null;
+    
+    final storedHash = results.first['password_hash'] as String?;
+    if (storedHash == null) return null;
+    
+    // Verifieer de PIN tegen de hash
+    final isValid = SecurityHelper.verifyPin(pin, storedHash);
+    return isValid ? results.first : null;
   }
 
   // ===================
@@ -227,7 +261,21 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<List<Map<String, dynamic>>> getDailyLogs() async {
     final db = await database;
-    return await db.query('daily_logs', orderBy: 'date ASC');
+    return await db.query('daily_logs', orderBy: 'date DESC');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDailyLogsForWeek() async {
+    final db = await database;
+    final now = DateTime.now();
+    final weekAgo = now.subtract(const Duration(days: 7));
+    final weekAgoStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
+    return await db.query(
+      'daily_logs',
+      where: 'date >= ?',
+      whereArgs: [weekAgoStr],
+      orderBy: 'date DESC',
+    );
   }
 
   @override
@@ -250,37 +298,13 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint) async {
     final db = await database;
-
-    // Check if record already exists for this date + activity
-    final existing = await db.query(
-      'srm_activities',
-      where: 'date = ? AND activity_type = ?',
-      whereArgs: [date, activityType],
-      limit: 1,
-    );
-
-    if (existing.isNotEmpty) {
-      // Update existing record
-      return await db.update(
-        'srm_activities',
-        {
-          'actual_time': actualTime,
-          'p_score': pScore,
-          'srt_point': srtPoint,
-        },
-        where: 'date = ? AND activity_type = ?',
-        whereArgs: [date, activityType],
-      );
-    } else {
-      // Insert new record
-      return await db.insert('srm_activities', {
-        'date': date,
-        'activity_type': activityType,
-        'actual_time': actualTime,
-        'p_score': pScore,
-        'srt_point': srtPoint,
-      });
-    }
+    return await db.insert('srm_activities', {
+      'date': date,
+      'activity_type': activityType,
+      'actual_time': actualTime,
+      'p_score': pScore,
+      'srt_point': srtPoint,
+    });
   }
 
   @override
@@ -314,15 +338,54 @@ class DatabaseHelper implements DatabaseRepository {
       'tables': <String, dynamic>{},
     };
     
-    // Export all tables
-    (result['tables'] as Map<String, dynamic>)['settings'] = await db.query('settings');
-    (result['tables'] as Map<String, dynamic>)['daily_logs'] = await db.query('daily_logs');
-    (result['tables'] as Map<String, dynamic>)['srm_activities'] = await db.query('srm_activities');
-    (result['tables'] as Map<String, dynamic>)['medication_config'] = await db.query('medication_config');
-    (result['tables'] as Map<String, dynamic>)['medication_intake'] = await db.query('medication_intake');
-    (result['tables'] as Map<String, dynamic>)['life_events'] = await db.query('life_events');
-    (result['tables'] as Map<String, dynamic>)['weight_logs'] = await db.query('weight_logs');
-    (result['tables'] as Map<String, dynamic>)['medical_appointments'] = await db.query('medical_appointments');
+    // Export all tables with error handling
+    try {
+      (result['tables'] as Map<String, dynamic>)['settings'] = await db.query('settings');
+    } catch (e) {
+      (result['tables'] as Map<String, dynamic>)['settings'] = [];
+    }
+    
+    try {
+      (result['tables'] as Map<String, dynamic>)['daily_logs'] = await db.query('daily_logs');
+    } catch (e) {
+      (result['tables'] as Map<String, dynamic>)['daily_logs'] = [];
+    }
+    
+    try {
+      (result['tables'] as Map<String, dynamic>)['srm_activities'] = await db.query('srm_activities');
+    } catch (e) {
+      (result['tables'] as Map<String, dynamic>)['srm_activities'] = [];
+    }
+    
+    try {
+      (result['tables'] as Map<String, dynamic>)['medication_config'] = await db.query('medication_config');
+    } catch (e) {
+      (result['tables'] as Map<String, dynamic>)['medication_config'] = [];
+    }
+    
+    try {
+      (result['tables'] as Map<String, dynamic>)['medication_intake'] = await db.query('medication_intake');
+    } catch (e) {
+      (result['tables'] as Map<String, dynamic>)['medication_intake'] = [];
+    }
+    
+    try {
+      (result['tables'] as Map<String, dynamic>)['life_events'] = await db.query('life_events');
+    } catch (e) {
+      (result['tables'] as Map<String, dynamic>)['life_events'] = [];
+    }
+    
+    try {
+      (result['tables'] as Map<String, dynamic>)['weight_logs'] = await db.query('weight_logs');
+    } catch (e) {
+      (result['tables'] as Map<String, dynamic>)['weight_logs'] = [];
+    }
+    
+    try {
+      (result['tables'] as Map<String, dynamic>)['medical_appointments'] = await db.query('medical_appointments');
+    } catch (e) {
+      (result['tables'] as Map<String, dynamic>)['medical_appointments'] = [];
+    }
     
     return jsonEncode(result);
   }
@@ -337,45 +400,77 @@ class DatabaseHelper implements DatabaseRepository {
     // Clear all data first
     await clearAllData();
     
-    // Import each table
+    // Import each table with error handling
     if (tables['settings'] != null) {
       for (var row in tables['settings'] as List) {
-        await db.insert('settings', row as Map<String, dynamic>);
+        try {
+          await db.insert('settings', row as Map<String, dynamic>);
+        } catch (e) {
+          // Skip problematic rows
+        }
       }
     }
     if (tables['daily_logs'] != null) {
       for (var row in tables['daily_logs'] as List) {
-        await db.insert('daily_logs', row as Map<String, dynamic>);
+        try {
+          await db.insert('daily_logs', row as Map<String, dynamic>);
+        } catch (e) {
+          // Skip problematic rows
+        }
       }
     }
     if (tables['srm_activities'] != null) {
       for (var row in tables['srm_activities'] as List) {
-        await db.insert('srm_activities', row as Map<String, dynamic>);
+        try {
+          await db.insert('srm_activities', row as Map<String, dynamic>);
+        } catch (e) {
+          // Skip problematic rows
+        }
       }
     }
     if (tables['medication_config'] != null) {
       for (var row in tables['medication_config'] as List) {
-        await db.insert('medication_config', row as Map<String, dynamic>);
+        try {
+          await db.insert('medication_config', row as Map<String, dynamic>);
+        } catch (e) {
+          // Skip problematic rows
+        }
       }
     }
     if (tables['medication_intake'] != null) {
       for (var row in tables['medication_intake'] as List) {
-        await db.insert('medication_intake', row as Map<String, dynamic>);
+        try {
+          await db.insert('medication_intake', row as Map<String, dynamic>);
+        } catch (e) {
+          // Skip problematic rows
+        }
       }
     }
     if (tables['life_events'] != null) {
       for (var row in tables['life_events'] as List) {
-        await db.insert('life_events', row as Map<String, dynamic>);
+        try {
+          await db.insert('life_events', row as Map<String, dynamic>);
+        } catch (e) {
+          // Skip problematic rows
+        }
       }
     }
     if (tables['weight_logs'] != null) {
       for (var row in tables['weight_logs'] as List) {
-        await db.insert('weight_logs', row as Map<String, dynamic>);
+        try {
+          await db.insert('weight_logs', row as Map<String, dynamic>);
+        } catch (e) {
+          // Skip problematic rows
+        }
       }
     }
     if (tables['medical_appointments'] != null) {
       for (var row in tables['medical_appointments'] as List) {
-        await db.insert('medical_appointments', row as Map<String, dynamic>);
+        try {
+          await db.insert('medical_appointments', row as Map<String, dynamic>);
+        } catch (e) {
+          // Skip problematic rows
+        }
       }
     }
   }
@@ -485,27 +580,26 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
     final db = await database;
-
-    // Check if record already exists for this date + medication
+    
+    // Check of er al een entry is voor deze datum/medicatie
     final existing = await db.query(
       'medication_intake',
       where: 'date = ? AND medication_id = ?',
       whereArgs: [date, medicationId],
       limit: 1,
     );
-
+    
     if (existing.isNotEmpty) {
-      // Update existing record
+      // Update bestaande entry in plaats van nieuwe toe te voegen
       return await db.update(
         'medication_intake',
         {'aantal_ingenomen': aantal},
         where: 'date = ? AND medication_id = ?',
         whereArgs: [date, medicationId],
       );
-    } else {
-      // Insert new record
-      return await db.insert('medication_intake', {'date': date, 'medication_id': medicationId, 'aantal_ingenomen': aantal});
     }
+    
+    return await db.insert('medication_intake', {'date': date, 'medication_id': medicationId, 'aantal_ingenomen': aantal});
   }
 
   @override
@@ -517,6 +611,7 @@ class DatabaseHelper implements DatabaseRepository {
     );
   }
 
+  @override
   @override
   Future<List<Map<String, dynamic>>> getMedicationIntake(String date) async {
     final db = await database;
@@ -552,22 +647,26 @@ class DatabaseHelper implements DatabaseRepository {
   // WEIGHT LOGS
   // ===================
   
+  @override
   Future<int> insertWeightLog(String date, double weight, String? notes) async {
     final db = await database;
     return await db.insert('weight_logs', {'date': date, 'weight': weight, 'notes': notes});
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getWeightLogs() async {
     final db = await database;
     return await db.query('weight_logs', orderBy: 'date DESC');
   }
 
+  @override
   Future<Map<String, dynamic>?> getLatestWeightLog() async {
     final db = await database;
     final results = await db.query('weight_logs', orderBy: 'date DESC', limit: 1);
     return results.isNotEmpty ? results.first : null;
   }
 
+  @override
   Future<int> deleteWeightLog(int id) async {
     final db = await database;
     return await db.delete('weight_logs', where: 'id = ?', whereArgs: [id]);
@@ -577,16 +676,19 @@ class DatabaseHelper implements DatabaseRepository {
   // MEDICAL APPOINTMENTS
   // ===================
   
+  @override
   Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
     final db = await database;
     return await db.insert('medical_appointments', data);
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getMedicalAppointments() async {
     final db = await database;
     return await db.query('medical_appointments', orderBy: 'appointment_date ASC');
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
     final db = await database;
     final today = DateTime.now().toIso8601String().split('T')[0];
@@ -598,11 +700,13 @@ class DatabaseHelper implements DatabaseRepository {
     );
   }
 
+  @override
   Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
     final db = await database;
     return await db.update('medical_appointments', data, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<int> deleteMedicalAppointment(int id) async {
     final db = await database;
     return await db.delete('medical_appointments', where: 'id = ?', whereArgs: [id]);
