@@ -12,9 +12,12 @@ class AppTheme {
   static const Color backgroundColor = Color(0xFFF7F9FA);
   static const Color backgroundColorAlt = Color(0xFFFAFAFA);
 
-  // Common colors
-  static const Color white = Colors.white;
-  static const Color black = Colors.black;
+  // Dark theme colors
+  static const Color darkBackground = Color(0xFF121212);
+  static const Color darkSurface = Color(0xFF1E1E1E);
+  static const Color darkCard = Color(0xFF2C2C2C);
+  static const Color darkText = Color(0xFFE0E0E0);
+  static const Color darkTextSecondary = Color(0xFFAAAAAA);
 
   // Status colors
   static const Color success = Colors.green;
@@ -102,6 +105,75 @@ class AppTheme {
     );
   }
 
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryTeal,
+        primary: primaryTeal,
+        surface: darkSurface,
+        brightness: Brightness.dark,
+      ),
+      scaffoldBackgroundColor: darkBackground,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: darkSurface,
+        foregroundColor: darkText,
+        elevation: 0,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: darkText,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: darkText),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: primaryTeal,
+        foregroundColor: white,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryTeal,
+          foregroundColor: white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: primaryTeal,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryTeal, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        fillColor: darkCard,
+        filled: true,
+      ),
+      cardTheme: CardTheme(
+        color: darkCard,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        backgroundColor: darkCard,
+      ),
+    );
+  }
+
   // Helper method for card decoration
   static BoxDecoration cardDecoration({
     double borderRadius = 16,
@@ -123,6 +195,14 @@ class AppTheme {
           : null,
     );
   }
+
+  // Chart colors
+  static List<Color> chartColors = [
+    primaryTeal,
+    primaryTealDark,
+    const Color(0xFF6FC5D8),
+    const Color(0xFF8FD4E3),
+  ];
 
   // Section header widget
   static Widget sectionHeader(String title, {Color? color}) {
