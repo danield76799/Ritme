@@ -49,8 +49,8 @@ class _LoginScreenState extends State<LoginScreen> {
             final biometricEnabled = await _secureStorage.read(key: 'biometric_enabled');
             _biometricEnabled = biometricEnabled == 'true';
           }
-        } on PlatformException catch (e, stackTrace) {
-          AppLogger.warning('Biometric check error', error: e, stackTrace: stackTrace);
+        } on PlatformException catch (e) {
+          AppLogger.warning('Biometric check error', error: e);
         }
       }
       
@@ -63,8 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!kIsWeb && _biometricEnabled && _biometricAvailable && !pinSet) {
         _authenticateWithBiometrics();
       }
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to check setup', error: e, stackTrace: stackTrace);
+    } catch (e) {
+      AppLogger.error('Failed to check setup', error: e);
       setState(() {
         _errorMessage = 'Kon app niet initialiseren. Probeer opnieuw.';
         _isLoading = false;
