@@ -28,11 +28,23 @@ class _WeightScreenState extends State<WeightScreen> {
   }
 
   Future<void> _loadWeightLogs() async {
-    final logs = await db.getWeightLogs();
-    setState(() {
-      _weightLogs = logs;
-      _isLoading = false;
-    });
+    try {
+      final logs = await db.getWeightLogs();
+      if (mounted) {
+        setState(() {
+          _weightLogs = logs;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('ERROR loading weight logs: $e');
+      if (mounted) {
+        setState(() {
+          _weightLogs = [];
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _addWeightLog() async {
