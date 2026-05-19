@@ -303,9 +303,17 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: AppTheme.primaryTeal,
+          ? Container(
+              color: Colors.white,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.favorite, size: 64, color: AppTheme.primaryTeal),
+                    SizedBox(height: 16),
+                    Text('Laden...', style: TextStyle(fontSize: 18, color: AppTheme.primaryTeal)),
+                  ],
+                ),
               ),
             )
           : SafeArea(
