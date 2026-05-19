@@ -28,15 +28,22 @@ class DatabaseHelper implements DatabaseRepository {
     }
     final path = p.join(dbDir.path, filePath);
     
-    // Delete old database if it exists to force recreation
-    final oldDbFile = File(path);
+    // Check if we need to migrate from old location
+    final oldDbPath = p.join(await getDatabasesPath(), filePath);
+    final oldDbFile = File(oldDbPath);
     if (await oldDbFile.exists()) {
-      await oldDbFile.delete();
+      // Try to copy old database to new location
+      try {
+        await oldDbFile.copy(path);
+        print('Migrated database from $oldDbPath to $path');
+      } catch (e) {
+        print('Failed to migrate database: $e');
+      }
     }
     
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
