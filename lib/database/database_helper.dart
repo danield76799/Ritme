@@ -28,12 +28,22 @@ class DatabaseHelper implements DatabaseRepository {
     }
     final path = p.join(dbDir.path, filePath);
     
-    // Only delete old database if it was corrupted (version mismatch)
-    // Don't delete on normal startup - we want to keep user data!
+    // Check if we need to migrate from old location
+    final oldDbPath = p.join(await getDatabasesPath(), filePath);
+    final oldDbFile = File(oldDbPath);
+    if (await oldDbFile.exists()) {
+      // Try to copy old database to new location
+      try {
+        await oldDbFile.copy(path);
+        print('Migrated database from $oldDbPath to $path');
+      } catch (e) {
+        print('Failed to migrate database: $e');
+      }
+    }
     
     return await openDatabase(
       path,
-      version: 5, // Bumped to force one-time migration to new writable location
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
