@@ -198,7 +198,16 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> updateSettingsMap(Map<String, dynamic> settings) async {
     final db = await database;
-    return await db.update('settings', settings, where: 'username = ?', whereArgs: ['user']);
+    // Check if settings exist for 'user'
+    final existing = await db.query('settings', where: 'username = ?', whereArgs: ['user'], limit: 1);
+    if (existing.isNotEmpty) {
+      // Update existing row
+      return await db.update('settings', settings, where: 'username = ?', whereArgs: ['user']);
+    } else {
+      // Insert new row if no existing settings
+      settings['username'] = 'user';
+      return await db.insert('settings', settings);
+    }
   }
 
   @override
