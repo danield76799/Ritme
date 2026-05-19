@@ -198,8 +198,8 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> updateSettingsMap(Map<String, dynamic> settings) async {
     final db = await database;
-    // Check if settings exist for 'user'
-    final existing = await db.query('settings', where: 'username = ?', whereArgs: ['user'], limit: 1);
+    // Get the first settings row (there should only be one)
+    final existing = await db.query('settings', limit: 1);
     if (existing.isNotEmpty) {
       // Preserve the username and password_hash from the database
       final merged = Map<String, dynamic>.from(existing.first);
@@ -207,7 +207,9 @@ class DatabaseHelper implements DatabaseRepository {
       settings.remove('username');
       settings.remove('password_hash');
       merged.addAll(settings);
-      return await db.update('settings', merged, where: 'username = ?', whereArgs: ['user']);
+      // Update by id to ensure we update the correct row
+      final id = existing.first['id'] as int;
+      return await db.update('settings', merged, where: 'id = ?', whereArgs: [id]);
     } else {
       // Insert new row - provide required fields with defaults
       final newRow = Map<String, dynamic>.from(settings);
