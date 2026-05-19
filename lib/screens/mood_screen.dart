@@ -49,6 +49,16 @@ class _MoodScreenState extends State<MoodScreen> {
       print('ERROR loading mood data: $e');
       _stemmingWaarde = 50.0;
       _stemmingsOmslagen = 0;
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Database error: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     }
 
     if (mounted) setState(() => _isLoading = false);
