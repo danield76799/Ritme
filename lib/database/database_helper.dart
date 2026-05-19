@@ -201,12 +201,19 @@ class DatabaseHelper implements DatabaseRepository {
     // Check if settings exist for 'user'
     final existing = await db.query('settings', where: 'username = ?', whereArgs: ['user'], limit: 1);
     if (existing.isNotEmpty) {
-      // Update existing row
-      return await db.update('settings', settings, where: 'username = ?', whereArgs: ['user']);
+      // Preserve the username and password_hash from the database
+      final merged = Map<String, dynamic>.from(existing.first);
+      // Remove protected fields from settings to preserve database values
+      settings.remove('username');
+      settings.remove('password_hash');
+      merged.addAll(settings);
+      return await db.update('settings', merged, where: 'username = ?', whereArgs: ['user']);
     } else {
-      // Insert new row if no existing settings
-      settings['username'] = 'user';
-      return await db.insert('settings', settings);
+      // Insert new row - provide required fields with defaults
+      final newRow = Map<String, dynamic>.from(settings);
+      newRow['username'] = newRow['username'] ?? 'user';
+      newRow['password_hash'] = newRow['password_hash'] ?? '';
+      return await db.insert('settings', newRow);
     }
   }
 
