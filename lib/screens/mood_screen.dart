@@ -24,15 +24,25 @@ class _MoodScreenState extends State<MoodScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    print('MoodScreen: initState called');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('MoodScreen: after frame');
+      _loadData();
+    });
   }
 
   Future<void> _loadData() async {
-    if (!mounted) return;
+    print('MoodScreen: _loadData started');
+    if (!mounted) {
+      print('MoodScreen: not mounted, returning');
+      return;
+    }
     setState(() => _isLoading = true);
 
     try {
+      print('MoodScreen: calling db.getDailyLog with date: $_formattedDate');
       final log = await db.getDailyLog(_formattedDate);
+      print('MoodScreen: db.getDailyLog returned: $log');
       if (!mounted) return;
 
       if (log != null) {
@@ -43,11 +53,15 @@ class _MoodScreenState extends State<MoodScreen> {
         final omslagen = log['stemmingsomslagen'] as int?;
         if (omslagen != null) _stemmingsOmslagen = omslagen;
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print('MoodScreen: ERROR in _loadData: $e');
+      print('MoodScreen: stack: $stack');
       if (mounted) setState(() => _error = e.toString());
     }
 
+    print('MoodScreen: setting _isLoading = false');
     if (mounted) setState(() => _isLoading = false);
+    print('MoodScreen: _loadData completed');
   }
 
   String _getStemmingLabel(double waarde) {
