@@ -34,42 +34,58 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   }
 
   Future<void> _laadData() async {
-    final logs = await db.getDailyLogs();
+    try {
+      final logs = await db.getDailyLogs();
 
-    // Bereken KPIs
-    if (logs.isNotEmpty) {
-      double totaalStemming = 0;
-      double totaalSlaap = 0;
-      int logCount = 0;
+      // Bereken KPIs
+      if (logs.isNotEmpty) {
+        double totaalStemming = 0;
+        double totaalSlaap = 0;
+        int logCount = 0;
 
-      for (var log in logs) {
-        if (log['stemming_ochtend'] != null) {
-          totaalStemming += log['stemming_ochtend'];
-          logCount++;
+        for (var log in logs) {
+          if (log['stemming_ochtend'] != null) {
+            totaalStemming += log['stemming_ochtend'];
+            logCount++;
+          }
+          if (log['uren_slaap'] != null) totaalSlaap += log['uren_slaap'];
         }
-        if (log['uren_slaap'] != null) totaalSlaap += log['uren_slaap'];
+
+        _gemStemming = logCount > 0 ? totaalStemming / logCount : 0.0;
+        _gemSlaap = logs.length > 0 ? totaalSlaap / logs.length : 0.0;
       }
 
-      _gemStemming = logCount > 0 ? totaalStemming / logCount : 0.0;
-      _gemSlaap = logs.length > 0 ? totaalSlaap / logs.length : 0.0;
-    }
+      // Ophalen van totaal aantal opgeslagen SRM activiteiten en Life Events
+      int actCount = 0;
+      int eventCount = 0;
+      for (var log in logs) {
+        try {
+          final acts = await db.getSrmActivities(log['date']);
+          final events = await db.getLifeEvents(log['date']);
+          actCount += acts.length;
+          eventCount += events.length;
+        } catch (e) {
+          // Skip logs with database errors
+        }
+      }
 
-    // Ophalen van totaal aantal opgeslagen SRM activiteiten en Life Events
-    int actCount = 0;
-    int eventCount = 0;
-    for (var log in logs) {
-      final acts = await db.getSrmActivities(log['date']);
-      final events = await db.getLifeEvents(log['date']);
-      actCount += acts.length;
-      eventCount += events.length;
+      if (mounted) {
+        setState(() {
+          _logs = logs.reversed.toList();
+          _aantalActiviteiten = actCount;
+          _aantalGebeurtenissen = eventCount;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('ERROR loading statistics: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _logs = [];
+        });
+      }
     }
-
-    setState(() {
-      _logs = logs.reversed.toList();
-      _aantalActiviteiten = actCount;
-      _aantalGebeurtenissen = eventCount;
-      _isLoading = false;
-    });
   }
 
   Future<void> _genereerEnDeelPdf() async {
