@@ -440,7 +440,7 @@ class DatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<int> insertMedicationConfig(String naam, String dosering, String eenheid) async {
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
     final db = await database;
     return await db.insert('medication_config', {'naam': naam, 'dosering': dosering, 'eenheid': eenheid});
   }
@@ -461,9 +461,101 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<int> deleteMedicationConfig(int id) async {
+  Future<List<Map<String, dynamic>>> getMedicationConfigs() async {
     final db = await database;
-    return await db.delete('medication_config', where: 'id = ?', whereArgs: [id]);
+    return await db.query('medication_config');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationSchedules() async {
+    final db = await database;
+    return await db.query('medication_schedule');
+  }
+
+  @override
+  Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('medication_schedule', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async {
+    final db = await database;
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final weekday = DateTime.now().weekday.toString();
+    return await db.query(
+      'medication_schedule',
+      where: 'days_of_week LIKE ? AND enabled = 1',
+      whereArgs: ['%$weekday%'],
+    );
+  }
+
+  @override
+  Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
+    final db = await database;
+    return await db.update(
+      'medication_intake',
+      {'confirmed': confirmed},
+      where: 'date = ? AND medication_id = ?',
+      whereArgs: [date, medicationId],
+    );
+  }
+
+  @override
+  Future<void> importDatabaseFromJson(String jsonString) async {
+    final db = await database;
+    final data = jsonDecode(jsonString) as Map<String, dynamic>;
+    
+    // Clear existing data
+    await clearAllData();
+    
+    // Import daily logs
+    final dailyLogs = data['daily_logs'] as List<dynamic>? ?? [];
+    for (final log in dailyLogs) {
+      await db.insert('daily_logs', log as Map<String, dynamic>);
+    }
+    
+    // Import SRM activities
+    final srmActivities = data['srm_activities'] as List<dynamic>? ?? [];
+    for (final activity in srmActivities) {
+      await db.insert('srm_activities', activity as Map<String, dynamic>);
+    }
+    
+    // Import medication config
+    final medicationConfig = data['medication_config'] as List<dynamic>? ?? [];
+    for (final config in medicationConfig) {
+      await db.insert('medication_config', config as Map<String, dynamic>);
+    }
+    
+    // Import medication schedule
+    final medicationSchedule = data['medication_schedule'] as List<dynamic>? ?? [];
+    for (final schedule in medicationSchedule) {
+      await db.insert('medication_schedule', schedule as Map<String, dynamic>);
+    }
+    
+    // Import medication intake
+    final medicationIntake = data['medication_intake'] as List<dynamic>? ?? [];
+    for (final intake in medicationIntake) {
+      await db.insert('medication_intake', intake as Map<String, dynamic>);
+    }
+    
+    // Import weight logs
+    final weightLogs = data['weight_logs'] as List<dynamic>? ?? [];
+    for (final log in weightLogs) {
+      await db.insert('weight_logs', log as Map<String, dynamic>);
+    }
+    
+    // Import medical appointments
+    final appointments = data['medical_appointments'] as List<dynamic>? ?? [];
+    for (final appointment in appointments) {
+      await db.insert('medical_appointments', appointment as Map<String, dynamic>);
+    }
+    
+    // Import life events
+    final lifeEvents = data['life_events'] as List<dynamic>? ?? [];
+    for (final event in lifeEvents) {
+      await db.insert('life_events', event as Map<String, dynamic>);
+    }
   }
 
   // ===================
@@ -471,13 +563,13 @@ class DatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek, bool enabled) async {
+  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
     final db = await database;
     return await db.insert('medication_schedule', {
       'medication_id': medicationId,
       'reminder_time': reminderTime,
       'days_of_week': daysOfWeek,
-      'enabled': enabled ? 1 : 0,
+      'enabled': 1,
     });
   }
 
