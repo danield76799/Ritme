@@ -579,7 +579,6 @@ class DatabaseHelper implements DatabaseRepository {
       data['medication_id'] as int,
       data['reminder_time'] as String,
       data['days_of_week'] as String,
-      data['enabled'] as bool,
     );
   }
 
