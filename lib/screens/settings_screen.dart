@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../utils/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -80,6 +81,81 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _showTimePicker(String label, String key) async {
+    // Parse current time or use default
+    TimeOfDay currentTime;
+    if (_settings?[key] != null) {
+      final parts = _settings![key].toString().split(':');
+      if (parts.length >= 2) {
+        currentTime = TimeOfDay(
+          hour: int.tryParse(parts[0]) ?? 8,
+          minute: int.tryParse(parts[1]) ?? 0,
+        );
+      } else {
+        currentTime = const TimeOfDay(hour: 8, minute: 0);
+      }
+    } else {
+      currentTime = const TimeOfDay(hour: 8, minute: 0);
+    }
+
+    final Duration initialDuration = Duration(hours: currentTime.hour, minutes: currentTime.minute);
+
+    await showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 300,
+          color: Colors.white,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Annuleer'),
+                    ),
+                    Text(
+                      label,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _settings ??= {};
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Klaar'),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: CupertinoTimerPicker(
+                  mode: CupertinoTimerPickerMode.hm,
+                  minuteInterval: 15,
+                  initialTimerDuration: initialDuration,
+                  onTimerDurationChanged: (Duration newDuration) {
+                    final hours = newDuration.inHours;
+                    final minutes = newDuration.inMinutes % 60;
+                    final timeString = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+                    setState(() {
+                      _settings ??= {};
+                      _settings![key] = timeString;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,6 +202,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildSectionHeader('Profiel'),
+          _buildTextField('Gebruikersnaam', 'username'),
+          const SizedBox(height: 24),
           _buildSectionHeader('Slaapschema'),
           _buildTimeField('Opstaan', 'target_opstaan'),
           _buildTimeField('Slapen', 'target_slapen'),
@@ -167,7 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildTimeField(String label, String key) {
+  Widget _buildTextField(String label, String key) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
@@ -177,11 +256,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         initialValue: _settings?[key]?.toString() ?? '',
         onChanged: (value) {
-          setState(() {
-            _settings ??= {};
-            _settings![key] = value;
-          });
+          _settings ??= {};
+          _settings![key] = value;
         },
+      ),
+    );
+  }
+
+  Widget _buildTimeField(String label, String key) {
+    final displayValue = _settings?[key]?.toString() ?? '--:--';
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () => _showTimePicker(label, key),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[400]!),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              ),
+              Row(
+                children: [
+                  Text(
+                    displayValue,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(Icons.access_time, color: Colors.grey[600]),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
