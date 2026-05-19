@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'database_repository.dart';
 import '../utils/security_helper.dart';
 
@@ -17,14 +19,21 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = p.join(dbPath, filePath);
+    // Use app documents directory for write access on all platforms
+    final appDir = await getApplicationDocumentsDirectory();
+    final dbDir = Directory(p.join(appDir.path, 'databases'));
+    if (!await dbDir.exists()) {
+      await dbDir.create(recursive: true);
+    }
+    final path = p.join(dbDir.path, filePath);
+    
     return await openDatabase(
       path,
-      version: 3, // Version bumped for life_events table
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
-      readOnly: false, // Explicitly ensure read-write mode
+      readOnly: false,
+      singleInstance: true,
     );
   }
 
