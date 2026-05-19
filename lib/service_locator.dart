@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -28,8 +30,13 @@ Future<void> initDatabase() async {
       await Hive.initFlutter();
       await HiveDatabaseHelper.init();
       _db = HiveDatabaseHelper.instance;
+    } else if (Platform.isAndroid) {
+      // Use Hive for Android (reliable, no read-only issues)
+      await Hive.initFlutter();
+      await HiveDatabaseHelper.init();
+      _db = HiveDatabaseHelper.instance;
     } else {
-      // Use SQLite for mobile
+      // Use SQLite for iOS
       _db = DatabaseHelper.instance;
       // Test database connectivity
       await _db!.getSettings();
