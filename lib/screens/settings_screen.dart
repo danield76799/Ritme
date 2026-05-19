@@ -16,10 +16,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Controllers for text fields
+  final _usernameController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -33,6 +42,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _settings = settings;
         _isLoading = false;
+        // Update controllers with loaded values
+        _usernameController.text = settings?['username']?.toString() ?? '';
       });
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load settings', error: e, stackTrace: stackTrace);
@@ -46,6 +57,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _saveSettings() async {
     try {
       if (_settings != null) {
+        // Update username from controller
+        _settings!['username'] = _usernameController.text;
         await db.updateSettingsMap(_settings!);
         _showSuccess('Instellingen opgeslagen!');
       }
@@ -99,6 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     final Duration initialDuration = Duration(hours: currentTime.hour, minutes: currentTime.minute);
+    Duration selectedDuration = initialDuration;
 
     await showModalBottomSheet(
       context: context,
@@ -123,8 +137,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     TextButton(
                       onPressed: () {
+                        // Save the selected time
+                        final hours = selectedDuration.inHours;
+                        final minutes = selectedDuration.inMinutes % 60;
+                        final timeString = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
                         setState(() {
                           _settings ??= {};
+                          _settings![key] = timeString;
                         });
                         Navigator.pop(context);
                       },
@@ -139,13 +158,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   minuteInterval: 15,
                   initialTimerDuration: initialDuration,
                   onTimerDurationChanged: (Duration newDuration) {
-                    final hours = newDuration.inHours;
-                    final minutes = newDuration.inMinutes % 60;
-                    final timeString = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-                    setState(() {
-                      _settings ??= {};
-                      _settings![key] = timeString;
-                    });
+                    selectedDuration = newDuration;
                   },
                 ),
               ),
@@ -203,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionHeader('Profiel'),
-          _buildTextField('Gebruikersnaam', 'username'),
+          _buildTextField('Gebruikersnaam', _usernameController),
           const SizedBox(height: 24),
           _buildSectionHeader('Slaapschema'),
           _buildTimeField('Opstaan', 'target_opstaan'),
@@ -246,19 +259,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildTextField(String label, String key) {
+  Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        initialValue: _settings?[key]?.toString() ?? '',
-        onChanged: (value) {
-          _settings ??= {};
-          _settings![key] = value;
-        },
       ),
     );
   }
