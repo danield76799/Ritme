@@ -61,8 +61,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _settings!['username'] = _usernameController.text;
         await db.updateSettingsMap(_settings!);
       } else {
-        // No existing settings, create new map
-        final newSettings = {'username': _usernameController.text};
+        // No existing settings, create new map with all fields
+        final newSettings = <String, dynamic>{
+          'username': _usernameController.text,
+          'target_opstaan': '',
+          'target_slapen': '',
+          'target_contact': '',
+          'target_werk': '',
+          'target_eten': '',
+        };
         await db.updateSettingsMap(newSettings);
       }
       _showSuccess('Instellingen opgeslagen!');
