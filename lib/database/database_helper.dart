@@ -193,9 +193,20 @@ class DatabaseHelper implements DatabaseRepository {
   
   @override
   Future<Map<String, dynamic>?> getSettings() async {
-    final db = await database;
-    final results = await db.query('settings', limit: 1);
-    return results.isNotEmpty ? results.first : null;
+    // Use SharedPreferences for settings (reliable on Android)
+    final prefs = await SharedPreferences.getInstance();
+    final username = prefs.getString('username');
+    if (username == null || username.isEmpty) {
+      return null;
+    }
+    return {
+      'username': username,
+      'target_opstaan': prefs.getString('target_opstaan') ?? '',
+      'target_slapen': prefs.getString('target_slapen') ?? '',
+      'target_contact': prefs.getString('target_contact') ?? '',
+      'target_werk': prefs.getString('target_werk') ?? '',
+      'target_eten': prefs.getString('target_eten') ?? '',
+    };
   }
 
   @override
