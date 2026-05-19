@@ -24,26 +24,29 @@ DatabaseRepository get db {
 Future<void> initDatabase() async {
   if (_db != null) return; // Already initialized
   
+  print('initDatabase: starting...');
+  print('initDatabase: kIsWeb=$kIsWeb, Platform.isAndroid=${Platform.isAndroid}, Platform.isIOS=${Platform.isIOS}');
+  
   try {
     if (kIsWeb) {
-      // Use Hive for web
+      print('initDatabase: using Hive for web');
       await Hive.initFlutter();
       await HiveDatabaseHelper.init();
       _db = HiveDatabaseHelper.instance;
     } else if (Platform.isAndroid) {
-      // Use Hive for Android (reliable, no read-only issues)
+      print('initDatabase: using Hive for Android');
       await Hive.initFlutter();
       await HiveDatabaseHelper.init();
       _db = HiveDatabaseHelper.instance;
     } else {
-      // Use SQLite for iOS
+      print('initDatabase: using SQLite for iOS');
       _db = DatabaseHelper.instance;
-      // Test database connectivity
       await _db!.getSettings();
     }
-  } catch (e) {
+    print('initDatabase: completed successfully');
+  } catch (e, stack) {
     print('Database initialization failed: $e');
-    // Fallback: use in-memory database or show error
-    throw Exception('Database initialization failed: $e');
+    print('Stack: $stack');
+    rethrow;
   }
 }
