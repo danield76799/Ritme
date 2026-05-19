@@ -397,148 +397,28 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<String> exportDatabaseToJson() async {
     final db = await database;
-    
-    final Map<String, dynamic> result = {
-      'export_date': DateTime.now().toIso8601String(),
-      'app_version': '1.2.0',
-      'tables': <String, dynamic>{},
-    };
-    
-    // Export all tables with error handling
-    try {
-      (result['tables'] as Map<String, dynamic>)['settings'] = await db.query('settings');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['settings'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['daily_logs'] = await db.query('daily_logs');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['daily_logs'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['srm_activities'] = await db.query('srm_activities');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['srm_activities'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['medication_config'] = await db.query('medication_config');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['medication_config'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['medication_intake'] = await db.query('medication_intake');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['medication_intake'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['life_events'] = await db.query('life_events');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['life_events'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['weight_logs'] = await db.query('weight_logs');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['weight_logs'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['medical_appointments'] = await db.query('medical_appointments');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['medical_appointments'] = [];
-    }
-    
-    return jsonEncode(result);
-  }
 
-  @override
-  Future<void> importDatabaseFromJson(String jsonString) async {
-    final data = jsonDecode(jsonString) as Map<String, dynamic>;
-    final tables = data['tables'] as Map<String, dynamic>;
-    
-    final db = await database;
-    
-    // Clear all data first
-    await clearAllData();
-    
-    // Import each table with error handling
-    if (tables['settings'] != null) {
-      for (var row in tables['settings'] as List) {
-        try {
-          await db.insert('settings', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['daily_logs'] != null) {
-      for (var row in tables['daily_logs'] as List) {
-        try {
-          await db.insert('daily_logs', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['srm_activities'] != null) {
-      for (var row in tables['srm_activities'] as List) {
-        try {
-          await db.insert('srm_activities', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['medication_config'] != null) {
-      for (var row in tables['medication_config'] as List) {
-        try {
-          await db.insert('medication_config', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['medication_intake'] != null) {
-      for (var row in tables['medication_intake'] as List) {
-        try {
-          await db.insert('medication_intake', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['life_events'] != null) {
-      for (var row in tables['life_events'] as List) {
-        try {
-          await db.insert('life_events', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['weight_logs'] != null) {
-      for (var row in tables['weight_logs'] as List) {
-        try {
-          await db.insert('weight_logs', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['medical_appointments'] != null) {
-      for (var row in tables['medical_appointments'] as List) {
-        try {
-          await db.insert('medical_appointments', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
+    final dailyLogs = await db.query('daily_logs', orderBy: 'date DESC');
+    final srmActivities = await db.query('srm_activities', orderBy: 'date DESC');
+    final medicationConfig = await db.query('medication_config');
+    final medicationSchedule = await db.query('medication_schedule');
+    final medicationIntake = await db.query('medication_intake', orderBy: 'date DESC');
+    final weightLogs = await db.query('weight_logs', orderBy: 'date DESC');
+    final appointments = await db.query('medical_appointments', orderBy: 'appointment_date DESC');
+    final lifeEvents = await db.query('life_events', orderBy: 'date DESC');
+
+    final exportData = {
+      'daily_logs': dailyLogs,
+      'srm_activities': srmActivities,
+      'medication_config': medicationConfig,
+      'medication_schedule': medicationSchedule,
+      'medication_intake': medicationIntake,
+      'weight_logs': weightLogs,
+      'medical_appointments': appointments,
+      'life_events': lifeEvents,
+    };
+
+    return jsonEncode(exportData);
   }
 
   @override
@@ -547,23 +427,43 @@ class DatabaseHelper implements DatabaseRepository {
     await db.delete('daily_logs');
     await db.delete('srm_activities');
     await db.delete('medication_intake');
+    await db.delete('medication_schedule');
     await db.delete('medication_config');
-    await db.delete('life_events');
     await db.delete('weight_logs');
     await db.delete('medical_appointments');
+    await db.delete('life_events');
     await db.delete('settings');
   }
 
+  // ===================
+  // MEDICATION CONFIG
+  // ===================
+  
   @override
-  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
+  Future<int> insertMedicationConfig(String naam, String dosering, String eenheid) async {
     final db = await database;
     return await db.insert('medication_config', {'naam': naam, 'dosering': dosering, 'eenheid': eenheid});
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getMedicationConfigs() async {
+  Future<int> insertMedicationConfigMap(Map<String, dynamic> data) async {
+    return await insertMedicationConfig(
+      data['naam'] as String,
+      data['dosering'] as String,
+      data['eenheid'] as String,
+    );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationConfig() async {
     final db = await database;
     return await db.query('medication_config');
+  }
+
+  @override
+  Future<int> deleteMedicationConfig(int id) async {
+    final db = await database;
+    return await db.delete('medication_config', where: 'id = ?', whereArgs: [id]);
   }
 
   // ===================
@@ -571,72 +471,36 @@ class DatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<List<Map<String, dynamic>>> getMedicationSchedules() async {
-    final db = await database;
-    return await db.query('medication_schedule');
-  }
-
-  @override
-  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
+  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek, bool enabled) async {
     final db = await database;
     return await db.insert('medication_schedule', {
       'medication_id': medicationId,
       'reminder_time': reminderTime,
       'days_of_week': daysOfWeek,
-      'enabled': 1,
+      'enabled': enabled ? 1 : 0,
     });
   }
 
   @override
-  Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data) async {
+  Future<int> insertMedicationScheduleMap(Map<String, dynamic> data) async {
+    return await insertMedicationSchedule(
+      data['medication_id'] as int,
+      data['reminder_time'] as String,
+      data['days_of_week'] as String,
+      data['enabled'] as bool,
+    );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationSchedule(int medicationId) async {
     final db = await database;
-    return await db.update('medication_schedule', data, where: 'id = ?', whereArgs: [id]);
+    return await db.query('medication_schedule', where: 'medication_id = ?', whereArgs: [medicationId]);
   }
 
   @override
   Future<int> deleteMedicationSchedule(int id) async {
     final db = await database;
     return await db.delete('medication_schedule', where: 'id = ?', whereArgs: [id]);
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async {
-    final db = await database;
-    final today = DateTime.now().weekday; // 1= Monday, 7=Sunday
-    final allSchedules = await db.query('medication_schedule', where: 'enabled = ?', whereArgs: [1]);
-    
-    return allSchedules.where((schedule) {
-      final days = (schedule['days_of_week'] as String).split(',');
-      return days.contains(today.toString());
-    }).toList();
-  }
-
-  @override
-  Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
-    final db = await database;
-    final existing = await db.query(
-      'medication_intake',
-      where: 'date = ? AND medication_id = ?',
-      whereArgs: [date, medicationId],
-      limit: 1,
-    );
-    
-    if (existing.isNotEmpty) {
-      return await db.update(
-        'medication_intake',
-        {'confirmed': confirmed, 'confirmed_at': DateTime.now().toIso8601String()},
-        where: 'date = ? AND medication_id = ?',
-        whereArgs: [date, medicationId],
-      );
-    } else {
-      return await db.insert('medication_intake', {
-        'date': date,
-        'medication_id': medicationId,
-        'aantal_ingenomen': 1,
-        'confirmed': confirmed,
-        'confirmed_at': confirmed == 1 ? DateTime.now().toIso8601String() : null,
-      });
-    }
   }
 
   // ===================
