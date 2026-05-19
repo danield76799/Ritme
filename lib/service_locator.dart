@@ -22,13 +22,21 @@ DatabaseRepository get db {
 Future<void> initDatabase() async {
   if (_db != null) return; // Already initialized
   
-  if (kIsWeb) {
-    // Use Hive for web
-    await Hive.initFlutter();
-    await HiveDatabaseHelper.init();
-    _db = HiveDatabaseHelper.instance;
-  } else {
-    // Use SQLite for mobile
-    _db = DatabaseHelper.instance;
+  try {
+    if (kIsWeb) {
+      // Use Hive for web
+      await Hive.initFlutter();
+      await HiveDatabaseHelper.init();
+      _db = HiveDatabaseHelper.instance;
+    } else {
+      // Use SQLite for mobile
+      _db = DatabaseHelper.instance;
+      // Test database connectivity
+      await _db!.getSettings();
+    }
+  } catch (e) {
+    print('Database initialization failed: $e');
+    // Fallback: use in-memory database or show error
+    throw Exception('Database initialization failed: $e');
   }
 }

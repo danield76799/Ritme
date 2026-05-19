@@ -15,8 +15,17 @@ class DatabaseHelper implements DatabaseRepository {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('ritme_app.db');
-    return _database!;
+    try {
+      _database = await _initDB('ritme_app.db');
+      // Test if database is writable
+      await _database!.execute('CREATE TABLE IF NOT EXISTS _test_write (id INTEGER PRIMARY KEY)');
+      await _database!.execute('DROP TABLE IF EXISTS _test_write');
+      return _database!;
+    } catch (e) {
+      print('CRITICAL: Database is read-only or corrupted: $e');
+      // Return null to indicate database failure
+      throw Exception('Database not writable: $e');
+    }
   }
 
   Future<Database> _initDB(String filePath) async {
