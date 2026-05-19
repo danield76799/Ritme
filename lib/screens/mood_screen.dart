@@ -31,16 +31,22 @@ class _MoodScreenState extends State<MoodScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
 
-    final log = await db.getDailyLog(_formattedDate);
+    try {
+      final log = await db.getDailyLog(_formattedDate);
 
-    if (log != null) {
-      final stemming = log['stemming_ochtend'] as int?;
-      if (stemming != null) {
-        _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
+      if (log != null) {
+        final stemming = log['stemming_ochtend'] as int?;
+        if (stemming != null) {
+          _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
+        }
+        final omslagen = log['stemmingsomslagen'] as int?;
+        if (omslagen != null) _stemmingsOmslagen = omslagen;
+      } else {
+        _stemmingWaarde = 50.0;
+        _stemmingsOmslagen = 0;
       }
-      final omslagen = log['stemmingsomslagen'] as int?;
-      if (omslagen != null) _stemmingsOmslagen = omslagen;
-    } else {
+    } catch (e) {
+      print('ERROR loading mood data: $e');
       _stemmingWaarde = 50.0;
       _stemmingsOmslagen = 0;
     }
@@ -86,22 +92,36 @@ class _MoodScreenState extends State<MoodScreen> {
       return;
     }
 
-    await db.upsertDailyLog({
-      'date': _formattedDate,
-      'stemming_ochtend': stemming,
-      'stemmingsomslagen': _stemmingsOmslagen,
-    });
+    try {
+      await db.upsertDailyLog({
+        'date': _formattedDate,
+        'stemming_ochtend': stemming,
+        'stemmingsomslagen': _stemmingsOmslagen,
+      });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Opgeslagen!'),
-          backgroundColor: AppTheme.primaryTeal,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 1),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Opgeslagen!'),
+            backgroundColor: AppTheme.primaryTeal,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      print('ERROR saving mood data: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fout bij opslaan: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
     }
   }
 
