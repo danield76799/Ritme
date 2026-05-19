@@ -29,7 +29,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 3,
+      version: 4, // Bumped to force database recreation in new writable location
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
