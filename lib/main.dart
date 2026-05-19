@@ -23,7 +23,46 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize the appropriate database
-  await initDatabase();
+  try {
+    await initDatabase();
+  } catch (e) {
+    print('CRITICAL: Database initialization failed: $e');
+    // Show error dialog and exit
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 16),
+                const Text(
+                  'Database Fout',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Database kon niet worden geïnitialiseerd:\n$e',
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    // Retry
+                    main();
+                  },
+                  child: const Text('Opnieuw proberen'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    return;
+  }
   
   // Initialize notifications for mobile only
   if (!kIsWeb) {
