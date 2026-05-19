@@ -56,26 +56,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveSettings() async {
     try {
-      if (_settings != null) {
-        // Update username from controller
-        _settings!['username'] = _usernameController.text;
-        await db.updateSettingsMap(_settings!);
-      } else {
-        // No existing settings, create new map with all fields
-        final newSettings = <String, dynamic>{
-          'username': _usernameController.text,
-          'target_opstaan': '',
-          'target_slapen': '',
-          'target_contact': '',
-          'target_werk': '',
-          'target_eten': '',
-        };
-        await db.updateSettingsMap(newSettings);
-      }
+      // Ensure _settings is initialized
+      _settings ??= {};
+      
+      // Update username from controller
+      _settings!['username'] = _usernameController.text;
+      
+      await db.updateSettingsMap(_settings!);
       _showSuccess('Instellingen opgeslagen!');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save settings', error: e, stackTrace: stackTrace);
-      _showError('Kon instellingen niet opslaan.');
+      _showError('Kon instellingen niet opslaan: ${e.toString()}');
     }
   }
 
