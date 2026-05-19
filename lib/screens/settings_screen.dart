@@ -60,8 +60,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Update username from controller
         _settings!['username'] = _usernameController.text;
         await db.updateSettingsMap(_settings!);
-        _showSuccess('Instellingen opgeslagen!');
+      } else {
+        // No existing settings, create new map
+        final newSettings = {'username': _usernameController.text};
+        await db.updateSettingsMap(newSettings);
       }
+      _showSuccess('Instellingen opgeslagen!');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save settings', error: e, stackTrace: stackTrace);
       _showError('Kon instellingen niet opslaan.');
