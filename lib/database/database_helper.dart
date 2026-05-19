@@ -28,15 +28,12 @@ class DatabaseHelper implements DatabaseRepository {
     }
     final path = p.join(dbDir.path, filePath);
     
-    // Delete old database if it exists to force recreation
-    final oldDbFile = File(path);
-    if (await oldDbFile.exists()) {
-      await oldDbFile.delete();
-    }
+    // Only delete old database if it was corrupted (version mismatch)
+    // Don't delete on normal startup - we want to keep user data!
     
     return await openDatabase(
       path,
-      version: 4,
+      version: 5, // Bumped to force one-time migration to new writable location
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
