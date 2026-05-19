@@ -298,9 +298,14 @@ class DatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertDailyLog(String date, Map<String, dynamic> data) async {
-    final db = await database;
-    data['date'] = date;
-    return await db.insert('daily_logs', data, conflictAlgorithm: ConflictAlgorithm.replace);
+    try {
+      final db = await database;
+      data['date'] = date;
+      return await db.insert('daily_logs', data, conflictAlgorithm: ConflictAlgorithm.replace);
+    } catch (e) {
+      print('ERROR inserting daily_log: $e');
+      rethrow;
+    }
   }
 
   @override
