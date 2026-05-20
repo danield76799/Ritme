@@ -46,7 +46,17 @@ jobs:
     
     - name: Generate keystore from base64
       run: |
-        echo "${{ secrets.RITME_KEYSTORE_BASE64 }}" | base64 -d > android/app/ritme-release.keystore
+        # Debug: show first 100 chars of secret
+        echo "Secret length: ${#RITME_KEYSTORE_BASE64}"
+        echo "First 50 chars: ${RITME_KEYSTORE_BASE64:0:50}"
+        # Try decoding with error handling
+        echo "$RITME_KEYSTORE_BASE64" | base64 -d > android/app/ritme-release.keystore 2>&1 || {
+          echo "Base64 decode failed, trying with -i (ignore garbage)..."
+          echo "$RITME_KEYSTORE_BASE64" | base64 -di > android/app/ritme-release.keystore
+        }
+        # Verify keystore
+        ls -la android/app/ritme-release.keystore
+        keytool -list -v -keystore android/app/ritme-release.keystore -storepass ritme123 2>&1 | head -5
       env:
         RITME_KEYSTORE_BASE64: ${{ secrets.RITME_KEYSTORE_BASE64 }}
     
