@@ -62,7 +62,6 @@ class _MoodScreenState extends State<MoodScreen> {
         _stemmingsOmslagen = log['stemmingsomslagen'] as int? ?? 0;
         _ontstemdeManie = log['ontstemde_manie'] as bool? ?? false;
         _urenSlaap = log['uren_slaap'] as double? ?? 7.0;
-        _gewicht = log['gewicht'] as double? ?? 0.0;
       } else {
         _stemmingHoog = 50.0;
         _stemmingLaag = 50.0;
@@ -70,7 +69,6 @@ class _MoodScreenState extends State<MoodScreen> {
         _stemmingsOmslagen = 0;
         _ontstemdeManie = false;
         _urenSlaap = 7.0;
-        _gewicht = 0.0;
       }
     } catch (e, stack) {
       debugPrint('MoodScreen _loadData error: $e');
@@ -99,7 +97,6 @@ class _MoodScreenState extends State<MoodScreen> {
         'stemmingsomslagen': _stemmingsOmslagen,
         'ontstemde_manie': _ontstemdeManie,
         'uren_slaap': _urenSlaap,
-        'gewicht': _gewicht,
       });
 
       if (mounted) {
@@ -307,20 +304,6 @@ class _MoodScreenState extends State<MoodScreen> {
                           onChanged: (value) => setState(() => _urenSlaap = value),
                           icon: Icons.bedtime,
                           iconColor: Colors.indigo,
-                        ),
-                        const SizedBox(height: 12),
-                        
-                        // Gewicht
-                        _buildNumberCard(
-                          title: 'Gewicht (kg)',
-                          subtitle: 'Optioneel',
-                          value: _gewicht,
-                          onChanged: (value) => setState(() => _gewicht = value),
-                          min: 0,
-                          max: 200,
-                          step: 0.1,
-                          icon: Icons.monitor_weight,
-                          iconColor: Colors.blue,
                         ),
                         const SizedBox(height: 12),
                         
