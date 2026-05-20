@@ -110,7 +110,7 @@ class _StemmingPageState extends State<StemmingPage> {
     });
   }
 
-}
+  String _getStemmingLabel() {
     if (_stemming <= 10) return 'Uiterst depressief';
     if (_stemming <= 25) return 'Depressief';
     if (_stemming <= 40) return 'Neerslachtig';
