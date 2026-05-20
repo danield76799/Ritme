@@ -111512,7 +111512,7 @@ if(e===0){q=B.ab(["aantalDagen",0,"gemiddeldeStemming",0,"gemiddeldeSlaap",0,"to
 s=1
 break}for(o=0,n=0,m=0,l=0;k=p.length,l<k;p.length===e||(0,B.v)(p),++l){j=p[l]
 k=J.ap(j)
-if(k.i(j,"stemming_ochtend")!=null){o+=k.i(j,"stemming_ochtend");++m}if(k.i(j,"uren_slaap")!=null)n+=k.i(j,"uren_slaap")}i=0,l=0
+if(k.i(j,"stemming_hoog")!=null){o+=k.i(j,"stemming_hoog");++m}if(k.i(j,"uren_slaap")!=null)n+=k.i(j,"uren_slaap")}i=0,l=0
 case 4:if(!(e=p.length,l<e)){s=6
 break}j=p[l]
 e=$.cL
@@ -112673,7 +112673,7 @@ if(J.hB(n)){m=0
 l=0
 k=0
 for(d=J.bj(n);d.A();){j=d.gP(d)
-if(J.a6(j,"stemming_ochtend")!=null){m+=J.a6(j,"stemming_ochtend");++k}if(J.a6(j,"uren_slaap")!=null)l+=J.a6(j,"uren_slaap")}o.f=k>0?m/k:0
+if(J.a6(j,"stemming_hoog")!=null){m+=J.a6(j,"stemming_hoog");++k}if(J.a6(j,"uren_slaap")!=null)l+=J.a6(j,"uren_slaap")}o.f=k>0?m/k:0
 o.r=J.c2(n)>0?l/J.c2(n):0}e.a=e.b=0
 d=J.bj(n)
 case 7:if(!d.A()){s=8
@@ -112739,7 +112739,7 @@ s=c!==0?3:4
 break
 case 3:for(o=0,n=0,m=0;l=p.length,m<l;p.length===c||(0,B.v)(p),++m){k=p[m]
 l=J.ap(k)
-if(l.i(k,"stemming_ochtend")!=null){o+=l.i(k,"stemming_ochtend");++h.b}if(l.i(k,"uren_slaap")!=null)n+=l.i(k,"uren_slaap")}c=h.b
+if(l.i(k,"stemming_hoog")!=null){o+=l.i(k,"stemming_hoog");++h.b}if(l.i(k,"uren_slaap")!=null)n+=l.i(k,"uren_slaap")}c=h.b
 h.d=c>0?o/c:0
 h.c=l>0?n/l:0
 m=0
@@ -112775,7 +112775,7 @@ return new B.q8(A.yp,B.qI(a,B.mD(s,A.oQ,s,s,s,s,s,s,s,A.ea,s,s,10,s,s,s,!0,s,s,s
 J(a){var s=this,r=null,q=B.a5("Statistieken (Life Chart)",r,r,r,r,B.aW(r,r,A.D,r,r,r,r,r,r,r,r,r,r,r,A.aE,r,r,!0,r,r,r,r,r,r,r,r),r,r,r),p=t.p
 q=B.jD(B.b([B.fX(r,r,A.a41,r,r,s.gakU(),r,r,"Exporteer als PDF")],p),A.V,0,A.dK,r,q)
 return B.hM(q,A.cj,s.e?B.cs(B.ng(r,A.V,r,r,r,r,r,r,r,r),r,r):B.mw(new B.b2(A.ck,B.bc(B.b([s.agK(),B.cb(r,16,r),s.agJ(),B.cb(r,32,r),B.a5("Samenvatting",r,r,r,r,B.aW(r,r,A.bY,r,r,r,r,r,r,r,r,20,r,r,A.aE,r,r,!0,r,r,r,r,r,r,r,r),r,r,r),B.cb(r,16,r),B.aVO(1,B.b([s.B5(A.n.a7(s.f,1),"Gem. stemming",A.dS),s.B5(A.n.a7(s.r,1),"Gem. slaap (uren)",A.eC),s.B5(""+s.w,"Activiteiten gelogd",A.eD),s.B5(""+s.x,"Gebeurtenissen",A.Q5)],p),2,16,16,new B.FQ(r),!0),B.cb(r,24,r)],p),A.aD,A.O,A.P,0,A.Y),r),r,r,r,A.aO),r)},
-agK(){var s,r,q,p=this,o=null,n="stemming_ochtend"
+agK(){var s,r,q,p=this,o=null,n="stemming_hoog"
 if(p.d.length===0)return p.Uh("Stemming")
 s=B.b([],t.ij)
 for(r=0;q=p.d,r<q.length;++r)if(J.a6(q[r],n)!=null)s.push(new B.da(r,J.aU5(J.a6(p.d[r],n)),o,o))
@@ -112841,7 +112841,7 @@ $S:676}
 B.aKk.prototype={
 $1(a){var s,r,q,p,o,n="activiteiten",m=J.ap(a),l=m.i(a,"date")
 if(l==null)l="-"
-s=m.i(a,"stemming_ochtend")
+s=m.i(a,"stemming_hoog")
 r=s==null?null:J.dS(s)
 if(r==null)r="-"
 s=m.i(a,"uren_slaap")
