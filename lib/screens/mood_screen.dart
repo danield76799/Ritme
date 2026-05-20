@@ -143,6 +143,28 @@ class _MoodScreenState extends State<MoodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    try {
+      return _buildMoodScreen(context);
+    } catch (e, stack) {
+      debugPrint('MoodScreen build error: $e');
+      debugPrint('Stack: $stack');
+      return Scaffold(
+        appBar: AppBar(title: const Text('Stemming - Fout')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 64),
+              const SizedBox(height: 16),
+              Text('Fout: $e', style: const TextStyle(fontSize: 16)),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildMoodScreen(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
