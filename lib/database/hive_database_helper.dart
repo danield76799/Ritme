@@ -469,6 +469,10 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
+      // Ensure reminder_enabled has a default value
+      if (!map.containsKey('reminder_enabled')) {
+        map['reminder_enabled'] = '1';
+      }
       // Ensure all values are properly typed
       final cleanMap = <String, dynamic>{};
       map.forEach((key, value) {
