@@ -304,13 +304,21 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Widget _buildCompactMedCard(Map<String, dynamic> config) {
-    int? configId = config['id'] as int?;
+    // Handle both int and String ids from Hive
+    dynamic rawId = config['id'];
+    int? configId;
+    if (rawId is int) {
+      configId = rawId;
+    } else if (rawId is String) {
+      configId = int.tryParse(rawId);
+    }
     if (configId == null) {
+      print('Skipping invalid medication entry: $config');
       return const SizedBox.shrink(); // Skip invalid entries
     }
     int count = _intakesForDay[configId] ?? 0;
-    String name = config['naam'] ?? 'Onbekend';
-    String dosage = '${config['dosering'] ?? ''} ${config['eenheid'] ?? ''}';
+    String name = config['naam']?.toString() ?? 'Onbekend';
+    String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
 
     return Container(
       decoration: BoxDecoration(
@@ -361,7 +369,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             children: [
               _buildCounterBtn(
                 icon: Icons.remove,
-                onPressed: count > 0 ? () => _updateIntake(configId, -1) : null,
+                onPressed: count > 0 ? () => _updateIntake(configId!, -1) : null,
               ),
               Container(
                 width: 36,
@@ -377,12 +385,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
               ),
               _buildCounterBtn(
                 icon: Icons.add,
-                onPressed: () => _updateIntake(configId, 1),
+                onPressed: () => _updateIntake(configId!, 1),
                 isPrimary: true,
               ),
               const SizedBox(width: 8),
               _buildDeleteBtn(
-                onPressed: () => _deleteMedication(configId),
+                onPressed: () => _deleteMedication(configId!),
               ),
             ],
           ),
