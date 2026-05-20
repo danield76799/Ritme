@@ -320,30 +320,36 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 decoration: const InputDecoration(labelText: 'Locatie'),
               ),
               // Date picker with DD-MM-yyyy format
-              InkWell(
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: _dateController.text.isNotEmpty 
-                      ? _parseDate(_dateController.text) 
-                      : DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2030),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _dateController.text = DateFormat('dd-MM-yyyy').format(picked);
-                    });
-                  }
-                },
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Datum (DD-MM-YYYY) *',
-                  ),
-                  child: Text(
-                    _dateController.text.isEmpty ? 'Selecteer datum' : _dateController.text,
-                    style: TextStyle(
-                      color: _dateController.text.isEmpty ? Colors.grey : Colors.black,
+              FormField<String>(
+                initialValue: _dateController.text,
+                validator: (value) => value?.isEmpty == true ? 'Datum is verplicht' : null,
+                builder: (field) => InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _dateController.text.isNotEmpty 
+                        ? _parseDate(_dateController.text) 
+                        : DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2030),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _dateController.text = DateFormat('dd-MM-yyyy').format(picked);
+                        field.didChange(_dateController.text);
+                      });
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Datum (DD-MM-YYYY) *',
+                      errorText: field.errorText,
+                    ),
+                    child: Text(
+                      _dateController.text.isEmpty ? 'Selecteer datum' : _dateController.text,
+                      style: TextStyle(
+                        color: _dateController.text.isEmpty ? Colors.grey : Colors.black,
+                      ),
                     ),
                   ),
                 ),
@@ -389,12 +395,6 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            if (_dateController.text.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Datum is verplicht')),
-              );
-              return;
-            }
             if (_formKey.currentState?.validate() ?? false) {
               Navigator.pop(context, {
                 'title': _titleController.text,
