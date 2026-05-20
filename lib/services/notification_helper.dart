@@ -158,6 +158,13 @@ class NotificationHelper {
 
       // Cancel existing notifications for this medication
       await cancelMedicationReminder(medicationId);
+      
+      // Request permissions first
+      final permissionsGranted = await _requestPermissions();
+      if (!permissionsGranted) {
+        debugPrint('Cannot schedule notification - permissions denied');
+        throw Exception('Notificatie permissies geweigerd');
+      }
 
       // Schedule for each day of the week
       for (final day in daysOfWeek) {
@@ -215,6 +222,7 @@ class NotificationHelper {
       debugPrint('Medicatie herinnering gepland voor $medicationName om $time');
     } catch (e) {
       debugPrint('Medicatie herinnering planning error: $e');
+      rethrow;
     }
   }
 

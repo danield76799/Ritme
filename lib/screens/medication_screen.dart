@@ -97,13 +97,41 @@ class _MedicationScreenState extends State<MedicationScreen> {
         await db.insertMedicationSchedule(id, timeStr, '1,2,3,4,5,6,7');
         
         // Schedule push notification
-        await NotificationHelper.instance.scheduleMedicationReminder(
-          medicationId: id,
-          medicationName: name,
-          dosage: '$dosage $unit',
-          time: timeStr,
-          daysOfWeek: [1, 2, 3, 4, 5, 6, 7], // Daily
-        );
+        try {
+          await NotificationHelper.instance.scheduleMedicationReminder(
+            medicationId: id,
+            medicationName: name,
+            dosage: '$dosage $unit',
+            time: timeStr,
+            daysOfWeek: [1, 2, 3, 4, 5, 6, 7], // Daily
+          );
+          
+          // Show confirmation to user
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Herinnering gezet voor $name om $timeStr'),
+                backgroundColor: Colors.green[700],
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        } catch (notifError) {
+          AppLogger.error('Notification scheduling failed', error: notifError);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Medicatie opgeslagen, maar herinnering kon niet worden gezet: $notifError'),
+                backgroundColor: Colors.orange[700],
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        }
       }
       
       _loadData();
