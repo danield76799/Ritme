@@ -308,7 +308,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       context, 
                       icon: Icons.directions_walk, 
                       iconColor: Colors.green, 
-                      title: 'Activiteit', 
+                      title: 'Activiteit + Slaap', 
                       route: '/activity',
                     ),
                     _buildMedicatieCard(context),

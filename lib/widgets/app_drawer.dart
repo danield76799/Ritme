@@ -81,7 +81,7 @@ class AppDrawer extends StatelessWidget {
                   _buildMenuItem(
                     context,
                     icon: Icons.directions_walk,
-                    title: 'Activiteit',
+                    title: 'Activiteit + Slaap',
                     route: '/activity',
                     color: Colors.green,
                   ),
