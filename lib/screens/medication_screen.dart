@@ -3,7 +3,6 @@ import '../utils/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
-import '../widgets/app_scaffold.dart';
 import '../utils/logger.dart';
 
 class MedicationScreen extends StatefulWidget {
@@ -187,7 +186,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             child: _isLoading
                 ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
                 : _errorMessage != null
-                    ? _buildErrorWidget()
+                    ? _buildErrorState()
                     : _configs.isEmpty
                         ? _buildEmptyState()
                         : _buildMedList(),
@@ -197,22 +196,27 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
   }
 
-  Widget _buildErrorWidget() {
+  Widget _buildErrorState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+          Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
           const SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 16, color: Colors.red[600]),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: _loadData,
-            child: const Text('Opnieuw proberen'),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Opnieuw proberen'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryTeal,
+              foregroundColor: Colors.white,
+            ),
           ),
         ],
       ),
@@ -250,7 +254,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Widget _buildCompactMedCard(Map<String, dynamic> config) {
-    int configId = config['id'];
+    int? configId = config['id'] as int?;
+    if (configId == null) {
+      return const SizedBox.shrink(); // Skip invalid entries
+    }
     int count = _intakesForDay[configId] ?? 0;
     String name = config['naam'] ?? 'Onbekend';
     String dosage = '${config['dosering'] ?? ''} ${config['eenheid'] ?? ''}';

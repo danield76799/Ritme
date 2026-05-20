@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
-import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 import '../widgets/app_scaffold.dart';
@@ -235,12 +234,41 @@ class _ActivityScreenState extends State<ActivityScreen> {
           Expanded(
             child: _isLoading
                 ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
-                : ListView.separated(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: _activiteiten.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, i) => _buildCompactActivityCard(i),
-                  ),
+                : _errorMessage != null
+                    ? _buildErrorState()
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: _activiteiten.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, i) => _buildCompactActivityCard(i),
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage!,
+            style: TextStyle(fontSize: 16, color: Colors.red[600]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _loadData,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Opnieuw proberen'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryTeal,
+              foregroundColor: Colors.white,
+            ),
           ),
         ],
       ),
