@@ -61,9 +61,10 @@ class _WeightScreenState extends State<WeightScreen> {
           children: [
             TextField(
               controller: weightController,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Gewicht (kg)',
+                labelText: 'Gewicht (kg) - gebruik punt (.)',
+                hintText: 'Bijv. 101.5',
                 prefixIcon: const Icon(Icons.monitor_weight),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -88,13 +89,15 @@ class _WeightScreenState extends State<WeightScreen> {
           ElevatedButton(
             onPressed: () {
               if (weightController.text.isNotEmpty) {
-                final weight = double.tryParse(weightController.text.replaceAll(',', '.'));
+                // Accept both comma and dot as decimal separator
+                final normalizedWeight = weightController.text.replaceAll(',', '.');
+                final weight = double.tryParse(normalizedWeight);
                 
                 // Validatie: gewicht moet realistisch zijn (20-300 kg)
                 if (weight == null || weight < 20 || weight > 300) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Gewicht moet tussen 20 en 300 kg zijn'),
+                      content: const Text('Gewicht moet tussen 20 en 300 kg zijn. Gebruik een punt (.) als decimaal.'),
                       backgroundColor: Colors.red,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
