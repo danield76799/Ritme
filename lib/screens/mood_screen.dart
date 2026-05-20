@@ -33,7 +33,7 @@ class _MoodScreenState extends State<MoodScreen> {
     setState(() => _isLoading = true);
 
     try {
-      if (db == null) {
+      if (_db == null) {
         debugPrint('MoodScreen: db is null, initializing...');
         await initDatabase();
       }
@@ -52,7 +52,7 @@ class _MoodScreenState extends State<MoodScreen> {
       }
     } catch (e, stack) {
       debugPrint('MoodScreen _loadData error: $e');
-      debugPrint('Stack: \$stack');
+      debugPrint('Stack: $stack');
     }
 
     if (mounted) setState(() => _isLoading = false);
