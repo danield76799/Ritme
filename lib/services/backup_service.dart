@@ -1,13 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BackupService {
-  /// Export all Hive boxes to a JSON map
+  /// Export all Hive boxes to a JSON map (runs in isolate)
   static Future<Map<String, dynamic>> exportAllData() async {
-    // Get all open boxes instead of hardcoded list
+    return await compute(_exportDataInIsolate, null);
+  }
+  
+  static Map<String, dynamic> _exportDataInIsolate(void _) {
     final openBoxes = Hive.boxNames;
     
     final export = <String, dynamic>{
@@ -22,7 +26,6 @@ class BackupService {
         final boxData = <String, dynamic>{};
         for (final key in box.keys) {
           final value = box.get(key);
-          // Only export serializable data
           if (value != null) {
             boxData[key.toString()] = value;
           }
