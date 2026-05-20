@@ -22,7 +22,7 @@ class DatumNavigator extends StatelessWidget {
     } else if (datum.year == gisteren.year && datum.month == gisteren.month && datum.day == gisteren.day) {
       return 'Gisteren, ${DateFormat('d MMMM').format(datum)}';
     } else {
-      return DateFormat('EEEE d MMMM', 'nl_NL').format(datum);
+      return DateFormat('EEEE d MMMM').format(datum);
     }
   }
 
