@@ -44,13 +44,7 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
     
-    - name: Generate keystore from base64
-      run: |
-        echo "${{ secrets.RITME_KEYSTORE_BASE64 }}" | base64 -d > android/app/ritme-release.keystore
-      env:
-        RITME_KEYSTORE_BASE64: ${{ secrets.RITME_KEYSTORE_BASE64 }}
-    
-    - name: Build signed APK
+    - name: Build unsigned APK (no keystore needed)
       run: flutter build apk --release
     
     - name: Upload APK Artifact
@@ -78,6 +72,7 @@ jobs:
           **Build info:**
           - Build number: ${{ github.run_number }}
           - Commit: ${{ github.sha }}
+          - Type: Unsigned release build
           
           **Let op:** Dit is een automatische build.
         draft: false
