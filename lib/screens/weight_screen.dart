@@ -30,6 +30,8 @@ class _WeightScreenState extends State<WeightScreen> {
   Future<void> _loadWeightLogs() async {
     try {
       final logs = await db.getWeightLogs();
+      // Sort by date ascending (oldest first) so most recent is on the right
+      logs.sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
       if (mounted) {
         setState(() {
           _weightLogs = logs;
@@ -287,7 +289,8 @@ class _WeightScreenState extends State<WeightScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _weightLogs.length,
                         itemBuilder: (context, index) {
-                          final log = _weightLogs[index];
+                          // Show in reverse order (newest first)
+                          final log = _weightLogs[_weightLogs.length - 1 - index];
                           final date = DateTime.parse(log['date']);
                           return Dismissible(
                             key: Key(log['id'].toString()),
