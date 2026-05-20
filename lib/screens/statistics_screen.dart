@@ -49,6 +49,11 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
             logCount++;
           }
           if (log['uren_slaap'] != null) totaalSlaap += log['uren_slaap'];
+          // Also check for calculated sleep_hours from sleep tracking
+          if (log['sleep_hours'] != null) {
+            final sleepVal = log['sleep_hours'] is num ? log['sleep_hours'].toDouble() : double.tryParse(log['sleep_hours'].toString()) ?? 0.0;
+            if (sleepVal > 0) totaalSlaap += sleepVal;
+          }
         }
 
         _gemStemming = logCount > 0 ? totaalStemming / logCount : 0.0;

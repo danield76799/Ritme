@@ -52,7 +52,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
@@ -97,6 +97,30 @@ class DatabaseHelper implements DatabaseRepository {
         )
       ''');
     }
+    
+    // Add sleep tracking columns for version 6
+    if (oldVersion < 6) {
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN bed_time TEXT');
+      } catch (e) {
+        print('bed_time column might already exist: $e');
+      }
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN wake_time TEXT');
+      } catch (e) {
+        print('wake_time column might already exist: $e');
+      }
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN awake_minutes INTEGER DEFAULT 0');
+      } catch (e) {
+        print('awake_minutes column might already exist: $e');
+      }
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN sleep_hours REAL');
+      } catch (e) {
+        print('sleep_hours column might already exist: $e');
+      }
+    }
   }
 
   Future _createDB(Database db, int version) async {
@@ -117,6 +141,10 @@ class DatabaseHelper implements DatabaseRepository {
       CREATE TABLE IF NOT EXISTS daily_logs (
         date TEXT PRIMARY KEY,
         uren_slaap REAL,
+        bed_time TEXT,
+        wake_time TEXT,
+        awake_minutes INTEGER DEFAULT 0,
+        sleep_hours REAL,
         stemming_ochtend INTEGER,
         stemming_avond INTEGER,
         ontstemde_manie INTEGER DEFAULT 0,
@@ -708,6 +736,85 @@ class DatabaseHelper implements DatabaseRepository {
   Future<int> deleteWeightLog(int id) async {
     final db = await database;
     return await db.delete('weight_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ===================
+  // SLEEP TRACKING
+  // ===================
+  
+  @override
+  Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
+    final db = await database;
+    
+    // Check if sleep log exists for this date
+    final existing = await db.query(
+      'daily_logs',
+      where: 'date = ?',
+      whereArgs: [date],
+    );
+    
+    final sleepHours = _calculateSleepHours(bedTime, wakeTime, awakeMinutes);
+    
+    if (existing.isNotEmpty) {
+      // Update existing
+      return await db.update(
+        'daily_logs',
+        {
+          'bed_time': bedTime,
+          'wake_time': wakeTime,
+          'awake_minutes': awakeMinutes,
+          'sleep_hours': sleepHours,
+        },
+        where: 'date = ?',
+        whereArgs: [date],
+      );
+    } else {
+      // Insert new
+      return await db.insert('daily_logs', {
+        'date': date,
+        'bed_time': bedTime,
+        'wake_time': wakeTime,
+        'awake_minutes': awakeMinutes,
+        'sleep_hours': sleepHours,
+      });
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getSleepLog(String date) async {
+    final db = await database;
+    final results = await db.query(
+      'daily_logs',
+      where: 'date = ? AND bed_time IS NOT NULL',
+      whereArgs: [date],
+    );
+    
+    if (results.isEmpty) return null;
+    return results.first;
+  }
+
+  double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
+    try {
+      final bedParts = bedTime.split(':');
+      final wakeParts = wakeTime.split(':');
+      
+      int bedHour = int.parse(bedParts[0]);
+      int bedMinute = int.parse(bedParts[1]);
+      int wakeHour = int.parse(wakeParts[0]);
+      int wakeMinute = int.parse(wakeParts[1]);
+      
+      int bedMinutes = bedHour * 60 + bedMinute;
+      int wakeMinutes = wakeHour * 60 + wakeMinute;
+      
+      if (wakeMinutes < bedMinutes) {
+        wakeMinutes += 24 * 60;
+      }
+      
+      int totalMinutes = wakeMinutes - bedMinutes - awakeMinutes;
+      return totalMinutes / 60.0;
+    } catch (e) {
+      return 0.0;
+    }
   }
 
   // ===================
