@@ -51,12 +51,14 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       );
 
       if (result != null) {
-        await db.insertMedicalAppointment(result);
+        print('Adding appointment: $result');
+        final id = await db.insertMedicalAppointment(result);
+        print('Appointment added with id: $id');
         _loadAppointments();
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add appointment', error: e, stackTrace: stackTrace);
-      _showError('Kon afspraak niet toevoegen.');
+      _showError('Kon afspraak niet toevoegen: $e');
     }
   }
 
