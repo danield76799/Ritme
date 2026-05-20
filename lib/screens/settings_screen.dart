@@ -400,12 +400,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[600]!, width: 2),
+          border: Border.all(color: Colors.black, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -413,18 +413,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
           controller: controller,
           style: const TextStyle(
             color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
           ),
           decoration: InputDecoration(
             labelText: label,
             labelStyle: const TextStyle(
-              color: Colors.black87,
+              color: Colors.black,
               fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
+            hintStyle: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+            ),
+            filled: true,
+            fillColor: Colors.white,
             border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           ),
         ),
       ),
