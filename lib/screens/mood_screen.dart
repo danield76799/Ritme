@@ -29,20 +29,30 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
-    final log = await db.getDailyLog(_formattedDate);
-
-    if (log != null) {
-      final stemming = log['stemming_ochtend'] as int?;
-      if (stemming != null) {
-        _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
+    try {
+      if (db == null) {
+        debugPrint('MoodScreen: db is null, initializing...');
+        await initDatabase();
       }
-      final omslagen = log['stemmingsomslagen'] as int?;
-      if (omslagen != null) _stemmingsOmslagen = omslagen;
-    } else {
-      _stemmingWaarde = 50.0;
-      _stemmingsOmslagen = 0;
+      final log = await db.getDailyLog(_formattedDate);
+      if (!mounted) return;
+      if (log != null) {
+        final stemming = log['stemming_ochtend'] as int?;
+        if (stemming != null) {
+          _stemmingWaarde = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
+        }
+        final omslagen = log['stemmingsomslagen'] as int?;
+        if (omslagen != null) _stemmingsOmslagen = omslagen;
+      } else {
+        _stemmingWaarde = 50.0;
+        _stemmingsOmslagen = 0;
+      }
+    } catch (e, stack) {
+      debugPrint('MoodScreen _loadData error: $e');
+      debugPrint('Stack: \$stack');
     }
 
     if (mounted) setState(() => _isLoading = false);
