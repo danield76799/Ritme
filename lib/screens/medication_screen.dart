@@ -180,6 +180,61 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
+  Future<void> _resetDatabase() async {
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Database resetten?'),
+          content: const Text('Dit wist ALLE data inclusief medicatie, stemmingen, en instellingen. Dit kan niet ongedaan worden gemaakt.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Annuleren'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Resetten', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        await db.clearAllData();
+        
+        // Cancel all notifications
+        await NotificationHelper.instance.cancelAllReminders();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Database gereset. Herstart de app.'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
+        
+        _loadData();
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to reset database', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Kon database niet resetten.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
+  }
+
   void _showAddMedicationDialog() {
     String name = '';
     double dosage = 0;
@@ -293,6 +348,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _showAddMedicationDialog,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_forever, color: Colors.red),
+            onPressed: _resetDatabase,
+            tooltip: 'Reset database',
           ),
         ],
       ),
