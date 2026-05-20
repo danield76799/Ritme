@@ -1,18 +1,112 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
-// ==========================================
-// Ritme App - NEW BUILD
-// ==========================================
+import 'pages/splash_screen.dart';
+import 'screens/login_screen.dart';
+import 'services/notification_helper.dart';
+import 'screens/mood_screen.dart';
+import 'screens/activity_screen.dart';
+import 'screens/medication_screen.dart';
+import 'screens/event_screen.dart';
+import 'screens/statistics_screen.dart' show StatistiekenScherm;
+import 'screens/insights_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/medication_schedule_screen.dart';
+import 'screens/weight_screen.dart';
+import 'screens/sociaal_ritme_meter_screen.dart';
+import 'screens/appointments_screen.dart';
+import 'service_locator.dart';
+import 'theme/app_theme.dart';
+import 'utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Hive and open boxes
-  await Hive.initFlutter();
-  await Hive.openBox('daily_logs');
+  // Initialize the appropriate database
+  await initDatabase();
   
-  runApp(const RitmeApp());
+  // Initialize notifications for mobile only
+  if (!kIsWeb) {
+    try {
+      await NotificationHelper.instance.initialize();
+    } catch (e, stackTrace) {
+      AppLogger.error('Notification initialization error', error: e, stackTrace: stackTrace);
+    }
+  }
+  
+  // Set up error handling
+  FlutterError.onError = (FlutterErrorDetails details) {
+    AppLogger.error(
+      'Flutter error',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+    FlutterError.presentError(details);
+  };
+  
+  runApp(
+    ErrorBoundary(
+      child: const RitmeApp(),
+    ),
+  );
+}
+
+class ErrorBoundary extends StatefulWidget {
+  final Widget child;
+  
+  const ErrorBoundary({super.key, required this.child});
+  
+  @override
+  State<ErrorBoundary> createState() => _ErrorBoundaryState();
+}
+
+class _ErrorBoundaryState extends State<ErrorBoundary> {
+  FlutterErrorDetails? _error;
+  
+  @override
+  void initState() {
+    super.initState();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    if (_error != null) {
+      return MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 16),
+                const Text(
+                  'Er is iets misgegaan',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _error!.exception.toString(),
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _error = null;
+                    });
+                  },
+                  child: const Text('Opnieuw proberen'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return widget.child;
+  }
 }
 
 class RitmeApp extends StatelessWidget {
@@ -21,285 +115,25 @@ class RitmeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ritme',
+      title: 'Ritme - SRT Tracker',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4FB2C1)),
-        useMaterial3: true,
-      ),
-      home: const HomePage(),
-    );
-  }
-}
-
-// ==========================================
-// HOME PAGE (Dashboard)
-// ==========================================
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ritme'),
-        backgroundColor: const Color(0xFF4FB2C1),
-        foregroundColor: Colors.white,
-      ),
-      body: GridView.count(
-        crossAxisCount: 2,
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildCard(context, Icons.mood, 'Stemming', '/mood'),
-          _buildCard(context, Icons.fitness_center, 'Activiteiten', '/activity'),
-          _buildCard(context, Icons.medication, 'Medicatie', '/medication'),
-          _buildCard(context, Icons.settings, 'Instellingen', '/settings'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCard(BuildContext context, IconData icon, String title, String route) {
-    return Card(
-      child: InkWell(
-        onTap: () {
-          if (route == '/mood') {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const StemmingPage()));
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$title komt binnenkort')),
-            );
-          }
-        },
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 48, color: const Color(0xFF4FB2C1)),
-              const SizedBox(height: 8),
-              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ==========================================
-// STEMMING PAGE
-// ==========================================
-class StemmingPage extends StatefulWidget {
-  const StemmingPage({super.key});
-
-  @override
-  State<StemmingPage> createState() => _StemmingPageState();
-}
-
-class _StemmingPageState extends State<StemmingPage> {
-  double _stemming = 50.0;
-  int _stemmingsOmslagen = 0;
-  bool _isLoading = false;
-  String _status = '';
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
-  }
-
-  String _getStemmingLabel() {
-    if (_stemming <= 10) return 'Uiterst depressief';
-    if (_stemming <= 25) return 'Depressief';
-    if (_stemming <= 40) return 'Neerslachtig';
-    if (_stemming <= 60) return 'Neutraal';
-    if (_stemming <= 75) return 'Opgewekt';
-    if (_stemming <= 90) return 'Manisch';
-    return 'Uiterst manisch';
-  }
-
-  Color _getStemmingColor() {
-    if (_stemming <= 10) return Colors.grey[700]!;
-    if (_stemming <= 25) return Colors.grey[500]!;
-    if (_stemming <= 40) return Colors.blue[300]!;
-    if (_stemming <= 60) return Colors.green[400]!;
-    if (_stemming <= 75) return Colors.orange[400]!;
-    if (_stemming <= 90) return Colors.orange[700]!;
-    return Colors.red[400]!;
-  }
-
-  void _loadData() async {
-    try {
-      final box = Hive.box('daily_logs');
-      final today = DateTime.now().toIso8601String().split('T')[0];
-      final data = box.get(today);
-      if (data != null) {
-        setState(() {
-          final stemming = data['stemming_ochtend'] as int?;
-          if (stemming != null) {
-            _stemming = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
-          }
-          _stemmingsOmslagen = data['stemmingsomslagen'] as int? ?? 0;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading data: $e');
-    }
-  }
-
-  void _save() async {
-    setState(() {
-      _isLoading = true;
-      _status = 'Opslaan...';
-    });
-
-    try {
-      final box = Hive.box('daily_logs');
-      final today = DateTime.now().toIso8601String().split('T')[0];
-      final stemmed = ((_stemming / 100) * 10 - 5).round();
-      
-      debugPrint('Saving: today=$today, stemming=$stemmed, omslagen=$_stemmingsOmslagen');
-      
-      await box.put(today, {
-        'date': today,
-        'stemming_ochtend': stemmed,
-        'stemmingsomslagen': _stemmingsOmslagen,
-      });
-      
-      debugPrint('Save complete, box contents: ${box.toMap()}');
-
-      setState(() {
-        _isLoading = false;
-        _status = 'Opgeslagen! ✅';
-      });
-
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted) {
-        setState(() => _status = '');
-      }
-    } catch (e) {
-      debugPrint('Save error: $e');
-      setState(() {
-        _isLoading = false;
-        _status = 'Fout: $e';
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Stemming'),
-        backgroundColor: const Color(0xFF4FB2C1),
-        foregroundColor: Colors.white,
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _save,
-            child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Mood display
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: _getStemmingColor().withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    _stemming.round().toString(),
-                    style: TextStyle(
-                      fontSize: 64,
-                      fontWeight: FontWeight.bold,
-                      color: _getStemmingColor(),
-                    ),
-                  ),
-                  Text(
-                    _getStemmingLabel(),
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: _getStemmingColor(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Slider
-            SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: _getStemmingColor(),
-                thumbColor: _getStemmingColor(),
-              ),
-              child: Slider(
-                value: _stemming,
-                min: 0,
-                max: 100,
-                onChanged: (v) => setState(() => _stemming = v),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('😞 Depressief', style: TextStyle(color: Colors.grey[600])),
-                Text('Manisch 😄', style: TextStyle(color: Colors.grey[600])),
-              ],
-            ),
-            const SizedBox(height: 32),
-
-            // Mood swings
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Stemmingsomslagen: ', style: TextStyle(fontSize: 16)),
-                  Text(
-                    '$_stemmingsOmslagen',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(width: 16),
-                  IconButton(
-                    onPressed: () => setState(() => _stemmingsOmslagen--),
-                    icon: const Icon(Icons.remove_circle_outline),
-                  ),
-                  IconButton(
-                    onPressed: () => setState(() => _stemmingsOmslagen++),
-                    icon: const Icon(Icons.add_circle_outline),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Status
-            if (_status.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: _status.contains('Fout') ? Colors.red[100] : Colors.green[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(_status),
-              ),
-          ],
-        ),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      home: const SplashScreen(),
+      routes: {
+        '/mood': (context) => const MoodScreen(),
+        '/activity': (context) => const ActivityScreen(),
+        '/medication': (context) => const MedicationScreen(),
+        '/event': (context) => GebeurtenisScherm(),
+        '/settings': (context) => const SettingsScreen(),
+        '/medication-schedule': (context) => const MedicationScheduleScreen(),
+        '/weight': (context) => const WeightScreen(),
+        '/sociaal-ritme': (context) => const SociaalRitmeMeterScreen(),
+        '/appointments': (context) => const AppointmentsScreen(),
+        '/insights': (context) => const InsightsScreen(),
+        '/statistics': (context) => StatistiekenScherm(),
+      },
     );
   }
 }
