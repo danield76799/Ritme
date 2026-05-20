@@ -400,7 +400,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.teal, width: 2),
+          border: Border.all(color: Color(0xFF008080), width: 2), // Medical Teal
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
@@ -412,14 +412,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: TextFormField(
           controller: controller,
           style: const TextStyle(
-            color: Colors.teal,
+            color: Color(0xFF333333), // Charcoal
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
           decoration: InputDecoration(
             labelText: label,
             labelStyle: const TextStyle(
-              color: Colors.teal,
+              color: Color(0xFF333333), // Charcoal
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -444,7 +444,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.teal, width: 2),
+            border: Border.all(color: Color(0xFF008080), width: 2), // Medical Teal
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
@@ -460,7 +460,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label,
                 style: const TextStyle(
                   fontSize: 16, 
-                  color: Colors.teal,
+                  color: Color(0xFF333333), // Charcoal
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -471,11 +471,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: const TextStyle(
                       fontSize: 16, 
                       fontWeight: FontWeight.w700,
-                      color: Colors.teal,
+                      color: Color(0xFF333333), // Charcoal
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.access_time, color: Colors.teal),
+                  Icon(Icons.access_time, color: Color(0xFF008080)), // Medical Teal
                 ],
               ),
             ],
