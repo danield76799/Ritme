@@ -463,23 +463,28 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<List<Map<String, dynamic>>> getMedicationConfigs() async {
-    return _medicationConfig.toMap().entries.map((entry) {
-      final map = Map<String, dynamic>.from(entry.value);
-      // Ensure id is present (for backwards compatibility with old data)
-      if (!map.containsKey('id')) {
-        map['id'] = entry.key;
-      }
-      // Ensure reminder_enabled has a default value
-      if (!map.containsKey('reminder_enabled')) {
-        map['reminder_enabled'] = '1';
-      }
-      // Ensure all values are properly typed
-      final cleanMap = <String, dynamic>{};
-      map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
-      });
-      return cleanMap;
-    }).toList();
+    try {
+      return _medicationConfig.toMap().entries.map((entry) {
+        final map = Map<String, dynamic>.from(entry.value);
+        // Ensure id is present (for backwards compatibility with old data)
+        if (!map.containsKey('id')) {
+          map['id'] = entry.key;
+        }
+        // Ensure reminder_enabled has a default value
+        if (!map.containsKey('reminder_enabled')) {
+          map['reminder_enabled'] = '1';
+        }
+        // Ensure all values are properly typed
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        return cleanMap;
+      }).toList();
+    } catch (e) {
+      print('Error loading medication configs: $e');
+      return [];
+    }
   }
 
   // ===================
