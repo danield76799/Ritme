@@ -43,8 +43,8 @@ android {
 
     buildTypes {
         release {
-            // Use the release signing config with our fixed keystore
-            signingConfig = signingConfigs.getByName("release")
+            // Geen signing voor nu - unsigned release build
+            signingConfig = null
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
