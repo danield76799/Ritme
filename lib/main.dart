@@ -1,20 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'pages/splash_screen.dart';
 import 'screens/login_screen.dart';
-import 'services/notification_helper.dart';
-import 'screens/mood_screen.dart';
-import 'screens/activity_screen.dart';
-import 'screens/medication_screen.dart';
-import 'screens/event_screen.dart';
-import 'screens/statistics_screen.dart' show StatistiekenScherm;
-import 'screens/insights_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/medication_schedule_screen.dart';
-import 'screens/weight_screen.dart';
-import 'screens/sociaal_ritme_meter_screen.dart';
-import 'screens/appointments_screen.dart';
 import 'service_locator.dart';
 import 'theme/app_theme.dart';
 import 'utils/logger.dart';
@@ -22,130 +8,14 @@ import 'utils/logger.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize the appropriate database
+  // Initialize database
   try {
     await initDatabase();
   } catch (e) {
-    print('CRITICAL: Database initialization failed: $e');
-    // Show error dialog and exit
-    runApp(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 64),
-                const SizedBox(height: 16),
-                const Text(
-                  'Database Fout',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Database kon niet worden geïnitialiseerd:\n$e',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    // Retry
-                    main();
-                  },
-                  child: const Text('Opnieuw proberen'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-    return;
+    debugPrint('CRITICAL: Database initialization failed: $e');
   }
   
-  // Initialize notifications for mobile only
-  if (!kIsWeb) {
-    try {
-      await NotificationHelper.instance.initialize();
-    } catch (e, stackTrace) {
-      AppLogger.error('Notification initialization error', error: e, stackTrace: stackTrace);
-    }
-  }
-  
-  // Set up error handling
-  FlutterError.onError = (FlutterErrorDetails details) {
-    AppLogger.error(
-      'Flutter error',
-      error: details.exception,
-      stackTrace: details.stack,
-    );
-    FlutterError.presentError(details);
-  };
-  
-  runApp(
-    ErrorBoundary(
-      child: const RitmeApp(),
-    ),
-  );
-}
-
-class ErrorBoundary extends StatefulWidget {
-  final Widget child;
-  
-  const ErrorBoundary({super.key, required this.child});
-  
-  @override
-  State<ErrorBoundary> createState() => _ErrorBoundaryState();
-}
-
-class _ErrorBoundaryState extends State<ErrorBoundary> {
-  FlutterErrorDetails? _error;
-  
-  @override
-  void initState() {
-    super.initState();
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    if (_error != null) {
-      return MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 64),
-                const SizedBox(height: 16),
-                const Text(
-                  'Er is iets misgegaan',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _error!.exception.toString(),
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _error = null;
-                    });
-                  },
-                  child: const Text('Opnieuw proberen'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-    
-    return widget.child;
-  }
+  runApp(const RitmeApp());
 }
 
 class RitmeApp extends StatelessWidget {
@@ -156,23 +26,60 @@ class RitmeApp extends StatelessWidget {
     return MaterialApp(
       title: 'Ritme - SRT Tracker',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: const SplashScreen(),
-      routes: {
-        '/mood': (context) => const MoodScreen(),
-        '/activity': (context) => const ActivityScreen(),
-        '/medication': (context) => const MedicationScreen(),
-        '/event': (context) => GebeurtenisScherm(),
-        '/settings': (context) => const SettingsScreen(),
-        '/medication-schedule': (context) => const MedicationScheduleScreen(),
-        '/weight': (context) => const WeightScreen(),
-        '/sociaal-ritme': (context) => const SociaalRitmeMeterScreen(),
-        '/appointments': (context) => const AppointmentsScreen(),
-        '/insights': (context) => const InsightsScreen(),
-        '/statistics': (context) => StatistiekenScherm(),
-      },
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: AppTheme.primaryTeal),
+        useMaterial3: true,
+      ),
+      home: const SplashPage(),
+    );
+  }
+}
+
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('SplashPage: initState');
+    _navigate();
+  }
+
+  Future<void> _navigate() async {
+    debugPrint('SplashPage: navigate started');
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      debugPrint('SplashPage: navigating to LoginPage');
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('SplashPage: build');
+    return Scaffold(
+      backgroundColor: AppTheme.primaryTeal,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.favorite, size: 80, color: Colors.white),
+            const SizedBox(height: 16),
+            const Text('Ritme', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 8),
+            const Text('SRT Tracker', style: TextStyle(fontSize: 16, color: Colors.white70)),
+            const SizedBox(height: 32),
+            const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+          ],
+        ),
+      ),
     );
   }
 }
