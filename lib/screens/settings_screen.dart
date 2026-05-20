@@ -258,11 +258,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Icons.backup,
           () async {
             try {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => const Center(child: CircularProgressIndicator()),
+              );
               final path = await BackupService.saveLocalBackup();
+              Navigator.of(context).pop(); // close dialog
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Backup opgeslagen: $path')),
               );
-            } catch (e) {
+            } catch (e, stack) {
+              Navigator.of(context).pop(); // close dialog
+              debugPrint('Backup error: $e');
+              debugPrint('Stack: $stack');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Fout bij backup: $e')),
               );
@@ -275,8 +284,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Icons.share,
           () async {
             try {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => const Center(child: CircularProgressIndicator()),
+              );
               await BackupService.shareBackup();
-            } catch (e) {
+              Navigator.of(context).pop(); // close dialog
+            } catch (e, stack) {
+              Navigator.of(context).pop(); // close dialog
+              debugPrint('Share error: $e');
+              debugPrint('Stack: $stack');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Fout bij delen: $e')),
               );
@@ -294,12 +312,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 allowedExtensions: ['json'],
               );
               if (result != null && result.files.single.path != null) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                );
                 await BackupService.restoreFromFile(result.files.single.path!);
+                Navigator.of(context).pop(); // close dialog
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Data hersteld! App herstart...')),
+                  const SnackBar(content: Text('Data hersteld!')),
                 );
               }
-            } catch (e) {
+            } catch (e, stack) {
+              Navigator.of(context).pop(); // close dialog
+              debugPrint('Restore error: $e');
+              debugPrint('Stack: $stack');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Fout bij herstellen: $e')),
               );

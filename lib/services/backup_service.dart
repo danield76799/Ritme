@@ -7,34 +7,31 @@ import 'package:share_plus/share_plus.dart';
 class BackupService {
   /// Export all Hive boxes to a JSON map
   static Future<Map<String, dynamic>> exportAllData() async {
-    final boxes = [
-      'settings',
-      'daily_logs',
-      'srm_activities',
-      'medication_config',
-      'medication_intake',
-      'medication_schedule',
-      'life_events',
-      'weight_logs',
-      'medical_appointments',
-    ];
-
+    // Get all open boxes instead of hardcoded list
+    final openBoxes = Hive.boxNames;
+    
     final export = <String, dynamic>{
       'export_date': DateTime.now().toIso8601String(),
       'app_version': '1.0.0',
       'data': {},
     };
 
-    for (final boxName in boxes) {
+    for (final boxName in openBoxes) {
       try {
         final box = Hive.box(boxName);
         final boxData = <String, dynamic>{};
         for (final key in box.keys) {
-          boxData[key.toString()] = box.get(key);
+          final value = box.get(key);
+          // Only export serializable data
+          if (value != null) {
+            boxData[key.toString()] = value;
+          }
         }
-        export['data'][boxName] = boxData;
+        if (boxData.isNotEmpty) {
+          export['data'][boxName] = boxData;
+        }
       } catch (e) {
-        // Box might not exist, skip
+        debugPrint('BackupService: skipping box $boxName - $e');
       }
     }
 
@@ -82,13 +79,19 @@ class BackupService {
       final boxData = entry.value as Map<String, dynamic>;
       
       try {
+        // Check if box is open, skip if not
+        if (!Hive.isBoxOpen(boxName)) {
+          debugPrint('BackupService: box $boxName not open, skipping');
+          continue;
+        }
         final box = Hive.box(boxName);
         await box.clear();
         for (final item in boxData.entries) {
           await box.put(item.key, item.value);
         }
+        debugPrint('BackupService: restored box $boxName');
       } catch (e) {
-        // Box might not exist, skip
+        debugPrint('BackupService: error restoring box $boxName - $e');
       }
     }
   }
