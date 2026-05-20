@@ -44,7 +44,13 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
     
-    - name: Build unsigned APK (no keystore needed)
+    - name: Get keystore from repo
+      run: |
+        # Use keystore base64 from repo file
+        cat android/app/ritme-keystore-base64.txt | base64 -d > android/app/ritme-release.keystore
+        ls -la android/app/ritme-release.keystore
+    
+    - name: Build signed APK
       run: flutter build apk --release
     
     - name: Upload APK Artifact
