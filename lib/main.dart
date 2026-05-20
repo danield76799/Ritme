@@ -8,8 +8,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Hive
+  // Initialize Hive and open boxes
   await Hive.initFlutter();
+  await Hive.openBox('daily_logs');
   
   runApp(const RitmeApp());
 }
