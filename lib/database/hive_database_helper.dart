@@ -51,27 +51,44 @@ class HiveDatabaseHelper implements DatabaseRepository {
     if (!map.containsKey('id')) {
       map['id'] = 'user';
     }
-    return map;
+    // Ensure all values are properly typed
+    final cleanMap = <String, dynamic>{};
+    map.forEach((key, value) {
+      cleanMap[key] = value?.toString() ?? value;
+    });
+    return cleanMap;
   }
 
   @override
   Future<int> insertSettings(Map<String, dynamic> settings) async {
-    settings['id'] = 'user';
-    await _settings.put('user', settings);
+    final cleanData = <String, dynamic>{};
+    settings.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = 'user';
+    await _settings.put('user', cleanData);
     return 1;
   }
 
   @override
   Future<int> updateSettings(String username, Map<String, dynamic> settings) async {
-    settings['id'] = username;
-    await _settings.put(username, settings);
+    final cleanData = <String, dynamic>{};
+    settings.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = username;
+    await _settings.put(username, cleanData);
     return 1;
   }
 
   @override
   Future<int> updateSettingsMap(Map<String, dynamic> settings) async {
-    settings['id'] = 'user';
-    await _settings.put('user', settings);
+    final cleanData = <String, dynamic>{};
+    settings.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = 'user';
+    await _settings.put('user', cleanData);
     return 1;
   }
 
@@ -85,10 +102,10 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<bool> updatePin(String pin) async {
     final existing = await getSettings();
     if (existing != null) {
-      existing['password_hash'] = pin;
+      existing['password_hash'] = pin.toString();
       await _settings.put('user', existing);
     } else {
-      await _settings.put('user', {'username': 'user', 'password_hash': pin});
+      await _settings.put('user', {'id': 'user', 'username': 'user', 'password_hash': pin.toString()});
     }
     return true;
   }
@@ -120,7 +137,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList();
     logs.sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
     return logs;
@@ -150,14 +172,24 @@ class HiveDatabaseHelper implements DatabaseRepository {
     if (!map.containsKey('id')) {
       map['id'] = date;
     }
-    return map;
+    // Ensure all values are properly typed
+    final cleanMap = <String, dynamic>{};
+    map.forEach((key, value) {
+      cleanMap[key] = value?.toString() ?? value;
+    });
+    return cleanMap;
   }
 
   @override
   Future<int> upsertDailyLog(Map<String, dynamic> data) async {
     final date = data['date'] as String;
-    data['id'] = date;
-    await _dailyLogs.put(date, data);
+    final cleanData = <String, dynamic>{};
+    data.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = date;
+    cleanData['date'] = date.toString();
+    await _dailyLogs.put(date, cleanData);
     return 1;
   }
 
@@ -179,9 +211,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
       );
       await _srmActivities.put(key, {
         'id': key,
-        'date': date,
-        'activity_type': activityType,
-        'actual_time': actualTime,
+        'date': date.toString(),
+        'activity_type': activityType.toString(),
+        'actual_time': actualTime?.toString(),
         'p_score': pScore,
         'srt_point': srtPoint,
       });
@@ -191,9 +223,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
       final id = DateTime.now().millisecondsSinceEpoch;
       await _srmActivities.put(id, {
         'id': id,
-        'date': date,
-        'activity_type': activityType,
-        'actual_time': actualTime,
+        'date': date.toString(),
+        'activity_type': activityType.toString(),
+        'actual_time': actualTime?.toString(),
         'p_score': pScore,
         'srt_point': srtPoint,
       });
@@ -204,8 +236,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertSrmActivityMap(Map<String, dynamic> data) async {
     final id = DateTime.now().millisecondsSinceEpoch;
-    data['id'] = id;
-    await _srmActivities.put(id, data);
+    final cleanData = <String, dynamic>{};
+    data.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = id;
+    await _srmActivities.put(id, cleanData);
     return id;
   }
 
@@ -218,7 +254,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList();
   }
 
@@ -234,12 +275,55 @@ class HiveDatabaseHelper implements DatabaseRepository {
       'tables': <String, dynamic>{},
     };
     
-    (result['tables'] as Map<String, dynamic>)['settings'] = _settings.toMap().values.toList();
-    (result['tables'] as Map<String, dynamic>)['daily_logs'] = _dailyLogs.toMap().values.toList();
-    (result['tables'] as Map<String, dynamic>)['srm_activities'] = _srmActivities.toMap().values.toList();
-    (result['tables'] as Map<String, dynamic>)['medication_config'] = _medicationConfig.toMap().values.toList();
-    (result['tables'] as Map<String, dynamic>)['medication_intake'] = _medicationIntake.toMap().values.toList();
-    (result['tables'] as Map<String, dynamic>)['life_events'] = _lifeEvents.toMap().values.toList();
+    (result['tables'] as Map<String, dynamic>)['settings'] = _settings.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      // Convert all values to strings for consistent export
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
+    (result['tables'] as Map<String, dynamic>)['daily_logs'] = _dailyLogs.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
+    (result['tables'] as Map<String, dynamic>)['srm_activities'] = _srmActivities.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
+    (result['tables'] as Map<String, dynamic>)['medication_config'] = _medicationConfig.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
+    (result['tables'] as Map<String, dynamic>)['medication_intake'] = _medicationIntake.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
+    (result['tables'] as Map<String, dynamic>)['life_events'] = _lifeEvents.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
     
     return jsonEncode(result);
   }
@@ -257,7 +341,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (!map.containsKey('id')) {
           map['id'] = 'user';
         }
-        await _settings.put(map['id'], map);
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _settings.put(map['id'], cleanMap);
       }
     }
     if (tables['daily_logs'] != null) {
@@ -266,7 +355,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (!map.containsKey('id')) {
           map['id'] = map['date'] ?? DateTime.now().millisecondsSinceEpoch;
         }
-        await _dailyLogs.put(map['id'], map);
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _dailyLogs.put(map['id'], cleanMap);
       }
     }
     if (tables['srm_activities'] != null) {
@@ -275,7 +369,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (!map.containsKey('id')) {
           map['id'] = DateTime.now().millisecondsSinceEpoch;
         }
-        await _srmActivities.put(map['id'], map);
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _srmActivities.put(map['id'], cleanMap);
       }
     }
     if (tables['medication_config'] != null) {
@@ -284,7 +383,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (!map.containsKey('id')) {
           map['id'] = DateTime.now().millisecondsSinceEpoch;
         }
-        await _medicationConfig.put(map['id'], map);
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _medicationConfig.put(map['id'], cleanMap);
       }
     }
     if (tables['medication_intake'] != null) {
@@ -293,7 +397,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (!map.containsKey('id')) {
           map['id'] = DateTime.now().millisecondsSinceEpoch;
         }
-        await _medicationIntake.put(map['id'], map);
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _medicationIntake.put(map['id'], cleanMap);
       }
     }
     if (tables['life_events'] != null) {
@@ -302,7 +411,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (!map.containsKey('id')) {
           map['id'] = DateTime.now().millisecondsSinceEpoch;
         }
-        await _lifeEvents.put(map['id'], map);
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _lifeEvents.put(map['id'], cleanMap);
       }
     }
   }
@@ -320,7 +434,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
     final id = DateTime.now().millisecondsSinceEpoch;
-    await _medicationConfig.put(id, {'id': id, 'naam': naam, 'dosering': dosering, 'eenheid': eenheid});
+    await _medicationConfig.put(id, {
+      'id': id,
+      'naam': naam.toString(),
+      'dosering': dosering?.toString(),
+      'eenheid': eenheid?.toString(),
+    });
     return id;
   }
 
@@ -332,7 +451,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList();
   }
 
@@ -347,7 +471,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList();
   }
 
@@ -357,8 +486,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await _medicationSchedule.put(id, {
       'id': id,
       'medication_id': medicationId,
-      'reminder_time': reminderTime,
-      'days_of_week': daysOfWeek,
+      'reminder_time': reminderTime.toString(),
+      'days_of_week': daysOfWeek.toString(),
       'enabled': 1,
     });
     return id;
@@ -385,7 +514,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList();
     
     return allSchedules.where((schedule) {
@@ -399,7 +533,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     final id = DateTime.now().millisecondsSinceEpoch;
     await _medicationIntake.put(id, {
       'id': id,
-      'date': date,
+      'date': date.toString(),
       'medication_id': medicationId,
       'aantal_ingenomen': 1,
       'confirmed': confirmed,
@@ -426,7 +560,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       );
       await _medicationIntake.put(key, {
         'id': key,
-        'date': date,
+        'date': date.toString(),
         'medication_id': medicationId,
         'aantal_ingenomen': aantal,
       });
@@ -436,7 +570,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       final id = DateTime.now().millisecondsSinceEpoch;
       await _medicationIntake.put(id, {
         'id': id,
-        'date': date,
+        'date': date.toString(),
         'medication_id': medicationId,
         'aantal_ingenomen': aantal,
       });
@@ -459,12 +593,24 @@ class HiveDatabaseHelper implements DatabaseRepository {
       final key = _medicationIntake.keyAt(
         _medicationIntake.values.toList().indexOf(existing.first)
       );
-      await _medicationIntake.put(key, data..['id'] = key);
+      await _medicationIntake.put(key, {
+        ...data,
+        'id': key,
+        'date': (data['date'] as String?)?.toString() ?? date,
+        'medication_id': data['medication_id'] ?? medicationId,
+        'aantal_ingenomen': data['aantal_ingenomen'] ?? aantal,
+      });
       return key;
     } else {
       // Insert new record
       final id = DateTime.now().millisecondsSinceEpoch;
-      await _medicationIntake.put(id, data..['id'] = id);
+      await _medicationIntake.put(id, {
+        ...data,
+        'id': id,
+        'date': (data['date'] as String?)?.toString() ?? date,
+        'medication_id': data['medication_id'] ?? medicationId,
+        'aantal_ingenomen': data['aantal_ingenomen'] ?? aantal,
+      });
       return id;
     }
   }
@@ -479,7 +625,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList();
   }
 
@@ -492,8 +643,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     final id = DateTime.now().millisecondsSinceEpoch;
     await _lifeEvents.put(id, {
       'id': id,
-      'date': date,
-      'omschrijving': omschrijving,
+      'date': date.toString(),
+      'omschrijving': omschrijving.toString(),
       'invloed': invloed,
     });
     return id;
@@ -502,8 +653,13 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
     final id = DateTime.now().millisecondsSinceEpoch;
-    data['id'] = id;
-    await _lifeEvents.put(id, data);
+    final cleanData = <String, dynamic>{
+      'id': id,
+      'date': (data['date'] as String?)?.toString() ?? '',
+      'omschrijving': (data['omschrijving'] as String?)?.toString() ?? '',
+      'invloed': data['invloed'] ?? 0,
+    };
+    await _lifeEvents.put(id, cleanData);
     return id;
   }
 
@@ -516,7 +672,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList();
   }
 
@@ -529,9 +690,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
     final id = DateTime.now().millisecondsSinceEpoch;
     await _weightLogs.put(id, {
       'id': id,
-      'date': date,
+      'date': date.toString(),
       'weight': weight,
-      'notes': notes,
+      'notes': notes?.toString(),
     });
     return id;
   }
@@ -542,7 +703,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList()
       ..sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
   }
@@ -565,9 +731,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
     try {
       final id = DateTime.now().millisecondsSinceEpoch;
-      data['id'] = id;
-      print('Hive: Inserting medical appointment with id: $id, data: $data');
-      await _medicalAppointments.put(id, data);
+      
+      // Ensure all values are properly typed for Hive
+      final cleanData = <String, dynamic>{
+        'id': id,
+        'title': data['title']?.toString() ?? '',
+        'doctor_name': data['doctor_name']?.toString() ?? '',
+        'location': data['location']?.toString() ?? '',
+        'appointment_date': data['appointment_date']?.toString() ?? '',
+        'appointment_time': data['appointment_time']?.toString() ?? '',
+        'notes': data['notes']?.toString() ?? '',
+        'reminder_enabled': data['reminder_enabled']?.toString() ?? '1',
+        'created_at': data['created_at']?.toString() ?? DateTime.now().toIso8601String(),
+      };
+      
+      print('Hive: Inserting medical appointment with id: $id, data: $cleanData');
+      await _medicalAppointments.put(id, cleanData);
       print('Hive: Successfully inserted medical appointment');
       return id;
     } catch (e, stackTrace) {
@@ -583,7 +762,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList()
       ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
   }
@@ -597,14 +781,30 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      return map;
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
     }).toList()
       ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
   }
 
   Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
-    data['id'] = id;
-    await _medicalAppointments.put(id, data);
+    // Ensure all values are properly typed for Hive
+    final cleanData = <String, dynamic>{
+      'id': id,
+      'title': data['title']?.toString() ?? '',
+      'doctor_name': data['doctor_name']?.toString() ?? '',
+      'location': data['location']?.toString() ?? '',
+      'appointment_date': data['appointment_date']?.toString() ?? '',
+      'appointment_time': data['appointment_time']?.toString() ?? '',
+      'notes': data['notes']?.toString() ?? '',
+      'reminder_enabled': data['reminder_enabled']?.toString() ?? '1',
+      'created_at': data['created_at']?.toString() ?? DateTime.now().toIso8601String(),
+    };
+    await _medicalAppointments.put(id, cleanData);
     return 1;
   }
 
