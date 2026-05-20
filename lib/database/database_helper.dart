@@ -440,9 +440,14 @@ class DatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
     final db = await database;
-    return await db.insert('medication_config', {'naam': naam, 'dosering': dosering, 'eenheid': eenheid});
+    return await db.insert('medication_config', {
+      'naam': naam,
+      'dosering': dosering,
+      'eenheid': eenheid,
+      'reminder_enabled': reminderEnabled ? 1 : 0,
+    });
   }
 
   @override

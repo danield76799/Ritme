@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 import '../utils/logger.dart';
+import '../services/notification_helper.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
