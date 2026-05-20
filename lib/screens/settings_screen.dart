@@ -75,10 +75,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.green,
+          content: Text(message, style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.green[700],
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -88,10 +89,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
+          content: Text(message, style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red[700],
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -259,15 +261,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
           () async {
             try {
               final path = await BackupService.saveLocalBackup();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Backup opgeslagen: $path')),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Backup opgeslagen: $path', style: const TextStyle(color: Colors.white)),
+                    backgroundColor: Colors.green[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
             } catch (e, stack) {
               debugPrint('Backup error: $e');
               debugPrint('Stack: $stack');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Fout bij backup: $e')),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Fout bij backup: $e', style: const TextStyle(color: Colors.white)),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
             }
           },
         ),
@@ -281,9 +299,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             } catch (e, stack) {
               debugPrint('Share error: $e');
               debugPrint('Stack: $stack');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Fout bij delen: $e')),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Fout bij delen: $e', style: const TextStyle(color: Colors.white)),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
             }
           },
         ),
@@ -299,16 +325,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
               if (result != null && result.files.single.path != null) {
                 await BackupService.restoreFromFile(result.files.single.path!);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Data hersteld!')),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Data hersteld!', style: TextStyle(color: Colors.white)),
+                      backgroundColor: Colors.green[700],
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
               }
             } catch (e, stack) {
               debugPrint('Restore error: $e');
               debugPrint('Stack: $stack');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Fout bij herstellen: $e')),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Fout bij herstellen: $e', style: const TextStyle(color: Colors.white)),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
             }
           },
         ),
