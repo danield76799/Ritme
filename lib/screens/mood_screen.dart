@@ -299,15 +299,12 @@ class _MoodScreenState extends State<MoodScreen> {
                         ),
                         const SizedBox(height: 12),
                         
-                        // Uren slaap
-                        _buildNumberCard(
+                        // Uren slaap - Time picker
+                        _buildTimePickerCard(
                           title: 'Uren slaap vannacht',
                           subtitle: 'Dutjes overdag tellen niet mee',
                           value: _urenSlaap,
                           onChanged: (value) => setState(() => _urenSlaap = value),
-                          min: 0,
-                          max: 24,
-                          step: 0.5,
                           icon: Icons.bedtime,
                           iconColor: Colors.indigo,
                         ),
@@ -522,6 +519,77 @@ class _MoodScreenState extends State<MoodScreen> {
               ),
               _buildCounterBtn(Icons.add, value < max ? () => onChanged((value + step).clamp(min, max)) : null, isPrimary: true),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Time picker for sleep time
+  Widget _buildTimePickerCard({
+    required String title,
+    required String subtitle,
+    required double value,
+    required ValueChanged<double> onChanged,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final hours = value.floor();
+              final minutes = ((value - hours) * 60).round();
+              final time = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay(hour: hours, minute: minutes),
+                builder: (context, child) {
+                  return MediaQuery(
+                    data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                    child: child!,
+                  );
+                },
+              );
+              if (time != null) {
+                onChanged(time.hour + time.minute / 60.0);
+              }
+            },
+            child: Text(
+              '${value.floor()}:${((value - value.floor()) * 60).round().toString().padLeft(2, '0')}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
