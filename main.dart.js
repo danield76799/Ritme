@@ -112041,7 +112041,7 @@ i=h.d
 i=i==null?g:J.a3(i,"target_slapen")
 o=B.aX(g,B.b2(B.b([new B.Sn(A.x_,A.j9,l,g),A.dV,k,A.kS,B.aZh(B.b([j,h.UW(A.a3Q,"Slapen",i==null?"23:00":i)],r),12,12)],r),A.az,A.O,A.N,0,A.X),A.I,g,g,new B.b4(g,g,g,n,m,new B.q_(A.f0,A.qk,A.eU,o,g,g),A.ac),g,g,g,g,A.d6,g,g,1/0)
 n=B.bB(B.b([B.aX(g,g,A.I,g,g,new B.b4(A.R,g,g,B.ad(2),g,g,A.ac),g,24,g,g,g,g,g,4),A.cl,B.a4("Vandaag",g,g,g,g,B.aO(g,g,A.c3,g,g,g,g,g,g,g,g,20,g,g,A.aB,g,g,!0,g,g,g,g,g,g,g,g),g,g,g)],r),A.S,A.O,A.N,0,g)
-m=B.aWy(1.15,B.b([h.th(a,A.a40,A.dU,"/mood","Stemming"),h.th(a,A.a3J,A.ek,"/activity","Activiteit"),h.ahB(a),h.th(a,A.tb,A.aZJ,"/weight","Gewicht"),h.th(a,A.zm,A.aZI,"/appointments","Afspraken"),h.th(a,A.mk,A.Qi,"/sociaal-ritme","Sociaal Ritme")],r),2,14,14,A.Qr,!0)
+m=B.aWy(1.15,B.b([h.th(a,A.a40,A.dU,"/mood","Stemming"),h.th(a,A.a3J,A.ek,"/activity","Activiteit + Slaap"),h.ahB(a),h.th(a,A.tb,A.aZJ,"/weight","Gewicht"),h.th(a,A.zm,A.aZI,"/appointments","Afspraken"),h.th(a,A.mk,A.Qi,"/sociaal-ritme","Sociaal Ritme")],r),2,14,14,A.Qr,!0)
 l=B.aX(g,g,A.I,g,g,new B.b4(A.R,g,g,B.ad(2),g,g,A.ac),g,24,g,g,g,g,g,4)
 k=B.b([B.a4("Overzicht",g,g,g,g,B.aO(g,g,A.c3,g,g,g,g,g,g,g,g,20,g,g,A.aB,g,g,!0,g,g,g,g,g,g,g,g),g,g,g)],r)
 if(h.x!=null)k.push(B.a4(h.alh(),g,g,g,g,B.aO(g,g,A.cB,g,g,g,g,g,g,g,g,12,g,g,g,g,g,!0,g,g,g,g,g,g,g,g),g,g,g))
