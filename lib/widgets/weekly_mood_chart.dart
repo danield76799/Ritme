@@ -18,16 +18,16 @@ class WeeklyMoodChart extends StatelessWidget {
       );
     }
 
-    // Prepare chart data
+    // Prepare chart data - Life Chart 0-100 scale
     final spots = <FlSpot>[];
     final titles = <String>[];
     
     for (int i = 0; i < logs.length && i < 7; i++) {
       final log = logs[i];
-      final stemming = log['stemming_ochtend'] as int? ?? 0;
-      // Convert -5..5 to 0..10 for display
-      final value = stemming + 5;
-      spots.add(FlSpot(i.toDouble(), value.toDouble()));
+      // Life Chart: stemming_hoog (0-100)
+      final stemming = log['stemming_hoog'] as double? ?? log['stemming_hoog'] as int? ?? 50;
+      final value = stemming.toDouble();
+      spots.add(FlSpot(i.toDouble(), value));
       
       final date = log['date'] as String? ?? '';
       if (date.isNotEmpty) {
@@ -63,7 +63,7 @@ class WeeklyMoodChart extends StatelessWidget {
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: 2,
+                  horizontalInterval: 10,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
                       color: Colors.grey.withOpacity(0.2),
@@ -91,32 +91,23 @@ class WeeklyMoodChart extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      interval: 2,
+                      interval: 20,
                       getTitlesWidget: (value, meta) {
-                        // Convert 0..10 back to -5..5
-                        final moodValue = value.toInt() - 5;
-                        String label;
-                        if (moodValue <= -3) label = '😢';
-                        else if (moodValue <= -1) label = '😕';
-                        else if (moodValue <= 1) label = '😐';
-                        else if (moodValue <= 3) label = '🙂';
-                        else label = '😄';
-                        return Text(label, style: const TextStyle(fontSize: 12));
+                        // Life Chart 0-100 labels
+                        if (value == 50) return const Text('50', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold));
+                        if (value == 0 || value == 100) return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                        return const Text('');
                       },
                     ),
                   ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: spots.length - 1.0,
+                minX: -0.5,
+                maxX: spots.length - 0.5,
                 minY: 0,
-                maxY: 10,
+                maxY: 100,
                 lineBarsData: [
                   LineChartBarData(
                     spots: spots,
@@ -129,7 +120,7 @@ class WeeklyMoodChart extends StatelessWidget {
                       getDotPainter: (spot, percent, barData, index) {
                         return FlDotCirclePainter(
                           radius: 4,
-                          color: AppTheme.primaryTeal,
+                          color: _getStemmingKleur(spot.y),
                           strokeWidth: 2,
                           strokeColor: Colors.white,
                         );
@@ -141,11 +132,41 @@ class WeeklyMoodChart extends StatelessWidget {
                     ),
                   ),
                 ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) {
+                      return Colors.black87;
+                    },
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) {
+                        return LineTooltipItem(
+                          '${spot.y.toInt()}/100',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Color _getStemmingKleur(double waarde) {
+    if (waarde <= 10) return Colors.grey[800]!;     // Uiterst depressief
+    if (waarde <= 25) return Colors.grey[600]!;      // Ernstig depressief
+    if (waarde <= 40) return Colors.blue[400]!;      // Matig depressief
+    if (waarde <= 45) return Colors.blue[200]!;      // Licht depressief
+    if (waarde <= 55) return Colors.green[400]!;      // Neutraal
+    if (waarde <= 65) return Colors.yellow[600]!;     // Licht manisch
+    if (waarde <= 75) return Colors.orange[500]!;     // Matig manisch
+    if (waarde <= 90) return Colors.orange[700]!;     // Ernstig manisch
+    return Colors.red[500]!;                          // Uiterst manisch
   }
 }
