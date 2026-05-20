@@ -129,13 +129,30 @@ class _ActivityScreenState extends State<ActivityScreen> {
     try {
       final activity = _activiteiten[index];
       String name = activity['naam'];
-      TimeOfDay nu = TimeOfDay.now();
-      String timeStr = '${nu.hour.toString().padLeft(2, '0')}:${nu.minute.toString().padLeft(2, '0')}';
+      
+      // Show time picker instead of using current time
+      final picked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+            child: child!,
+          );
+        },
+      );
+      
+      if (picked == null) return; // User cancelled
+      
+      String timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
 
       int currentScore = activity['p_score'] ?? 0;
       int newScore = currentScore == 0 ? 1 : 0;
 
       await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
+
+      // Auto-calculate sleep time if both wake and sleep are set
+      _updateSleepTime();
 
       _loadData();
     } catch (e, stackTrace) {
@@ -151,6 +168,46 @@ class _ActivityScreenState extends State<ActivityScreen> {
         );
       }
     }
+  }
+
+  void _updateSleepTime() {
+    // Find wake up and bed times
+    final wakeUp = _activiteiten.firstWhere((a) => a['naam'] == 'Opstaan', orElse: () => {})['werkelijke_tijd'] as TimeOfDay?;
+    final bedTime = _activiteiten.firstWhere((a) => a['naam'] == 'Naar bed', orElse: () => {})['werkelijke_tijd'] as TimeOfDay?;
+    
+    if (wakeUp != null && bedTime != null) {
+      // Calculate sleep duration
+      double sleepHours = _calculateSleepHours(bedTime, wakeUp);
+      
+      // Update daily log with sleep time
+      db.upsertDailyLog({
+        'date': _formattedDate,
+        'uren_slaap': sleepHours,
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Slaaptijd berekend: ${sleepHours.toStringAsFixed(1)} uur'),
+            backgroundColor: AppTheme.primaryTeal,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
+  }
+
+  double _calculateSleepHours(TimeOfDay bedTime, TimeOfDay wakeUp) {
+    int bedMinutes = bedTime.hour * 60 + bedTime.minute;
+    int wakeMinutes = wakeUp.hour * 60 + wakeUp.minute;
+    
+    if (wakeMinutes < bedMinutes) {
+      // Slept past midnight
+      wakeMinutes += 24 * 60;
+    }
+    
+    return (wakeMinutes - bedMinutes) / 60.0;
   }
 
   @override
@@ -263,6 +320,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             Text(
                               _formatTijd(werkTijd),
                               style: TextStyle(fontSize: 11, color: AppTheme.primaryTeal, fontWeight: FontWeight.w500),
+                            ),
+                          ] else ...[
+                            const SizedBox(width: 8),
+                            Icon(Icons.touch_app, size: 12, color: Colors.grey[400]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Tik om tijd in te stellen',
+                              style: TextStyle(fontSize: 11, color: Colors.grey[400], fontStyle: FontStyle.italic),
                             ),
                           ],
                         ],
