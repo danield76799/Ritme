@@ -20,6 +20,9 @@ DatabaseRepository get db {
   return _db!;
 }
 
+/// Check if database is initialized (for safe null checking)
+bool get isDbInitialized => _db != null;
+
 /// Initialize the appropriate database based on platform
 Future<void> initDatabase() async {
   if (_db != null) return; // Already initialized
