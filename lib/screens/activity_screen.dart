@@ -667,7 +667,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: isDone ? AppTheme.textCharcoal : Colors.grey[600],
+                          color: isDone ? Colors.black : Colors.grey.shade700,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -691,11 +691,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             ),
                           ] else ...[
                             const SizedBox(width: 8),
-                            Icon(Icons.touch_app, size: 12, color: Colors.grey[400]),
+                            Icon(Icons.touch_app, size: 12, color: Colors.grey.shade500),
                             const SizedBox(width: 4),
                             Text(
                               'Tik om tijd in te stellen',
-                              style: TextStyle(fontSize: 11, color: Colors.grey[400], fontStyle: FontStyle.italic),
+                              style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
                             ),
                           ],
                         ],
