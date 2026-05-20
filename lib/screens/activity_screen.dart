@@ -56,8 +56,18 @@ class _ActivityScreenState extends State<ActivityScreen> {
       for (var activity in activities) {
         final index = _activiteiten.indexWhere((a) => a['naam'] == activity['activity_type']);
         if (index != -1) {
-          _activiteiten[index]['werkelijke_tijd'] = _parseTimeOfDay(activity['actual_time']);
-          _activiteiten[index]['p_score'] = activity['p_score'] ?? 0;
+          _activiteiten[index]['werkelijke_tijd'] = _parseTimeOfDay(activity['actual_time']?.toString());
+          // Handle both int and String types for p_score
+          dynamic rawPScore = activity['p_score'];
+          int pScore;
+          if (rawPScore is int) {
+            pScore = rawPScore;
+          } else if (rawPScore is String) {
+            pScore = int.tryParse(rawPScore) ?? 0;
+          } else {
+            pScore = 0;
+          }
+          _activiteiten[index]['p_score'] = pScore;
         }
       }
     } catch (e, stackTrace) {

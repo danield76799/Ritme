@@ -257,7 +257,18 @@ class HiveDatabaseHelper implements DatabaseRepository {
       // Ensure all values are properly typed
       final cleanMap = <String, dynamic>{};
       map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
+        if (key == 'p_score' || key == 'srt_point') {
+          // Keep numeric fields as int
+          if (value is int) {
+            cleanMap[key] = value;
+          } else if (value is String) {
+            cleanMap[key] = int.tryParse(value) ?? 0;
+          } else {
+            cleanMap[key] = 0;
+          }
+        } else {
+          cleanMap[key] = value?.toString() ?? value;
+        }
       });
       return cleanMap;
     }).toList();
