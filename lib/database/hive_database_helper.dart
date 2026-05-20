@@ -194,6 +194,61 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   // ===================
+  // SLEEP TRACKING
+  // ===================
+  
+  Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
+    final id = DateTime.now().millisecondsSinceEpoch;
+    await _dailyLogs.put(id, {
+      'id': id,
+      'date': date.toString(),
+      'bed_time': bedTime.toString(),
+      'wake_time': wakeTime.toString(),
+      'awake_minutes': awakeMinutes,
+      'sleep_hours': _calculateSleepHours(bedTime, wakeTime, awakeMinutes),
+    });
+    return id;
+  }
+
+  Future<Map<String, dynamic>?> getSleepLog(String date) async {
+    final logs = _dailyLogs.toMap().entries.where((entry) {
+      return entry.value['date'] == date && entry.value['bed_time'] != null;
+    }).toList();
+    
+    if (logs.isEmpty) return null;
+    
+    final map = Map<String, dynamic>.from(logs.last.value);
+    if (!map.containsKey('id')) {
+      map['id'] = logs.last.key;
+    }
+    return map;
+  }
+
+  double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
+    try {
+      final bedParts = bedTime.split(':');
+      final wakeParts = wakeTime.split(':');
+      
+      int bedHour = int.parse(bedParts[0]);
+      int bedMinute = int.parse(bedParts[1]);
+      int wakeHour = int.parse(wakeParts[0]);
+      int wakeMinute = int.parse(wakeParts[1]);
+      
+      int bedMinutes = bedHour * 60 + bedMinute;
+      int wakeMinutes = wakeHour * 60 + wakeMinute;
+      
+      if (wakeMinutes < bedMinutes) {
+        wakeMinutes += 24 * 60;
+      }
+      
+      int totalMinutes = wakeMinutes - bedMinutes - awakeMinutes;
+      return totalMinutes / 60.0;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
+  // ===================
   // SRM ACTIVITIES
   // ===================
   

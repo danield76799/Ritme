@@ -55,7 +55,9 @@ abstract class DatabaseRepository {
   Future<Map<String, dynamic>?> getLatestWeightLog();
   Future<int> deleteWeightLog(int id);
 
-  // Medical Appointments
+  // Sleep Tracking
+  Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes);
+  Future<Map<String, dynamic>?> getSleepLog(String date);
   Future<int> insertMedicalAppointment(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getMedicalAppointments();
   Future<List<Map<String, dynamic>>> getUpcomingAppointments();
