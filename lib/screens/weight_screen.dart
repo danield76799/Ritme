@@ -142,7 +142,15 @@ class _WeightScreenState extends State<WeightScreen> {
     final spots = <FlSpot>[];
     for (int i = 0; i < _weightLogs.length; i++) {
       final log = _weightLogs[i];
-      final weight = (log['weight'] as num).toDouble();
+      final weightValue = log['weight'];
+      double weight;
+      if (weightValue is String) {
+        weight = double.tryParse(weightValue) ?? 0.0;
+      } else if (weightValue is num) {
+        weight = weightValue.toDouble();
+      } else {
+        weight = 0.0;
+      }
       spots.add(FlSpot(i.toDouble(), weight));
     }
     return spots;
@@ -369,15 +377,22 @@ class _WeightScreenState extends State<WeightScreen> {
   }
 
   Widget _buildStatsCard() {
-    final weights = _weightLogs.map((log) => (log['weight'] as num).toDouble()).toList();
+    final weights = _weightLogs.map((log) {
+      final w = log['weight'];
+      if (w is String) return double.tryParse(w) ?? 0.0;
+      if (w is num) return w.toDouble();
+      return 0.0;
+    }).toList();
     final minWeight = weights.reduce((a, b) => a < b ? a : b);
     final maxWeight = weights.reduce((a, b) => a > b ? a : b);
     final avgWeight = weights.reduce((a, b) => a + b) / weights.length;
     
     double? weightChange;
     if (_weightLogs.length >= 2) {
-      final first = (_weightLogs.first['weight'] as num).toDouble();
-      final last = (_weightLogs.last['weight'] as num).toDouble();
+      final firstValue = _weightLogs.first['weight'];
+      final lastValue = _weightLogs.last['weight'];
+      final first = (firstValue is String) ? double.tryParse(firstValue) ?? 0.0 : (firstValue as num).toDouble();
+      final last = (lastValue is String) ? double.tryParse(lastValue) ?? 0.0 : (lastValue as num).toDouble();
       weightChange = last - first;
     }
 

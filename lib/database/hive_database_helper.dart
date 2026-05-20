@@ -731,7 +731,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await _weightLogs.put(id, {
       'id': id,
       'date': date.toString(),
-      'weight': weight,
+      'weight': weight.toString(),
       'notes': notes?.toString(),
     });
     return id;
@@ -743,10 +743,19 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
+      // Ensure weight is a number, not a string
+      if (map['weight'] is String) {
+        map['weight'] = double.tryParse(map['weight']) ?? 0.0;
+      }
       // Ensure all values are properly typed
       final cleanMap = <String, dynamic>{};
       map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
+        if (key == 'weight') {
+          // Keep weight as double
+          cleanMap[key] = (value is num) ? value.toDouble() : double.tryParse(value.toString()) ?? 0.0;
+        } else {
+          cleanMap[key] = value?.toString() ?? value;
+        }
       });
       return cleanMap;
     }).toList()
