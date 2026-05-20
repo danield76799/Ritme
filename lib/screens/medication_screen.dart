@@ -68,10 +68,19 @@ class _MedicationScreenState extends State<MedicationScreen> {
     try {
       final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled);
       
-      // If reminder time is set, also create a schedule
+      // If reminder time is set, also create a schedule and notification
       if (reminderTime != null && reminderEnabled) {
         final timeStr = '${reminderTime.hour.toString().padLeft(2, '0')}:${reminderTime.minute.toString().padLeft(2, '0')}';
         await db.insertMedicationSchedule(id, timeStr, '1,2,3,4,5,6,7');
+        
+        // Schedule push notification
+        await NotificationHelper.instance.scheduleMedicationReminder(
+          medicationId: id,
+          medicationName: name,
+          dosage: '$dosage $unit',
+          time: timeStr,
+          daysOfWeek: [1, 2, 3, 4, 5, 6, 7], // Daily
+        );
       }
       
       _loadData();
@@ -139,6 +148,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
       );
 
       if (confirmed == true) {
+        // Cancel notification before deleting
+        await NotificationHelper.instance.cancelMedicationReminder(configId);
+        
         await db.deleteMedicationConfig(configId);
         _loadData();
         if (mounted) {

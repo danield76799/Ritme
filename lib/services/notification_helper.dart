@@ -141,28 +141,114 @@ class NotificationHelper {
     }
   }
 
-  Future<void> showTestNotification() async {
+  Future<void> scheduleMedicationReminder({
+    required int medicationId,
+    required String medicationName,
+    required String dosage,
+    required String time,
+    required List<int> daysOfWeek,
+  }) async {
     if (kIsWeb) return;
 
-    const androidDetails = AndroidNotificationDetails(
-      'test_channel',
-      'Test notificaties',
-      importance: Importance.high,
-      priority: Priority.high,
+    try {
+      // Parse time string (HH:MM)
+      final parts = time.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      // Cancel existing notifications for this medication
+      await cancelMedicationReminder(medicationId);
+
+      // Schedule for each day of the week
+      for (final day in daysOfWeek) {
+        final notificationId = medicationId * 10 + day;
+        
+        final scheduledDate = _nextInstanceOfTime(hour, minute, day);
+        
+        const androidDetails = AndroidNotificationDetails(
+          'medication_reminders',
+          'Medicatie herinneringen',
+          channelDescription: 'Herinneringen voor medicatie inname',
+          importance: Importance.high,
+          priority: Priority.high,
+          showWhen: true,
+          enableVibration: true,
+          playSound: true,
+          actions: [
+            AndroidNotificationAction(
+              'taken',
+              '✓ Ingenomen',
+              showsUserInterface: false,
+            ),
+            AndroidNotificationAction(
+              'skip',
+              '✗ Overslaan',
+              showsUserInterface: false,
+            ),
+          ],
+        );
+
+        const iosDetails = DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          categoryIdentifier: 'medication',
+        );
+
+        const details = NotificationDetails(
+          android: androidDetails,
+          iOS: iosDetails,
+        );
+
+        await _notifications.zonedSchedule(
+          notificationId,
+          '💊 Medicatie herinnering',
+          'Neem $medicationName ($dosage)',
+          scheduledDate,
+          details,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          payload: 'medication:$medicationId',
+        );
+      }
+      debugPrint('Medicatie herinnering gepland voor $medicationName om $time');
+    } catch (e) {
+      debugPrint('Medicatie herinnering planning error: $e');
+    }
+  }
+
+  Future<void> cancelMedicationReminder(int medicationId) async {
+    if (kIsWeb) return;
+    
+    try {
+      // Cancel all notifications for this medication (up to 7 days)
+      for (int day = 1; day <= 7; day++) {
+        await _notifications.cancel(medicationId * 10 + day);
+      }
+      debugPrint('Medicatie herinneringen geannuleerd voor ID: $medicationId');
+    } catch (e) {
+      debugPrint('Medicatie herinnering annulering error: $e');
+    }
+  }
+
+  tz.TZDateTime _nextInstanceOfTime(int hour, int minute, int dayOfWeek) {
+    final now = tz.TZDateTime.now(tz.local);
+    
+    tz.TZDateTime scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
     );
 
-    const iosDetails = DarwinNotificationDetails();
+    // Find next occurrence of this day
+    while (scheduledDate.weekday != dayOfWeek || scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
 
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      1,
-      'Test notificatie',
-      'Ritme notificaties werken!',
-      details,
-    );
+    return scheduledDate;
   }
 }
