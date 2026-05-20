@@ -232,6 +232,17 @@ class NotificationHelper {
     }
   }
 
+  Future<void> cancelAllReminders() async {
+    if (kIsWeb) return;
+    
+    try {
+      await _notifications.cancelAll();
+      debugPrint('Alle notificaties geannuleerd');
+    } catch (e) {
+      debugPrint('Annulering error: $e');
+    }
+  }
+
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute, int dayOfWeek) {
     final now = tz.TZDateTime.now(tz.local);
     
@@ -252,3 +263,4 @@ class NotificationHelper {
     return scheduledDate;
   }
 }
+
