@@ -43,7 +43,29 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
       Map<int, int> intakeMap = {};
       for (var intake in intakes) {
-        intakeMap[intake['medication_id']] = intake['aantal_ingenomen'];
+        // Handle both String and int types for medication_id
+        dynamic rawMedId = intake['medication_id'];
+        int? medId;
+        if (rawMedId is int) {
+          medId = rawMedId;
+        } else if (rawMedId is String) {
+          medId = int.tryParse(rawMedId);
+        }
+        
+        // Handle both String and int types for aantal_ingenomen
+        dynamic rawAantal = intake['aantal_ingenomen'];
+        int? aantal;
+        if (rawAantal is int) {
+          aantal = rawAantal;
+        } else if (rawAantal is String) {
+          aantal = int.tryParse(rawAantal) ?? 0;
+        } else {
+          aantal = 0;
+        }
+        
+        if (medId != null) {
+          intakeMap[medId] = aantal;
+        }
       }
 
       setState(() {
