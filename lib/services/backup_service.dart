@@ -12,7 +12,18 @@ class BackupService {
   }
   
   static Map<String, dynamic> _exportDataInIsolate(void _) {
-    final openBoxes = Hive.boxNames;
+    // List of all possible box names
+    final boxNames = [
+      'settings',
+      'daily_logs',
+      'srm_activities',
+      'medication_config',
+      'medication_intake',
+      'medication_schedule',
+      'life_events',
+      'weight_logs',
+      'medical_appointments',
+    ];
     
     final export = <String, dynamic>{
       'export_date': DateTime.now().toIso8601String(),
@@ -20,7 +31,7 @@ class BackupService {
       'data': {},
     };
 
-    for (final boxName in openBoxes) {
+    for (final boxName in boxNames) {
       try {
         final box = Hive.box(boxName);
         final boxData = <String, dynamic>{};
