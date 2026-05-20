@@ -33,8 +33,8 @@ class _MoodScreenState extends State<MoodScreen> {
     setState(() => _isLoading = true);
 
     try {
-      if (_db == null) {
-        debugPrint('MoodScreen: db is null, initializing...');
+      if (!isDbInitialized) {
+        debugPrint('MoodScreen: db not initialized, initializing...');
         await initDatabase();
       }
       final log = await db.getDailyLog(_formattedDate);
