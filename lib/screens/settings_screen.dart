@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import '../utils/app_theme.dart';
+import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import '../services/backup_service.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -226,6 +229,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildTimeField('Eerste contact', 'target_contact'),
           _buildTimeField('Werk / Hobby', 'target_werk'),
           _buildTimeField('Avondeten', 'target_eten'),
+          _buildSectionHeader('Backup & Herstel'),
+          _buildBackupButtons(),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
@@ -241,6 +246,82 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBackupButtons() {
+    return Column(
+      children: [
+        _buildActionButton(
+          'Backup maken',
+          Icons.backup,
+          () async {
+            try {
+              final path = await BackupService.saveLocalBackup();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Backup opgeslagen: $path')),
+              );
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Fout bij backup: $e')),
+              );
+            }
+          },
+        ),
+        const SizedBox(height: 8),
+        _buildActionButton(
+          'Backup delen (email)',
+          Icons.share,
+          () async {
+            try {
+              await BackupService.shareBackup();
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Fout bij delen: $e')),
+              );
+            }
+          },
+        ),
+        const SizedBox(height: 8),
+        _buildActionButton(
+          'Herstellen van backup',
+          Icons.restore,
+          () async {
+            try {
+              final result = await FilePicker.platform.pickFiles(
+                type: FileType.custom,
+                allowedExtensions: ['json'],
+              );
+              if (result != null && result.files.single.path != null) {
+                await BackupService.restoreFromFile(result.files.single.path!);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Data hersteld! App herstart...')),
+                );
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Fout bij herstellen: $e')),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String label, IconData icon, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: AppTheme.primaryTeal),
+        label: Text(label),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          side: BorderSide(color: AppTheme.primaryTeal),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       ),
     );
   }
