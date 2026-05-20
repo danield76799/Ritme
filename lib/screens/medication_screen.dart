@@ -64,9 +64,16 @@ class _MedicationScreenState extends State<MedicationScreen> {
     _loadData();
   }
 
-  Future<void> _addMedication(String name, double dosage, String unit) async {
+  Future<void> _addMedication(String name, double dosage, String unit, {bool reminderEnabled = true, TimeOfDay? reminderTime}) async {
     try {
-      await db.insertMedicationConfig(name, dosage.toString(), unit);
+      final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled);
+      
+      // If reminder time is set, also create a schedule
+      if (reminderTime != null && reminderEnabled) {
+        final timeStr = '${reminderTime.hour.toString().padLeft(2, '0')}:${reminderTime.minute.toString().padLeft(2, '0')}';
+        await db.insertMedicationSchedule(id, timeStr, '1,2,3,4,5,6,7');
+      }
+      
       _loadData();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add medication', error: e, stackTrace: stackTrace);
@@ -164,42 +171,95 @@ class _MedicationScreenState extends State<MedicationScreen> {
     String name = '';
     double dosage = 0;
     String unit = 'mg';
+    TimeOfDay? reminderTime;
+    bool reminderEnabled = true;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Nieuwe Medicatie'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: const InputDecoration(labelText: 'Naam (bijv. Lithium)'),
-              onChanged: (v) => name = v,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Nieuwe Medicatie'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  decoration: const InputDecoration(labelText: 'Naam (bijv. Lithium)'),
+                  onChanged: (v) => name = v,
+                ),
+                TextField(
+                  decoration: const InputDecoration(labelText: 'Dosering'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (v) => dosage = double.tryParse(v) ?? 0,
+                ),
+                TextField(
+                  decoration: const InputDecoration(labelText: 'Eenheid (mg, ml, stuks)'),
+                  onChanged: (v) => unit = v,
+                ),
+                const SizedBox(height: 16),
+                // Reminder toggle
+                Row(
+                  children: [
+                    const Text('Herinnering'),
+                    const Spacer(),
+                    Switch(
+                      value: reminderEnabled,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          reminderEnabled = value;
+                        });
+                      },
+                      activeColor: AppTheme.primaryTeal,
+                    ),
+                  ],
+                ),
+                // Time picker (only if reminder enabled)
+                if (reminderEnabled)
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: reminderTime ?? TimeOfDay.now(),
+                      );
+                      if (picked != null) {
+                        setDialogState(() {
+                          reminderTime = picked;
+                        });
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Tijdstip herinnering',
+                      ),
+                      child: Text(
+                        reminderTime == null 
+                          ? 'Selecteer tijd' 
+                          : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                          color: reminderTime == null ? Colors.grey : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            TextField(
-              decoration: const InputDecoration(labelText: 'Dosering'),
-              keyboardType: TextInputType.number,
-              onChanged: (v) => dosage = double.tryParse(v) ?? 0,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuleer'),
             ),
-            TextField(
-              decoration: const InputDecoration(labelText: 'Eenheid (mg, ml, stuks)'),
-              onChanged: (v) => unit = v,
+            ElevatedButton(
+              onPressed: () {
+                if (name.isNotEmpty) {
+                  _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime);
+                }
+                Navigator.pop(context);
+              },
+              child: const Text('Opslaan'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuleer'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (name.isNotEmpty) _addMedication(name, dosage, unit);
-              Navigator.pop(context);
-            },
-            child: const Text('Opslaan'),
-          ),
-        ],
       ),
     );
   }
@@ -319,6 +379,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
     int count = _intakesForDay[configId] ?? 0;
     String name = config['naam']?.toString() ?? 'Onbekend';
     String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
+    bool reminderEnabled = (config['reminder_enabled']?.toString() ?? '1') == '1';
+    String? reminderTime = config['reminder_time']?.toString();
 
     return Container(
       decoration: BoxDecoration(
@@ -359,6 +421,24 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     dosage,
                     style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
+                  if (reminderTime != null)
+                    Row(
+                      children: [
+                        Icon(
+                          reminderEnabled ? Icons.notifications_active : Icons.notifications_off,
+                          size: 12,
+                          color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          reminderTime,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

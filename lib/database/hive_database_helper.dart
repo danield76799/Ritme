@@ -432,20 +432,26 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
     final id = DateTime.now().millisecondsSinceEpoch;
     await _medicationConfig.put(id, {
       'id': id,
       'naam': naam.toString(),
       'dosering': dosering?.toString(),
       'eenheid': eenheid?.toString(),
+      'reminder_enabled': reminderEnabled ? 1 : 0,
     });
     return id;
   }
 
   @override
-  Future<int> deleteMedicationConfig(int id) async {
-    await _medicationConfig.delete(id);
+  Future<int> updateMedicationConfig(int id, Map<String, dynamic> data) async {
+    final cleanData = <String, dynamic>{};
+    data.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = id;
+    await _medicationConfig.put(id, cleanData);
     return 1;
   }
 
