@@ -44,8 +44,8 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         int logCount = 0;
 
         for (var log in logs) {
-          if (log['stemming_ochtend'] != null) {
-            totaalStemming += log['stemming_ochtend'];
+          if (log['stemming_hoog'] != null) {
+            totaalStemming += log['stemming_hoog'];
             logCount++;
           }
           if (log['uren_slaap'] != null) totaalSlaap += log['uren_slaap'];
@@ -117,8 +117,8 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       double totaalSlaap = 0;
       
       for (var log in recentLogs) {
-        if (log['stemming_ochtend'] != null) {
-          totaalStemming += log['stemming_ochtend'];
+        if (log['stemming_hoog'] != null) {
+          totaalStemming += log['stemming_hoog'];
           logCount30++;
         }
         if (log['uren_slaap'] != null) {
@@ -218,7 +218,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                 // Data rijen
                 ...recentLogs.reversed.map((log) {
                   final date = log['date'] ?? '-';
-                  final stemming = log['stemming_ochtend']?.toString() ?? '-';
+                  final stemming = log['stemming_hoog']?.toString() ?? '-';
                   final slaap = log['uren_slaap']?.toString() ?? '-';
                   
                   // Haal activiteiten en gebeurtenissen op voor deze dag
@@ -371,8 +371,8 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
 
     List<FlSpot> spots = [];
     for (int i = 0; i < _logs.length; i++) {
-      if (_logs[i]['stemming_ochtend'] != null) {
-        spots.add(FlSpot(i.toDouble(), _logs[i]['stemming_ochtend'].toDouble()));
+      if (_logs[i]['stemming_hoog'] != null) {
+        spots.add(FlSpot(i.toDouble(), _logs[i]['stemming_hoog'].toDouble()));
       }
     }
 

@@ -94,8 +94,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
     int activiteitenTotaal = 0;
 
     for (var log in recenteLogs) {
-      if (log['stemming_ochtend'] != null) {
-        totaalStemming += log['stemming_ochtend'];
+      if (log['stemming_hoog'] != null) {
+        totaalStemming += log['stemming_hoog'];
         stemCount++;
       }
       if (log['uren_slaap'] != null) {
