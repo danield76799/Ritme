@@ -69,7 +69,7 @@ class SplashScreen extends StatelessWidget {
   }
 }
 
-// Simple navigator that auto-advances after 3 seconds
+// Simple navigator that auto-advances after 0.5 seconds
 class SplashScreenWrapper extends StatefulWidget {
   const SplashScreenWrapper({super.key});
 
@@ -81,7 +81,7 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => LoginScreen()),
