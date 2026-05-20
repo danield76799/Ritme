@@ -44,30 +44,24 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
     
-    - name: Generate keystore from base64
-      run: |
-        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/ritme-release.keystore
-      env:
-        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-    
-    - name: Build APK
-      run: flutter build apk --release
+    - name: Build unsigned APK (debug)
+      run: flutter build apk --debug
     
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ritme-release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: ritme-debug-apk
+        path: build/app/outputs/flutter-apk/app-debug.apk
     
     - name: Create Release
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        files: build/app/outputs/flutter-apk/app-release.apk
-        tag_name: v1.2.1-build${{ github.run_number }}
-        name: Ritme v1.2.1 (Build ${{ github.run_number }})
+        files: build/app/outputs/flutter-apk/app-debug.apk
+        tag_name: v1.2.1-debug-build${{ github.run_number }}
+        name: Ritme v1.2.1 Debug (Build ${{ github.run_number }})
         body: |
-          ## Ritme - SRT Tracker v1.2.1
+          ## Ritme - SRT Tracker v1.2.1 DEBUG
           
           **Nieuwe features:**
           - Medicatie reminders met tijdstip
@@ -78,9 +72,10 @@ jobs:
           **Build info:**
           - Build number: ${{ github.run_number }}
           - Commit: ${{ github.sha }}
+          - Type: Debug build (unsigned)
           
-          **Let op:** Dit is een automatische build.
+          **Let op:** Dit is een debug build voor testen.
         draft: false
-        prerelease: false
+        prerelease: true
       env:
         GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
