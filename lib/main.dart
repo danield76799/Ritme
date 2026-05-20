@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'pages/splash_screen.dart';
+import 'pages/splash_screen.dart' show SplashScreenWrapper;
 import 'screens/login_screen.dart';
 import 'services/notification_helper.dart';
 import 'screens/mood_screen.dart';
@@ -120,7 +120,7 @@ class RitmeApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: const SplashScreen(),
+      home: const SplashScreenWrapper(),
       routes: {
         '/mood': (context) => const MoodScreen(),
         '/activity': (context) => const ActivityScreen(),
