@@ -479,10 +479,18 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
-    data['id'] = id;
-    await _medicalAppointments.put(id, data);
-    return id;
+    try {
+      final id = DateTime.now().millisecondsSinceEpoch;
+      data['id'] = id;
+      print('Hive: Inserting medical appointment with id: $id, data: $data');
+      await _medicalAppointments.put(id, data);
+      print('Hive: Successfully inserted medical appointment');
+      return id;
+    } catch (e, stackTrace) {
+      print('Hive: Error inserting medical appointment: $e');
+      print('Hive: Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Future<List<Map<String, dynamic>>> getMedicalAppointments() async {
