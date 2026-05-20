@@ -110,6 +110,56 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
+  Future<void> _deleteMedication(int configId) async {
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Medicatie verwijderen?'),
+          content: const Text('Deze actie kan niet ongedaan worden. Alle innamegegevens voor deze medicatie worden ook verwijderd.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Annuleren'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        await db.deleteMedicationConfig(configId);
+        _loadData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Medicatie verwijderd'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to delete medication', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Kon medicatie niet verwijderen. Probeer opnieuw.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
+  }
+
   void _showAddMedicationDialog() {
     String name = '';
     double dosage = 0;
@@ -330,6 +380,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 onPressed: () => _updateIntake(configId, 1),
                 isPrimary: true,
               ),
+              const SizedBox(width: 8),
+              _buildDeleteBtn(
+                onPressed: () => _deleteMedication(configId),
+              ),
             ],
           ),
           const SizedBox(width: 8),
@@ -359,6 +413,31 @@ class _MedicationScreenState extends State<MedicationScreen> {
             icon,
             size: 18,
             color: isPrimary ? Colors.white : Colors.grey[600],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeleteBtn({
+    required VoidCallback? onPressed,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.delete_outline,
+            size: 18,
+            color: Colors.red[400],
           ),
         ),
       ),

@@ -444,6 +444,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<int> deleteMedicationConfig(int id) async {
+    await _medicationConfig.delete(id);
+    return 1;
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getMedicationConfigs() async {
     return _medicationConfig.toMap().entries.map((entry) {
       final map = Map<String, dynamic>.from(entry.value);
