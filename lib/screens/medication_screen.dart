@@ -446,7 +446,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       configId = int.tryParse(rawId);
     }
     if (configId == null) {
-      print('Skipping invalid medication entry: $config');
+      print('Skipping invalid medication entry - id: $rawId, type: ${rawId.runtimeType}');
       return const SizedBox.shrink(); // Skip invalid entries
     }
     int count = _intakesForDay[configId] ?? 0;
