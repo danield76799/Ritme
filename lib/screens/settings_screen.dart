@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_theme.dart';
+import '../service_locator.dart';
 import '../utils/logger.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -38,23 +38,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final settings = await db.getSettings();
       setState(() {
-        _settings = {
-          'username': prefs.getString('username') ?? '',
-          'target_opstaan': prefs.getString('target_opstaan') ?? '',
-          'target_slapen': prefs.getString('target_slapen') ?? '',
-          'target_contact': prefs.getString('target_contact') ?? '',
-          'target_werk': prefs.getString('target_werk') ?? '',
-          'target_eten': prefs.getString('target_eten') ?? '',
-        };
+        _settings = settings;
         _isLoading = false;
-        _usernameController.text = _settings!['username']?.toString() ?? '';
+        // Update controllers with loaded values
+        _usernameController.text = settings?['username']?.toString() ?? '';
       });
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load settings', error: e, stackTrace: stackTrace);
       setState(() {
-        _errorMessage = 'Kon instellingen niet laden: ${e.toString()}';
+        _errorMessage = 'Kon instellingen niet laden.';
         _isLoading = false;
       });
     }
@@ -62,19 +56,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveSettings() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      await prefs.setString('username', _usernameController.text);
-      await prefs.setString('target_opstaan', _settings?['target_opstaan'] ?? '');
-      await prefs.setString('target_slapen', _settings?['target_slapen'] ?? '');
-      await prefs.setString('target_contact', _settings?['target_contact'] ?? '');
-      await prefs.setString('target_werk', _settings?['target_werk'] ?? '');
-      await prefs.setString('target_eten', _settings?['target_eten'] ?? '');
-      
-      _showSuccess('Instellingen opgeslagen!');
+      if (_settings != null) {
+        // Update username from controller
+        _settings!['username'] = _usernameController.text;
+        await db.updateSettingsMap(_settings!);
+        _showSuccess('Instellingen opgeslagen!');
+      }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save settings', error: e, stackTrace: stackTrace);
-      _showError('Kon instellingen niet opslaan: ${e.toString()}');
+      _showError('Kon instellingen niet opslaan.');
     }
   }
 
@@ -107,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _showTimePicker(String label, String key) async {
     // Parse current time or use default
     TimeOfDay currentTime;
-    if (_settings?[key] != null && _settings![key].toString().isNotEmpty) {
+    if (_settings?[key] != null) {
       final parts = _settings![key].toString().split(':');
       if (parts.length >= 2) {
         currentTime = TimeOfDay(
@@ -257,13 +247,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppTheme.primaryTeal,
+          fontWeight: FontWeight.bold,
+          color: AppTheme.textCharcoal,
         ),
       ),
     );
@@ -271,45 +261,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextField(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );
   }
 
   Widget _buildTimeField(String label, String key) {
-    final timeValue = _settings?[key]?.toString() ?? '';
-    final displayText = timeValue.isNotEmpty ? timeValue : 'Niet ingesteld';
-
+    final displayValue = _settings?[key]?.toString() ?? '--:--';
+    
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () => _showTimePicker(label, key),
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: label,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            suffixIcon: const Icon(Icons.access_time),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[400]!),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(
-            displayText,
-            style: TextStyle(
-              fontSize: 16,
-              color: timeValue.isNotEmpty ? Colors.black87 : Colors.grey,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              ),
+              Row(
+                children: [
+                  Text(
+                    displayValue,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(Icons.access_time, color: Colors.grey[600]),
+                ],
+              ),
+            ],
           ),
         ),
       ),
