@@ -474,6 +474,10 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (!map.containsKey('reminder_enabled')) {
           map['reminder_enabled'] = '1';
         }
+        // Convert id to int if it's a string
+        if (map['id'] is String) {
+          map['id'] = int.tryParse(map['id']) ?? entry.key;
+        }
         // Ensure all values are properly typed
         final cleanMap = <String, dynamic>{};
         map.forEach((key, value) {
@@ -644,21 +648,30 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<List<Map<String, dynamic>>> getMedicationIntake(String date) async {
-    return _medicationIntake.toMap().entries.where((entry) {
-      return entry.value['date'] == date;
-    }).map((entry) {
-      final map = Map<String, dynamic>.from(entry.value);
-      // Ensure id is present
-      if (!map.containsKey('id')) {
-        map['id'] = entry.key;
-      }
-      // Ensure all values are properly typed
-      final cleanMap = <String, dynamic>{};
-      map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
-      });
-      return cleanMap;
-    }).toList();
+    try {
+      return _medicationIntake.toMap().entries.where((entry) {
+        return entry.value['date'] == date;
+      }).map((entry) {
+        final map = Map<String, dynamic>.from(entry.value);
+        // Ensure id is present
+        if (!map.containsKey('id')) {
+          map['id'] = entry.key;
+        }
+        // Convert medication_id to int if it's a string
+        if (map['medication_id'] is String) {
+          map['medication_id'] = int.tryParse(map['medication_id']) ?? 0;
+        }
+        // Ensure all values are properly typed
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        return cleanMap;
+      }).toList();
+    } catch (e) {
+      print('Error loading medication intake: $e');
+      return [];
+    }
   }
 
   // ===================
