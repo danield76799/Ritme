@@ -300,116 +300,216 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.appointment == null ? 'Nieuwe afspraak' : 'Afspraak bewerken'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
+    return Dialog(
+      insetPadding: const EdgeInsets.all(16),
+      child: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Titel *'),
-                validator: (value) => value?.isEmpty == true ? 'Titel is verplicht' : null,
+              Text(
+                widget.appointment == null ? 'Nieuwe afspraak' : 'Afspraak bewerken',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-              TextFormField(
-                controller: _doctorController,
-                decoration: const InputDecoration(labelText: 'Dokter'),
-              ),
-              TextFormField(
-                controller: _locationController,
-                decoration: const InputDecoration(labelText: 'Locatie'),
-              ),
-              // Date picker with DD-MM-yyyy format
-              FormField<String>(
-                initialValue: _dateController.text,
-                validator: (value) => value?.isEmpty == true ? 'Datum is verplicht' : null,
-                builder: (field) => InkWell(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _dateController.text.isNotEmpty 
-                        ? _parseDate(_dateController.text) 
-                        : DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2030),
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        _dateController.text = DateFormat('dd-MM-yyyy').format(picked);
-                        field.didChange(_dateController.text);
-                      });
-                    }
-                  },
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      labelText: 'Datum (DD-MM-YYYY) *',
-                      errorText: field.errorText,
-                    ),
-                    child: Text(
-                      _dateController.text.isEmpty ? 'Selecteer datum' : _dateController.text,
-                      style: TextStyle(
-                        color: _dateController.text.isEmpty ? Colors.grey : Colors.black,
-                      ),
+              const SizedBox(height: 20),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildTextField('Titel *', _titleController, validator: (value) => value?.isEmpty == true ? 'Titel is verplicht' : null),
+                        const SizedBox(height: 16),
+                        _buildTextField('Dokter', _doctorController),
+                        const SizedBox(height: 16),
+                        _buildTextField('Locatie', _locationController),
+                        const SizedBox(height: 16),
+                        _buildDateField(),
+                        const SizedBox(height: 16),
+                        _buildTimeField(),
+                      ],
                     ),
                   ),
                 ),
               ),
-              // Time picker
-              InkWell(
-                onTap: () async {
-                  final picked = await showTimePicker(
-                    context: context,
-                    initialTime: _timeController.text.isNotEmpty
-                      ? TimeOfDay(
-                          hour: int.parse(_timeController.text.split(':')[0]),
-                          minute: int.parse(_timeController.text.split(':')[1]),
-                        )
-                      : TimeOfDay.now(),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _timeController.text = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-                    });
-                  }
-                },
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Tijd (HH:MM)',
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Annuleren', style: TextStyle(fontSize: 16)),
                   ),
-                  child: Text(
-                    _timeController.text.isEmpty ? 'Selecteer tijd' : _timeController.text,
-                    style: TextStyle(
-                      color: _timeController.text.isEmpty ? Colors.grey : Colors.black,
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        Navigator.pop(context, {
+                          'title': _titleController.text,
+                          'doctor_name': _doctorController.text,
+                          'location': _locationController.text,
+                          'appointment_date': _dateController.text,
+                          'appointment_time': _timeController.text,
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryTeal,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
+                    child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
-                ),
+                ],
               ),
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Annuleren'),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, {String? Function(String?)? validator}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[400]!),
+      ),
+      child: TextFormField(
+        controller: controller,
+        validator: validator,
+        style: const TextStyle(color: Colors.black, fontSize: 16),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.grey[700], fontSize: 14),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
-        ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState?.validate() ?? false) {
-              Navigator.pop(context, {
-                'title': _titleController.text,
-                'doctor_name': _doctorController.text,
-                'location': _locationController.text,
-                'appointment_date': _dateController.text,
-                'appointment_time': _timeController.text,
-              });
-            }
-          },
-          child: const Text('Opslaan'),
+      ),
+    );
+  }
+
+  Widget _buildDateField() {
+    return FormField<String>(
+      initialValue: _dateController.text,
+      validator: (value) => value?.isEmpty == true ? 'Datum is verplicht' : null,
+      builder: (field) => InkWell(
+        onTap: () async {
+          final picked = await showDatePicker(
+            context: context,
+            initialDate: _dateController.text.isNotEmpty 
+              ? _parseDate(_dateController.text) 
+              : DateTime.now(),
+            firstDate: DateTime(2020),
+            lastDate: DateTime(2030),
+          );
+          if (picked != null) {
+            setState(() {
+              _dateController.text = DateFormat('dd-MM-yyyy').format(picked);
+              field.didChange(_dateController.text);
+            });
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: field.errorText != null ? Colors.red : Colors.grey[400]!),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Datum (DD-MM-YYYY) *',
+                    style: TextStyle(
+                      color: field.errorText != null ? Colors.red : Colors.grey[700],
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _dateController.text.isEmpty ? 'Selecteer datum' : _dateController.text,
+                    style: TextStyle(
+                      color: _dateController.text.isEmpty ? Colors.grey[400] : Colors.black,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+              Icon(Icons.calendar_today, color: Colors.grey[600]),
+            ],
+          ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildTimeField() {
+    return InkWell(
+      onTap: () async {
+        final picked = await showTimePicker(
+          context: context,
+          initialTime: _timeController.text.isNotEmpty
+            ? TimeOfDay(
+                hour: int.tryParse(_timeController.text.split(':')[0]) ?? 9,
+                minute: int.tryParse(_timeController.text.split(':')[1]) ?? 0,
+              )
+            : const TimeOfDay(hour: 9, minute: 0),
+        );
+        if (picked != null) {
+          setState(() {
+            _timeController.text = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+          });
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[400]!),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tijd',
+                  style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _timeController.text.isEmpty ? 'Selecteer tijd' : _timeController.text,
+                  style: TextStyle(
+                    color: _timeController.text.isEmpty ? Colors.grey[400] : Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            Icon(Icons.access_time, color: Colors.grey[600]),
+          ],
+        ),
+      ),
     );
   }
 }
