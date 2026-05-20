@@ -604,7 +604,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'id': key,
         'date': (data['date'] as String?)?.toString() ?? date,
         'medication_id': data['medication_id'] ?? medicationId,
-        'aantal_ingenomen': data['aantal_ingenomen'] ?? aantal,
+        'aantal_ingenomen': data['aantal_ingenomen'] ?? 0,
       });
       return key;
     } else {
@@ -615,7 +615,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'id': id,
         'date': (data['date'] as String?)?.toString() ?? date,
         'medication_id': data['medication_id'] ?? medicationId,
-        'aantal_ingenomen': data['aantal_ingenomen'] ?? aantal,
+        'aantal_ingenomen': data['aantal_ingenomen'] ?? 0,
       });
       return id;
     }
