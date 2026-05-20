@@ -186,9 +186,33 @@ class _MedicationScreenState extends State<MedicationScreen> {
           Expanded(
             child: _isLoading
                 ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
-                : _configs.isEmpty
-                    ? _buildEmptyState()
-                    : _buildMedList(),
+                : _errorMessage != null
+                    ? _buildErrorWidget()
+                    : _configs.isEmpty
+                        ? _buildEmptyState()
+                        : _buildMedList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage!,
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadData,
+            child: const Text('Opnieuw proberen'),
           ),
         ],
       ),
