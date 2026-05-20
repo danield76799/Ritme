@@ -191,6 +191,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
+  String _formatSleepDuration(double hours) {
+    final totalMinutes = (hours * 60).round();
+    final h = totalMinutes ~/ 60;
+    final m = totalMinutes % 60;
+    if (h > 0 && m > 0) return '${h}u ${m}m slaap';
+    if (h > 0) return '${h}u slaap';
+    return '${m}m slaap';
+  }
+
   Future<void> _setBedTime() async {
     final picked = await showTimePicker(
       context: context,
@@ -325,7 +334,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Slaapduur: ${sleepHours.toStringAsFixed(1)} uur'),
+            content: Text('Slaapduur: ${_formatSleepDuration(sleepHours)}'),
             backgroundColor: AppTheme.primaryTeal,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -470,7 +479,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   Icon(Icons.nights_stay, color: AppTheme.primaryTeal),
                   const SizedBox(width: 8),
                   Text(
-                    '${_calculatedSleepHours!.toStringAsFixed(1)} uur slaap',
+                    _formatSleepDuration(_calculatedSleepHours!),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
