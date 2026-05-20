@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'pages/splash_screen.dart' show SplashScreenWrapper;
 import 'screens/login_screen.dart';
 import 'services/notification_helper.dart';
@@ -21,6 +23,9 @@ import 'utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize date formatting for Dutch locale
+  await initializeDateFormatting('nl_NL', null);
   
   // Initialize the appropriate database
   await initDatabase();
