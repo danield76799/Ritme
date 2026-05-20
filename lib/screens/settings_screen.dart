@@ -181,7 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Light grey background
+      backgroundColor: Colors.grey[50], // Very light grey background
       appBar: AppBar(
         title: const Text('Instellingen', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryTeal,
@@ -400,37 +400,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black, width: 2),
+          border: Border.all(color: Colors.teal, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: TextFormField(
           controller: controller,
           style: const TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
+            color: Colors.teal,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
           ),
           decoration: InputDecoration(
             labelText: label,
             labelStyle: const TextStyle(
-              color: Colors.black,
+              color: Colors.teal,
               fontSize: 14,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
-            hintStyle: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16,
-            ),
-            filled: true,
-            fillColor: Colors.white,
             border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         ),
       ),
@@ -450,12 +444,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[600]!, width: 2),
+            border: Border.all(color: Colors.teal, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -466,7 +460,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label,
                 style: const TextStyle(
                   fontSize: 16, 
-                  color: Colors.black87,
+                  color: Colors.teal,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -477,11 +471,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: const TextStyle(
                       fontSize: 16, 
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: Colors.teal,
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.access_time, color: Colors.grey[700]),
+                  Icon(Icons.access_time, color: Colors.teal),
                 ],
               ),
             ],
