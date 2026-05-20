@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: write
   actions: read
@@ -67,10 +70,10 @@ jobs:
           ## Ritme - SRT Tracker v1.2.1
           
           **Nieuwe features:**
-          - Verbeterde navigatie met drawer menu
-          - Bottom navigation bar voor snelle toegang
-          - Consistente AppScaffold widget
-          - Betere UX/UI over alle schermen
+          - Medicatie reminders met tijdstip
+          - Push notificaties voor medicatie
+          - Database reset functie
+          - Delete knop voor medicatie
           
           **Build info:**
           - Build number: ${{ github.run_number }}
@@ -80,4 +83,4 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
