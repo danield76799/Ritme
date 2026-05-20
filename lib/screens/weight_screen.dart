@@ -50,6 +50,23 @@ class _WeightScreenState extends State<WeightScreen> {
   }
 
   Future<void> _addWeightLog() async {
+    // Check if weight already logged today
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final alreadyLoggedToday = _weightLogs.any((log) => log['date'] == today);
+    
+    if (alreadyLoggedToday) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Je hebt vandaag al je gewicht gelogd. Bewerk het bestaande log om het te wijzigen.'),
+          backgroundColor: Colors.orange[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+    
     final weightController = TextEditingController();
     final notesController = TextEditingController();
 
@@ -371,9 +388,11 @@ class _WeightScreenState extends State<WeightScreen> {
         onPressed: _addWeightLog,
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Gewicht loggen',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        label: Text(
+          _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(DateTime.now())) 
+            ? 'Gewicht bewerken' 
+            : 'Gewicht loggen',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
