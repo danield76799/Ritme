@@ -382,7 +382,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: AppTheme.textCharcoal,
+          color: Colors.black,
         ),
       ),
     );
@@ -395,20 +395,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[400]!),
+          border: Border.all(color: Colors.grey[600]!, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: TextFormField(
           controller: controller,
           style: const TextStyle(
             color: Colors.black,
             fontSize: 16,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
             labelText: label,
-            labelStyle: TextStyle(
-              color: Colors.grey[800],
+            labelStyle: const TextStyle(
+              color: Colors.black87,
               fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -429,24 +437,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[400]!),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[600]!, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 label,
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                style: const TextStyle(
+                  fontSize: 16, 
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Row(
                 children: [
                   Text(
                     displayValue,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.access_time, color: Colors.grey[600]),
+                  Icon(Icons.access_time, color: Colors.grey[700]),
                 ],
               ),
             ],
