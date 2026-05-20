@@ -75,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message, style: const TextStyle(color: Colors.white)),
+          content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
           backgroundColor: Colors.green[700],
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -89,7 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message, style: const TextStyle(color: Colors.white)),
+          content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
           backgroundColor: Colors.red[700],
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -121,26 +121,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[900], // Dark background for battery saver
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.white,
+          color: Colors.grey[900],
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Colors.white,
+                color: Colors.grey[850],
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuleer', style: TextStyle(color: Colors.black, fontSize: 16)),
+                      child: const Text('Annuleer', style: TextStyle(color: Colors.white, fontSize: 16)),
                     ),
                     Text(
                       label,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                     TextButton(
                       onPressed: () {
@@ -154,7 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         });
                         Navigator.pop(context);
                       },
-                      child: const Text('Klaar', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
+                      child: const Text('Klaar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -165,7 +165,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   mode: CupertinoTimerPickerMode.hm,
                   minuteInterval: 15,
                   initialTimerDuration: initialDuration,
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.grey[900],
                   onTimerDurationChanged: (Duration newDuration) {
                     selectedDuration = newDuration;
                   },
@@ -181,7 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Colors.grey[100], // Light grey background
       appBar: AppBar(
         title: const Text('Instellingen', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryTeal,
@@ -368,11 +368,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, color: AppTheme.primaryTeal),
-        label: Text(label),
+        label: Text(label, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          side: BorderSide(color: AppTheme.primaryTeal),
+          side: BorderSide(color: AppTheme.primaryTeal, width: 1.5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Colors.white,
         ),
       ),
     );
@@ -399,12 +400,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[600]!, width: 1.5),
+          border: Border.all(color: Colors.grey[600]!, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -413,14 +414,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: const TextStyle(
             color: Colors.black,
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
           decoration: InputDecoration(
             labelText: label,
             labelStyle: const TextStyle(
               color: Colors.black87,
               fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -443,12 +444,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[600]!, width: 1.5),
+            border: Border.all(color: Colors.grey[600]!, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -460,7 +461,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: const TextStyle(
                   fontSize: 16, 
                   color: Colors.black87,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               Row(
@@ -469,7 +470,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     displayValue,
                     style: const TextStyle(
                       fontSize: 16, 
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
                   ),
