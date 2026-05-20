@@ -110,26 +110,7 @@ class _StemmingPageState extends State<StemmingPage> {
     });
   }
 
-  void _loadData() async {
-    try {
-      final box = Hive.box('daily_logs');
-      final today = DateTime.now().toIso8601String().split('T')[0];
-      final data = box.get(today);
-      if (data != null) {
-        setState(() {
-          final stemming = data['stemming_ochtend'] as int?;
-          if (stemming != null) {
-            _stemming = ((stemming + 5) / 10 * 100).clamp(0.0, 100.0);
-          }
-          _stemmingsOmslagen = data['stemmingsomslagen'] as int? ?? 0;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading data: $e');
-    }
-  }
-
-  String _getStemmingLabel() {
+}
     if (_stemming <= 10) return 'Uiterst depressief';
     if (_stemming <= 25) return 'Depressief';
     if (_stemming <= 40) return 'Neerslachtig';
