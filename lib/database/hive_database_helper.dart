@@ -47,23 +47,30 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<Map<String, dynamic>?> getSettings() async {
     final data = _settings.get('user');
     if (data == null) return null;
-    return Map<String, dynamic>.from(data);
+    final map = Map<String, dynamic>.from(data);
+    if (!map.containsKey('id')) {
+      map['id'] = 'user';
+    }
+    return map;
   }
 
   @override
   Future<int> insertSettings(Map<String, dynamic> settings) async {
+    settings['id'] = 'user';
     await _settings.put('user', settings);
     return 1;
   }
 
   @override
   Future<int> updateSettings(String username, Map<String, dynamic> settings) async {
+    settings['id'] = username;
     await _settings.put(username, settings);
     return 1;
   }
 
   @override
   Future<int> updateSettingsMap(Map<String, dynamic> settings) async {
+    settings['id'] = 'user';
     await _settings.put('user', settings);
     return 1;
   }
@@ -101,15 +108,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertDailyLog(String date, Map<String, dynamic> data) async {
+    data['id'] = date;
     await _dailyLogs.put(date, data);
     return 1;
   }
 
   @override
   Future<List<Map<String, dynamic>>> getDailyLogs() async {
-    final logs = _dailyLogs.values.toList();
+    final logs = _dailyLogs.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList();
     logs.sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
-    return logs.map((e) => Map<String, dynamic>.from(e)).toList();
+    return logs;
   }
 
   @override
@@ -132,12 +146,17 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<Map<String, dynamic>?> getDailyLog(String date) async {
     final data = _dailyLogs.get(date);
     if (data == null) return null;
-    return Map<String, dynamic>.from(data);
+    final map = Map<String, dynamic>.from(data);
+    if (!map.containsKey('id')) {
+      map['id'] = date;
+    }
+    return map;
   }
 
   @override
   Future<int> upsertDailyLog(Map<String, dynamic> data) async {
     final date = data['date'] as String;
+    data['id'] = date;
     await _dailyLogs.put(date, data);
     return 1;
   }
@@ -159,6 +178,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
         _srmActivities.values.toList().indexOf(existing.first)
       );
       await _srmActivities.put(key, {
+        'id': key,
         'date': date,
         'activity_type': activityType,
         'actual_time': actualTime,
@@ -170,6 +190,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       // Insert new record
       final id = DateTime.now().millisecondsSinceEpoch;
       await _srmActivities.put(id, {
+        'id': id,
         'date': date,
         'activity_type': activityType,
         'actual_time': actualTime,
@@ -183,17 +204,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertSrmActivityMap(Map<String, dynamic> data) async {
     final id = DateTime.now().millisecondsSinceEpoch;
+    data['id'] = id;
     await _srmActivities.put(id, data);
     return id;
   }
 
   @override
   Future<List<Map<String, dynamic>>> getSrmActivities(String date) async {
-    final activities = _srmActivities.values
-        .where((e) => e['date'] == date)
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
-    return activities;
+    return _srmActivities.toMap().entries.where((entry) {
+      return entry.value['date'] == date;
+    }).map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList();
   }
 
   // ===================
@@ -208,12 +234,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
       'tables': <String, dynamic>{},
     };
     
-    (result['tables'] as Map<String, dynamic>)['settings'] = _settings.values.toList();
-    (result['tables'] as Map<String, dynamic>)['daily_logs'] = _dailyLogs.values.toList();
-    (result['tables'] as Map<String, dynamic>)['srm_activities'] = _srmActivities.values.toList();
-    (result['tables'] as Map<String, dynamic>)['medication_config'] = _medicationConfig.values.toList();
-    (result['tables'] as Map<String, dynamic>)['medication_intake'] = _medicationIntake.values.toList();
-    (result['tables'] as Map<String, dynamic>)['life_events'] = _lifeEvents.values.toList();
+    (result['tables'] as Map<String, dynamic>)['settings'] = _settings.toMap().values.toList();
+    (result['tables'] as Map<String, dynamic>)['daily_logs'] = _dailyLogs.toMap().values.toList();
+    (result['tables'] as Map<String, dynamic>)['srm_activities'] = _srmActivities.toMap().values.toList();
+    (result['tables'] as Map<String, dynamic>)['medication_config'] = _medicationConfig.toMap().values.toList();
+    (result['tables'] as Map<String, dynamic>)['medication_intake'] = _medicationIntake.toMap().values.toList();
+    (result['tables'] as Map<String, dynamic>)['life_events'] = _lifeEvents.toMap().values.toList();
     
     return jsonEncode(result);
   }
@@ -227,32 +253,56 @@ class HiveDatabaseHelper implements DatabaseRepository {
     
     if (tables['settings'] != null) {
       for (var row in tables['settings'] as List) {
-        await _settings.put(row['id'] ?? DateTime.now().millisecondsSinceEpoch, row);
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = 'user';
+        }
+        await _settings.put(map['id'], map);
       }
     }
     if (tables['daily_logs'] != null) {
       for (var row in tables['daily_logs'] as List) {
-        await _dailyLogs.put(row['date'], row);
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = map['date'] ?? DateTime.now().millisecondsSinceEpoch;
+        }
+        await _dailyLogs.put(map['id'], map);
       }
     }
     if (tables['srm_activities'] != null) {
       for (var row in tables['srm_activities'] as List) {
-        await _srmActivities.put(DateTime.now().millisecondsSinceEpoch, row);
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = DateTime.now().millisecondsSinceEpoch;
+        }
+        await _srmActivities.put(map['id'], map);
       }
     }
     if (tables['medication_config'] != null) {
       for (var row in tables['medication_config'] as List) {
-        await _medicationConfig.put(DateTime.now().millisecondsSinceEpoch, row);
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = DateTime.now().millisecondsSinceEpoch;
+        }
+        await _medicationConfig.put(map['id'], map);
       }
     }
     if (tables['medication_intake'] != null) {
       for (var row in tables['medication_intake'] as List) {
-        await _medicationIntake.put(DateTime.now().millisecondsSinceEpoch, row);
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = DateTime.now().millisecondsSinceEpoch;
+        }
+        await _medicationIntake.put(map['id'], map);
       }
     }
     if (tables['life_events'] != null) {
       for (var row in tables['life_events'] as List) {
-        await _lifeEvents.put(DateTime.now().millisecondsSinceEpoch, row);
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = DateTime.now().millisecondsSinceEpoch;
+        }
+        await _lifeEvents.put(map['id'], map);
       }
     }
   }
@@ -270,15 +320,20 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
     final id = DateTime.now().millisecondsSinceEpoch;
-    await _medicationConfig.put(id, {'naam': naam, 'dosering': dosering, 'eenheid': eenheid});
+    await _medicationConfig.put(id, {'id': id, 'naam': naam, 'dosering': dosering, 'eenheid': eenheid});
     return id;
   }
 
   @override
   Future<List<Map<String, dynamic>>> getMedicationConfigs() async {
-    return _medicationConfig.values
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    return _medicationConfig.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      // Ensure id is present (for backwards compatibility with old data)
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList();
   }
 
   // ===================
@@ -287,15 +342,20 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<List<Map<String, dynamic>>> getMedicationSchedules() async {
-    return _medicationSchedule.values
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    return _medicationSchedule.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList();
   }
 
   @override
   Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
     final id = DateTime.now().millisecondsSinceEpoch;
     await _medicationSchedule.put(id, {
+      'id': id,
       'medication_id': medicationId,
       'reminder_time': reminderTime,
       'days_of_week': daysOfWeek,
@@ -306,6 +366,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data) async {
+    data['id'] = id;
     await _medicationSchedule.put(id, data);
     return 1;
   }
@@ -319,10 +380,13 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async {
     final today = DateTime.now().weekday;
-    final allSchedules = _medicationSchedule.values
-        .where((e) => e['enabled'] == 1)
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    final allSchedules = _medicationSchedule.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList();
     
     return allSchedules.where((schedule) {
       final days = (schedule['days_of_week'] as String).split(',');
@@ -334,6 +398,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
     final id = DateTime.now().millisecondsSinceEpoch;
     await _medicationIntake.put(id, {
+      'id': id,
       'date': date,
       'medication_id': medicationId,
       'aantal_ingenomen': 1,
@@ -360,6 +425,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
         _medicationIntake.values.toList().indexOf(existing.first)
       );
       await _medicationIntake.put(key, {
+        'id': key,
         'date': date,
         'medication_id': medicationId,
         'aantal_ingenomen': aantal,
@@ -369,6 +435,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       // Insert new record
       final id = DateTime.now().millisecondsSinceEpoch;
       await _medicationIntake.put(id, {
+        'id': id,
         'date': date,
         'medication_id': medicationId,
         'aantal_ingenomen': aantal,
@@ -392,22 +459,28 @@ class HiveDatabaseHelper implements DatabaseRepository {
       final key = _medicationIntake.keyAt(
         _medicationIntake.values.toList().indexOf(existing.first)
       );
-      await _medicationIntake.put(key, data);
+      await _medicationIntake.put(key, data..['id'] = key);
       return key;
     } else {
       // Insert new record
       final id = DateTime.now().millisecondsSinceEpoch;
-      await _medicationIntake.put(id, data);
+      await _medicationIntake.put(id, data..['id'] = id);
       return id;
     }
   }
 
   @override
   Future<List<Map<String, dynamic>>> getMedicationIntake(String date) async {
-    return _medicationIntake.values
-        .where((e) => e['date'] == date)
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    return _medicationIntake.toMap().entries.where((entry) {
+      return entry.value['date'] == date;
+    }).map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      // Ensure id is present
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList();
   }
 
   // ===================
@@ -418,6 +491,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<int> insertLifeEvent(String date, String omschrijving, int invloed) async {
     final id = DateTime.now().millisecondsSinceEpoch;
     await _lifeEvents.put(id, {
+      'id': id,
       'date': date,
       'omschrijving': omschrijving,
       'invloed': invloed,
@@ -428,16 +502,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
     final id = DateTime.now().millisecondsSinceEpoch;
+    data['id'] = id;
     await _lifeEvents.put(id, data);
     return id;
   }
 
   @override
   Future<List<Map<String, dynamic>>> getLifeEvents(String date) async {
-    return _lifeEvents.values
-        .where((e) => e['date'] == date)
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    return _lifeEvents.toMap().entries.where((entry) {
+      return entry.value['date'] == date;
+    }).map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList();
   }
 
   // ===================
@@ -457,10 +537,14 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   Future<List<Map<String, dynamic>>> getWeightLogs() async {
-    return _weightLogs.values
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList()
-        ..sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
+    return _weightLogs.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList()
+      ..sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
   }
 
   Future<Map<String, dynamic>?> getLatestWeightLog() async {
@@ -494,22 +578,32 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   Future<List<Map<String, dynamic>>> getMedicalAppointments() async {
-    return _medicalAppointments.values
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList()
-        ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
+    return _medicalAppointments.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList()
+      ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
   }
 
   Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
     final today = DateTime.now().toIso8601String().split('T')[0];
-    return _medicalAppointments.values
-        .where((e) => (e['appointment_date'] as String).compareTo(today) >= 0)
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList()
-        ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
+    return _medicalAppointments.toMap().entries.where((entry) {
+      return (entry.value['appointment_date'] as String).compareTo(today) >= 0;
+    }).map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      return map;
+    }).toList()
+      ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
   }
 
   Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
+    data['id'] = id;
     await _medicalAppointments.put(id, data);
     return 1;
   }
