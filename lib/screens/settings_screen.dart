@@ -121,6 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     await showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       builder: (BuildContext context) {
         return Container(
           height: 300,
@@ -129,16 +130,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.white,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuleer'),
+                      child: const Text('Annuleer', style: TextStyle(color: Colors.black, fontSize: 16)),
                     ),
                     Text(
                       label,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
                     ),
                     TextButton(
                       onPressed: () {
@@ -152,16 +154,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         });
                         Navigator.pop(context);
                       },
-                      child: const Text('Klaar'),
+                      child: const Text('Klaar', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
               ),
+              const Divider(height: 1, color: Colors.grey),
               Expanded(
                 child: CupertinoTimerPicker(
                   mode: CupertinoTimerPickerMode.hm,
                   minuteInterval: 15,
                   initialTimerDuration: initialDuration,
+                  backgroundColor: Colors.white,
                   onTimerDurationChanged: (Duration newDuration) {
                     selectedDuration = newDuration;
                   },
