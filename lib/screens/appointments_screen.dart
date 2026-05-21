@@ -110,6 +110,14 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   Future<void> _deleteAppointment(int id) async {
+    debugPrint('=== DELETE APPOINTMENT CALLED ===');
+    debugPrint('ID to delete: $id');
+    
+    // Show visual feedback that delete was tapped
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Verwijderen van ID $id...'), duration: const Duration(seconds: 2)),
+    );
+    
     try {
       final confirmed = await showDialog<bool>(
         context: context,
