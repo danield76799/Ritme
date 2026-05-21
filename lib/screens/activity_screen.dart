@@ -85,6 +85,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
           _awakeMinutes = sleepLog['awake_minutes'] ?? 0;
           _calculatedSleepHours = sleepLog['sleep_hours']?.toDouble();
         });
+        
+        // Pre-fill "Opstaan" activity with wake time if sleep log exists
+        final wakeTimeStr = sleepLog['wake_time']?.toString();
+        if (wakeTimeStr != null && wakeTimeStr.isNotEmpty) {
+          _activiteiten[0]['werkelijke_tijd'] = _parseTimeOfDay(wakeTimeStr);
+          _activiteiten[0]['p_score'] = 1; // Mark as completed since wake time was set
+        }
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load activity data', error: e, stackTrace: stackTrace);
@@ -158,6 +165,20 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final activity = _activiteiten[index];
       String name = activity['naam'];
       
+      String timeStr;
+      int currentScore = activity['p_score'] ?? 0;
+      
+      // For "Opstaan", use wake_time from sleep log if available (skip time picker)
+      if (name == 'Opstaan' && _wakeTime != null && _wakeTime!.isNotEmpty) {
+        timeStr = _wakeTime!;
+        // Toggle the score only
+        int newScore = currentScore == 0 ? 1 : 0;
+        await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
+        _loadData();
+        return;
+      }
+      
+      // For other activities or if no wake_time, show time picker
       final picked = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.now(),
@@ -171,9 +192,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
       
       if (picked == null) return;
       
-      String timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
 
-      int currentScore = activity['p_score'] ?? 0;
       int newScore = currentScore == 0 ? 1 : 0;
 
       await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
