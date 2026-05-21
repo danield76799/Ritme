@@ -464,25 +464,25 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       }
                     },
                     child: InputDecorator(
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Tijdstip herinnering',
                         filled: true,
-                        fillColor: Color(0xFF2A2A2A),
+                        fillColor: Colors.grey[200],
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Colors.grey),
+                          borderSide: BorderSide(color: Colors.grey.shade400),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Colors.grey),
+                          borderSide: BorderSide(color: Colors.grey.shade400),
                         ),
                       ),
                       child: Text(
                         reminderTime == null 
                           ? 'Selecteer tijd' 
                           : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: reminderTime == null ? Colors.grey[600] : Colors.black,
                           fontSize: 16,
                         ),
                       ),
