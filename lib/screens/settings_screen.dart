@@ -122,11 +122,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.grey[900], // Dark background for battery saver
+      backgroundColor: Colors.grey[300], // Light background for visibility
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.grey[900],
+          color: Colors.grey[300],
           child: Column(
             children: [
               Container(
@@ -137,11 +137,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuleer', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      child: const Text('Annuleer', style: TextStyle(color: Colors.black87, fontSize: 16)),
                     ),
                     Text(
                       label,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
                     ),
                     TextButton(
                       onPressed: () {
@@ -162,14 +162,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const Divider(height: 1, color: Colors.grey),
               Expanded(
-                child: CupertinoTimerPicker(
-                  mode: CupertinoTimerPickerMode.hm,
-                  minuteInterval: 15,
-                  initialTimerDuration: initialDuration,
-                  backgroundColor: Colors.grey[900],
-                  onTimerDurationChanged: (Duration newDuration) {
-                    selectedDuration = newDuration;
-                  },
+                child: Container(
+                  color: Colors.grey[200],
+                  child: CupertinoTimerPicker(
+                    mode: CupertinoTimerPickerMode.hm,
+                    minuteInterval: 15,
+                    initialTimerDuration: initialDuration,
+                    backgroundColor: Colors.grey[200],
+                    onTimerDurationChanged: (Duration newDuration) {
+                      selectedDuration = newDuration;
+                    },
+                  ),
                 ),
               ),
             ],
