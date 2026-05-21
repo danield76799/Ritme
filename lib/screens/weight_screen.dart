@@ -52,21 +52,107 @@ class _WeightScreenState extends State<WeightScreen> {
   Future<void> _addWeightLog() async {
     // Check if weight already logged today
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final alreadyLoggedToday = _weightLogs.any((log) => log['date'] == today);
+    final existingLog = _weightLogs.firstWhere(
+      (log) => log['date'] == today,
+      orElse: () => {},
+    );
+    
+    final alreadyLoggedToday = existingLog.isNotEmpty;
     
     if (alreadyLoggedToday) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Je hebt vandaag al je gewicht gelogd. Bewerk het bestaande log om het te wijzigen.'),
-          backgroundColor: Colors.orange[700],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 3),
+      // Show edit dialog instead of error
+      final weightController = TextEditingController(
+        text: existingLog['weight']?.toString() ?? '',
+      );
+      final notesController = TextEditingController(
+        text: existingLog['notes']?.toString() ?? '',
+      );
+
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Gewicht bewerken'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: weightController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: 'Gewicht (kg) - gebruik punt (.)',
+                  hintText: 'Bijv. 101.5',
+                  prefixIcon: const Icon(Icons.monitor_weight),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: notesController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Notities (optioneel)',
+                  prefixIcon: const Icon(Icons.notes),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuleren'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (weightController.text.isNotEmpty) {
+                  final normalizedWeight = weightController.text.replaceAll(',', '.');
+                  final weight = double.tryParse(normalizedWeight);
+                  
+                  if (weight == null || weight < 20 || weight > 300) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Gewicht moet tussen 20 en 300 kg zijn. Gebruik een punt (.) als decimaal.'),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                    return;
+                  }
+                  
+                  Navigator.pop(context, {
+                    'weight': weight,
+                    'notes': notesController.text,
+                  });
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryTeal,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
+            ),
+          ],
         ),
       );
+
+      if (result != null) {
+        // Delete old log and insert new one
+        if (existingLog['id'] != null) {
+          await db.deleteWeightLog(existingLog['id']);
+        }
+        await db.insertWeightLog(
+          today,
+          result['weight'],
+          result['notes'].isEmpty ? null : result['notes'],
+        );
+        _loadWeightLogs();
+      }
       return;
     }
     
+    // New weight log
     final weightController = TextEditingController();
     final notesController = TextEditingController();
 
