@@ -241,6 +241,13 @@ class NotificationHelper {
         );
       }
       debugPrint('Medicatie herinnering gepland voor $medicationName om $time');
+      
+      // Check pending notifications
+      final pending = await _notifications.pendingNotificationRequests();
+      debugPrint('=== PENDING NOTIFICATIONS: ${pending.length} ===');
+      for (var n in pending) {
+        debugPrint('  - ID: ${n.id}, Title: ${n.title}, Body: ${n.body}');
+      }
     } catch (e) {
       debugPrint('Medicatie herinnering planning error: $e');
       rethrow;
