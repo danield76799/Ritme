@@ -232,6 +232,50 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
+
+  Future<void> _editMedicationReminderTime(int configId, String name, bool reminderEnabled, String currentTime) async {
+    // Parse current time
+    final parts = currentTime.split(':');
+    TimeOfDay reminderTime = TimeOfDay(
+      hour: int.parse(parts[0]),
+      minute: int.parse(parts[1]),
+    );
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: reminderTime,
+      helpText: 'Wijzig herinnertijd voor $name',
+    );
+
+    if (picked != null) {
+      final newTimeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      
+      try {
+        await db.updateMedicationConfig(configId, {'reminder_time': newTimeStr});
+        
+        // Reschedule notification if reminders are enabled
+        if (reminderEnabled) {
+          await NotificationHelper.instance.scheduleMedicationReminder(
+            medicationId: configId,
+            medicationName: name,
+            dosage: '',
+            time: newTimeStr,
+            daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+          );
+        }
+
+        _loadData();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Herinnertijd gewijzigd naar \$newTimeStr')),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error updating reminder time: \$e');
+      }
+    }
+  }
   Future<void> _resetDatabase() async {
     try {
       final confirmed = await showDialog<bool>(
@@ -598,22 +642,33 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                   if (reminderTime != null)
-                    Row(
-                      children: [
-                        Icon(
-                          reminderEnabled ? Icons.notifications_active : Icons.notifications_off,
-                          size: 12,
-                          color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          reminderTime,
-                          style: TextStyle(
-                            fontSize: 11,
+                    InkWell(
+                      onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime),
+                      borderRadius: BorderRadius.circular(4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            reminderEnabled ? Icons.notifications_active : Icons.notifications_off,
+                            size: 12,
                             color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            reminderTime,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.edit,
+                            size: 10,
+                            color: Colors.grey[400],
+                          ),
+                        ],
+                      ),
                     ),
                 ],
               ),
