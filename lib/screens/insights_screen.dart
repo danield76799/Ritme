@@ -94,12 +94,49 @@ class _InsightsScreenState extends State<InsightsScreen> {
     int activiteitenTotaal = 0;
 
     for (var log in recenteLogs) {
-      if (log['stemming_hoog'] != null) {
-        totaalStemming += log['stemming_hoog'];
+      // Handle both String and num types for stemming_hoog
+      dynamic rawStemming = log['stemming_hoog'];
+      if (rawStemming != null) {
+        double stemming;
+        if (rawStemming is num) {
+          stemming = rawStemming.toDouble();
+        } else if (rawStemming is String) {
+          stemming = double.tryParse(rawStemming) ?? 0.0;
+        } else {
+          stemming = 0.0;
+        }
+        totaalStemming += stemming;
         stemCount++;
       }
-      if (log['uren_slaap'] != null) {
-        totaalSlaap += log['uren_slaap'];
+
+      // Handle both String and num types for uren_slaap
+      dynamic rawSlaap = log['uren_slaap'];
+      if (rawSlaap != null) {
+        double slaap;
+        if (rawSlaap is num) {
+          slaap = rawSlaap.toDouble();
+        } else if (rawSlaap is String) {
+          slaap = double.tryParse(rawSlaap) ?? 0.0;
+        } else {
+          slaap = 0.0;
+        }
+        totaalSlaap += slaap;
+      }
+
+      // Also check for calculated sleep_hours
+      dynamic rawSleepHours = log['sleep_hours'];
+      if (rawSleepHours != null) {
+        double sleepHours;
+        if (rawSleepHours is num) {
+          sleepHours = rawSleepHours.toDouble();
+        } else if (rawSleepHours is String) {
+          sleepHours = double.tryParse(rawSleepHours) ?? 0.0;
+        } else {
+          sleepHours = 0.0;
+        }
+        if (sleepHours > 0) {
+          totaalSlaap += sleepHours;
+        }
       }
     }
 
