@@ -315,21 +315,26 @@ class NotificationHelper {
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute, int dayOfWeek) {
     final now = tz.TZDateTime.now(tz.local);
+    debugPrint('=== _nextInstanceOfTime ===');
+    debugPrint('Input: hour=$hour, minute=$minute, dayOfWeek=$dayOfWeek');
+    debugPrint('Current time: $now');
     
-    tz.TZDateTime scheduledDate = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      hour,
-      minute,
-    );
+    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    debugPrint('Initial scheduledDate: $scheduledDate, weekday: ${scheduledDate.weekday}');
 
-    // Find next occurrence of this day
-    while (scheduledDate.weekday != dayOfWeek || scheduledDate.isBefore(now)) {
+    // If the time has already passed today, start from tomorrow
+    if (scheduledDate.isBefore(now)) {
+      debugPrint('Time already passed today, moving to tomorrow');
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
+    // Advance to the correct weekday
+    while (scheduledDate.weekday != dayOfWeek) {
+      debugPrint('Wrong weekday (${scheduledDate.weekday}), advancing to next day');
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    debugPrint('Final scheduledDate: $scheduledDate');
     return scheduledDate;
   }
 
