@@ -112024,7 +112024,7 @@ $1(a){return new B.vC(null)},
 $S:671}
 B.Yr.prototype={
 J(a){var s=null,r=B.b([new B.bn(2,A.am,B.au(A.n.ap(25.5),A.J.v()>>>16&255,A.J.v()>>>8&255,A.J.v()&255),A.F,10)],t.V)
-return B.hV(s,A.R,B.cp(B.b2(B.b([B.aT(s,B.ca(A.zA,A.R,s,80),A.I,s,s,new B.b0(A.D,s,s,s,r,s,A.fV),s,140,s,s,s,s,s,140),A.e1,A.bbL,A.fH,A.bck,A.b5O,A.b5M],t.p),A.S,A.bK,A.L,0,A.W),s,s),s)}}
+return B.hV(s,A.R,B.cp(B.b2(B.b([B.aT(s,B.ca(A.zA,A.R,s,80),A.I,s,s,new B.b0(A.D,s,s,s,r,s,A.fV),s,140,s,s,s,s,s,140),A.e1,A.bbL,A.fH,A.bcl,A.b5O,A.b5M],t.p),A.S,A.bK,A.L,0,A.W),s,s),s)}}
 B.It.prototype={
 a9(){return new B.a7f()}}
 B.a7f.prototype={
@@ -112101,7 +112101,7 @@ return B.z(null,r)
 case 1:return B.y(p.at(-1),r)}})
 return B.A($async$lN,r)},
 agZ(a){var s=this,r=null,q=new B.bp(Date.now(),0,!1),p=B.cy(B.cr(q),B.cR(q),B.eX(q),0,0,0,0)
-if(B.cy(B.cr(a),B.cR(a),B.eX(a),0,0,0,0).lt(p)){s.c.a7(t.q).f.dk(B.dB(r,r,r,A.et,A.b6,A.Z,r,A.bcn,r,A.cd,r,r,r,r,r,r,r,new B.bg(B.a5(10),A.Q),r,r))
+if(B.cy(B.cr(a),B.cR(a),B.eX(a),0,0,0,0).lt(p)){s.c.a7(t.q).f.dk(B.dB(r,r,r,A.et,A.b6,A.Z,r,A.bco,r,A.cd,r,r,r,r,r,r,r,new B.bg(B.a5(10),A.Q),r,r))
 return}s.N(new B.azd(s,a))
 s.lN()},
 n5(a){var s,r,q,p,o=null
@@ -112162,7 +112162,7 @@ f=B.ae(a0)
 e=B.aL(a0)
 B.f2("Failed to toggle activity",f,e)
 c=n.c
-if(c!=null)c.a7(t.q).f.dk(B.dB(null,null,null,A.bL,A.b6,A.Z,null,A.bcr,null,A.cd,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
+if(c!=null)c.a7(t.q).f.dk(B.dB(null,null,null,A.bL,A.b6,A.Z,null,A.bcs,null,A.cd,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
 s=6
 break
 case 3:s=2
@@ -112257,7 +112257,7 @@ l=o*60+n
 if(l<m)l+=1440
 k=l-m-c
 return k/60}catch(i){return 0}},
-J(a){var s,r,q,p,o,n,m,l,k,j=this,i=null,h="Tik om tijd in te stellen",g=B.jL(i,A.R,0,A.dS,i,A.bc6),f=B.aT(i,B.aey(j.f,j.gagY()),A.I,A.D,i,i,i,i,i,i,i,i,i,i)
+J(a){var s,r,q,p,o,n,m,l,k,j=this,i=null,h="Tik om tijd in te stellen",g=B.jL(i,A.R,0,A.dS,i,A.bc7),f=B.aT(i,B.aey(j.f,j.gagY()),A.I,A.D,i,i,i,i,i,i,i,i,i,i)
 if(j.d)s=B.cp(B.nr(i,A.R,i,i,i,i,i,i,i,i),i,i)
 else{s=j.e
 r=t.p
@@ -112585,7 +112585,7 @@ J(a){var s,r=this,q=null,p=B.jL(q,A.R,0,A.dS,q,A.bby)
 if(r.e)s=B.cp(B.nr(q,A.R,q,q,q,q,q,q,q,q),q,q)
 else{s=r.f
 if(s!=null)s=B.cp(B.b2(B.b([B.ca(A.fo,A.jH,q,48),A.bh,B.a2(s,q,q,q,q,B.aK(q,q,A.b2,q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),A.c_,q,q),A.bk,B.iy(A.j0,r.gasq(),q)],t.p),A.S,A.bK,A.L,0,A.W),q,q)
-else s=J.fr(r.d)?B.cp(B.b2(B.b([B.ca(A.zI,A.bD,q,48),A.bh,B.a2("Geen afspraken",q,q,q,q,B.aK(q,q,A.b2,q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),A.d3,B.a2("Tik + om een afspraak toe te voegen",q,q,q,q,B.aK(q,q,A.bD,q,q,q,q,q,q,q,q,13,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q)],t.p),A.S,A.bK,A.L,0,A.W),q,q):r.ahN()}return B.hV(p,A.cp,s,B.aRL(A.R,A.ts,A.bcj,r.gah1()))},
+else s=J.fr(r.d)?B.cp(B.b2(B.b([B.ca(A.zI,A.bD,q,48),A.bh,B.a2("Geen afspraken",q,q,q,q,B.aK(q,q,A.b2,q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),A.d3,B.a2("Tik + om een afspraak toe te voegen",q,q,q,q,B.aK(q,q,A.bD,q,q,q,q,q,q,q,q,13,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q)],t.p),A.S,A.bK,A.L,0,A.W),q,q):r.ahN()}return B.hV(p,A.cp,s,B.aRL(A.R,A.ts,A.bck,r.gah1()))},
 ahN(){return B.ald(new B.aA5(this),J.c3(this.d),A.cq,null,!1)},
 ahM(a){var s,r,q,p,o,n,m,l,k,j,i=null,h=J.ah(a),g=h.i(a,"title")
 if(g==null)g="Onbekend"
@@ -112633,7 +112633,7 @@ $1(a){return new B.r3(this.a,null)},
 $S:257}
 B.aA8.prototype={
 $1(a){var s=null
-return B.rM(B.b([B.eL(A.j_,new B.aA6(a),s),B.iy(A.WO,new B.aA7(a),B.hJ(s,s,A.bL,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),A.bbR,s,A.bc1)},
+return B.rM(B.b([B.eL(A.j_,new B.aA6(a),s),B.iy(A.WO,new B.aA7(a),B.hJ(s,s,A.bL,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),A.bbR,s,A.bc2)},
 $S:55}
 B.aA6.prototype={
 $0(){B.cI(this.a,!1).dB(!1)
@@ -112977,7 +112977,7 @@ k=h.JB(A.cL,A.zF,"Slaapkwaliteit","/10",k>0?A.n.aa(k,1):"-")
 j=h.r
 j=h.JB(A.dZ,A.mu,"Ritme stabiliteit","%",j>0?A.q.j(A.n.ap(j)):"-")
 i=h.w
-return B.hV(p,A.cp,B.vd(!0,new B.H1(B.lu(B.b2(B.b([o,A.W0,n,A.bk,m,A.W0,l,A.bk,k,A.bh,j,A.bh,h.JB(A.et,A.a4P,"Activiteiten deze week","",i>0?A.q.j(i):"-"),A.e1,B.bu(B.b([B.aT(g,g,A.I,g,g,new B.b0(A.R,g,g,B.a5(2),g,g,A.a4),g,24,g,g,g,g,g,4),A.ce,B.a2("Stemming Trend",g,g,g,g,B.aK(g,g,A.bd,g,g,g,g,g,g,g,g,20,g,g,A.aA,g,g,!0,g,g,g,g,g,g,g,g),g,g,g)],r),A.S,A.M,A.L,0,g),A.bk,new B.ZF(h.y,g),A.bh,h.tz(a,A.zB,A.QI,"/insights","Inzichten & Patronen"),A.b5P],r),A.ay,A.M,A.L,0,A.W),A.bJ,A.jm,g,A.aJ),h.gajI(),A.R,g),A.bE,!0),B.aRL(A.R,A.ts,A.bcu,new B.aCT(h,a)))},
+return B.hV(p,A.cp,B.vd(!0,new B.H1(B.lu(B.b2(B.b([o,A.W0,n,A.bk,m,A.W0,l,A.bk,k,A.bh,j,A.bh,h.JB(A.et,A.a4P,"Activiteiten deze week","",i>0?A.q.j(i):"-"),A.e1,B.bu(B.b([B.aT(g,g,A.I,g,g,new B.b0(A.R,g,g,B.a5(2),g,g,A.a4),g,24,g,g,g,g,g,4),A.ce,B.a2("Stemming Trend",g,g,g,g,B.aK(g,g,A.bd,g,g,g,g,g,g,g,g,20,g,g,A.aA,g,g,!0,g,g,g,g,g,g,g,g),g,g,g)],r),A.S,A.M,A.L,0,g),A.bk,new B.ZF(h.y,g),A.bh,h.tz(a,A.zB,A.QI,"/insights","Inzichten & Patronen"),A.b5P],r),A.ay,A.M,A.L,0,A.W),A.bJ,A.jm,g,A.aJ),h.gajI(),A.R,g),A.bE,!0),B.aRL(A.R,A.ts,A.bc0,new B.aCT(h,a)))},
 Vf(a,b,c){var s=null,r=A.D.bt(0.35),q=B.a5(12)
 return B.aT(s,B.bu(B.b([B.ca(a,A.D,s,18),A.b5K,B.a2(b+": "+c,s,s,s,s,A.baS,s,s,s)],t.p),A.S,A.M,A.ba,0,s),A.I,s,s,new B.b0(r,s,s,q,s,s,A.a4),s,s,s,s,A.rw,s,s,s)},
 tz(a,b,c,d,e){var s=null,r=B.a5(20),q=B.b([new B.bn(0,A.am,A.J.bt(0.05),A.fD,10)],t.V),p=c.bt(0.1)
@@ -113262,7 +113262,7 @@ case 2:s=5
 return B.q(B.aUw(q,A.a6A),$async$xN)
 case 5:case 3:return B.z(null,r)}})
 return B.A($async$xN,r)},
-J(a){var s,r,q,p,o,n=this,m=null,l=t.p,k=B.jL(B.b([B.fL(m,m,A.tr,m,m,n.gasd(),m,m,"Vernieuwen")],l),A.R,0,A.dS,m,A.bc2)
+J(a){var s,r,q,p,o,n=this,m=null,l=t.p,k=B.jL(B.b([B.fL(m,m,A.tr,m,m,n.gasd(),m,m,"Vernieuwen")],l),A.R,0,A.dS,m,A.bc3)
 if(n.d)l=B.cp(B.nr(m,A.R,m,m,m,m,m,m,m,m),m,m)
 else{s=A.R.bt(0.1)
 r=B.a5(12)
@@ -113285,7 +113285,7 @@ s.push(B.aT(m,B.cp(B.a2("Nog niet genoeg data voor inzichten.\nBlijf bijhouden!"
 s.push(A.hz)
 r=B.b([A.R,A.R.bt(0.8)],t.t_)
 q=B.a5(16)
-s.push(B.aT(m,B.b2(B.b([B.bu(B.b([B.aT(m,A.a5F,A.I,m,m,new B.b0(A.D.bt(0.2),m,m,B.a5(8),m,m,A.a4),m,m,m,m,A.rB,m,m,m),A.ce,A.bbG],l),A.S,A.M,A.L,0,m),A.bk,B.a2("Kopieer je anonieme weekrapport en plak het in Google Gemini voor gepersonaliseerde tips.",m,m,m,m,B.aK(m,m,A.D.bt(0.9),m,m,m,m,m,m,m,m,14,m,m,m,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),A.l5,B.bu(B.b([B.c5(B.agv(A.a5H,A.bc0,n.gasc(),B.hJ(m,m,A.D,m,m,m,m,m,m,A.R,m,m,A.yN,m,new B.bg(B.a5(10),A.Q),m,m,m,m,m)),1),A.ce,B.c5(B.agv(A.a5B,A.bca,n.gau6(),B.hJ(m,m,A.D.bt(0.2),m,m,m,m,m,m,A.D,m,m,A.yN,m,new B.bg(B.a5(10),A.Q),m,m,m,m,m)),1)],l),A.S,A.M,A.L,0,m)],l),A.ay,A.M,A.L,0,A.W),A.I,m,m,new B.b0(m,m,m,q,m,new B.o5(A.fe,A.qx,A.eC,r,m,m),A.a4),m,m,m,m,A.cr,m,m,m))
+s.push(B.aT(m,B.b2(B.b([B.bu(B.b([B.aT(m,A.a5F,A.I,m,m,new B.b0(A.D.bt(0.2),m,m,B.a5(8),m,m,A.a4),m,m,m,m,A.rB,m,m,m),A.ce,A.bbG],l),A.S,A.M,A.L,0,m),A.bk,B.a2("Kopieer je anonieme weekrapport en plak het in Google Gemini voor gepersonaliseerde tips.",m,m,m,m,B.aK(m,m,A.D.bt(0.9),m,m,m,m,m,m,m,m,14,m,m,m,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),A.l5,B.bu(B.b([B.c5(B.agv(A.a5H,A.bc1,n.gasc(),B.hJ(m,m,A.D,m,m,m,m,m,m,A.R,m,m,A.yN,m,new B.bg(B.a5(10),A.Q),m,m,m,m,m)),1),A.ce,B.c5(B.agv(A.a5B,A.bcb,n.gau6(),B.hJ(m,m,A.D.bt(0.2),m,m,m,m,m,m,A.D,m,m,A.yN,m,new B.bg(B.a5(10),A.Q),m,m,m,m,m)),1)],l),A.S,A.M,A.L,0,m)],l),A.ay,A.M,A.L,0,A.W),A.I,m,m,new B.b0(m,m,m,q,m,new B.o5(A.fe,A.qx,A.eC,r,m,m),A.a4),m,m,m,m,A.cr,m,m,m))
 s.push(A.l5)
 r=B.a5(12)
 s.push(B.aT(m,B.bu(B.b([B.ca(A.a4Q,A.b2,m,20),A.ce,B.c5(B.a2("Ritme deelt nooit data met derden. AI-analyse doe je bewust en persoonlijk.",m,m,m,m,B.aK(m,m,A.b2,m,m,m,m,m,m,m,m,12,m,m,m,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),1)],l),A.S,A.M,A.L,0,m),A.I,m,m,new B.b0(A.da,m,m,r,m,m,A.a4),m,m,m,m,A.bJ,m,m,m))
@@ -113492,8 +113492,8 @@ B.aH4.prototype={
 $0(){this.a.w="Inloggen mislukt. Probeer opnieuw."},
 $S:0}
 B.aH8.prototype={
-$1(a){var s=null,r=t.p,q=B.bu(B.b([B.ca(A.a5j,A.jA,s,s),A.f2,A.bcq],r),A.S,A.M,A.L,0,s)
-return B.rM(B.b([B.eL(A.j_,new B.aH6(a),s),B.eL(A.bc4,new B.aH7(this.a,a),B.oH(s,s,s,s,s,s,s,s,s,A.bL,s,s,s,s,s,s,s,s,s,s))],r),A.bbQ,s,q)},
+$1(a){var s=null,r=t.p,q=B.bu(B.b([B.ca(A.a5j,A.jA,s,s),A.f2,A.bcr],r),A.S,A.M,A.L,0,s)
+return B.rM(B.b([B.eL(A.j_,new B.aH6(a),s),B.eL(A.bc5,new B.aH7(this.a,a),B.oH(s,s,s,s,s,s,s,s,s,A.bL,s,s,s,s,s,s,s,s,s,s))],r),A.bbQ,s,q)},
 $S:55}
 B.aH6.prototype={
 $0(){B.cI(this.a,!1).dB(null)
@@ -113505,7 +113505,7 @@ this.a.axm()},
 $S:0}
 B.aHb.prototype={
 $1(a){var s=null
-return B.rM(B.b([B.eL(A.bbz,new B.aH9(a),s),B.iy(A.bct,new B.aHa(this.a),B.hJ(s,s,A.bL,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),A.bbF,s,A.bch)},
+return B.rM(B.b([B.eL(A.bbz,new B.aH9(a),s),B.iy(A.bcu,new B.aHa(this.a),B.hJ(s,s,A.bL,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),A.bbF,s,A.bci)},
 $S:55}
 B.aH9.prototype={
 $0(){B.cI(this.a,!1).dB(null)
@@ -113561,7 +113561,7 @@ break
 case 5:return B.z(null,r)
 case 1:return B.y(p.at(-1),r)}})
 return B.A($async$xJ,r)},
-J(a){var s,r=this,q=null,p=B.jL(q,A.R,0,A.dS,q,A.bc3)
+J(a){var s,r=this,q=null,p=B.jL(q,A.R,0,A.dS,q,A.bc4)
 if(r.e)s=B.cp(B.nr(q,A.R,q,q,q,q,q,q,q,q),q,q)
 else{s=r.f
 if(s!=null)s=B.cp(B.b2(B.b([B.ca(A.fo,A.jH,q,48),A.bh,B.a2(s,q,q,q,q,B.aK(q,q,A.b2,q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),A.c_,q,q),A.bk,B.iy(A.j0,r.gasO(),q)],t.p),A.S,A.bK,A.L,0,A.W),q,q)
@@ -113749,7 +113749,7 @@ s=10
 return B.q(k.ES(a),$async$tH)
 case 10:o.l6()
 k=o.c
-if(k!=null)k.a7(t.q).f.dk(B.dB(null,null,null,A.dZ,A.b6,A.Z,null,A.bce,null,A.cd,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
+if(k!=null)k.a7(t.q).f.dk(B.dB(null,null,null,A.dZ,A.b6,A.Z,null,A.bcf,null,A.cd,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
 case 8:q=1
 s=5
 break
@@ -113759,7 +113759,7 @@ m=B.ae(i)
 l=B.aL(i)
 B.f2("Failed to delete medication",m,l)
 k=o.c
-if(k!=null)k.a7(t.q).f.dk(B.dB(null,null,null,A.bL,A.b6,A.Z,null,A.bcg,null,A.cd,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
+if(k!=null)k.a7(t.q).f.dk(B.dB(null,null,null,A.bL,A.b6,A.Z,null,A.bch,null,A.cd,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
 s=5
 break
 case 2:s=1
@@ -113795,7 +113795,7 @@ m=B.ae(i)
 l=B.aL(i)
 B.f2("Failed to reset database",m,l)
 k=o.c
-if(k!=null)k.a7(t.q).f.dk(B.dB(null,null,null,A.bL,A.b6,A.Z,null,A.bc8,null,A.cd,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
+if(k!=null)k.a7(t.q).f.dk(B.dB(null,null,null,A.bL,A.b6,A.Z,null,A.bc9,null,A.cd,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
 s=5
 break
 case 2:s=1
@@ -113893,7 +113893,7 @@ return null},
 $S:0}
 B.aHR.prototype={
 $1(a){var s=null
-return B.rM(B.b([B.eL(A.j_,new B.aHP(a),s),B.iy(A.bbw,new B.aHQ(a),B.hJ(s,s,A.bL,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),A.bcs,s,A.bc9)},
+return B.rM(B.b([B.eL(A.j_,new B.aHP(a),s),B.iy(A.bbw,new B.aHQ(a),B.hJ(s,s,A.bL,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),A.bct,s,A.bca)},
 $S:55}
 B.aHP.prototype={
 $0(){B.cI(this.a,!1).dB(!1)
@@ -113907,12 +113907,12 @@ B.aI1.prototype={
 $1(a){return new B.vB(new B.aI0(this.a,this.b),null)},
 $S:685}
 B.aI0.prototype={
-$2(a,b){var s,r,q=null,p=this.a,o=t.p,n=B.b([B.oI(q,A.dc,!1,q,!0,A.Z,q,B.rF(),q,q,q,q,q,q,2,B.jh(q,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,q,!0,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,A.D,!0,q,q,q,q,new B.cq(4,B.a5(12),A.hP),q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,A.lb,"Naam (bijv. Lithium)",!0,!0,!1,q,q,q,q,q,q,q,q,q,q,q,q,q,q),A.aL,!0,q,!0,q,!1,q,A.d7,q,q,q,q,q,q,q,q,1,q,q,!1,"\u2022",q,new B.aHU(p),q,q,q,!1,q,q,!1,q,!0,q,A.cr,q,q,q,q,q,q,q,q,q,q,q,q,!0,A.aQ,q,A.ez,q,q,q,q),B.oI(q,A.dc,!1,q,!0,A.Z,q,B.rF(),q,q,q,q,q,q,2,B.jh(q,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,q,!0,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,A.D,!0,q,q,q,q,new B.cq(4,B.a5(12),A.hP),q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,A.lb,"Dosering",!0,!0,!1,q,q,q,q,q,q,q,q,q,q,q,q,q,q),A.aL,!0,q,!0,q,!1,q,A.d7,q,q,q,q,A.w3,q,q,q,1,q,q,!1,"\u2022",q,new B.aHV(p),q,q,q,!1,q,q,!1,q,!0,q,A.cr,q,q,q,q,q,q,q,q,q,q,q,q,!0,A.aQ,q,A.ez,q,q,q,q),B.oI(q,A.dc,!1,q,!0,A.Z,q,B.rF(),q,q,q,q,q,q,2,B.jh(q,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,q,!0,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,A.D,!0,q,q,q,q,new B.cq(4,B.a5(12),A.hP),q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,A.lb,"Eenheid (mg, ml, stuks)",!0,!0,!1,q,q,q,q,q,q,q,q,q,q,q,q,q,q),A.aL,!0,q,!0,q,!1,q,A.d7,q,q,q,q,q,q,q,q,1,q,q,!1,"\u2022",q,new B.aHW(p),q,q,q,!1,q,q,!1,q,!0,q,A.cr,q,q,q,q,q,q,q,q,q,q,q,q,!0,A.aQ,q,A.ez,q,q,q,q),A.bk,B.bu(B.b([A.bcc,A.W7,B.aT_(A.R,new B.aHX(p,b),p.e)],o),A.S,A.M,A.L,0,q)],o)
+$2(a,b){var s,r,q=null,p=this.a,o=t.p,n=B.b([B.oI(q,A.dc,!1,q,!0,A.Z,q,B.rF(),q,q,q,q,q,q,2,B.jh(q,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,q,!0,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,A.D,!0,q,q,q,q,new B.cq(4,B.a5(12),A.hP),q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,A.lb,"Naam (bijv. Lithium)",!0,!0,!1,q,q,q,q,q,q,q,q,q,q,q,q,q,q),A.aL,!0,q,!0,q,!1,q,A.d7,q,q,q,q,q,q,q,q,1,q,q,!1,"\u2022",q,new B.aHU(p),q,q,q,!1,q,q,!1,q,!0,q,A.cr,q,q,q,q,q,q,q,q,q,q,q,q,!0,A.aQ,q,A.ez,q,q,q,q),B.oI(q,A.dc,!1,q,!0,A.Z,q,B.rF(),q,q,q,q,q,q,2,B.jh(q,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,q,!0,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,A.D,!0,q,q,q,q,new B.cq(4,B.a5(12),A.hP),q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,A.lb,"Dosering",!0,!0,!1,q,q,q,q,q,q,q,q,q,q,q,q,q,q),A.aL,!0,q,!0,q,!1,q,A.d7,q,q,q,q,A.w3,q,q,q,1,q,q,!1,"\u2022",q,new B.aHV(p),q,q,q,!1,q,q,!1,q,!0,q,A.cr,q,q,q,q,q,q,q,q,q,q,q,q,!0,A.aQ,q,A.ez,q,q,q,q),B.oI(q,A.dc,!1,q,!0,A.Z,q,B.rF(),q,q,q,q,q,q,2,B.jh(q,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,q,!0,new B.cq(4,B.a5(12),A.e8),q,q,q,q,q,A.D,!0,q,q,q,q,new B.cq(4,B.a5(12),A.hP),q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,A.lb,"Eenheid (mg, ml, stuks)",!0,!0,!1,q,q,q,q,q,q,q,q,q,q,q,q,q,q),A.aL,!0,q,!0,q,!1,q,A.d7,q,q,q,q,q,q,q,q,1,q,q,!1,"\u2022",q,new B.aHW(p),q,q,q,!1,q,q,!1,q,!0,q,A.cr,q,q,q,q,q,q,q,q,q,q,q,q,!0,A.aQ,q,A.ez,q,q,q,q),A.bk,B.bu(B.b([A.bcd,A.W7,B.aT_(A.R,new B.aHX(p,b),p.e)],o),A.S,A.M,A.L,0,q)],o)
 if(p.e){s=p.d
 r=s==null
 s=r?"Selecteer tijd":A.t.bW(A.q.j(s.a),2,"0")+":"+A.t.bW(A.q.j(s.b),2,"0")
 n.push(B.h3(!1,q,!0,B.aXK(q,B.a2(s,q,q,q,q,B.aK(q,q,r?A.e_:A.J,q,q,q,q,q,q,q,q,q,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),A.a66,!1,!1,!1,!1,q,q),q,!0,q,q,q,q,q,q,q,q,q,q,q,new B.aHY(p,a,b),q,q,q,q))}n=B.lu(B.b2(n,A.S,A.M,A.ba,0,A.W),q,q,q,A.aJ)
-return B.rM(B.b([B.eL(A.bc7,new B.aHZ(a),q),B.iy(A.bbE,new B.aI_(p,this.b,a),q)],o),n,q,A.bcf)},
+return B.rM(B.b([B.eL(A.bc8,new B.aHZ(a),q),B.iy(A.bbE,new B.aI_(p,this.b,a),q)],o),n,q,A.bcg)},
 $S:686}
 B.aHU.prototype={
 $1(a){return this.a.a=a},
@@ -114055,7 +114055,7 @@ f=o.z?1:0
 s=9
 return B.q(m.At(B.a9(["date",l,"stemming_hoog",k,"stemming_laag",i,"gesplitste_stemming",j,"stemmingsomslagen",h,"ontstemde_manie",g,"daglicht",f,"sociale_contacten",o.Q],t.N,t.z)),$async$xO)
 case 9:m=o.c
-if(m!=null)m.a7(t.q).f.dk(B.dB(null,null,null,A.R,A.b6,A.Z,null,A.bcl,null,A.h3,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
+if(m!=null)m.a7(t.q).f.dk(B.dB(null,null,null,A.R,A.b6,A.Z,null,A.bcm,null,A.h3,null,null,null,null,null,null,null,new B.bg(B.a5(10),A.Q),null,null))
 q=1
 s=5
 break
@@ -114099,7 +114099,7 @@ B.fY().$1("MoodScreen build error: "+B.k(s))
 B.fY().$1("Stack: "+B.k(r))
 q=B.hV(B.jL(o,o,o,o,o,A.bbU),o,B.cp(B.b2(B.b([A.a5J,A.bk,B.a2("Fout: "+B.k(s),o,o,o,o,A.WG,o,o,o)],t.p),A.S,A.bK,A.L,0,A.W),o,o),o)
 return q}},
-ai4(a){var s,r,q,p,o,n,m=this,l=null,k=t.p,j=B.jL(B.b([B.eL(A.bcp,m.gau7(),l)],k),A.R,0,A.dS,l,A.bcv)
+ai4(a){var s,r,q,p,o,n,m=this,l=null,k=t.p,j=B.jL(B.b([B.eL(A.bcq,m.gau7(),l)],k),A.R,0,A.dS,l,A.bcv)
 if(m.as)k=B.cp(B.nr(l,A.R,l,l,l,l,l,l,l,l),l,l)
 else{s=B.aT(l,B.aey(m.d,m.gatm()),A.I,A.D,l,l,l,l,l,l,l,l,l,l)
 r=m.e
@@ -114116,7 +114116,7 @@ r.push(A.bh)
 q=B.a5(12)
 p=B.it(A.da,1)
 o=B.aT(l,A.a5I,A.I,l,l,new B.b0(A.cL.bt(0.1),l,l,B.a5(10),l,l,A.a4),l,40,l,l,l,l,l,40)
-n=B.c5(B.b2(B.b([A.bc5,B.a2("Aantal plotselinge grote veranderingen (30+ punten)",l,l,l,l,B.aK(l,l,A.bd,l,l,l,l,l,l,l,l,12,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l,l)],k),A.ay,A.M,A.L,0,A.W),1)
+n=B.c5(B.b2(B.b([A.bc6,B.a2("Aantal plotselinge grote veranderingen (30+ punten)",l,l,l,l,B.aK(l,l,A.bd,l,l,l,l,l,l,l,l,12,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l,l)],k),A.ay,A.M,A.L,0,A.W),1)
 r.push(B.aT(l,B.bu(B.b([o,A.ce,n,B.bu(B.b([m.V3(A.to,m.w>0?new B.aIr(m):l),B.aT(A.aO,B.a2(""+m.w,l,l,l,l,A.WJ,l,l,l),A.I,l,l,l,l,l,l,l,l,l,l,36),m.Jy(A.k0,new B.aIs(m),!0)],k),A.S,A.M,A.ba,0,l)],k),A.S,A.M,A.L,0,l),A.I,l,l,new B.b0(A.D,l,p,q,l,l,A.a4),l,l,l,l,A.cq,l,l,l))
 r.push(A.bh)
 q=B.a5(12)
@@ -114293,7 +114293,7 @@ s=2
 return B.q(B.b2o(A.fi,new B.aLk(l,q,a,b,m),k,t.z),$async$Dl)
 case 2:return B.z(null,r)}})
 return B.A($async$Dl,r)},
-J(a){var s,r,q=this,p=null,o=B.jL(p,A.R,0,A.dS,p,A.bcd)
+J(a){var s,r,q=this,p=null,o=B.jL(p,A.R,0,A.dS,p,A.bce)
 if(q.e)s=B.cp(B.nr(p,A.R,p,p,p,p,p,p,p,p),p,p)
 else{s=q.f
 r=t.p
@@ -114888,7 +114888,7 @@ p=B.b([A.R,A.R.bt(0.8)],t.t_)
 l=B.a5(20)
 k=B.b([new B.bn(0,A.am,A.R.bt(0.3),A.p9,12)],t.V)
 j=t.p
-s=B.b([A.bci,A.bk,B.bu(B.b([B.c5(f.JF("Gemiddeld",A.n.aa(d/s,1)+" kg"),1),B.c5(f.JF("Min",A.n.aa(b,1)+" kg"),1),B.c5(f.JF("Max",A.n.aa(a,1)+" kg"),1)],j),A.S,A.M,A.L,0,e)],j)
+s=B.b([A.bcj,A.bk,B.bu(B.b([B.c5(f.JF("Gemiddeld",A.n.aa(d/s,1)+" kg"),1),B.c5(f.JF("Min",A.n.aa(b,1)+" kg"),1),B.c5(f.JF("Max",A.n.aa(a,1)+" kg"),1)],j),A.S,A.M,A.L,0,e)],j)
 if(m!=null){d=A.D.bt(0.2)
 i=B.a5(12)
 h=B.ca(m<=0?A.a5c:A.a5d,A.D,e,20)
@@ -114932,7 +114932,7 @@ B.cI(r.b,!1).dB(p)}},
 $S:0}
 B.aNU.prototype={
 $1(a){var s=null,r=B.a5(20),q=this.a,p=this.b,o=t.p,n=B.b2(B.b([B.oI(s,A.dc,!1,s,!0,A.Z,s,B.rF(),q,s,s,s,s,s,2,B.jh(s,new B.cq(4,B.a5(12),A.eH),s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"Bijv. 101.5",s,s,s,s,s,s,s,s,"Gewicht (kg) - gebruik punt (.)",!0,!0,!1,s,A.zN,s,s,s,s,s,s,s,s,s,s,s,s),A.aL,!0,s,!0,s,!1,s,A.d7,s,s,s,s,A.Wv,s,s,s,1,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,A.cr,s,s,s,s,s,s,s,s,s,s,s,s,!0,A.aQ,s,A.ez,s,s,s,s),A.bh,B.oI(s,A.dc,!1,s,!0,A.Z,s,B.rF(),p,s,s,s,s,s,2,B.jh(s,new B.cq(4,B.a5(12),A.eH),s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"Notities (optioneel)",!0,!0,!1,s,A.zO,s,s,s,s,s,s,s,s,s,s,s,s),A.aL,!0,s,!0,s,!1,s,A.d7,s,s,s,s,s,s,s,s,2,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,A.cr,s,s,s,s,s,s,s,s,s,s,s,s,!0,A.aQ,s,A.ez,s,s,s,s)],o),A.S,A.M,A.ba,0,A.W)
-return B.rM(B.b([B.eL(A.j_,new B.aNN(a),s),B.iy(A.WM,new B.aNO(q,a,p),B.hJ(s,s,A.R,s,s,s,s,s,s,s,s,s,s,s,new B.bg(B.a5(12),A.Q),s,s,s,s,s))],o),n,new B.bg(r,A.Q),A.bcb)},
+return B.rM(B.b([B.eL(A.j_,new B.aNN(a),s),B.iy(A.WM,new B.aNO(q,a,p),B.hJ(s,s,A.R,s,s,s,s,s,s,s,s,s,s,s,new B.bg(B.a5(12),A.Q),s,s,s,s,s))],o),n,new B.bg(r,A.Q),A.bcc)},
 $S:55}
 B.aNN.prototype={
 $0(){B.cI(this.a,!1).dB(null)
@@ -120143,15 +120143,15 @@ A.M=new B.q8(0,"start")
 A.L=new B.UP(1,"max")
 A.W=new B.Zt(1,"down")
 A.w7=new B.u(!0,null,null,null,null,null,14,A.bX,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-A.bco=new B.b4("Daglicht",null,A.w7,null,null,null,null,null,null,null,null)
+A.bcp=new B.b4("Daglicht",null,A.w7,null,null,null,null,null,null,null,null)
 A.Wy=new B.u(!0,A.bd,null,null,null,null,12,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 A.bbC=new B.b4("Vandaag buiten geweest",null,A.Wy,null,null,null,null,null,null,null,null)
-A.aPd=s([A.bco,A.bbC],t.p)
+A.aPd=s([A.bcp,A.bbC],t.p)
 A.a2A=new B.xt(A.aJ,A.M,A.L,A.ay,null,A.W,null,0,A.aPd,null)
 A.a4c=new B.jW(1,A.h8,A.a2A,null)
-A.bcm=new B.b4("Ontstemde manie",null,A.w7,null,null,null,null,null,null,null,null)
+A.bcn=new B.b4("Ontstemde manie",null,A.w7,null,null,null,null,null,null,null,null)
 A.bbN=new B.b4("Manisch maar ongelukkig/irritant",null,A.Wy,null,null,null,null,null,null,null,null)
-A.aVY=s([A.bcm,A.bbN],t.p)
+A.aVY=s([A.bcn,A.bbN],t.p)
 A.a2z=new B.xt(A.aJ,A.M,A.L,A.ay,null,A.W,null,0,A.aVY,null)
 A.a4d=new B.jW(1,A.h8,A.a2z,null)
 A.bfe=new B.a1a(null)
@@ -127196,45 +127196,45 @@ A.bbX=new B.b4("Gewicht bewerken",null,null,null,null,null,null,null,null,null,n
 A.bbY=new B.b4("Wakker gelegen",null,A.w6,null,null,null,null,null,null,null,null)
 A.bbZ=new B.b4("Kon inname niet bijwerken. Probeer opnieuw.",null,null,null,null,null,null,null,null,null,null)
 A.bc_=new B.b4("Gewicht",null,A.iY,null,null,null,null,null,null,null,null)
-A.bc0=new B.b4("Kopieer Rapport",null,null,null,null,null,null,null,null,null,null)
-A.bc1=new B.b4("Afspraak verwijderen?",null,null,null,null,null,null,null,null,null,null)
-A.bc2=new B.b4("Inzichten & Patronen",null,A.iY,null,null,null,null,null,null,null,null)
-A.bc3=new B.b4("Medicatie Schema",null,A.eB,null,null,null,null,null,null,null,null)
-A.bc4=new B.b4("App Resetten",null,null,null,null,null,null,null,null,null,null)
+A.bc0=new B.b4("Gebeurtenis Toevoegen",null,A.iY,null,null,null,null,null,null,null,null)
+A.bc1=new B.b4("Kopieer Rapport",null,null,null,null,null,null,null,null,null,null)
+A.bc2=new B.b4("Afspraak verwijderen?",null,null,null,null,null,null,null,null,null,null)
+A.bc3=new B.b4("Inzichten & Patronen",null,A.iY,null,null,null,null,null,null,null,null)
+A.bc4=new B.b4("Medicatie Schema",null,A.eB,null,null,null,null,null,null,null,null)
+A.bc5=new B.b4("App Resetten",null,null,null,null,null,null,null,null,null,null)
 A.bak=new B.u(!0,A.D,null,null,null,null,16,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 A.WN=new B.b4("Annuleer",null,A.bak,null,null,null,null,null,null,null,null)
-A.bc5=new B.b4("Stemmingsomslagen",null,A.Wz,null,null,null,null,null,null,null,null)
-A.bc6=new B.b4("Activiteit & Slaap",null,A.eB,null,null,null,null,null,null,null,null)
+A.bc6=new B.b4("Stemmingsomslagen",null,A.Wz,null,null,null,null,null,null,null,null)
+A.bc7=new B.b4("Activiteit & Slaap",null,A.eB,null,null,null,null,null,null,null,null)
 A.j0=new B.b4("Opnieuw proberen",null,null,null,null,null,null,null,null,null,null)
-A.bc7=new B.b4("Annuleer",null,null,null,null,null,null,null,null,null,null)
-A.bc8=new B.b4("Kon database niet resetten.",null,null,null,null,null,null,null,null,null,null)
-A.bc9=new B.b4("Database resetten?",null,null,null,null,null,null,null,null,null,null)
-A.bca=new B.b4("Open Gemini",null,null,null,null,null,null,null,null,null,null)
-A.bcb=new B.b4("Gewicht toevoegen",null,null,null,null,null,null,null,null,null,null)
-A.bcc=new B.b4("Herinnering",null,null,null,null,null,null,null,null,null,null)
-A.bcd=new B.b4("Instellingen",null,A.eB,null,null,null,null,null,null,null,null)
-A.bce=new B.b4("Medicatie verwijderd",null,null,null,null,null,null,null,null,null,null)
-A.bcf=new B.b4("Nieuwe Medicatie",null,null,null,null,null,null,null,null,null,null)
-A.bcg=new B.b4("Kon medicatie niet verwijderen. Probeer opnieuw.",null,null,null,null,null,null,null,null,null,null)
-A.bch=new B.b4("\u26a0\ufe0f Laatste Waarschuwing",null,null,null,null,null,null,null,null,null,null)
+A.bc8=new B.b4("Annuleer",null,null,null,null,null,null,null,null,null,null)
+A.bc9=new B.b4("Kon database niet resetten.",null,null,null,null,null,null,null,null,null,null)
+A.bca=new B.b4("Database resetten?",null,null,null,null,null,null,null,null,null,null)
+A.bcb=new B.b4("Open Gemini",null,null,null,null,null,null,null,null,null,null)
+A.bcc=new B.b4("Gewicht toevoegen",null,null,null,null,null,null,null,null,null,null)
+A.bcd=new B.b4("Herinnering",null,null,null,null,null,null,null,null,null,null)
+A.bce=new B.b4("Instellingen",null,A.eB,null,null,null,null,null,null,null,null)
+A.bcf=new B.b4("Medicatie verwijderd",null,null,null,null,null,null,null,null,null,null)
+A.bcg=new B.b4("Nieuwe Medicatie",null,null,null,null,null,null,null,null,null,null)
+A.bch=new B.b4("Kon medicatie niet verwijderen. Probeer opnieuw.",null,null,null,null,null,null,null,null,null,null)
+A.bci=new B.b4("\u26a0\ufe0f Laatste Waarschuwing",null,null,null,null,null,null,null,null,null,null)
 A.WO=new B.b4("Verwijderen",null,A.eA,null,null,null,null,null,null,null,null)
-A.bci=new B.b4("Statistieken",null,A.WK,null,null,null,null,null,null,null,null)
-A.bcj=new B.b4("Nieuwe afspraak",null,A.eA,null,null,null,null,null,null,null,null)
+A.bcj=new B.b4("Statistieken",null,A.WK,null,null,null,null,null,null,null,null)
+A.bck=new B.b4("Nieuwe afspraak",null,A.eA,null,null,null,null,null,null,null,null)
 A.WP=new B.b4("",null,null,null,null,null,null,null,null,null,null)
 A.b72=new B.u(!0,A.aT,null,null,null,null,16,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-A.bck=new B.b4("SRT Tracker",null,A.b72,null,null,null,null,null,null,null,null)
-A.bcl=new B.b4("Opgeslagen!",null,null,null,null,null,null,null,null,null,null)
+A.bcl=new B.b4("SRT Tracker",null,A.b72,null,null,null,null,null,null,null,null)
+A.bcm=new B.b4("Opgeslagen!",null,null,null,null,null,null,null,null,null,null)
 A.b8L=new B.u(!0,null,null,null,null,null,16,A.bX,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 A.WQ=new B.b4("Opslaan",null,A.b8L,null,null,null,null,null,null,null,null)
 A.bb_=new B.u(!0,A.D,null,null,null,null,16,A.bX,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 A.WR=new B.b4("Klaar",null,A.bb_,null,null,null,null,null,null,null,null)
-A.bcn=new B.b4("Je kunt geen activiteiten in de toekomst loggen",null,null,null,null,null,null,null,null,null,null)
-A.bcp=new B.b4("Opslaan",null,A.eB,null,null,null,null,null,null,null,null)
-A.bcq=new B.b4("PIN Vergeten?",null,null,null,null,null,null,null,null,null,null)
-A.bcr=new B.b4("Kon activiteit niet opslaan. Probeer opnieuw.",null,null,null,null,null,null,null,null,null,null)
-A.bcs=new B.b4("Dit wist ALLE data inclusief medicatie, stemmingen, en instellingen. Dit kan niet ongedaan worden gemaakt.",null,null,null,null,null,null,null,null,null,null)
-A.bct=new B.b4("Ja, reset alles",null,A.eA,null,null,null,null,null,null,null,null)
-A.bcu=new B.b4("Log Toevoegen",null,A.iY,null,null,null,null,null,null,null,null)
+A.bco=new B.b4("Je kunt geen activiteiten in de toekomst loggen",null,null,null,null,null,null,null,null,null,null)
+A.bcq=new B.b4("Opslaan",null,A.eB,null,null,null,null,null,null,null,null)
+A.bcr=new B.b4("PIN Vergeten?",null,null,null,null,null,null,null,null,null,null)
+A.bcs=new B.b4("Kon activiteit niet opslaan. Probeer opnieuw.",null,null,null,null,null,null,null,null,null,null)
+A.bct=new B.b4("Dit wist ALLE data inclusief medicatie, stemmingen, en instellingen. Dit kan niet ongedaan worden gemaakt.",null,null,null,null,null,null,null,null,null,null)
+A.bcu=new B.b4("Ja, reset alles",null,A.eA,null,null,null,null,null,null,null,null)
 A.bcv=new B.b4("Life Chart",null,A.eB,null,null,null,null,null,null,null,null)
 A.WS=new B.Z4(0,"system")
 A.bcw=new B.Z4(2,"dark")
