@@ -405,10 +405,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, color: AppTheme.primaryTeal),
-        label: Text(label, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
+        label: Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16)),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          side: BorderSide(color: AppTheme.primaryTeal, width: 1.5),
+          side: BorderSide(color: AppTheme.primaryTeal, width: 2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           backgroundColor: Colors.white,
         ),
