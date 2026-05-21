@@ -98,9 +98,15 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           }
           debugPrint('Delete confirmed for appointment ID: $appointmentId');
           if (appointmentId > 0) {
+            debugPrint('Calling deleteMedicalAppointment with id: $appointmentId');
             await db.deleteMedicalAppointment(appointmentId);
-            await NotificationHelper.instance.cancelAppointmentReminder(appointmentId);
+            debugPrint('Delete completed, reloading appointments');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Afspraak verwijderd!'), backgroundColor: Colors.green),
+            );
             _loadAppointments();
+          } else {
+            debugPrint('Appointment ID was 0 or invalid, cannot delete');
           }
         } catch (e) {
           debugPrint('Delete error: $e');
