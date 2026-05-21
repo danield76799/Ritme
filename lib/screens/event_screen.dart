@@ -88,21 +88,36 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
           children: [
             Text(
               'Beschrijf een belangrijke gebeurtenis van vandaag:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
             ),
             SizedBox(height: 12),
             TextField(
               controller: _omschrijvingController,
               maxLines: 3,
+              style: TextStyle(fontSize: 16, color: Colors.black),
               decoration: InputDecoration(
                 hintText: 'Bijv. Goed gesprek gehad met...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                hintStyle: TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.black, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.black, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
+                ),
               ),
             ),
             SizedBox(height: 24),
             Text(
               'Invloed op stemming:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
             ),
             SizedBox(height: 8),
             Slider(
