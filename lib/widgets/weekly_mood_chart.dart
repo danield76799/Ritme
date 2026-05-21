@@ -71,9 +71,9 @@ class WeeklyMoodChart extends StatelessWidget {
     }
 
     return Container(
-      height: 180,
+      height: 140,
       padding: const EdgeInsets.all(16),
-      decoration: AppTheme.cardDecoration((
+      decoration: AppTheme.cardDecoration(
         color: Theme.of(context).brightness == Brightness.dark 
             ? AppTheme.darkCard 
             : Colors.white,
