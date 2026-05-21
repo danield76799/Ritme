@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
 import '../services/backup_service.dart';
+import '../services/notification_helper.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 
@@ -261,6 +262,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildBackupButtons() {
     return Column(
       children: [
+        // Test notification button
+        _buildActionButton(
+          'Test notificatie',
+          Icons.notifications_active,
+          () async {
+            try {
+              await NotificationHelper.instance.showTestNotification();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Test notificatie verzonden! Check je notificatie paneel.'),
+                    backgroundColor: Colors.green[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Notificatie error: $e'),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            }
+          },
+        ),
+        const SizedBox(height: 8),
         _buildActionButton(
           'Backup maken',
           Icons.backup,
