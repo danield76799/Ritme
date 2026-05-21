@@ -87,6 +87,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       // Handle delete
       if (result != null && result.containsKey('_delete') && result['_delete'] == true) {
         final id = result['id'] as int;
+        debugPrint('Delete confirmed for appointment ID: $id');
         await db.deleteMedicalAppointment(id);
         await NotificationHelper.instance.cancelAppointmentReminder(id);
         _loadAppointments();
@@ -94,6 +95,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       }
 
       if (result != null) {
+        debugPrint('Updating appointment: ${appointment['id']} with data: $result');
         await db.updateMedicalAppointment(appointment['id'], result);
         
         // Reschedule notification
