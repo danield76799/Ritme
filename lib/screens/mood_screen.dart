@@ -252,7 +252,7 @@ class _MoodScreenState extends State<MoodScreen> {
                               Switch(
                                 value: _gesplitsteStemming,
                                 onChanged: (value) => setState(() => _gesplitsteStemming = value),
-                                activeColor: AppTheme.primaryTeal,
+                                activeColor: Colors.blue,
                               ),
                             ],
                           ),
@@ -273,10 +273,10 @@ class _MoodScreenState extends State<MoodScreen> {
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.1),
+                                  color: Colors.blue.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.warning_amber, color: Colors.red, size: 20),
+                                child: const Icon(Icons.warning_amber, color: Colors.blue, size: 20),
                               ),
                               const SizedBox(width: 12),
                               const Expanded(
@@ -318,10 +318,10 @@ class _MoodScreenState extends State<MoodScreen> {
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withValues(alpha: 0.1),
+                                  color: Colors.blue.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.swap_vert, color: Colors.orange, size: 20),
+                                child: const Icon(Icons.swap_vert, color: Colors.blue, size: 20),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
