@@ -21,6 +21,8 @@ class _MoodScreenState extends State<MoodScreen> {
   bool _ontstemdeManie = false;
   // double _urenSlaap removed - now calculated from sleep tracking
   double _gewicht = 0.0;
+  bool _daglicht = false; // Buiten geweest vandaag
+  int _socialeContacten = 0; // Aantal sociale contacten
   bool _isLoading = true;
 
   String get _formattedDate {
@@ -61,6 +63,8 @@ class _MoodScreenState extends State<MoodScreen> {
         
         _stemmingsOmslagen = log['stemmingsomslagen'] as int? ?? 0;
         _ontstemdeManie = log['ontstemde_manie'] as bool? ?? false;
+        _daglicht = (log['daglicht'] as int? ?? 0) == 1;
+        _socialeContacten = log['sociale_contacten'] as int? ?? 0;
         // _urenSlaap removed - now calculated from sleep tracking
       } else {
         _stemmingHoog = 50.0;
@@ -68,6 +72,8 @@ class _MoodScreenState extends State<MoodScreen> {
         _gesplitsteStemming = false;
         _stemmingsOmslagen = 0;
         _ontstemdeManie = false;
+        _daglicht = false;
+        _socialeContacten = 0;
         // _urenSlaap removed - now calculated from sleep tracking
       }
     } catch (e, stack) {
@@ -96,6 +102,8 @@ class _MoodScreenState extends State<MoodScreen> {
         'gesplitste_stemming': _gesplitsteStemming,
         'stemmingsomslagen': _stemmingsOmslagen,
         'ontstemde_manie': _ontstemdeManie,
+        'daglicht': _daglicht ? 1 : 0,
+        'sociale_contacten': _socialeContacten,
         // 'uren_slaap' removed - now calculated from sleep tracking
       });
 
@@ -337,6 +345,99 @@ class _MoodScreenState extends State<MoodScreen> {
                                   _buildCounterBtn(Icons.remove, _stemmingsOmslagen > 0 ? () => _veranderOmslagen(-1) : null),
                                   Container(width: 36, alignment: Alignment.center, child: Text('$_stemmingsOmslagen', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
                                   _buildCounterBtn(Icons.add, () => _veranderOmslagen(1), isPrimary: true),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        
+                        // Daglicht
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade100),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.wb_sunny, color: Colors.amber, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Daglicht',
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                    ),
+                                    Text(
+                                      'Vandaag buiten geweest',
+                                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch(
+                                value: _daglicht,
+                                onChanged: (value) => setState(() => _daglicht = value),
+                                activeColor: AppTheme.primaryTeal,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        
+                        // Sociale contacten
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade100),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.people, color: Colors.blue, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Sociale contacten',
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
+                                    ),
+                                    Text(
+                                      'Aantal sociale interacties vandaag',
+                                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildCounterBtn(Icons.remove, _socialeContacten > 0 ? () => setState(() => _socialeContacten--) : null),
+                                  Container(width: 36, alignment: Alignment.center, child: Text('$_socialeContacten', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+                                  _buildCounterBtn(Icons.add, () => setState(() => _socialeContacten++), isPrimary: true),
                                 ],
                               ),
                             ],

@@ -52,7 +52,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
