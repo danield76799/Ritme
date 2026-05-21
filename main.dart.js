@@ -112985,7 +112985,7 @@ j=h.r
 j=h.JB(A.dZ,A.ms,"Ritme stabiliteit","%",j>0?A.q.j(A.n.ap(j)):"-")
 i=h.w
 return B.hX(p,A.cE,B.ve(!0,new B.H1(B.ls(B.b2(B.b([o,A.W1,n,A.bj,m,A.W1,l,A.bj,k,A.bg,j,A.bg,h.JB(A.dC,A.a4P,"Activiteiten deze week","",i>0?A.q.j(i):"-"),A.e0,B.bu(B.b([B.aT(g,g,A.I,g,g,new B.b0(A.S,g,g,B.ac(2),g,g,A.a3),g,24,g,g,g,g,g,4),A.ce,B.a2("Stemming Trend",g,g,g,g,B.aL(g,g,A.bQ,g,g,g,g,g,g,g,g,20,g,g,A.aA,g,g,!0,g,g,g,g,g,g,g,g),g,g,g)],r),A.R,A.M,A.L,0,g),A.bj,new B.ZF(h.y,g),A.bg,h.tz(a,A.zC,A.QJ,"/insights","Inzichten & Patronen"),A.b5S],r),A.ay,A.M,A.L,0,A.W),A.bF,A.jl,g,A.aJ),h.gajI(),A.S,g),A.bt,!0),B.aRL(A.S,A.tq,A.bcA,new B.aCU(a)))},
-Vf(a,b,c){var s=null,r=A.D.bt(0.2),q=B.ac(12)
+Vf(a,b,c){var s=null,r=A.D.bt(0.35),q=B.ac(12)
 return B.aT(s,B.bu(B.b([B.ca(a,A.D,s,18),A.b5N,B.a2(b+": "+c,s,s,s,s,A.baY,s,s,s)],t.p),A.R,A.M,A.bb,0,s),A.I,s,s,new B.b0(r,s,s,q,s,s,A.a3),s,s,s,s,A.ru,s,s,s)},
 tz(a,b,c,d,e){var s=null,r=B.ac(20),q=B.b([new B.bm(0,A.am,A.J.bt(0.05),A.fC,10)],t.V),p=c.bt(0.1)
 return B.md(s,B.aT(s,new B.aW(A.bF,B.b2(B.b([B.aT(s,B.ca(b,c,s,32),A.I,s,s,new B.b0(p,s,s,s,s,s,A.fU),s,s,s,s,A.yS,s,s,s),A.bg,B.a2(e,s,s,s,s,B.aL(s,s,A.bQ,s,s,s,s,s,s,s,s,16,s,s,A.aA,s,s,!0,s,s,s,s,s,s,s,s),A.bZ,s,s)],t.p),A.R,A.bK,A.L,0,A.W),s),A.I,s,s,new B.b0(A.D,s,s,r,q,s,A.a3),s,s,s,s,s,s,s,s),A.aL,!1,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,new B.aCL(a,d),s,s,s,s,s,s,!1,A.dD)},
