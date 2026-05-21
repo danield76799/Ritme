@@ -356,13 +356,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => Theme(
-          data: ThemeData.light().copyWith(
-            dialogBackgroundColor: Colors.white,
-            textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.black)),
-          ),
-          child: AlertDialog(
-            title: const Text('Nieuwe Medicatie', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+        builder: (context, setDialogState) {
+          return Theme(
+            data: ThemeData.light().copyWith(
+              dialogBackgroundColor: Colors.white,
+              textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.black)),
+            ),
+            child: AlertDialog(
+              title: const Text('Nieuwe Medicatie', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -506,7 +507,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
             ),
           ],
         ),
-      ),
+        );
+      },
     ),
   );
   }
