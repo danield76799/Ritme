@@ -209,7 +209,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 16, color: Colors.black),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -499,7 +499,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label,
                 style: const TextStyle(
                   fontSize: 16, 
-                  color: Color(0xFF333333), // Charcoal
+                  color: const Color(0xFF000000), // Charcoal
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -510,7 +510,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: const TextStyle(
                       fontSize: 16, 
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF333333), // Charcoal
+                      color: const Color(0xFF000000), // Charcoal
                     ),
                   ),
                   const SizedBox(width: 8),
