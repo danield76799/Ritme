@@ -106,7 +106,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
             daysOfWeek: [1, 2, 3, 4, 5, 6, 7], // Daily
           );
           
-          // Show confirmation to user
+          // Show immediate test notification to confirm it works
+          await NotificationHelper.instance.showTestNotification();
+          
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
