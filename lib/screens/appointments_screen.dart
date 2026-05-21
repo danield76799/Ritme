@@ -84,6 +84,15 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         builder: (context) => _AppointmentDialog(appointment: appointment),
       );
 
+      // Handle delete
+      if (result != null && result.containsKey('_delete') && result['_delete'] == true) {
+        final id = result['id'] as int;
+        await db.deleteMedicalAppointment(id);
+        await NotificationHelper.instance.cancelAppointmentReminder(id);
+        _loadAppointments();
+        return;
+      }
+
       if (result != null) {
         await db.updateMedicalAppointment(appointment['id'], result);
         
@@ -496,6 +505,63 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                     child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ],
+              ),
+              // Delete button for existing appointments
+              if (widget.appointment != null) ...[
+                const Spacer(),
+                TextButton(
+                  onPressed: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Afspraak verwijderen?'),
+                        content: const Text('Deze actie kan niet ongedaan worden.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Annuleren'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            child: const Text('Verwijderen'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true) {
+                      if (context.mounted) Navigator.pop(context, {'_delete': true, 'id': widget.appointment!['id']});
+                    }
+                  },
+                  child: const Text('Verwijderen', style: TextStyle(color: Colors.red, fontSize: 16)),
+                ),
+                const SizedBox(width: 12),
+              ],
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Annuleren', style: TextStyle(fontSize: 16)),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    Navigator.pop(context, {
+                      'title': _titleController.text,
+                      'doctor_name': _doctorController.text,
+                      'location': _locationController.text,
+                      'appointment_date': _dateController.text,
+                      'appointment_time': _timeController.text,
+                      'reminder_days': _reminderDays,
+                    });
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryTeal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ],
           ),
