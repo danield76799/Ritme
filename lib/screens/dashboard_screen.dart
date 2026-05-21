@@ -207,8 +207,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           ),
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              Navigator.pushNamed(context, '/settings');
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/settings');
+              // Reload settings when returning from settings screen
+              _loadData();
             },
             tooltip: 'Instellingen',
           ),
@@ -465,8 +467,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.pushNamed(context, '/event');
+        onPressed: () async {
+          await Navigator.pushNamed(context, '/event');
+          _loadData();
         },
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
@@ -507,7 +510,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     required String route,
   }) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, route),
+      onTap: () async {
+        await Navigator.pushNamed(context, route);
+        _loadData();
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -553,7 +559,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   Widget _buildMedicatieCard(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/medication'),
+      onTap: () async {
+        await Navigator.pushNamed(context, '/medication');
+        _loadData();
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
