@@ -149,7 +149,9 @@ class NotificationHelper {
         matchDateTimeComponents: DateTimeComponents.time,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
-      debugPrint('Dagelijkse herinnering gepland voor: $scheduledDate');
+      debugPrint('=== DAGELIJKSE HERINNERING GEPLAND ===');
+      debugPrint('Scheduled for: $scheduledDate');
+      debugPrint('Current device time: ${DateTime.now()}');
     } catch (e) {
       debugPrint('Herinnering planning error: $e');
     }
@@ -164,11 +166,15 @@ class NotificationHelper {
   }) async {
     if (kIsWeb) return;
 
+    debugPrint('=== SCHEDULE MEDICATION REMINDER ===');
+    debugPrint('Medication: $medicationName, Time: $time, Days: $daysOfWeek');
+
     try {
       // Parse time string (HH:MM)
       final parts = time.split(':');
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
+      debugPrint('Parsed time - Hour: $hour, Minute: $minute');
 
       // Cancel existing notifications for this medication
       await cancelMedicationReminder(medicationId);
