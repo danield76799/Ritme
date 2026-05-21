@@ -81,8 +81,10 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+      body: Container(
+        color: AppTheme.backgroundColor,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -161,6 +163,7 @@ class _GebeurtenisSchermState extends State<GebeurtenisScherm> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
