@@ -459,7 +459,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          _showNotImplemented('Nieuwe dagelijkse log');
+          Navigator.pushNamed(context, '/event');
         },
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
