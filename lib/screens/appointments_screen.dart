@@ -84,13 +84,20 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         builder: (context) => _AppointmentDialog(appointment: appointment),
       );
 
-      // Handle delete
+      // Handle delete - wrapped in try-catch to prevent main error
       if (result != null && result.containsKey('_delete') && result['_delete'] == true) {
-        final id = result['id'] as int;
-        debugPrint('Delete confirmed for appointment ID: $id');
-        await db.deleteMedicalAppointment(id);
-        await NotificationHelper.instance.cancelAppointmentReminder(id);
-        _loadAppointments();
+        try {
+          final id = result['id'] as int;
+          debugPrint('Delete confirmed for appointment ID: $id');
+          await db.deleteMedicalAppointment(id);
+          await NotificationHelper.instance.cancelAppointmentReminder(id);
+          _loadAppointments();
+        } catch (e) {
+          debugPrint('Delete error: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Kon afspraak niet verwijderen: $e'), backgroundColor: Colors.red),
+          );
+        }
         return;
       }
 
