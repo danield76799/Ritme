@@ -474,7 +474,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
-          'Log Toevoegen',
+          'Gebeurtenis Toevoegen',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
