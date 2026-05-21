@@ -168,7 +168,8 @@ class NotificationHelper {
 
       // Schedule for each day of the week
       for (final day in daysOfWeek) {
-        final notificationId = medicationId * 10 + day;
+        // Use smaller notification ID to prevent overflow
+        final notificationId = (medicationId * 10 + day) % 100000;
         
         final scheduledDate = _nextInstanceOfTime(hour, minute, day);
         
@@ -231,8 +232,10 @@ class NotificationHelper {
     
     try {
       // Cancel all notifications for this medication (up to 7 days)
+      // Use modulo to match the smaller IDs
+      final baseId = medicationId % 100000;
       for (int day = 1; day <= 7; day++) {
-        await _notifications.cancel(medicationId * 10 + day);
+        await _notifications.cancel((baseId * 10 + day) % 100000);
       }
       debugPrint('Medicatie herinneringen geannuleerd voor ID: $medicationId');
     } catch (e) {
