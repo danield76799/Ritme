@@ -249,8 +249,16 @@ class DatabaseHelper implements DatabaseRepository {
   Future<Map<String, dynamic>?> getSettings() async {
     // Use SharedPreferences for settings (reliable on Android)
     final prefs = await SharedPreferences.getInstance();
+    // Don't require username - just return what we have
     final username = prefs.getString('username');
     if (username == null || username.isEmpty) {
+      // Try to get from SQLite if SharedPreferences is empty
+      final dbSettings = await _getSettingsFromDb();
+      if (dbSettings != null) {
+        // Sync to SharedPreferences
+        await _syncSettingsToPrefs(dbSettings);
+        return dbSettings;
+      }
       return null;
     }
     return {
@@ -261,6 +269,42 @@ class DatabaseHelper implements DatabaseRepository {
       'target_werk': prefs.getString('target_werk') ?? '',
       'target_eten': prefs.getString('target_eten') ?? '',
     };
+  }
+  
+  Future<Map<String, dynamic>?> _getSettingsFromDb() async {
+    final db = await database;
+    final result = await db.query('settings', limit: 1);
+    if (result.isEmpty) return null;
+    return {
+      'username': result.first['username']?.toString() ?? '',
+      'target_opstaan': result.first['target_opstaan']?.toString() ?? '',
+      'target_slapen': result.first['target_slapen']?.toString() ?? '',
+      'target_contact': result.first['target_contact']?.toString() ?? '',
+      'target_werk': result.first['target_werk']?.toString() ?? '',
+      'target_eten': result.first['target_eten']?.toString() ?? '',
+    };
+  }
+  
+  Future<void> _syncSettingsToPrefs(Map<String, dynamic> settings) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (settings['username'] != null) {
+      await prefs.setString('username', settings['username'].toString());
+    }
+    if (settings['target_opstaan'] != null) {
+      await prefs.setString('target_opstaan', settings['target_opstaan'].toString());
+    }
+    if (settings['target_slapen'] != null) {
+      await prefs.setString('target_slapen', settings['target_slapen'].toString());
+    }
+    if (settings['target_contact'] != null) {
+      await prefs.setString('target_contact', settings['target_contact'].toString());
+    }
+    if (settings['target_werk'] != null) {
+      await prefs.setString('target_werk', settings['target_werk'].toString());
+    }
+    if (settings['target_eten'] != null) {
+      await prefs.setString('target_eten', settings['target_eten'].toString());
+    }
   }
 
   @override
@@ -280,6 +324,7 @@ class DatabaseHelper implements DatabaseRepository {
     final db = await database;
     // Get the first settings row (there should only be one)
     final existing = await db.query('settings', limit: 1);
+    int result;
     if (existing.isNotEmpty) {
       // Preserve the password_hash from the database
       final merged = Map<String, dynamic>.from(existing.first);
@@ -288,14 +333,17 @@ class DatabaseHelper implements DatabaseRepository {
       merged.addAll(settings);
       // Update by id to ensure we update the correct row
       final id = existing.first['id'] as int;
-      return await db.update('settings', merged, where: 'id = ?', whereArgs: [id]);
+      result = await db.update('settings', merged, where: 'id = ?', whereArgs: [id]);
     } else {
       // Insert new row - provide required fields with defaults
       final newRow = Map<String, dynamic>.from(settings);
       newRow['username'] = newRow['username'] ?? 'user';
       newRow['password_hash'] = newRow['password_hash'] ?? '';
-      return await db.insert('settings', newRow);
+      result = await db.insert('settings', newRow);
     }
+    // Also sync to SharedPreferences so getSettings() can find it
+    await _syncSettingsToPrefs(settings);
+    return result;
   }
 
   @override
