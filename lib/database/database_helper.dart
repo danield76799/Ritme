@@ -249,25 +249,43 @@ class DatabaseHelper implements DatabaseRepository {
   Future<Map<String, dynamic>?> getSettings() async {
     // Use SharedPreferences for settings (reliable on Android)
     final prefs = await SharedPreferences.getInstance();
-    // Don't require username - just return what we have
-    final username = prefs.getString('username');
-    if (username == null || username.isEmpty) {
-      // Try to get from SQLite if SharedPreferences is empty
+    
+    // Try to get username - if empty, fall back to DB
+    var username = prefs.getString('username') ?? '';
+    var targetOpstaan = prefs.getString('target_opstaan') ?? '';
+    var targetSlapen = prefs.getString('target_slapen') ?? '';
+    var targetContact = prefs.getString('target_contact') ?? '';
+    var targetWerk = prefs.getString('target_werk') ?? '';
+    var targetEten = prefs.getString('target_eten') ?? '';
+    
+    // If any critical field is empty, try to get from DB and sync
+    if (username.isEmpty || targetOpstaan.isEmpty || targetSlapen.isEmpty) {
       final dbSettings = await _getSettingsFromDb();
       if (dbSettings != null) {
         // Sync to SharedPreferences
         await _syncSettingsToPrefs(dbSettings);
-        return dbSettings;
+        
+        // Use DB values (they may be more up-to-date)
+        username = dbSettings['username']?.toString() ?? username;
+        targetOpstaan = dbSettings['target_opstaan']?.toString() ?? targetOpstaan;
+        targetSlapen = dbSettings['target_slapen']?.toString() ?? targetSlapen;
+        targetContact = dbSettings['target_contact']?.toString() ?? targetContact;
+        targetWerk = dbSettings['target_werk']?.toString() ?? targetWerk;
+        targetEten = dbSettings['target_eten']?.toString() ?? targetEten;
       }
+    }
+    
+    if (username.isEmpty) {
       return null;
     }
+    
     return {
       'username': username,
-      'target_opstaan': prefs.getString('target_opstaan') ?? '',
-      'target_slapen': prefs.getString('target_slapen') ?? '',
-      'target_contact': prefs.getString('target_contact') ?? '',
-      'target_werk': prefs.getString('target_werk') ?? '',
-      'target_eten': prefs.getString('target_eten') ?? '',
+      'target_opstaan': targetOpstaan,
+      'target_slapen': targetSlapen,
+      'target_contact': targetContact,
+      'target_werk': targetWerk,
+      'target_eten': targetEten,
     };
   }
   
@@ -347,6 +365,19 @@ class DatabaseHelper implements DatabaseRepository {
     if (updatedSettings != null) {
       await _syncSettingsToPrefs(updatedSettings);
     }
+    
+    // Also save individual fields directly to ensure they're persisted
+    final prefs = await SharedPreferences.getInstance();
+    if (settings['username'] != null) {
+      await prefs.setString('username', settings['username'].toString());
+    }
+    if (settings['target_opstaan'] != null) {
+      await prefs.setString('target_opstaan', settings['target_opstaan'].toString());
+    }
+    if (settings['target_slapen'] != null) {
+      await prefs.setString('target_slapen', settings['target_slapen'].toString());
+    }
+    
     return result;
   }
 
