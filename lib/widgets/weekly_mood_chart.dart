@@ -89,7 +89,8 @@ class WeeklyMoodChart extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Expanded(
+          SizedBox(
+            height: 150,
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
