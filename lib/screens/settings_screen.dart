@@ -235,8 +235,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildTimeField('Eerste contact', 'target_contact'),
           _buildTimeField('Werk / Hobby', 'target_werk'),
           _buildTimeField('Avondeten', 'target_eten'),
-          _buildSectionHeader('Backup & Herstel'),
-          _buildBackupButtons(),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
@@ -251,6 +249,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
+          const SizedBox(height: 24),
+          _buildSectionHeader('Backup & Herstel'),
+          _buildBackupButtons(),
+          const SizedBox(height: 32),
         ],
       ),
     );
