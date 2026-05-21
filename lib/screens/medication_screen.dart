@@ -304,16 +304,67 @@ class _MedicationScreenState extends State<MedicationScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                  decoration: const InputDecoration(labelText: 'Naam (bijv. Lithium)'),
+                  decoration: InputDecoration(
+                    labelText: 'Naam (bijv. Lithium)',
+                    labelStyle: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+                    ),
+                  ),
                   onChanged: (v) => name = v,
                 ),
                 TextField(
-                  decoration: const InputDecoration(labelText: 'Dosering'),
+                  decoration: InputDecoration(
+                    labelText: 'Dosering',
+                    labelStyle: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+                    ),
+                  ),
                   keyboardType: TextInputType.number,
                   onChanged: (v) => dosage = double.tryParse(v) ?? 0,
                 ),
                 TextField(
-                  decoration: const InputDecoration(labelText: 'Eenheid (mg, ml, stuks)'),
+                  decoration: InputDecoration(
+                    labelText: 'Eenheid (mg, ml, stuks)',
+                    labelStyle: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+                    ),
+                  ),
                   onChanged: (v) => unit = v,
                 ),
                 const SizedBox(height: 16),
