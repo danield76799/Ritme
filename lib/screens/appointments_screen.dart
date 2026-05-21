@@ -321,7 +321,9 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                       _showDeleteConfirmation(appointment['id']);
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(12),
+                      width: 48,
+                      height: 48,
+                      alignment: Alignment.center,
                       child: const Icon(Icons.delete, size: 24, color: Colors.red),
                     ),
                   ),
