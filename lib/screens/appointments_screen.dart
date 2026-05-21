@@ -104,7 +104,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Afspraak verwijderd!'), backgroundColor: Colors.green),
             );
-            _loadAppointments();
+            // Reload appointments after a small delay to ensure dialog is closed
+            await Future.delayed(const Duration(milliseconds: 100));
+            await _loadAppointments();
+            debugPrint('Reload completed');
           } else {
             debugPrint('Appointment ID was 0 or invalid, cannot delete');
           }
