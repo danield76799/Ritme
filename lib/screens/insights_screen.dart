@@ -354,7 +354,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _bouwStatCard('💤', 'Gem. Slaap', '${(_weeklyStats['gemiddeldeSlaap'] ?? 0).toStringAsFixed(1)} uur', Colors.blue)),
+                      Expanded(child: _bouwStatCard('💤', 'Gem. Slaap', _formatSlaapUren((_weeklyStats['gemiddeldeSlaap'] ?? 0).toDouble()), Colors.blue)),
                       const SizedBox(width: 12),
                       Expanded(child: _bouwStatCard('😊', 'Gem. Stemming', '${(_weeklyStats['gemiddeldeStemming'] ?? 0).toStringAsFixed(1)}', Colors.orange)),
                     ],
@@ -538,6 +538,13 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
               ),
             ),
     );
+  }
+
+  String _formatSlaapUren(double uren) {
+    if (uren <= 0) return '0u 0m';
+    final uur = uren.floor();
+    final minuten = ((uren - uur) * 60).round();
+    return '${uur}u ${minuten}m';
   }
 
   Widget _bouwStatCard(String emoji, String label, String waarde, Color kleur) {
