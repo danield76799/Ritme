@@ -109,52 +109,53 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     }
   }
 
-  Future<void> _deleteAppointment(int id) async {
-    debugPrint('=== DELETE APPOINTMENT CALLED ===');
+  Future<void> _showDeleteConfirmation(int id) async {
+    debugPrint('=== SHOW DELETE CONFIRMATION ===');
     debugPrint('ID to delete: $id');
     
-    // Show visual feedback that delete was tapped
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Verwijderen van ID $id...'), duration: const Duration(seconds: 2)),
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Afspraak verwijderen?'),
+        content: const Text('Deze actie kan niet ongedaan worden.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuleren'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
-    
-    try {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Afspraak verwijderen?'),
-          content: const Text('Deze actie kan niet ongedaan worden.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuleren'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
-      );
 
-      if (confirmed == true) {
-        // Cancel any scheduled notification
-        await NotificationHelper.instance.cancelAppointmentReminder(id);
-        
-        // Delete from database
-        await db.deleteMedicalAppointment(id);
-        
-        // Reload appointments and check remaining notifications
-        _loadAppointments();
-        
-        // Show confirmation
-        if (mounted) {
-          final pending = await NotificationHelper.instance.getPendingNotificationCount();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Afspraak verwijderd. Nog $pending notificaties pending.')),
-          );
-        }
+    if (confirmed == true) {
+      await _performDelete(id);
+    }
+  }
+
+  Future<void> _performDelete(int id) async {
+    debugPrint('=== PERFORM DELETE ===');
+    debugPrint('ID: $id');
+    try {
+      // Cancel any scheduled notification
+      await NotificationHelper.instance.cancelAppointmentReminder(id);
+      
+      // Delete from database
+      await db.deleteMedicalAppointment(id);
+      
+      // Reload appointments and check remaining notifications
+      _loadAppointments();
+      
+      // Show confirmation
+      if (mounted) {
+        final pending = await NotificationHelper.instance.getPendingNotificationCount();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Afspraak verwijderd. Nog $pending notificaties pending.')),
+        );
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to delete appointment', error: e, stackTrace: stackTrace);
@@ -300,18 +301,20 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, size: 24),
-                    onPressed: () => _editAppointment(appointment),
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                  GestureDetector(
+                    onTap: () => _editAppointment(appointment),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(Icons.edit, size: 24, color: Colors.blue),
+                    ),
                   ),
                   const SizedBox(height: 4),
-                  IconButton(
-                    icon: const Icon(Icons.delete, size: 24, color: Colors.red),
-                    onPressed: () => _deleteAppointment(appointment['id']),
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                  GestureDetector(
+                    onTap: () => _showDeleteConfirmation(appointment['id']),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(Icons.delete, size: 24, color: Colors.red),
+                    ),
                   ),
                 ],
               ),
