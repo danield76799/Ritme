@@ -19,7 +19,7 @@ class _MoodScreenState extends State<MoodScreen> {
   bool _gesplitsteStemming = false; // Of er een gesplitste stemming is
   int _stemmingsOmslagen = 0;
   bool _ontstemdeManie = false;
-  double _urenSlaap = 7.0;
+  // double _urenSlaap removed - now calculated from sleep tracking
   double _gewicht = 0.0;
   bool _isLoading = true;
 
@@ -61,14 +61,14 @@ class _MoodScreenState extends State<MoodScreen> {
         
         _stemmingsOmslagen = log['stemmingsomslagen'] as int? ?? 0;
         _ontstemdeManie = log['ontstemde_manie'] as bool? ?? false;
-        _urenSlaap = log['uren_slaap'] as double? ?? 7.0;
+        // _urenSlaap removed - now calculated from sleep tracking
       } else {
         _stemmingHoog = 50.0;
         _stemmingLaag = 50.0;
         _gesplitsteStemming = false;
         _stemmingsOmslagen = 0;
         _ontstemdeManie = false;
-        _urenSlaap = 7.0;
+        // _urenSlaap removed - now calculated from sleep tracking
       }
     } catch (e, stack) {
       debugPrint('MoodScreen _loadData error: $e');
@@ -96,7 +96,7 @@ class _MoodScreenState extends State<MoodScreen> {
         'gesplitste_stemming': _gesplitsteStemming,
         'stemmingsomslagen': _stemmingsOmslagen,
         'ontstemde_manie': _ontstemdeManie,
-        'uren_slaap': _urenSlaap,
+        // 'uren_slaap' removed - now calculated from sleep tracking
       });
 
       if (mounted) {
@@ -293,17 +293,6 @@ class _MoodScreenState extends State<MoodScreen> {
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        
-                        // Uren slaap - Time picker
-                        _buildTimePickerCard(
-                          title: 'Uren slaap vannacht',
-                          subtitle: 'Dutjes overdag tellen niet mee',
-                          value: _urenSlaap,
-                          onChanged: (value) => setState(() => _urenSlaap = value),
-                          icon: Icons.bedtime,
-                          iconColor: Colors.indigo,
                         ),
                         const SizedBox(height: 12),
                         
