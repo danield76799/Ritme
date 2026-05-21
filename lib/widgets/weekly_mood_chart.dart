@@ -63,10 +63,10 @@ class WeeklyMoodChart extends StatelessWidget {
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: 10,
+                  horizontalInterval: 20,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withOpacity(0.15),
                       strokeWidth: 1,
                     );
                   },
@@ -113,13 +113,13 @@ class WeeklyMoodChart extends StatelessWidget {
                     spots: spots,
                     isCurved: true,
                     color: AppTheme.primaryTeal,
-                    barWidth: 3,
+                    barWidth: 4,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
                       show: true,
                       getDotPainter: (spot, percent, barData, index) {
                         return FlDotCirclePainter(
-                          radius: 4,
+                          radius: 5,
                           color: _getStemmingKleur(spot.y),
                           strokeWidth: 2,
                           strokeColor: Colors.white,
@@ -128,7 +128,14 @@ class WeeklyMoodChart extends StatelessWidget {
                     ),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: AppTheme.primaryTeal.withOpacity(0.1),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppTheme.primaryTeal.withAlpha(100),
+                          AppTheme.primaryTeal.withAlpha(10),
+                        ],
+                      ),
                     ),
                   ),
                 ],
