@@ -682,7 +682,7 @@ class _MoodScreenState extends State<MoodScreen> {
             color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 18, color: isPrimary ? Colors.white : Colors.grey[600]),
+          child: Icon(icon, size: 18, color: isPrimary ? Colors.white : const Color(0xFF333333)),
         ),
       ),
     );
