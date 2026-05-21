@@ -254,6 +254,44 @@ class NotificationHelper {
     }
   }
 
+  Future<void> showTestNotification() async {
+    if (kIsWeb) return;
+    
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        'test_channel',
+        'Test Notificaties',
+        channelDescription: 'Test kanaal voor notificaties',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        playSound: true,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _notifications.show(
+        99999,
+        '🧪 Test Notificatie',
+        'Als je dit ziet, werken notificaties!',
+        details,
+      );
+      debugPrint('Test notificatie verzonden');
+    } catch (e) {
+      debugPrint('Test notificatie error: $e');
+    }
+  }
+
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute, int dayOfWeek) {
     final now = tz.TZDateTime.now(tz.local);
     
