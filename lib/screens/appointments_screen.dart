@@ -343,21 +343,6 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                     ),
                   ),
                 ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      debugPrint('Delete icon tapped for appointment ${appointment['id']}');
-                      _showDeleteConfirmation(appointment['id']);
-                    },
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.delete, size: 24, color: Colors.red),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
