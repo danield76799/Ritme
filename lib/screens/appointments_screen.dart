@@ -245,40 +245,58 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
+      color: Colors.white,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _editAppointment(appointment),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.calendar_today, color: AppTheme.primaryTeal),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    const SizedBox(height: 4),
+                    if (doctor.isNotEmpty) Text('Dokter: $doctor', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                    if (location.isNotEmpty) Text('Locatie: $location', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                    Text('$date ${time.isNotEmpty ? 'om $time' : ''}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, size: 20),
+                    onPressed: () => _editAppointment(appointment),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(height: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                    onPressed: () => _deleteAppointment(appointment['id']),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ],
           ),
-          child: Icon(Icons.calendar_today, color: AppTheme.primaryTeal),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (doctor.isNotEmpty) Text('Dokter: $doctor'),
-            if (location.isNotEmpty) Text('Locatie: $location'),
-            Text('$date ${time.isNotEmpty ? 'om $time' : ''}'),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, size: 20),
-              onPressed: () => _editAppointment(appointment),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, size: 20, color: Colors.red),
-              onPressed: () => _deleteAppointment(appointment['id']),
-            ),
-          ],
         ),
       ),
     );
