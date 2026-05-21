@@ -112,12 +112,14 @@ class NotificationHelper {
         channelDescription: 'Herinnert je aan je dagelijkse check-in',
         importance: Importance.high,
         priority: Priority.high,
+        enableVibration: true,
+        playSound: false, // No sound, only vibration
       );
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: true,
+        presentSound: false, // No sound, only vibration
       );
 
       const details = NotificationDetails(
@@ -181,7 +183,7 @@ class NotificationHelper {
           priority: Priority.high,
           showWhen: true,
           enableVibration: true,
-          playSound: true,
+          playSound: false, // No sound, only vibration
           actions: [
             AndroidNotificationAction(
               'taken',
@@ -199,7 +201,7 @@ class NotificationHelper {
         const iosDetails = DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
-          presentSound: true,
+          presentSound: false, // No sound, only vibration
           categoryIdentifier: 'medication',
         );
 
@@ -266,13 +268,14 @@ class NotificationHelper {
         priority: Priority.high,
         showWhen: true,
         enableVibration: true,
-        playSound: true,
+        playSound: false, // No sound, only vibration
+        enableLights: true,
       );
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: true,
+        presentSound: false, // No sound, only vibration
       );
 
       const details = NotificationDetails(
@@ -286,7 +289,7 @@ class NotificationHelper {
         'Als je dit ziet, werken notificaties!',
         details,
       );
-      debugPrint('Test notificatie verzonden');
+      debugPrint('Test notificatie verzonden (alleen tril)');
     } catch (e) {
       debugPrint('Test notificatie error: $e');
     }
