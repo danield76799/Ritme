@@ -13,9 +13,13 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-
-
-
+  String _formatSlaap(double uren) {
+    int totaleMinuten = (uren * 60).round();
+    int uur = totaleMinuten ~/ 60;
+    int minuten = totaleMinuten % 60;
+    if (minuten == 0) return '\${uur}u';
+    return '\${uur}u \${minuten}m';
+  }
 
   bool _isLoading = true;
   Map<String, dynamic> _weeklyStats = {};
