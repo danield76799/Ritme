@@ -356,22 +356,27 @@ class _MedicationScreenState extends State<MedicationScreen> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Nieuwe Medicatie'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Naam (bijv. Lithium)',
-                    labelStyle: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black, width: 2),
-                    ),
+        builder: (context, setDialogState) => Theme(
+          data: ThemeData.light().copyWith(
+            dialogBackgroundColor: Colors.white,
+            textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.black)),
+          ),
+          child: AlertDialog(
+            title: const Text('Nieuwe Medicatie', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Naam (bijv. Lithium)',
+                      labelStyle: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.black, width: 2),
+                      ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Colors.black, width: 2),
@@ -491,7 +496,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   @override
