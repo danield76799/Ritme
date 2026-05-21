@@ -121,22 +121,130 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     final type = activity['activity_type'] ?? 'Onbekend';
     final time = activity['actual_time'] ?? '--:--';
     final pScore = activity['p_score'] ?? 0;
+    final hasData = activity['actual_time'] != null;
+    
+    // Get icon for activity type
+    IconData activityIcon = _getActivityIcon(type);
+    
+    // P-score kleur
+    Color scoreColor;
+    String scoreLabel;
+    if (!hasData) {
+      scoreColor = Colors.grey;
+      scoreLabel = 'Niet ingevuld';
+    } else if (pScore >= 3) {
+      scoreColor = Colors.green;
+      scoreLabel = 'Helemaal op tijd';
+    } else if (pScore >= 2) {
+      scoreColor = Colors.orange;
+      scoreLabel = 'Kort gemist';
+    } else if (pScore >= 1) {
+      scoreColor = Colors.red.shade400;
+      scoreLabel = 'Gemist';
+    } else {
+      scoreColor = Colors.grey;
+      scoreLabel = 'Niet ingevuld';
+    }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          child: Icon(Icons.schedule, color: AppTheme.primaryTeal),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            // Activity icon in colored circle
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: scoreColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(activityIcon, color: scoreColor, size: 28),
+            ),
+            const SizedBox(width: 16),
+            // Activity info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    type,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    hasData ? 'Om $time' : 'Tijd niet ingevuld',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: hasData ? const Color(0xFF666666) : Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // P-score badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: scoreColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    pScore >= 3 ? Icons.check_circle : (hasData ? Icons.access_time : Icons.remove_circle_outline),
+                    size: 16,
+                    color: scoreColor,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    hasData ? 'P$pScore' : '-',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: scoreColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        title: Text(type, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('Tijd: $time | P-score: $pScore'),
       ),
     );
+  }
+  
+  IconData _getActivityIcon(String type) {
+    switch (type) {
+      case 'Opstaan':
+        return Icons.wb_sunny;
+      case 'Eerste contact':
+        return Icons.person_add;
+      case 'Werk / Hobby':
+        return Icons.work;
+      case 'Avondeten':
+        return Icons.restaurant;
+      case 'Naar bed':
+        return Icons.bedtime;
+      default:
+        return Icons.schedule;
+    }
   }
 }
