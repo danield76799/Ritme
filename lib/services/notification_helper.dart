@@ -113,13 +113,13 @@ class NotificationHelper {
         importance: Importance.high,
         priority: Priority.high,
         enableVibration: true,
-        playSound: false, // No sound, only vibration
+        playSound: true, // Sound + vibration
       );
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: false, // No sound, only vibration
+        presentSound: true, // Sound + vibration
       );
 
       const details = NotificationDetails(
@@ -183,7 +183,7 @@ class NotificationHelper {
           priority: Priority.high,
           showWhen: true,
           enableVibration: true,
-          playSound: false, // No sound, only vibration
+          playSound: true, // Sound + vibration
           actions: [
             AndroidNotificationAction(
               'taken',
@@ -201,7 +201,7 @@ class NotificationHelper {
         const iosDetails = DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
-          presentSound: false, // No sound, only vibration
+          presentSound: true, // Sound + vibration
           categoryIdentifier: 'medication',
         );
 
@@ -268,14 +268,14 @@ class NotificationHelper {
         priority: Priority.high,
         showWhen: true,
         enableVibration: true,
-        playSound: false, // No sound, only vibration
+        playSound: true, // Sound + vibration
         enableLights: true,
       );
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: false, // No sound, only vibration
+        presentSound: true, // Sound + vibration
       );
 
       const details = NotificationDetails(
