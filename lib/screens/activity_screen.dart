@@ -433,7 +433,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           const SizedBox(height: 24),
                           
                           // Activities section
-                          _buildSectionHeader('Activiteiten'),
+                          _buildSectionHeader('Sociaal Ritme Meter'),
                           ..._activiteiten.asMap().entries.map((entry) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 8),
