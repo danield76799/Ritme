@@ -444,8 +444,20 @@ class NotificationHelper {
     
     try {
       final notificationId = (appointmentId * 100) % 100000;
+      debugPrint('=== CANCEL APPOINTMENT REMINDER ===');
+      debugPrint('Appointment ID: $appointmentId');
+      debugPrint('Calculated notificationId: $notificationId');
       await _notifications.cancel(notificationId);
       debugPrint('Afspraak herinnering geannuleerd voor ID: $appointmentId');
+      
+      // Verify cancellation
+      final pending = await _notifications.pendingNotificationRequests();
+      debugPrint('Remaining pending notifications: ${pending.length}');
+      for (var n in pending) {
+        if (n.id == notificationId) {
+          debugPrint('WARNING: Notification $notificationId still pending!');
+        }
+      }
     } catch (e) {
       debugPrint('Afspraak herinnering annulering error: $e');
     }
