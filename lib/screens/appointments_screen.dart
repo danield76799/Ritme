@@ -271,67 +271,79 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: Colors.white,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _editAppointment(appointment),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.calendar_today, color: AppTheme.primaryTeal),
+      child: Row(
+        children: [
+          // Left side - tappable info area
+          Expanded(
+            child: InkWell(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                bottomLeft: Radius.circular(12),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              onTap: () => _editAppointment(appointment),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.calendar_today, color: AppTheme.primaryTeal),
                     ),
-                    const SizedBox(height: 4),
-                    if (doctor.isNotEmpty) Text('Dokter: $doctor', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                    if (location.isNotEmpty) Text('Locatie: $location', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                    Text('$date ${time.isNotEmpty ? 'om $time' : ''}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                          ),
+                          const SizedBox(height: 4),
+                          if (doctor.isNotEmpty) Text('Dokter: $doctor', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                          if (location.isNotEmpty) Text('Locatie: $location', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                          Text('$date ${time.isNotEmpty ? 'om $time' : ''}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => _editAppointment(appointment),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      child: const Icon(Icons.edit, size: 24, color: Colors.blue),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      debugPrint('Delete icon tapped for appointment ${appointment['id']}');
-                      _showDeleteConfirmation(appointment['id']);
-                    },
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.delete, size: 24, color: Colors.red),
-                    ),
-                  ),
-                ],
+            ),
+          ),
+          // Right side - action buttons (NOT inside InkWell)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _editAppointment(appointment),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.edit, size: 24, color: Colors.blue),
+                ),
+              ),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  debugPrint('Delete icon tapped for appointment ${appointment['id']}');
+                  _showDeleteConfirmation(appointment['id']);
+                },
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.delete, size: 24, color: Colors.red),
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
