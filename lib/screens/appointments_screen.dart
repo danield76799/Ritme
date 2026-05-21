@@ -133,8 +133,20 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       if (confirmed == true) {
         // Cancel any scheduled notification
         await NotificationHelper.instance.cancelAppointmentReminder(id);
+        
+        // Delete from database
         await db.deleteMedicalAppointment(id);
+        
+        // Reload appointments and check remaining notifications
         _loadAppointments();
+        
+        // Show confirmation
+        if (mounted) {
+          final pending = await NotificationHelper.instance.getPendingNotificationCount();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Afspraak verwijderd. Nog $pending notificaties pending.')),
+          );
+        }
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to delete appointment', error: e, stackTrace: stackTrace);
