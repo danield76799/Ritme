@@ -362,7 +362,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _bouwStatCard('🎯', 'Activiteiten', '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
+                      Expanded(child: _bouwStatCard('🎯', 'Sociaal Ritme Meter', '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
                       const SizedBox(width: 12),
                       Expanded(child: _bouwStatCard('⚡', 'Stabiliteit', '${(_weeklyStats['stabiliteit'] ?? 0).toStringAsFixed(0)}%', Colors.purple)),
                     ],
