@@ -334,7 +334,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                     ),
                                     Text(
                                       'Aantal plotselinge grote veranderingen (30+ punten)',
-                                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                      style: TextStyle(fontSize: 11, color: const Color(0xFF444444)),
                                     ),
                                   ],
                                 ),
@@ -427,7 +427,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                     ),
                                     Text(
                                       'Aantal sociale interacties vandaag',
-                                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                      style: TextStyle(fontSize: 11, color: const Color(0xFF444444)),
                                     ),
                                   ],
                                 ),
@@ -469,7 +469,7 @@ class _MoodScreenState extends State<MoodScreen> {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 13, color: const Color(0xFF333333)),
           ),
           const SizedBox(height: 16),
           Container(
@@ -522,9 +522,9 @@ class _MoodScreenState extends State<MoodScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('😞 0', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
-                Text('50', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
-                Text('100 😄', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                Text('😞 0', style: TextStyle(fontSize: 11, color: const Color(0xFF444444))),
+                Text('50', style: TextStyle(fontSize: 11, color: const Color(0xFF444444))),
+                Text('100 😄', style: TextStyle(fontSize: 11, color: const Color(0xFF444444))),
               ],
             ),
           ),
@@ -573,7 +573,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 11, color: const Color(0xFF444444)),
                 ),
               ],
             ),
@@ -636,7 +636,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 11, color: const Color(0xFF444444)),
                 ),
               ],
             ),
