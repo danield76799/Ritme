@@ -342,7 +342,11 @@ class DatabaseHelper implements DatabaseRepository {
       result = await db.insert('settings', newRow);
     }
     // Also sync to SharedPreferences so getSettings() can find it
-    await _syncSettingsToPrefs(settings);
+    // Re-fetch from DB to ensure we sync the correct merged data
+    final updatedSettings = await _getSettingsFromDb();
+    if (updatedSettings != null) {
+      await _syncSettingsToPrefs(updatedSettings);
+    }
     return result;
   }
 
