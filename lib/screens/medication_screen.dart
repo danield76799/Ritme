@@ -109,6 +109,21 @@ class _MedicationScreenState extends State<MedicationScreen> {
           // Show immediate test notification to confirm it works
           await NotificationHelper.instance.showTestNotification();
           
+          // Debug: Show pending notifications
+          try {
+            final pending = await NotificationHelper.instance.getPendingNotificationCount();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Geplande notificaties: $pending'),
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+          } catch (e) {
+            debugPrint('Error checking pending: $e');
+          }
+          
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
