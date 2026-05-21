@@ -87,11 +87,21 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       // Handle delete - wrapped in try-catch to prevent main error
       if (result != null && result.containsKey('_delete') && result['_delete'] == true) {
         try {
-          final id = result['id'] as int;
-          debugPrint('Delete confirmed for appointment ID: $id');
-          await db.deleteMedicalAppointment(id);
-          await NotificationHelper.instance.cancelAppointmentReminder(id);
-          _loadAppointments();
+          final id = result['id'];
+          int appointmentId;
+          if (id is int) {
+            appointmentId = id;
+          } else if (id is String) {
+            appointmentId = int.tryParse(id) ?? 0;
+          } else {
+            appointmentId = 0;
+          }
+          debugPrint('Delete confirmed for appointment ID: $appointmentId');
+          if (appointmentId > 0) {
+            await db.deleteMedicalAppointment(appointmentId);
+            await NotificationHelper.instance.cancelAppointmentReminder(appointmentId);
+            _loadAppointments();
+          }
         } catch (e) {
           debugPrint('Delete error: $e');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -494,7 +504,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                         ),
                       );
                       if (confirmed == true) {
-                        if (context.mounted) Navigator.pop(context, {'_delete': true, 'id': widget.appointment!['id']});
+                        if (context.mounted) Navigator.pop(context, {'_delete': true, 'id': int.parse(widget.appointment!['id'].toString())});
                       }
                     },
                     child: const Text('🗑️ Verwijderen', style: TextStyle(color: Colors.red, fontSize: 16)),
