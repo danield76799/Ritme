@@ -198,7 +198,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // ===================
   
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Use a smaller ID to avoid 32-bit integer overflow
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
     await _dailyLogs.put(id, {
       'id': id,
       'date': date.toString(),
@@ -274,8 +275,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
       });
       return key;
     } else {
-      // Insert new record
-      final id = DateTime.now().millisecondsSinceEpoch;
+      // Insert new record with smaller ID
+      final id = DateTime.now().millisecondsSinceEpoch % 1000000;
       await _srmActivities.put(id, {
         'id': id,
         'date': date.toString(),
@@ -290,7 +291,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertSrmActivityMap(Map<String, dynamic> data) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Use a smaller ID to avoid 32-bit integer overflow
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {
       cleanData[key] = value?.toString() ?? value;
@@ -499,7 +501,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Use a smaller ID to avoid 32-bit integer overflow
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000; // Max 999,999
     await _medicationConfig.put(id, {
       'id': id,
       'naam': naam.toString(),
