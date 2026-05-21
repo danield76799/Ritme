@@ -314,34 +314,41 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
               ),
             ),
           ),
-          // Right side - action buttons (NOT inside InkWell)
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => _editAppointment(appointment),
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.edit, size: 24, color: Colors.blue),
+          // Right side - action buttons (in their own mini-column)
+          Container(
+            color: Colors.grey[50],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _editAppointment(appointment),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.edit, size: 24, color: Colors.blue),
+                    ),
+                  ),
                 ),
-              ),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  debugPrint('Delete icon tapped for appointment ${appointment['id']}');
-                  _showDeleteConfirmation(appointment['id']);
-                },
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.delete, size: 24, color: Colors.red),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      debugPrint('Delete icon tapped for appointment ${appointment['id']}');
+                      _showDeleteConfirmation(appointment['id']);
+                    },
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.delete, size: 24, color: Colors.red),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
