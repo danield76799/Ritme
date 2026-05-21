@@ -449,8 +449,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   ],
                 ),
                 const SizedBox(height: 16),
-                WeeklyMoodChart(
-                  logs: _weeklyLogs,
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: WeeklyMoodChart(
+                    logs: _weeklyLogs,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 _buildActionCard(
