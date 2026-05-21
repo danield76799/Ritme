@@ -513,7 +513,7 @@ class _MoodScreenState extends State<MoodScreen> {
               value: value,
               min: 0,
               max: 100,
-              divisions: 100,
+              divisions: 10,
               onChanged: onChanged,
             ),
           ),
