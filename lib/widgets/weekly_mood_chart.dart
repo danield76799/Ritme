@@ -13,9 +13,10 @@ class WeeklyMoodChart extends StatelessWidget {
       return Container(
         height: 200,
         padding: const EdgeInsets.all(16),
-        decoration: AppTheme.cardDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          elevation: 1,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
         ),
         child: Center(
           child: Column(
@@ -24,22 +25,23 @@ class WeeklyMoodChart extends StatelessWidget {
               Icon(
                 Icons.show_chart,
                 size: 48,
-                color: Colors.grey[300],
+                color: Colors.grey[400],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 'Nog geen stemming data',
                 style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 14,
+                  color: Colors.grey[700],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Text(
                 'Voeg je eerste log toe om de trend te zien',
                 style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 12,
+                  color: Colors.grey[500],
+                  fontSize: 14,
                 ),
               ),
             ],
