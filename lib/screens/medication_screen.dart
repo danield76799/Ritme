@@ -637,10 +637,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
     String? reminderTime = config['reminder_time']?.toString();
 
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Row(
         children: [
@@ -676,32 +677,46 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                   if (reminderTime != null)
-                    InkWell(
-                      onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime),
-                      borderRadius: BorderRadius.circular(4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            reminderEnabled ? Icons.notifications_active : Icons.notifications_off,
-                            size: 12,
-                            color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            reminderTime,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: InkWell(
+                        onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime),
+                        borderRadius: BorderRadius.circular(4),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey[300]!,
                             ),
                           ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            Icons.edit,
-                            size: 10,
-                            color: Colors.grey[400],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                reminderEnabled ? Icons.notifications_active : Icons.notifications_off,
+                                size: 14,
+                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                reminderTime,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[500],
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.edit,
+                                size: 12,
+                                color: Colors.grey[400],
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                 ],
