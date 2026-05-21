@@ -46,6 +46,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload when returning from another screen (e.g. Settings)
+    _loadData();
+  }
+
   Future<void> _loadData() async {
     try {
       final settings = await db.getSettings();
