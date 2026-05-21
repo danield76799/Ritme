@@ -113,6 +113,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     debugPrint('=== SHOW DELETE CONFIRMATION ===');
     debugPrint('ID to delete: $id');
     
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Delete tapped voor ID $id'), duration: const Duration(seconds: 2)),
+    );
+    
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -302,17 +306,22 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () => _editAppointment(appointment),
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(12),
                       child: const Icon(Icons.edit, size: 24, color: Colors.blue),
                     ),
                   ),
                   const SizedBox(height: 4),
                   GestureDetector(
-                    onTap: () => _showDeleteConfirmation(appointment['id']),
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      debugPrint('Delete icon tapped for appointment ${appointment['id']}');
+                      _showDeleteConfirmation(appointment['id']);
+                    },
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(12),
                       child: const Icon(Icons.delete, size: 24, color: Colors.red),
                     ),
                   ),
