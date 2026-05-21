@@ -337,12 +337,26 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       insetPadding: const EdgeInsets.all(16),
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
       child: Container(
         width: double.infinity,
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
-        child: Padding(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            brightness: Brightness.light,
+            colorScheme: ColorScheme.light(
+              primary: AppTheme.primaryTeal,
+              surface: Colors.white,
+            ),
+          ),
+          child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -416,6 +430,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           ),
         ),
       ),
+    ),
     );
   }
 
