@@ -453,6 +453,17 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               : DateTime.now(),
             firstDate: DateTime(2020),
             lastDate: DateTime(2030),
+            builder: (context, child) {
+              return Theme(
+                data: Theme.of(context).copyWith(
+                  colorScheme: ColorScheme.light(
+                    primary: AppTheme.primaryTeal,
+                    surface: Colors.white,
+                  ),
+                ),
+                child: child!,
+              );
+            },
           );
           if (picked != null) {
             setState(() {
@@ -510,6 +521,17 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 minute: int.tryParse(_timeController.text.split(':')[1]) ?? 0,
               )
             : const TimeOfDay(hour: 9, minute: 0),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: AppTheme.primaryTeal,
+                  surface: Colors.white,
+                ),
+              ),
+              child: child!,
+            );
+          },
         );
         if (picked != null) {
           setState(() {
