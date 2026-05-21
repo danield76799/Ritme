@@ -60,6 +60,18 @@ class NotificationHelper {
           debugPrint('Android notificatie permissies geweigerd');
           return false;
         }
+        
+        // Request exact alarm permission for Android 12+
+        try {
+          final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
+          if (exactAlarmGranted == null || !exactAlarmGranted) {
+            debugPrint('Exact alarm permission denied - scheduled notifications may not work');
+          } else {
+            debugPrint('Exact alarm permission granted');
+          }
+        } catch (e) {
+          debugPrint('Could not request exact alarm permission: $e');
+        }
       }
 
       final iosPlugin = _notifications.resolvePlatformSpecificImplementation<
