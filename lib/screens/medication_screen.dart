@@ -596,12 +596,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
           const SizedBox(height: 12),
           Text(
             'Geen medicatie',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
           ),
           const SizedBox(height: 4),
           Text(
             'Tik + om toe te voegen',
-            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+            style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
           ),
         ],
       ),
