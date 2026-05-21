@@ -281,10 +281,9 @@ class DatabaseHelper implements DatabaseRepository {
     // Get the first settings row (there should only be one)
     final existing = await db.query('settings', limit: 1);
     if (existing.isNotEmpty) {
-      // Preserve the username and password_hash from the database
+      // Preserve the password_hash from the database
       final merged = Map<String, dynamic>.from(existing.first);
-      // Remove protected fields from settings to preserve database values
-      settings.remove('username');
+      // Remove password_hash from settings to preserve database value
       settings.remove('password_hash');
       merged.addAll(settings);
       // Update by id to ensure we update the correct row
