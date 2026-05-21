@@ -52,7 +52,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
@@ -119,6 +119,15 @@ class DatabaseHelper implements DatabaseRepository {
         await db.execute('ALTER TABLE daily_logs ADD COLUMN sleep_hours REAL');
       } catch (e) {
         print('sleep_hours column might already exist: $e');
+      }
+    }
+    
+    // Add reminder_days column for medical_appointments (version 7)
+    if (oldVersion < 7) {
+      try {
+        await db.execute('ALTER TABLE medical_appointments ADD COLUMN reminder_days INTEGER DEFAULT 1');
+      } catch (e) {
+        print('reminder_days column might already exist: $e');
       }
     }
   }

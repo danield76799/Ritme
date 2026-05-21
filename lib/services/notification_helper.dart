@@ -314,5 +314,110 @@ class NotificationHelper {
 
     return scheduledDate;
   }
-}
 
+  Future<void> scheduleAppointmentReminder({
+    required int appointmentId,
+    required String title,
+    required String doctorName,
+    required String appointmentDate,
+    required String appointmentTime,
+    required int reminderDays,
+  }) async {
+    if (kIsWeb) return;
+    if (reminderDays <= 0) return; // No reminder
+
+    try {
+      // Parse appointment date/time
+      final dateParts = appointmentDate.split('-');
+      final day = int.parse(dateParts[0]);
+      final month = int.parse(dateParts[1]);
+      final year = int.parse(dateParts[2]);
+      
+      int hour = 9, minute = 0;
+      if (appointmentTime.isNotEmpty) {
+        final timeParts = appointmentTime.split(':');
+        hour = int.parse(timeParts[0]);
+        minute = int.parse(timeParts[1]);
+      }
+
+      // Calculate reminder date/time
+      final appointmentDateTime = tz.TZDateTime(
+        tz.local,
+        year,
+        month,
+        day,
+        hour,
+        minute,
+      );
+      
+      final reminderDateTime = appointmentDateTime.subtract(Duration(days: reminderDays));
+      
+      // Don't schedule if reminder time has passed
+      final now = tz.TZDateTime.now(tz.local);
+      if (reminderDateTime.isBefore(now)) {
+        debugPrint('Appointment reminder time has passed, skipping');
+        return;
+      }
+
+      // Use smaller notification ID
+      final notificationId = (appointmentId * 100) % 100000;
+
+      const androidDetails = AndroidNotificationDetails(
+        'appointment_reminders',
+        'Afspraak herinneringen',
+        channelDescription: 'Herinneringen voor medische afspraken',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        playSound: true, // Sound + vibration
+        actions: [
+          AndroidNotificationAction(
+            'open',
+            'Openen',
+            showsUserInterface: false,
+          ),
+        ],
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true, // Sound + vibration
+        categoryIdentifier: 'appointment',
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _notifications.zonedSchedule(
+        notificationId,
+        '📅 Afspraak herinnering',
+        '$title${doctorName.isNotEmpty ? ' met $doctorName' : ''} over $reminderDays dag${reminderDays > 1 ? 'en' : ''}',
+        reminderDateTime,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'appointment:$appointmentId',
+      );
+      debugPrint('Afspraak herinnering gepland voor $title op $reminderDateTime');
+    } catch (e) {
+      debugPrint('Afspraak herinnering planning error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> cancelAppointmentReminder(int appointmentId) async {
+    if (kIsWeb) return;
+    
+    try {
+      final notificationId = (appointmentId * 100) % 100000;
+      await _notifications.cancel(notificationId);
+      debugPrint('Afspraak herinnering geannuleerd voor ID: $appointmentId');
+    } catch (e) {
+      debugPrint('Afspraak herinnering annulering error: $e');
+    }
+  }
+}
