@@ -10,10 +10,40 @@ class WeeklyMoodChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (logs.isEmpty) {
-      return const Center(
-        child: Text(
-          'Geen data beschikbaar',
-          style: TextStyle(color: Colors.grey),
+      return Container(
+        height: 200,
+        padding: const EdgeInsets.all(16),
+        decoration: AppTheme.cardDecoration(
+          color: Colors.white,
+          elevation: 1,
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.show_chart,
+                size: 48,
+                color: Colors.grey[300],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Nog geen stemming data',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Voeg je eerste log toe om de trend te zien',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
