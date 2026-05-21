@@ -435,21 +435,37 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
   }
 
   Widget _buildTextField(String label, TextEditingController controller, {String? Function(String?)? validator}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color(0xFFCCCCCC)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: controller,
         validator: validator,
-        style: const TextStyle(color: Colors.black, fontSize: 16),
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.grey[700], fontSize: 14),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          labelStyle: const TextStyle(
+            color: Colors.black87,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.black, width: 2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.black, width: 2),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+          ),
         ),
       ),
     );
