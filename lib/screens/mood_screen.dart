@@ -343,7 +343,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildCounterBtn(Icons.remove, _stemmingsOmslagen > 0 ? () => _veranderOmslagen(-1) : null),
-                                  Container(width: 36, alignment: Alignment.center, child: Text('$_stemmingsOmslagen', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+                                  Container(width: 36, alignment: Alignment.center, child: Text('$_stemmingsOmslagen', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)))),
                                   _buildCounterBtn(Icons.add, () => _veranderOmslagen(1), isPrimary: true),
                                 ],
                               ),
@@ -436,7 +436,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildCounterBtn(Icons.remove, _socialeContacten > 0 ? () => setState(() => _socialeContacten--) : null),
-                                  Container(width: 36, alignment: Alignment.center, child: Text('$_socialeContacten', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+                                  Container(width: 36, alignment: Alignment.center, child: Text('$_socialeContacten', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)))),
                                   _buildCounterBtn(Icons.add, () => setState(() => _socialeContacten++), isPrimary: true),
                                 ],
                               ),
@@ -587,7 +587,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 alignment: Alignment.center,
                 child: Text(
                   value.toStringAsFixed(step < 1 ? 1 : 0),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
                 ),
               ),
               _buildCounterBtn(Icons.add, value < max ? () => onChanged((value + step).clamp(min, max)) : null, isPrimary: true),
@@ -661,7 +661,7 @@ class _MoodScreenState extends State<MoodScreen> {
             },
             child: Text(
               '${value.floor()}:${((value - value.floor()) * 60).round().toString().padLeft(2, '0')}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
             ),
           ),
         ],
