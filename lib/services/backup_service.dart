@@ -52,17 +52,38 @@ class BackupService {
     return export;
   }
 
-  /// Save backup to local file
+  /// Save backup to Downloads folder
   static Future<String> saveLocalBackup() async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
     
-    final dir = await getApplicationDocumentsDirectory();
-    final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-    final file = File('${dir.path}/ritme_backup_$timestamp.json');
+    // Try to save to Downloads folder
+    String? filePath;
+    try {
+      // On Android, try to get external storage/Downloads
+      final dir = await getExternalStorageDirectory();
+      if (dir != null) {
+        // Navigate to Downloads folder
+        final downloadsPath = dir.path.replaceAll('/Android/data/com.danield.ritme/files', '/Download');
+        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
+        final file = File('$downloadsPath/ritme_backup_$timestamp.json');
+        await file.writeAsString(jsonString);
+        filePath = file.path;
+      }
+    } catch (e) {
+      debugPrint('Could not save to Downloads, falling back to app documents: $e');
+    }
     
-    await file.writeAsString(jsonString);
-    return file.path;
+    // Fallback to app documents if Downloads failed
+    if (filePath == null) {
+      final dir = await getApplicationDocumentsDirectory();
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+      final file = File('${dir.path}/ritme_backup_$timestamp.json');
+      await file.writeAsString(jsonString);
+      filePath = file.path;
+    }
+    
+    return filePath;
   }
 
   /// Share backup via email or other apps
@@ -70,14 +91,30 @@ class BackupService {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
     
-    final dir = await getApplicationDocumentsDirectory();
-    final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-    final file = File('${dir.path}/ritme_backup_$timestamp.json');
-    
-    await file.writeAsString(jsonString);
+    // Try to save to Downloads folder first
+    String filePath;
+    try {
+      final dir = await getExternalStorageDirectory();
+      if (dir != null) {
+        final downloadsPath = dir.path.replaceAll('/Android/data/com.danield.ritme/files', '/Download');
+        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
+        final file = File('$downloadsPath/ritme_backup_$timestamp.json');
+        await file.writeAsString(jsonString);
+        filePath = file.path;
+      } else {
+        throw Exception('No external storage');
+      }
+    } catch (e) {
+      // Fallback
+      final dir = await getApplicationDocumentsDirectory();
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+      final file = File('${dir.path}/ritme_backup_$timestamp.json');
+      await file.writeAsString(jsonString);
+      filePath = file.path;
+    }
     
     await Share.shareXFiles(
-      [XFile(file.path)],
+      [XFile(filePath)],
       subject: 'Ritme Backup ${DateTime.now().toString().split(' ')[0]}',
       text: 'Hier is mijn Ritme app backup. Bewaar deze veilig!',
     );
