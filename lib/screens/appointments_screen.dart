@@ -3,6 +3,7 @@ import '../utils/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import '../services/notification_helper.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -54,6 +55,20 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         print('Adding appointment: $result');
         final id = await db.insertMedicalAppointment(result);
         print('Appointment added with id: $id');
+        
+        // Schedule notification if reminder is set
+        final reminderDays = result['reminder_days'] ?? 0;
+        if (reminderDays > 0) {
+          await NotificationHelper.instance.scheduleAppointmentReminder(
+            appointmentId: id,
+            title: result['title'] ?? '',
+            doctorName: result['doctor_name'] ?? '',
+            appointmentDate: result['appointment_date'] ?? '',
+            appointmentTime: result['appointment_time'] ?? '',
+            reminderDays: reminderDays,
+          );
+        }
+        
         _loadAppointments();
       }
     } catch (e, stackTrace) {
@@ -71,6 +86,21 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
       if (result != null) {
         await db.updateMedicalAppointment(appointment['id'], result);
+        
+        // Reschedule notification
+        final reminderDays = result['reminder_days'] ?? 0;
+        await NotificationHelper.instance.cancelAppointmentReminder(appointment['id']);
+        if (reminderDays > 0) {
+          await NotificationHelper.instance.scheduleAppointmentReminder(
+            appointmentId: appointment['id'],
+            title: result['title'] ?? '',
+            doctorName: result['doctor_name'] ?? '',
+            appointmentDate: result['appointment_date'] ?? '',
+            appointmentTime: result['appointment_time'] ?? '',
+            reminderDays: reminderDays,
+          );
+        }
+        
         _loadAppointments();
       }
     } catch (e, stackTrace) {
@@ -101,6 +131,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       );
 
       if (confirmed == true) {
+        // Cancel any scheduled notification
+        await NotificationHelper.instance.cancelAppointmentReminder(id);
         await db.deleteMedicalAppointment(id);
         _loadAppointments();
       }
@@ -278,6 +310,8 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
     }
   }
 
+  int _reminderDays = 0; // 0 = none, 1 = 1 day, 3 = 3 days, 7 = 7 days
+
   @override
   void initState() {
     super.initState();
@@ -286,6 +320,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
     _locationController = TextEditingController(text: widget.appointment?['location'] ?? '');
     _dateController = TextEditingController(text: widget.appointment?['appointment_date'] ?? '');
     _timeController = TextEditingController(text: widget.appointment?['appointment_time'] ?? '');
+    _reminderDays = widget.appointment?['reminder_days'] ?? 0;
   }
 
   @override
@@ -338,6 +373,8 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                         _buildDateField(),
                         const SizedBox(height: 16),
                         _buildTimeField(),
+                        const SizedBox(height: 16),
+                        _buildReminderDropdown(),
                       ],
                     ),
                   ),
@@ -361,6 +398,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                           'location': _locationController.text,
                           'appointment_date': _dateController.text,
                           'appointment_time': _timeController.text,
+                          'reminder_days': _reminderDays,
                         });
                       }
                     },
@@ -509,6 +547,57 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
             Icon(Icons.access_time, color: Colors.grey[600]),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildReminderDropdown() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[400]!),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Herinnering',
+                style: TextStyle(color: Colors.grey[700], fontSize: 14),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _reminderDays == 0 ? 'Geen herinnering' :
+                _reminderDays == 1 ? '1 dag van tevoren' :
+                _reminderDays == 3 ? '3 dagen van tevoren' :
+                '7 dagen van tevoren',
+                style: TextStyle(
+                  color: _reminderDays == 0 ? Colors.grey[400] : Colors.black,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          DropdownButton<int>(
+            value: _reminderDays,
+            underline: SizedBox(),
+            items: [
+              DropdownMenuItem(value: 0, child: Text('Geen')),
+              DropdownMenuItem(value: 1, child: Text('1 dag')),
+              DropdownMenuItem(value: 3, child: Text('3 dagen')),
+              DropdownMenuItem(value: 7, child: Text('7 dagen')),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                setState(() => _reminderDays = value);
+              }
+            },
+          ),
+        ],
       ),
     );
   }
