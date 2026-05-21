@@ -32,6 +32,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     {'naam': 'Eerste contact', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
     {'naam': 'Werk / Hobby', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
     {'naam': 'Avondeten', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
+    {'naam': 'Naar bed', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
   ];
 
   @override
@@ -53,6 +54,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         _activiteiten[1]['richttijd'] = _parseTimeOfDay(settings['target_first_contact']);
         _activiteiten[2]['richttijd'] = _parseTimeOfDay(settings['target_work']);
         _activiteiten[3]['richttijd'] = _parseTimeOfDay(settings['target_dinner']);
+        _activiteiten[4]['richttijd'] = _parseTimeOfDay(settings['target_sleep_time']);
       }
 
       final activities = await db.getSrmActivities(_formattedDate);
@@ -123,6 +125,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         {'naam': 'Eerste contact', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
         {'naam': 'Werk / Hobby', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
         {'naam': 'Avondeten', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
+        {'naam': 'Naar bed', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
       ];
     });
     _loadData();
