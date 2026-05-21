@@ -437,9 +437,9 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
   Widget _buildTextField(String label, TextEditingController controller, {String? Function(String?)? validator}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[400]!),
+        border: Border.all(color: Color(0xFFCCCCCC)),
       ),
       child: TextFormField(
         controller: controller,
@@ -591,9 +591,9 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
   Widget _buildReminderDropdown() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[400]!),
+        border: Border.all(color: Color(0xFFCCCCCC)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
