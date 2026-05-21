@@ -178,7 +178,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
     // Slaap inzichten
     double gemSlaap = stats['gemiddeldeSlaap'];
     if (gemSlaap < 6) {
-      inzichten.add('⚠️ Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beïnvloeden.');
+      final recentCount = stats['aantalDagen'] ?? 0;
+      if (recentCount <= 1) {
+        inzichten.add('⚠️ Afgelopen nacht sliep je minder dan 6 uur. Dit kan je stemming negatief beïnvloeden.');
+      } else {
+        inzichten.add('⚠️ Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beïnvloeden.');
+      }
     } else if (gemSlaap >= 7 && gemSlaap <= 9) {
       inzichten.add('✅ Je slaap van gemiddeld ${gemSlaap.toStringAsFixed(1)} uur is prima!');
     } else if (gemSlaap > 9) {
@@ -193,7 +198,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
       if (stemming10 < 4) {
         inzichten.add('📉 Je gemiddelde stemming is aan de lage kant. Overweeg extra zelfzorg deze week.');
       } else if (stemming10 >= 6) {
-        inzichten.add('😊 Je stemming is overwegend positief!');
+        if (gemStemming.abs() < 0.5) {
+          inzichten.add('😐 Je stemming is stabiel/neutraal.');
+        } else if (gemStemming > 0) {
+          inzichten.add('😊 Je stemming is overwegend positief!');
+        }
       }
     }
 
@@ -239,7 +248,7 @@ Slaap:
 
 Stemming:
 - Gemiddeld: ${gemStemming.toStringAsFixed(1)} (schaal -5 tot +5)
-- Positief/negatief: ${gemStemming >= 0 ? 'Overwegend positief' : 'Overwegend negatief'}
+- Stemming: ${gemStemming.abs() < 0.5 ? 'Stabiel/Neutraal' : (gemStemming >= 0 ? 'Overwegend positief' : 'Overwegend negatief')}
 
 Activiteiten:
 - Totaal geregistreerd: $activiteiten
