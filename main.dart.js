@@ -112283,7 +112283,7 @@ if(n==null)n=h
 o.push(j.JE("Opgestaan",n,A.tn,j.gax4()))
 o.push(A.bg)
 o.push(j.JE("Wakker gelegen",j.alJ(),A.i8,j.gawS()))
-r=B.b([s,B.aU(i,B.b2(o,A.ay,A.M,A.L,0,A.W),A.I,i,i,new B.b0(A.D,i,i,q,p,i,A.a3),i,i,i,i,A.bJ,i,i,i),A.e0,j.V8("Activiteiten")],r)
+r=B.b([s,B.aU(i,B.b2(o,A.ay,A.M,A.L,0,A.W),A.I,i,i,new B.b0(A.D,i,i,q,p,i,A.a3),i,i,i,i,A.bJ,i,i,i),A.e0,j.V8("Sociaal Ritme Meter")],r)
 p=j.z
 p=new B.hT(p,B.a4(p).h("hT<1>"))
 A.l.V(r,p.giX(p).fY(0,new B.azr(j),t.Rn).ef(0))
@@ -113251,7 +113251,7 @@ q=B.c5(n.BB("\ud83d\udca4","Gem. Slaap",J.aQS(q==null?0:q,1)+" uur",A.es),1)
 p=J.a1(n.e,"gemiddeldeStemming")
 q=B.bu(B.b([q,A.ce,B.c5(n.BB("\ud83d\ude0a","Gem. Stemming",J.aQS(p==null?0:p,1),A.dC),1)],l),A.R,A.M,A.L,0,m)
 p=J.a1(n.e,"totaleActiviteiten")
-p=B.c5(n.BB("\ud83c\udfaf","Activiteiten",B.k(p==null?0:p),A.dY),1)
+p=B.c5(n.BB("\ud83c\udfaf","Sociaal Ritme Meter",B.k(p==null?0:p),A.dY),1)
 o=J.a1(n.e,"stabiliteit")
 s=B.b([s,A.e0,r,A.bg,q,A.bg,B.bu(B.b([p,A.ce,B.c5(n.BB("\u26a1","Stabiliteit",J.aQS(o==null?0:o,0)+"%",A.QH),1)],l),A.R,A.M,A.L,0,m),A.hx,B.a2("Persoonlijke Inzichten",m,m,m,m,B.aO(m,m,A.bP,m,m,m,m,m,m,m,m,18,m,m,A.aA,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),A.bg],l)
 r=n.f
