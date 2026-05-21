@@ -131,7 +131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Colors.grey[850],
+                color: Colors.grey[300],
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -155,12 +155,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         });
                         Navigator.pop(context);
                       },
-                      child: const Text('Klaar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                      child: const Text('Klaar', style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1, color: Colors.grey),
+              const Divider(height: 1, color: Colors.grey), // Will be grey[300]
               Expanded(
                 child: Container(
                   color: Colors.grey[200],
