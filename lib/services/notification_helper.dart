@@ -450,4 +450,14 @@ class NotificationHelper {
       debugPrint('Afspraak herinnering annulering error: $e');
     }
   }
+
+  Future<int> getPendingNotificationCount() async {
+    try {
+      final pending = await _notifications.pendingNotificationRequests();
+      return pending.length;
+    } catch (e) {
+      debugPrint('Error getting pending: $e');
+      return 0;
+    }
+  }
 }
