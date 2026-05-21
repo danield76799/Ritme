@@ -354,6 +354,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
         'uren_slaap': sleepHours,
       });
       
+      // Also save "Opstaan" activity with wake_time (auto-completed)
+      if (_wakeTime != null) {
+        await db.insertSrmActivity(_formattedDate, 'Opstaan', _wakeTime!, 1, null);
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
