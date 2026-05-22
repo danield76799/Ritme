@@ -89,7 +89,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
   Future<void> _addMedication(String name, double dosage, String unit, {bool reminderEnabled = true, TimeOfDay? reminderTime}) async {
     try {
+      print('Adding medication: name=$name, dosage=$dosage, unit=$unit, reminderEnabled=$reminderEnabled');
       final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled);
+      print('Medication added with id: $id');
       
       // If reminder time is set, also create a schedule and notification
       if (reminderTime != null && reminderEnabled) {
@@ -154,10 +156,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
       _loadData();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add medication', error: e, stackTrace: stackTrace);
+      print('ERROR adding medication: $e');
+      print('Stack trace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Kon medicatie niet toevoegen. Probeer opnieuw.'),
+            content: Text('Kon medicatie niet toevoegen. Fout: $e'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
