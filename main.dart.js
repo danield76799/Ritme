@@ -114476,6 +114476,8 @@ case 5:return B.y(null,r)
 case 1:return B.x(p.at(-1),r)}})
 return B.z($async$ui,r)},
 an6(a){var s=this.e,r=s==null?null:J.W(s,a)
+B.j(r)
+B.j(this.e)
 if(r!=null){s=J.iZ(r)
 s=s.j(r).length===0||s.j(r)==="--:--"}else s=!0
 if(s)switch(a){case"target_opstaan":return"07:00"
