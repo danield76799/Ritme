@@ -300,7 +300,7 @@ Activiteiten:
 - Totaal geregistreerd: $activiteiten
 
 Patronen opgevallen:
-${_insights.map((i) => '- ${i.replaceAll(RegExp(r'^[\u{1F300}-\u{1F9FF}]'), '').trim()}').join('\n')}
+${_insights.map((i) => '- ${i.replaceAll(RegExp(r'^\p{Emoji}+', unicode: true), '').trim()}').join('\n')}
 
 -- 
 Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identificatiegegevens.
