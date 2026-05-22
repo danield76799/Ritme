@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+ <defs>
+ <mask id="heart-clip">
+ <rect width="512" height="512" fill="white" />
+ <path d="M256,285 C256,285 215,240 195,215 C175,190 175,155 205,135 C235,115 256,145 256,145 C256,145 277,115 307,135 C337,155 337,190 317,215 C297,240 256,285 256,285 Z" fill="black" />
+ </mask>
+ </defs>
+
+ <rect width="512" height="512" rx="140" ry="140" fill="#4eaec1" />
+
+ <g mask="url(#heart-clip)">
+ <rect x="76" y="196" width="360" height="120" rx="45" ry="45" fill="#ffffff" />
+ <rect x="196" y="76" width="120" height="360" rx="45" ry="45" fill="#ffffff" />
+ </g>
+
+ <path d="M 335,370 L 350,370 L 358,350 L 366,395 L 374,330 L 382,385 L 388,365 L 394,370 L 420,370"
+ fill="none"
+ stroke="#ffffff"
+ stroke-width="10"
+ stroke-linecap="round"
+ stroke-linejoin="round" />
+</svg>
