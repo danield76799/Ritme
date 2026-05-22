@@ -8,6 +8,163 @@ import '../services/notification_helper.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 
+class _CustomTimePickerDialog extends StatefulWidget {
+  final TimeOfDay initialTime;
+  final String label;
+
+  const _CustomTimePickerDialog({
+    required this.initialTime,
+    required this.label,
+  });
+
+  @override
+  State<_CustomTimePickerDialog> createState() => _CustomTimePickerDialogState();
+}
+
+class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
+  late int selectedHour;
+  late int selectedMinute;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedHour = widget.initialTime.hour;
+    selectedMinute = widget.initialTime.minute;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        width: 300,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.label,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Hour picker
+                _buildNumberPicker(
+                  value: selectedHour,
+                  min: 0,
+                  max: 23,
+                  onChanged: (value) => setState(() => selectedHour = value),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    ':',
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ),
+                // Minute picker
+                _buildNumberPicker(
+                  value: selectedMinute,
+                  min: 0,
+                  max: 59,
+                  step: 15,
+                  onChanged: (value) => setState(() => selectedMinute = value),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Annuleer',
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(
+                      context,
+                      TimeOfDay(hour: selectedHour, minute: selectedMinute),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryTeal,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: const Text(
+                    'Klaar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNumberPicker({
+    required int value,
+    required int min,
+    required int max,
+    int step = 1,
+    required ValueChanged<int> onChanged,
+  }) {
+    return Container(
+      width: 80,
+      height: 180,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListWheelScrollView.useDelegate(
+        itemExtent: 50,
+        diameterRatio: 1.2,
+        magnification: 1.2,
+        useMagnifier: true,
+        onSelectedItemChanged: (index) {
+          onChanged(min + (index * step));
+        },
+        controller: FixedExtentScrollController(
+          initialItem: (value - min) ~/ step,
+        ),
+        childDelegate: ListWheelChildBuilderDelegate(
+          builder: (context, index) {
+            final itemValue = min + (index * step);
+            if (itemValue > max) return null;
+            final isSelected = itemValue == value;
+            return Container(
+              alignment: Alignment.center,
+              child: Text(
+                itemValue.toString().padLeft(2, '0'),
+                style: TextStyle(
+                  fontSize: isSelected ? 28 : 20,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? AppTheme.primaryTeal : Colors.black54,
+                ),
+              ),
+            );
+          },
+          childCount: ((max - min) ~/ step) + 1,
+        ),
+      ),
+    );
+  }
+}
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -117,21 +274,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       currentTime = const TimeOfDay(hour: 8, minute: 0);
     }
 
-    final TimeOfDay? picked = await showTimePicker(
+    final TimeOfDay? picked = await showDialog<TimeOfDay>(
       context: context,
-      initialTime: currentTime,
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppTheme.primaryTeal,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black87,
-            ),
-            dialogBackgroundColor: Colors.white,
-          ),
-          child: child!,
+      builder: (BuildContext context) {
+        return _CustomTimePickerDialog(
+          initialTime: currentTime,
+          label: label,
         );
       },
     );
