@@ -44,18 +44,32 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
     
-    - name: Get keystore from secrets
+    - name: Build unsigned APK
+      run: flutter build apk --release
+    
+    - name: Sign APK
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: |
-        echo "$KEYSTORE_BASE64" | base64 -d > android/app/ritme-release.keystore
-        ls -la android/app/ritme-release.keystore
-    
-    - name: Build signed APK
-      run: flutter build apk --release
+        # Decode keystore
+        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
+        
+        # Sign APK with jarsigner
+        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+          -keystore /tmp/keystore.jks \
+          -storepass "$KEYSTORE_PASSWORD" \
+          -keypass "$KEY_PASSWORD" \
+          build/app/outputs/flutter-apk/app-release.apk "$KEY_ALIAS"
+        
+        # Verify
+        jarsigner -verify build/app/outputs/flutter-apk/app-release.apk
+        
+        # Align APK with zipalign
+        zipalign -v 4 build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/app-release-aligned.apk
+        mv build/app/outputs/flutter-apk/app-release-aligned.apk build/app/outputs/flutter-apk/app-release.apk
     
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
@@ -82,7 +96,7 @@ jobs:
           **Build info:**
           - Build number: ${{ github.run_number }}
           - Commit: ${{ github.sha }}
-          - Type: Unsigned release build
+          - Type: Signed release build
           
           **Let op:** Dit is een automatische build.
         draft: false
