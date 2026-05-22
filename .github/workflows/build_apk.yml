@@ -44,10 +44,14 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
     
-    - name: Get keystore from repo
+    - name: Get keystore from secrets
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: |
-        # Use keystore base64 from repo file
-        cat android/app/ritme-keystore-base64.txt | base64 -d > android/app/ritme-release.keystore
+        echo "$KEYSTORE_BASE64" | base64 -d > android/app/ritme-release.keystore
         ls -la android/app/ritme-release.keystore
     
     - name: Build signed APK
