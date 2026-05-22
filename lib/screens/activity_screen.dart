@@ -166,7 +166,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
       String name = activity['naam'];
       
       String timeStr;
-      int currentScore = activity['p_score'] ?? 0;
+      int currentScore;
+      dynamic rawScore = activity['p_score'];
+      if (rawScore is int) {
+        currentScore = rawScore;
+      } else if (rawScore is String) {
+        currentScore = int.tryParse(rawScore) ?? 0;
+      } else {
+        currentScore = 0;
+      }
       
       // For "Opstaan", use wake_time from sleep log if available (skip time picker)
       if (name == 'Opstaan' && _wakeTime != null && _wakeTime!.isNotEmpty) {
@@ -652,7 +660,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
     IconData icoon = activity['icoon'] ?? Icons.circle;
     TimeOfDay? richtTijd = activity['richttijd'];
     TimeOfDay? werkTijd = activity['werkelijke_tijd'];
-    int pScore = activity['p_score'] ?? 0;
+    int pScore;
+    dynamic rawScore = activity['p_score'];
+    if (rawScore is int) {
+      pScore = rawScore;
+    } else if (rawScore is String) {
+      pScore = int.tryParse(rawScore) ?? 0;
+    } else {
+      pScore = 0;
+    }
     bool isDone = werkTijd != null;
 
     return Container(

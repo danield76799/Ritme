@@ -120,7 +120,15 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   Widget _buildActivityCard(Map<String, dynamic> activity) {
     final type = activity['activity_type'] ?? 'Onbekend';
     final time = activity['actual_time'] ?? '--:--';
-    final pScore = activity['p_score'] ?? 0;
+    final dynamic rawPScore = activity['p_score'];
+    int pScore;
+    if (rawPScore is int) {
+      pScore = rawPScore;
+    } else if (rawPScore is String) {
+      pScore = int.tryParse(rawPScore) ?? 0;
+    } else {
+      pScore = 0;
+    }
     final hasData = activity['actual_time'] != null;
     
     // Get icon for activity type
