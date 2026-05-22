@@ -416,22 +416,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Icons.backup,
           () async {
             try {
-              final backupData = await BackupService.exportAllData();
-              final jsonString = jsonEncode(backupData);
-              final fileName = 'ritme_backup_${DateTime.now().toIso8601String().split('T')[0]}.json';
-              
-              // Save to downloads directory
-              final directory = Directory('/storage/emulated/0/Download');
-              if (!directory.existsSync()) {
-                directory.createSync(recursive: true);
-              }
-              final file = File('${directory.path}/$fileName');
-              await file.writeAsString(jsonString);
+              final backupPath = await BackupService.exportToFile();
               
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Backup opgeslagen: ${file.path}'),
+                    content: Text('Backup opgeslagen: $backupPath'),
                     backgroundColor: Colors.green[700],
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -469,7 +459,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final file = File(result.files.first.path!);
                 final jsonData = await file.readAsString();
                 final data = jsonDecode(jsonData);
-                await BackupService.importAllData(data);
+                await BackupService.restoreFromData(data);
                 
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
