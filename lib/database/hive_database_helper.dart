@@ -800,7 +800,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await _weightLogs.put(id, {
       'id': id,
       'date': date.toString(),
-      'weight': weight.toString(),
+      'weight': weight,
       'notes': notes?.toString(),
     });
     return id;
