@@ -48,13 +48,14 @@ class _MoodScreenState extends State<MoodScreen> {
       if (!mounted) return;
       if (log != null) {
         // Life Chart: stemming 0-100 (gesplitst mogelijk)
-        final stemmingHoog = log['stemming_hoog'] as double?;
-        final stemmingLaag = log['stemming_laag'] as double?;
+        final stemmingHoog = log['stemming_hoog'] as double? ?? log['stemming_hoog'] as int? ?? 50;
+        final stemmingLaag = log['stemming_laag'] as double? ?? log['stemming_laag'] as int? ?? 50;
+        final gesplitsteStemming = log['gesplitste_stemming'] as int? ?? 0;
         if (stemmingHoog != null) {
-          _stemmingHoog = stemmingHoog;
+          _stemmingHoog = stemmingHoog.toDouble();
         }
-        if (stemmingLaag != null) {
-          _stemmingLaag = stemmingLaag;
+        if (gesplitsteStemming == 1 && stemmingLaag != null) {
+          _stemmingLaag = stemmingLaag.toDouble();
           _gesplitsteStemming = true;
         } else {
           _stemmingLaag = _stemmingHoog;
