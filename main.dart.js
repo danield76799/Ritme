@@ -114492,7 +114492,7 @@ if(a>=1)return A.lQ
 return A.bs},
 amQ(a){if(a>=3)return"Goed"
 if(a>=2)return"Matig"
-if(a>=1)return"Alert"
+if(a>=1)return"Let op"
 return"Leeg"},
 amP(a){if(a>=3)return A.zs
 if(a>=2)return A.i8
