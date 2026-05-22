@@ -52,38 +52,25 @@ class BackupService {
     return export;
   }
 
-  /// Save backup to Downloads folder
+  /// Save backup and share it so user can choose Downloads
   static Future<String> saveLocalBackup() async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
     
-    // Try to save to Downloads folder
-    String? filePath;
-    try {
-      // On Android, try to get external storage/Downloads
-      final dir = await getExternalStorageDirectory();
-      if (dir != null) {
-        // Navigate to Downloads folder
-        final downloadsPath = dir.path.replaceAll('/Android/data/com.danield.ritme/files', '/Download');
-        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
-        final file = File('$downloadsPath/ritme_backup_$timestamp.json');
-        await file.writeAsString(jsonString);
-        filePath = file.path;
-      }
-    } catch (e) {
-      debugPrint('Could not save to Downloads, falling back to app documents: $e');
-    }
+    // Save to app documents first
+    final dir = await getApplicationDocumentsDirectory();
+    final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
+    final file = File('${dir.path}/ritme_backup_$timestamp.json');
+    await file.writeAsString(jsonString);
     
-    // Fallback to app documents if Downloads failed
-    if (filePath == null) {
-      final dir = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-      final file = File('${dir.path}/ritme_backup_$timestamp.json');
-      await file.writeAsString(jsonString);
-      filePath = file.path;
-    }
+    // Share the file so user can save to Downloads
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      subject: 'Ritme Backup ${DateTime.now().toString().split(' ')[0]}',
+      text: 'Ritme backup - sla op in Downloads of deel via email',
+    );
     
-    return filePath;
+    return file.path;
   }
 
   /// Share backup via email or other apps
