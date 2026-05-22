@@ -20,15 +20,6 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    signingConfigs {
-        create("release") {
-            storeFile = file("ritme-release.keystore")
-            storePassword = "ritmerelease"
-            keyAlias = "ritme"
-            keyPassword = "ritmerelease"
-        }
-    }
-
     defaultConfig {
         applicationId = "com.ritme.ritme.v2"
         minSdk = flutter.minSdkVersion
