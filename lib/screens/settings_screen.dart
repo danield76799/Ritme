@@ -416,7 +416,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Icons.backup,
           () async {
             try {
-              final backupPath = await BackupService.exportToFile();
+              final backupPath = await BackupService.saveLocalBackup();
               
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -456,10 +456,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
               
               if (result != null && result.files.isNotEmpty) {
-                final file = File(result.files.first.path!);
-                final jsonData = await file.readAsString();
-                final data = jsonDecode(jsonData);
-                await BackupService.restoreFromData(data);
+                final filePath = result.files.first.path!;
+                await BackupService.restoreFromFile(filePath);
                 
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
