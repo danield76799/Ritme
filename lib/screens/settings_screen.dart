@@ -122,26 +122,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.grey[300], // Light background for visibility
+      backgroundColor: Colors.white, // White background for better contrast
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.grey[300],
+          color: Colors.white,
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Colors.grey[300],
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                color: AppTheme.primaryTeal,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuleer', style: TextStyle(color: Colors.black87, fontSize: 16)),
+                      child: const Text('Annuleer', style: TextStyle(color: Colors.white, fontSize: 16)),
                     ),
                     Text(
                       label,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                     TextButton(
                       onPressed: () {
@@ -155,20 +155,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         });
                         Navigator.pop(context);
                       },
-                      child: const Text('Klaar', style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.w600)),
+                      child: const Text('Klaar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1, color: Colors.grey), // Will be grey[300]
+              const Divider(height: 1, color: Colors.grey),
               Expanded(
                 child: Container(
-                  color: Colors.grey[200],
+                  color: Colors.white,
                   child: CupertinoTimerPicker(
                     mode: CupertinoTimerPickerMode.hm,
                     minuteInterval: 15,
                     initialTimerDuration: initialDuration,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: Colors.white,
                     onTimerDurationChanged: (Duration newDuration) {
                       selectedDuration = newDuration;
                     },
