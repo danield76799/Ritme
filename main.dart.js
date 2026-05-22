@@ -114549,7 +114549,7 @@ l=B.bZ(A.zF,A.bs,h,14)
 k=c==="--:--"
 j=k?A.bs:A.b_
 i=t.p
-j=B.b([m,A.d3,B.bs(B.b([l,A.iV,B.a1("Target: "+c,h,h,h,B.aA(h,h,j,h,h,h,h,h,h,h,h,13,h,h,k?A.ad:A.ba,h,h,!0,h,h,h,h,h,h,h,h),h,h,h)],i),A.S,A.L,A.K,0,h)],i)
+j=B.b([m,A.d3,B.bs(B.b([l,A.iV,B.a1("Doel: "+c,h,h,h,B.aA(h,h,j,h,h,h,h,h,h,h,h,13,h,h,k?A.ad:A.ba,h,h,!0,h,h,h,h,h,h,h,h),h,h,h)],i),A.S,A.L,A.K,0,h)],i)
 if(r)A.l.V(j,B.b([A.iX,B.bs(B.b([B.bZ(A.a4I,A.N,h,14),A.iV,B.a1("Werkelijk: "+B.j(q),h,h,h,B.aA(h,h,A.N,h,h,h,h,h,h,h,h,13,h,h,h,h,h,!0,h,h,h,h,h,h,h,h),h,h,h)],i),A.S,A.L,A.K,0,h)],i))
 m=B.c5(B.aX(j,A.ay,A.L,A.K,0,A.W),1)
 l=o.be(0.15)
