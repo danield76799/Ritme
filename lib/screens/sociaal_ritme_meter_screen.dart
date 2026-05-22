@@ -82,10 +82,10 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   }
 
   String _getPScoreLabel(int score) {
-    if (score >= 3) return 'Goed';
-    if (score >= 2) return 'Matig';
-    if (score >= 1) return 'Let op';
-    return 'Leeg';
+    if (score >= 3) return '✓';
+    if (score >= 2) return '~';
+    if (score >= 1) return '!';
+    return '-';
   }
 
   IconData _getPScoreIcon(int score) {
@@ -310,44 +310,23 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               ),
             ),
 
-            // P-score badge met grafische weergave
+            // P-score indicator (subtle)
             Container(
-              width: 60,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: pColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: pColor.withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
+                shape: BoxShape.circle,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _getPScoreIcon(pScore),
+              child: Center(
+                child: Text(
+                  _getPScoreLabel(pScore),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                     color: pColor,
-                    size: 24,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'P$pScore',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: pColor,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _getPScoreLabel(pScore),
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: pColor.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ],
