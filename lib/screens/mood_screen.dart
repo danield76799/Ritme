@@ -91,7 +91,8 @@ class _MoodScreenState extends State<MoodScreen> {
 
   void _onDatumVeranderd(DateTime nieuweDatum) {
     setState(() => _geselecteerdeDatum = nieuweDatum);
-    _loadData();
+    // Use a microtask to ensure setState completes before loading
+    Future.microtask(() => _loadData());
   }
 
   Future<void> _opslaan() async {
