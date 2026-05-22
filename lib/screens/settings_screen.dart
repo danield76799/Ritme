@@ -306,13 +306,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             try {
               final path = await BackupService.saveLocalBackup();
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Backup gedeeld! Je kunt het vinden in de Bestanden app onder Android/data/com.danield.ritme/files/', style: const TextStyle(color: Colors.white)),
-                    backgroundColor: Colors.green[700],
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    duration: const Duration(seconds: 3),
+                // Show dialog with path so user can copy it
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Backup gemaakt'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Backup opgeslagen in:'),
+                        const SizedBox(height: 8),
+                        SelectableText(
+                          path,
+                          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Tip: Gebruik de deel knop om het via email naar jezelf te sturen.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Sluiten'),
+                      ),
+                    ],
                   ),
                 );
               }
