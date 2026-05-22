@@ -11,7 +11,7 @@ class WeeklyMoodChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (logs.isEmpty) {
       return Container(
-        height: 200,
+        height: 160,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -31,16 +31,58 @@ class WeeklyMoodChart extends StatelessWidget {
               Text(
                 'Nog geen stemming data',
                 style: TextStyle(
-                  color: Colors.grey[700],
+                  color: Colors.black87,
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Voeg je eerste log toe om de trend te zien',
+                'Voeg minimaal 2 logs toe om een trend te zien',
                 style: TextStyle(
-                  color: Colors.grey[500],
+                  color: Colors.black54,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Need at least 2 data points for a meaningful trend line
+    if (logs.length < 2) {
+      return Container(
+        height: 160,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.trending_up,
+                size: 48,
+                color: AppTheme.primaryTeal.withOpacity(0.5),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Eén log opgeslagen!',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Voeg nog één log toe voor een trendlijn',
+                style: TextStyle(
+                  color: Colors.black54,
                   fontSize: 14,
                 ),
               ),
@@ -71,7 +113,7 @@ class WeeklyMoodChart extends StatelessWidget {
     }
 
     return Container(
-      height: 140,
+      height: 200,
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration(
         color: Theme.of(context).brightness == Brightness.dark 
@@ -86,11 +128,12 @@ class WeeklyMoodChart extends StatelessWidget {
             'Stemming Trend (7 dagen)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 150,
+            height: 100,
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
