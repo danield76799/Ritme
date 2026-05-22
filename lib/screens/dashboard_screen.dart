@@ -70,14 +70,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       int sleepCount = 0;
       int activityCount = 0;
       
-      // Get all sleep logs
-      final allLogs = _dailyLogs.toMap();
-      for (var entry in allLogs.entries) {
-        final log = entry.value;
+      for (var log in dailyLogs) {
         if (log['date'] == null) continue;
         
         try {
-          final logDate = DateTime.parse(log['date']);
+          final logDate = DateTime.parse(log['date'] as String);
           if (logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo)) {
             // Check for sleep_hours (from sleep tracking)
             final dynamic rawSleep = log['sleep_hours'];
