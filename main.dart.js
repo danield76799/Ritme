@@ -112548,7 +112548,7 @@ return B.z($async$$0,r)},
 $S:5}
 B.aA5.prototype={
 $1(a){var s=null
-return B.rJ(B.b([B.eP(A.j2,new B.aA3(a),s),B.hK(A.bbF,new B.aA4(a),B.h4(s,s,A.bx,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),A.bbZ,s,A.bbJ)},
+return B.rJ(B.b([B.eP(A.j2,new B.aA3(a),s),B.hK(A.bbG,new B.aA4(a),B.h4(s,s,A.bx,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),A.bbZ,s,A.bbJ)},
 $S:52}
 B.aA3.prototype={
 $0(){B.cC(this.a,!1).dn(!1)
@@ -112802,7 +112802,7 @@ i=f.w
 i=f.JG(A.eT,A.a4Q,"Activiteiten deze week","",i>0?A.t.j(i):"-")
 h=B.bs(B.b([B.aN(e,e,A.I,e,e,new B.aU(A.N,e,e,B.a5(2),e,e,A.a_),e,24,e,e,e,e,e,4),A.ca,B.a1("Stemming Trend",e,e,e,B.aA(e,e,A.c4,e,e,e,e,e,e,e,e,20,e,e,A.aA,e,e,!0,e,e,e,e,e,e,e,e),e,e,e)],r),A.S,A.L,A.K,0,e)
 g=B.a5(16)
-return B.hW(p,A.cp,B.vc(!0,new B.GX(B.lx(B.aX(B.b([o,A.VV,n,A.bi,m,A.VV,l,A.bi,k,A.aX,j,A.aX,i,A.dB,h,A.bi,B.aN(e,new B.Zy(f.y,e),A.d9,e,e,new B.aU(A.B,e,e,g,e,e,A.a_),e,200,e,e,e,e,e,e),A.aX,f.tB(a,A.zw,A.QB,"/insights","Inzichten & Patronen"),A.b5F],r),A.ay,A.L,A.K,0,A.W),A.bt,A.jo,e,A.aL),f.gajN(),A.N,e),A.bF,!0),B.aRL(A.N,A.tr,A.bbI,new B.aCO(f,a)))},
+return B.hW(p,A.cp,B.vc(!0,new B.GX(B.lx(B.aX(B.b([o,A.VV,n,A.bi,m,A.VV,l,A.bi,k,A.aX,j,A.aX,i,A.dB,h,A.bi,B.aN(e,new B.Zy(f.y,e),A.d9,e,e,new B.aU(A.B,e,e,g,e,e,A.a_),e,200,e,e,e,e,e,e),A.aX,f.tB(a,A.zw,A.QB,"/insights","Inzichten & Patronen"),A.b5F],r),A.ay,A.L,A.K,0,A.W),A.bt,A.jo,e,A.aL),f.gajN(),A.N,e),A.bF,!0),B.aRL(A.N,A.tr,A.bbE,new B.aCO(f,a)))},
 Vf(a,b,c){var s=null,r=A.B.be(0.35),q=B.a5(12)
 return B.aN(s,B.bs(B.b([B.bZ(a,A.B,s,18),A.VU,B.a1(b+": "+c,s,s,s,A.baM,s,s,s)],t.p),A.S,A.L,A.b5,0,s),A.I,s,s,new B.aU(r,s,s,q,s,s,A.a_),s,s,s,s,A.rv,s,s,s)},
 tB(a,b,c,d,e){var s=null,r=B.a5(20),q=B.b([new B.bm(0,A.am,A.J.be(0.05),A.e0,10)],t.V),p=c.be(0.1)
@@ -114044,7 +114044,7 @@ B.dG().$1("MoodScreen build error: "+B.j(s))
 B.dG().$1("Stack: "+B.j(r))
 q=B.hW(B.jM(o,o,o,o,o,A.bbY),o,B.cn(B.aX(B.b([A.a5D,A.bi,B.a1("Fout: "+B.j(s),o,o,o,A.Wz,o,o,o)],t.p),A.S,A.bG,A.K,0,A.W),o,o),o)
 return q}},
-ai8(a){var s,r,q,p,o,n,m=this,l=null,k=t.p,j=B.jM(B.b([B.eP(A.bcj,m.gauj(),l)],k),A.N,0,A.dR,l,A.bbE)
+ai8(a){var s,r,q,p,o,n,m=this,l=null,k=t.p,j=B.jM(B.b([B.eP(A.bcj,m.gauj(),l)],k),A.N,0,A.dR,l,A.bbF)
 if(m.as)k=B.cn(B.nr(l,A.N,l,l,l,l,l,l,l,l),l,l)
 else{s=B.aN(l,B.aes(m.d,m.gaty()),A.I,A.B,l,l,l,l,l,l,l,l,l,l)
 r=m.e
@@ -114071,7 +114071,7 @@ r.push(A.aX)
 q=B.a5(12)
 p=B.h0(A.cF,1)
 o=B.aN(l,A.a5z,A.I,l,l,new B.aU(A.cx.be(0.1),l,l,B.a5(10),l,l,A.a_),l,40,l,l,l,l,l,40)
-n=B.c5(B.aX(B.b([A.bbG,B.a1("Aantal sociale interacties vandaag",l,l,l,B.aA(l,l,A.J,l,l,l,l,l,l,l,l,12,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l,l)],k),A.ay,A.L,A.K,0,A.W),1)
+n=B.c5(B.aX(B.b([A.bbH,B.a1("Aantal sociale interacties vandaag",l,l,l,B.aA(l,l,A.J,l,l,l,l,l,l,l,l,12,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l,l)],k),A.ay,A.L,A.K,0,A.W),1)
 r.push(B.aN(l,B.bs(B.b([o,A.ca,n,B.bs(B.b([m.V4(A.tm,m.Q>0?new B.aIq(m):l),B.aN(A.aP,B.a1(""+m.Q,l,l,l,A.pP,l,l,l),A.I,l,l,l,l,l,l,l,l,l,l,36),m.JF(A.k_,new B.aIr(m),!0)],k),A.S,A.L,A.b5,0,l)],k),A.S,A.L,A.K,0,l),A.I,l,l,new B.aU(A.B,l,p,q,l,l,A.a_),l,l,l,l,A.cq,l,l,l))
 k=B.aX(B.b([s,B.c5(B.lx(B.aX(r,A.ay,A.L,A.K,0,A.W),A.cq,l,l,A.aL),1)],k),A.S,A.L,A.K,0,A.W)}return B.hW(j,A.cp,k,l)},
 Vc(a,b,c,d){var s=null,r=B.a5(12),q=B.h0(A.cF,1),p=B.a1(c,s,s,s,B.aA(s,s,A.J,s,s,s,s,s,s,s,s,13,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),s,s,s),o=a.be(0.1),n=B.a5(12),m=t.p
@@ -120234,10 +120234,10 @@ A.L=new B.q4(0,"start")
 A.K=new B.UJ(1,"max")
 A.W=new B.Zm(1,"down")
 A.w6=new B.t(!0,null,null,null,null,null,14,A.bu,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-A.bbH=new B.b2("Ontstemde manie",null,A.w6,null,null,null,null,null,null,null)
+A.bbI=new B.b2("Ontstemde manie",null,A.w6,null,null,null,null,null,null,null)
 A.Ww=new B.t(!0,A.J,null,null,null,null,12,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 A.bbL=new B.b2("Manisch maar ongelukkig/irritant",null,A.Ww,null,null,null,null,null,null,null)
-A.aOF=s([A.bbH,A.bbL],t.p)
+A.aOF=s([A.bbI,A.bbL],t.p)
 A.a2s=new B.xs(A.aL,A.L,A.K,A.ay,null,A.W,null,0,A.aOF,null)
 A.a4b=new B.nE(1,A.h0,A.a2s,null)
 A.bci=new B.b2("Stemming veranderde vandaag",null,A.w6,null,null,null,null,null,null,null)
@@ -127261,10 +127261,10 @@ A.bbB=new B.b2("Open Gemini",null,null,null,null,null,null,null,null,null)
 A.WF=new B.b2("Opslaan",null,A.Wv,null,null,null,null,null,null,null)
 A.bbC=new B.b2("DIT KAN NIET ONGEDAAN WORDEN!\n\nAlle uw data zal worden verwijderd:\n\u2022 Dagelijkse logs\n\u2022 Medicatie inname\n\u2022 Activiteiten\n\u2022 Instellingen\n\nWeet u ABSOLUUT zeker dat u wilt doorgaan?",null,null,null,null,null,null,null,null,null)
 A.bbD=new B.b2("Omdat uw medische gegevens veilig en lokaal op uw eigen telefoon worden opgeslagen, kunnen wij uw PIN helaas niet voor u herstellen.\n\nAls u uw PIN echt niet meer weet, is de enige optie om de app volledig te resetten. Hierbij gaan al uw eerdere invoeren verloren.\n\nWeet u zeker dat u wilt doorgaan?",null,null,null,null,null,null,null,null,null)
-A.bbE=new B.b2("Life Chart",null,A.e3,null,null,null,null,null,null,null)
-A.bbF=new B.b2("Verwijderen",null,null,null,null,null,null,null,null,null)
-A.bbG=new B.b2("Sociale contacten",null,A.Wt,null,null,null,null,null,null,null)
-A.bbI=new B.b2("Gebeurtenis Toevoegen",null,A.j_,null,null,null,null,null,null,null)
+A.bbE=new B.b2("Belangrijke Gebeurtenis",null,A.j_,null,null,null,null,null,null,null)
+A.bbF=new B.b2("Life Chart",null,A.e3,null,null,null,null,null,null,null)
+A.bbG=new B.b2("Verwijderen",null,null,null,null,null,null,null,null,null)
+A.bbH=new B.b2("Sociale contacten",null,A.Wt,null,null,null,null,null,null,null)
 A.bbJ=new B.b2("Afspraak verwijderen?",null,null,null,null,null,null,null,null,null)
 A.bbK=new B.b2("Medicatie",null,A.e3,null,null,null,null,null,null,null)
 A.bbM=new B.b2("Samenvatting gekopieerd naar klembord!",null,null,null,null,null,null,null,null,null)
