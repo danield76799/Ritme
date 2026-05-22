@@ -310,18 +310,36 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
   }
 
   Future<void> _kopieerNaarKlembord() async {
-    final samenvatting = _genereerAiSamenvatting();
-    await Clipboard.setData(ClipboardData(text: samenvatting));
+    try {
+      final samenvatting = _genereerAiSamenvatting();
+      print('Kopieer rapport: samenvatting lengte = ${samenvatting.length}');
+      
+      await Clipboard.setData(ClipboardData(text: samenvatting));
+      print('Kopieer rapport: clipboard setData succesvol');
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Samenvatting gekopieerd naar klembord!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Samenvatting gekopieerd naar klembord!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      print('ERROR kopieer rapport: $e');
+      print('Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kon rapport niet kopiëren: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
     }
   }
 
