@@ -54,7 +54,7 @@ class BackupService {
     return export;
   }
 
-  /// Save backup and share it so user can choose Downloads
+  /// Save backup to a public accessible location
   static Future<String> saveLocalBackup() async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
@@ -64,6 +64,23 @@ class BackupService {
     final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
     final file = File('${dir.path}/ritme_backup_$timestamp.json');
     await file.writeAsString(jsonString);
+    
+    // Also try to save to external storage (public)
+    try {
+      final extDir = await getExternalStorageDirectory();
+      if (extDir != null) {
+        // Create a Ritme folder in external storage
+        final ritmeDir = Directory('${extDir.parent.parent.parent.path}/Ritme');
+        if (!await ritmeDir.exists()) {
+          await ritmeDir.create(recursive: true);
+        }
+        final publicFile = File('${ritmeDir.path}/ritme_backup_$timestamp.json');
+        await publicFile.writeAsString(jsonString);
+        debugPrint('Backup also saved to public: ${publicFile.path}');
+      }
+    } catch (e) {
+      debugPrint('Could not save to public storage: $e');
+    }
     
     // Share the file so user can save to Downloads
     await Share.shareXFiles(

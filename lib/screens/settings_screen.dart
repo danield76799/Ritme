@@ -308,7 +308,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Backup gedeeld! Sla op in Downloads of deel via email.', style: const TextStyle(color: Colors.white)),
+                    content: Text('Backup opgeslagen! Check je Bestanden app onder /Ritme/', style: const TextStyle(color: Colors.white)),
                     backgroundColor: Colors.green[700],
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
