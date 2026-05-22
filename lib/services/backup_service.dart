@@ -4,11 +4,51 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../database/database_helper.dart';
 
 class BackupService {
-  /// Export all Hive boxes to a JSON map (in main thread - isolate doesn't work with Hive)
+  static final DatabaseHelper _db = DatabaseHelper.instance;
+
+  /// Export all data - SQLite AND Hive
   static Future<Map<String, dynamic>> exportAllData() async {
-    // List of all possible box names
+    final export = <String, dynamic>{
+      'export_date': DateTime.now().toIso8601String(),
+      'app_version': '1.0.0',
+      'data': {},
+    };
+
+    // Export SQLite tables
+    try {
+      final dailyLogs = await _db.getDailyLogs();
+      if (dailyLogs.isNotEmpty) {
+        export['data']['sqlite_daily_logs'] = dailyLogs;
+        debugPrint('BackupService: exported ${dailyLogs.length} daily logs from SQLite');
+      }
+    } catch (e) {
+      debugPrint('BackupService: error exporting SQLite daily_logs - $e');
+    }
+
+    try {
+      final appointments = await _db.getMedicalAppointments();
+      if (appointments.isNotEmpty) {
+        export['data']['sqlite_appointments'] = appointments;
+        debugPrint('BackupService: exported ${appointments.length} appointments from SQLite');
+      }
+    } catch (e) {
+      debugPrint('BackupService: error exporting SQLite appointments - $e');
+    }
+
+    try {
+      final srmActivities = await _db.getSrmActivities('');
+      if (srmActivities.isNotEmpty) {
+        export['data']['sqlite_srm_activities'] = srmActivities;
+        debugPrint('BackupService: exported ${srmActivities.length} SRM activities from SQLite');
+      }
+    } catch (e) {
+      debugPrint('BackupService: error exporting SQLite SRM activities - $e');
+    }
+
+    // Export Hive boxes
     final boxNames = [
       'settings',
       'daily_logs',
@@ -20,16 +60,9 @@ class BackupService {
       'weight_logs',
       'medical_appointments',
     ];
-    
-    final export = <String, dynamic>{
-      'export_date': DateTime.now().toIso8601String(),
-      'app_version': '1.0.0',
-      'data': {},
-    };
 
     for (final boxName in boxNames) {
       try {
-        // Check if box is open first
         if (!Hive.isBoxOpen(boxName)) {
           debugPrint('BackupService: box $boxName not open, skipping');
           continue;
@@ -44,7 +77,7 @@ class BackupService {
         }
         if (boxData.isNotEmpty) {
           export['data'][boxName] = boxData;
-          debugPrint('BackupService: exported ${boxData.length} items from $boxName');
+          debugPrint('BackupService: exported ${boxData.length} items from Hive box $boxName');
         }
       } catch (e) {
         debugPrint('BackupService: skipping box $boxName - $e');
