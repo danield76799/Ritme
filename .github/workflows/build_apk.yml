@@ -51,6 +51,10 @@ jobs:
         # Decode keystore
         echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
         
+        # Find zipalign
+        ZIPALIGN=$(find $ANDROID_HOME/build-tools -name zipalign | head -1)
+        echo "Found zipalign at: $ZIPALIGN"
+        
         # Sign all APKs
         for apk in build/app/outputs/flutter-apk/*-release.apk; do
           echo "Signing $apk"
@@ -59,9 +63,14 @@ jobs:
             -storepass "$KEYSTORE_PASSWORD" \
             -keypass "$KEY_PASSWORD" \
             "$apk" "$KEY_ALIAS"
+          
+          # Align APK
+          ALIGNED="${apk%.apk}-aligned.apk"
+          "$ZIPALIGN" -f 4 "$apk" "$ALIGNED"
+          mv "$ALIGNED" "$apk"
         done
         
-        echo "All APKs signed successfully"
+        echo "All APKs signed and aligned successfully"
     
     - name: Upload APK Artifacts
       uses: actions/upload-artifact@v4
