@@ -260,7 +260,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                       Icon(Icons.schedule_outlined, size: 14, color: Colors.grey[400]),
                       const SizedBox(width: 4),
                       Text(
-                        'Target: $targetTijd',
+                        'Doel: $targetTijd',
                         style: TextStyle(
                           fontSize: 13, 
                           color: targetTijd == '--:--' ? Colors.grey[400] : Colors.grey[600],
