@@ -500,17 +500,24 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  @override
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
-    // Use a smaller ID to avoid 32-bit integer overflow
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000; // Max 999,999
-    await _medicationConfig.put(id, {
-      'id': id,
-      'naam': naam.toString(),
-      'dosering': dosering?.toString(),
-      'eenheid': eenheid?.toString(),
-      'reminder_enabled': reminderEnabled ? 1 : 0,
-    });
-    return id;
+    try {
+      // Use a smaller ID to avoid 32-bit integer overflow
+      final id = DateTime.now().millisecondsSinceEpoch % 1000000; // Max 999,999
+      final data = {
+        'id': id,
+        'naam': naam.toString(),
+        'dosering': dosering?.toString() ?? '',
+        'eenheid': eenheid?.toString() ?? '',
+        'reminder_enabled': reminderEnabled ? '1' : '0', // Store as string for consistency
+      };
+      await _medicationConfig.put(id, data);
+      return id;
+    } catch (e) {
+      print('ERROR in insertMedicationConfig: $e');
+      rethrow;
+    }
   }
 
   @override
