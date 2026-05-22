@@ -80,7 +80,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           }
           
           // Slaapkwaliteit
-          final sleep = log['uren_slaap'] as double?;
+          final dynamic rawSleep = log['uren_slaap'];
+          double? sleep;
+          if (rawSleep is num) {
+            sleep = rawSleep.toDouble();
+          } else if (rawSleep is String) {
+            sleep = double.tryParse(rawSleep);
+          }
           if (sleep != null && sleep > 0) {
             totalSleep += sleep;
             sleepCount++;
@@ -97,8 +103,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final srmActivities = await db.getSrmActivities(todayStr);
       int onTimeCount = 0;
       for (var activity in srmActivities) {
-        if (activity['actual_time'] != null && activity['p_score'] != null && activity['p_score'] as int >= 3) {
-          onTimeCount++;
+        if (activity['actual_time'] != null && activity['p_score'] != null) {
+          final dynamic rawPScore = activity['p_score'];
+          int pScore = 0;
+          if (rawPScore is int) {
+            pScore = rawPScore;
+          } else if (rawPScore is String) {
+            pScore = int.tryParse(rawPScore) ?? 0;
+          }
+          if (pScore >= 3) {
+            onTimeCount++;
+          }
         }
       }
       final stability = srmActivities.isNotEmpty ? (onTimeCount / srmActivities.length * 100) : 0;
