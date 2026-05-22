@@ -133,7 +133,9 @@ class WeeklyMoodChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Stemming Trend (7 dagen)',
+            logs.length == 1 
+                ? 'Stemming Trend (1 dag)'
+                : 'Stemming Trend (${logs.length} dagen)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -160,12 +162,18 @@ class WeeklyMoodChart extends StatelessWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      reservedSize: 30,
+                      interval: 1,
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
+                        // Only show title for exact data point indices, and only if we have that title
                         if (index >= 0 && index < titles.length) {
-                          return Text(
-                            titles[index],
-                            style: const TextStyle(fontSize: 10),
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              titles[index],
+                              style: const TextStyle(fontSize: 10),
+                            ),
                           );
                         }
                         return const Text('');

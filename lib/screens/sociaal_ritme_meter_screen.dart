@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../utils/app_theme.dart';
+import 'package:intl/intl.dart';
+import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
 
@@ -12,8 +13,18 @@ class SociaalRitmeMeterScreen extends StatefulWidget {
 
 class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   List<Map<String, dynamic>> _activities = [];
+  Map<String, dynamic>? _settings;
   bool _isLoading = true;
   String? _errorMessage;
+
+  // De 5 standaard activiteiten
+  final List<Map<String, dynamic>> _standaardActiviteiten = [
+    {'naam': 'Opstaan', 'icoon': Icons.wb_sunny_outlined, 'targetKey': 'target_opstaan'},
+    {'naam': 'Eerste contact', 'icoon': Icons.person_outline, 'targetKey': 'target_contact'},
+    {'naam': 'Werk / Hobby', 'icoon': Icons.work_outline, 'targetKey': 'target_werk'},
+    {'naam': 'Avondeten', 'icoon': Icons.restaurant_outlined, 'targetKey': 'target_eten'},
+    {'naam': 'Naar bed', 'icoon': Icons.bedtime_outlined, 'targetKey': 'target_slapen'},
+  ];
 
   @override
   void initState() {
@@ -30,8 +41,11 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     try {
       final today = DateTime.now().toIso8601String().split('T')[0];
       final activities = await db.getSrmActivities(today);
+      final settings = await db.getSettings();
+
       setState(() {
         _activities = activities;
+        _settings = settings;
         _isLoading = false;
       });
     } catch (e, stackTrace) {
@@ -43,6 +57,34 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     }
   }
 
+  String _getTargetTime(String key) {
+    final value = _settings?[key] as String?;
+    if (value == null || value.isEmpty) return '--:--';
+    return value;
+  }
+
+  Map<String, dynamic>? _getActivityForType(String type) {
+    try {
+      return _activities.firstWhere((a) => a['activity_type'] == type);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Color _getPScoreColor(int score) {
+    if (score >= 3) return Colors.green;
+    if (score >= 2) return Colors.orange;
+    if (score >= 1) return Colors.red.shade400;
+    return Colors.grey;
+  }
+
+  IconData _getPScoreIcon(int score) {
+    if (score >= 3) return Icons.check_circle;
+    if (score >= 2) return Icons.access_time;
+    if (score >= 1) return Icons.warning_amber;
+    return Icons.circle_outlined;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,14 +94,19 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadData,
+            tooltip: 'Vernieuwen',
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : _errorMessage != null
               ? _buildErrorWidget()
-              : _activities.isEmpty
-                  ? _buildEmptyState()
-                  : _buildActivitiesList(),
+              : _buildContent(),
     );
   }
 
@@ -70,11 +117,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
           const SizedBox(height: 12),
-          Text(
-            _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-            textAlign: TextAlign.center,
-          ),
+          Text(_errorMessage!, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadData,
@@ -85,77 +128,75 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.schedule_outlined, size: 48, color: Colors.grey[400]),
-          const SizedBox(height: 12),
-          Text(
-            'Geen activiteiten vandaag',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+  Widget _buildContent() {
+    // Tel hoeveel activiteiten zijn ingepland
+    final ingeplandCount = _activities.where((a) => (a['p_score'] ?? 0) > 0).length;
+
+    return Column(
+      children: [
+        // Header met datum en summary
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            color: AppTheme.primaryTeal,
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Voeg activiteiten toe via het Activiteitenscherm',
-            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+          child: Column(
+            children: [
+              Text(
+                DateFormat('EEEE d MMMM', 'nl_NL').format(DateTime.now()),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$ingeplandCount / 5 activiteiten ingepland',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        // Lijst van activiteiten
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: _standaardActiviteiten.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final activiteit = _standaardActiviteiten[index];
+              return _buildActivityCard(activiteit);
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildActivitiesList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: _activities.length,
-      itemBuilder: (context, index) {
-        final activity = _activities[index];
-        return _buildActivityCard(activity);
-      },
-    );
-  }
+  Widget _buildActivityCard(Map<String, dynamic> activiteit) {
+    final naam = activiteit['naam'] as String;
+    final icoon = activiteit['icoon'] as IconData;
+    final targetKey = activiteit['targetKey'] as String;
 
-  Widget _buildActivityCard(Map<String, dynamic> activity) {
-    final type = activity['activity_type'] ?? 'Onbekend';
-    final time = activity['actual_time'] ?? '--:--';
-    final dynamic rawPScore = activity['p_score'];
-    int pScore;
-    if (rawPScore is int) {
-      pScore = rawPScore;
-    } else if (rawPScore is String) {
-      pScore = int.tryParse(rawPScore) ?? 0;
-    } else {
-      pScore = 0;
-    }
-    final hasData = activity['actual_time'] != null;
-    
-    // Get icon for activity type
-    IconData activityIcon = _getActivityIcon(type);
-    
-    // P-score kleur
-    Color scoreColor;
-    String scoreLabel;
-    if (!hasData) {
-      scoreColor = Colors.grey;
-      scoreLabel = 'Niet ingevuld';
-    } else if (pScore >= 3) {
-      scoreColor = Colors.green;
-      scoreLabel = 'Helemaal op tijd';
-    } else if (pScore >= 2) {
-      scoreColor = Colors.orange;
-      scoreLabel = 'Kort gemist';
-    } else if (pScore >= 1) {
-      scoreColor = Colors.red.shade400;
-      scoreLabel = 'Gemist';
-    } else {
-      scoreColor = Colors.grey;
-      scoreLabel = 'Niet ingevuld';
-    }
+    final targetTijd = _getTargetTime(targetKey);
+    final dbActiviteit = _getActivityForType(naam);
+    final isGedaan = dbActiviteit != null && (dbActiviteit['p_score'] ?? 0) > 0;
+    final werkTijd = dbActiviteit?['actual_time'] as String? ?? null;
+    final pScore = dbActiviteit?['p_score'] as int? ?? 0;
+
+    final pColor = _getPScoreColor(pScore);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -163,7 +204,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -171,63 +212,87 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            // Activity icon in colored circle
+            // Icoon
             Container(
-              width: 56,
-              height: 56,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: scoreColor.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
+                color: isGedaan
+                    ? AppTheme.primaryTeal.withValues(alpha: 0.1)
+                    : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(activityIcon, color: scoreColor, size: 28),
+              child: Icon(
+                icoon,
+                color: isGedaan ? AppTheme.primaryTeal : Colors.grey[400],
+                size: 24,
+              ),
             ),
             const SizedBox(width: 16),
-            // Activity info
+
+            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    type,
-                    style: const TextStyle(
+                    naam,
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF333333),
+                      color: isGedaan ? AppTheme.textCharcoal : Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    hasData ? 'Om $time' : 'Tijd niet ingevuld',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: hasData ? const Color(0xFF666666) : Colors.grey,
-                    ),
+                  Row(
+                    children: [
+                      // Richt tijd
+                      Icon(Icons.flag_outlined, size: 14, color: Colors.grey[400]),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Richt: $targetTijd',
+                        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                      ),
+                    ],
                   ),
+                  if (isGedaan) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(Icons.check_circle_outline, size: 14, color: AppTheme.primaryTeal),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Werkelijk: $werkTijd',
+                          style: TextStyle(fontSize: 13, color: AppTheme.primaryTeal),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
+
             // P-score badge
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: scoreColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(20),
+                color: pColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              child: Column(
                 children: [
                   Icon(
-                    pScore >= 3 ? Icons.check_circle : (hasData ? Icons.access_time : Icons.remove_circle_outline),
-                    size: 16,
-                    color: scoreColor,
+                    _getPScoreIcon(pScore),
+                    color: pColor,
+                    size: 20,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(height: 2),
                   Text(
-                    hasData ? 'P$pScore' : '-',
+                    'P$pScore',
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: scoreColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: pColor,
                     ),
                   ),
                 ],
@@ -237,22 +302,5 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         ),
       ),
     );
-  }
-  
-  IconData _getActivityIcon(String type) {
-    switch (type) {
-      case 'Opstaan':
-        return Icons.wb_sunny;
-      case 'Eerste contact':
-        return Icons.person_add;
-      case 'Werk / Hobby':
-        return Icons.work;
-      case 'Avondeten':
-        return Icons.restaurant;
-      case 'Naar bed':
-        return Icons.bedtime;
-      default:
-        return Icons.schedule;
-    }
   }
 }
