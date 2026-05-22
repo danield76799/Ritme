@@ -152,9 +152,38 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     // Stabiliteit berekenen (hoe constanter, hoe hoger)
     double stabiliteit = 0;
-    if (recenteLogs.length >= 3) {
-      // Check of er een patroon is in slaap/ stemming
-      stabiliteit = 75.0 + (recenteLogs.length * 3); // Placeholder stabiliteitsberekening
+    if (recenteLogs.length >= 2) {
+      // Bereken variantie in stemming en slaap
+      double stemmingVariantie = 0;
+      double slaapVariantie = 0;
+      
+      if (stemCount > 1) {
+        double gemStemming = totaalStemming / stemCount;
+        double sumSquaredDiff = 0;
+        for (var log in recenteLogs) {
+          dynamic rawStemming = log['stemming_hoog'];
+          if (rawStemming != null) {
+            double stemming;
+            if (rawStemming is num) {
+              stemming = rawStemming.toDouble();
+            } else if (rawStemming is String) {
+              stemming = double.tryParse(rawStemming) ?? 0.0;
+            } else {
+              stemming = 0.0;
+            }
+            sumSquaredDiff += (stemming - gemStemming) * (stemming - gemStemming);
+          }
+        }
+        stemmingVariantie = sumSquaredDiff / stemCount;
+      }
+      
+      // Converteer variantie naar stabiliteit score (0-100)
+      // Lage variantie = hoge stabiliteit
+      double maxVariantie = 100; // Maximale verwachte variantie
+      stabiliteit = (1 - (stemmingVariantie / maxVariantie).clamp(0.0, 1.0)) * 100;
+    } else {
+      // Met minder dan 2 dagen is stabiliteit onbekend
+      stabiliteit = 0;
     }
 
     return {
@@ -177,49 +206,57 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     // Slaap inzichten
     double gemSlaap = stats['gemiddeldeSlaap'];
-    if (gemSlaap < 6) {
-      final recentCount = stats['aantalDagen'] ?? 0;
-      if (recentCount <= 1) {
-        inzichten.add('⚠️ Afgelopen nacht sliep je minder dan 6 uur. Dit kan je stemming negatief beïnvloeden.');
-      } else {
-        inzichten.add('⚠️ Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beïnvloeden.');
+    int aantalDagen = stats['aantalDagen'] ?? 0;
+    if (gemSlaap > 0) {
+      if (aantalDagen <= 2) {
+        inzichten.add('Je hebt ${aantalDagen == 1 ? '1 nacht' : '$aantalDagen nachten'} slaap gelogd. Log meer dagen voor betere inzichten.');
+      } else if (gemSlaap < 6) {
+        inzichten.add('Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beinvloeden.');
+      } else if (gemSlaap >= 7 && gemSlaap <= 9) {
+        inzichten.add('Je slaap van gemiddeld ${gemSlaap.toStringAsFixed(1)} uur is prima!');
+      } else if (gemSlaap > 9) {
+        inzichten.add('Je slaapt gemiddeld ${gemSlaap.toStringAsFixed(1)} uur - veel rust is goed!');
       }
-    } else if (gemSlaap >= 7 && gemSlaap <= 9) {
-      inzichten.add('✅ Je slaap van gemiddeld ${gemSlaap.toStringAsFixed(1)} uur is prima!');
-    } else if (gemSlaap > 9) {
-      inzichten.add('💤 Je slaapt gemiddeld ${gemSlaap.toStringAsFixed(1)} uur - veel rust is goed!');
     }
 
     // Stemming inzichten
     double gemStemming = stats['gemiddeldeStemming'];
     if (gemStemming != 0) {
-      // Converteer van -5 tot +5 naar 0-10 schaal
-      double stemming10 = ((gemStemming + 5) / 10 * 10).clamp(0.0, 10.0);
-      if (stemming10 < 4) {
-        inzichten.add('📉 Je gemiddelde stemming is aan de lage kant. Overweeg extra zelfzorg deze week.');
-      } else if (stemming10 >= 6) {
-        if (gemStemming.abs() < 0.5) {
-          inzichten.add('😐 Je stemming is stabiel/neutraal.');
-        } else if (gemStemming > 0) {
-          inzichten.add('😊 Je stemming is overwegend positief!');
-        }
+      // Converteer naar -5 tot +5 schaal als het op 0-100 schaal staat
+      double stemmingSchaal;
+      if (gemStemming > 10) {
+        // Waarschijnlijk 0-100 schaal, converteer naar -5 tot +5
+        stemmingSchaal = ((gemStemming / 100) * 10 - 5).clamp(-5.0, 5.0);
+      } else {
+        // Al op -5 tot +5 schaal
+        stemmingSchaal = gemStemming.clamp(-5.0, 5.0);
+      }
+      
+      if (stemmingSchaal < -2) {
+        inzichten.add('Je gemiddelde stemming is aan de lage kant. Overweeg extra zelfzorg deze week.');
+      } else if (stemmingSchaal > 2) {
+        inzichten.add('Je stemming is overwegend positief!');
+      } else {
+        inzichten.add('Je stemming is stabiel/neutraal.');
       }
     }
 
     // Activiteiten
     int activiteiten = stats['totaleActiviteiten'];
-    if (activiteiten < 7) {
-      inzichten.add('🎯 Probeer meer sociale activiteiten te plannen - die helpen je ritme stabiel te houden.');
+    if (activiteiten < 7 && aantalDagen > 2) {
+      inzichten.add('Probeer meer sociale activiteiten te plannen - die helpen je ritme stabiel te houden.');
     } else if (activiteiten >= 14) {
-      inzichten.add('🌟 Veel activiteiten deze week! Zorg voor voldoende rustmomenten.');
+      inzichten.add('Veel activiteiten deze week! Zorg voor voldoende rustmomenten.');
     }
 
-    // Stabiliteit
+    // Stabiliteit - alleen tonen als er genoeg data is
     double stabiliteit = stats['stabiliteit'];
-    if (stabiliteit > 80) {
-      inzichten.add('⚡ Je ritme is erg stabiel - uitstekend!');
-    } else if (stabiliteit < 50) {
-      inzichten.add('🔄 Je ritme wisselt sterk. Probeer vaste tijden aan te houden voor opstaan en slapen.');
+    if (aantalDagen >= 5) {
+      if (stabiliteit > 80) {
+        inzichten.add('Je ritme is erg stabiel - uitstekend!');
+      } else if (stabiliteit < 50) {
+        inzichten.add('Je ritme wisselt sterk. Probeer vaste tijden aan te houden voor opstaan en slapen.');
+      }
     }
 
     return inzichten;
@@ -234,27 +271,36 @@ class _InsightsScreenState extends State<InsightsScreen> {
     double gemSlaap = _weeklyStats['gemiddeldeSlaap'];
     double gemStemming = _weeklyStats['gemiddeldeStemming'];
     int activiteiten = _weeklyStats['totaleActiviteiten'];
+    int aantalDagen = _weeklyStats['aantalDagen'] ?? 0;
+
+    // Converteer stemming naar -5 tot +5 schaal
+    double stemmingSchaal;
+    if (gemStemming > 10) {
+      stemmingSchaal = ((gemStemming / 100) * 10 - 5).clamp(-5.0, 5.0);
+    } else {
+      stemmingSchaal = gemStemming.clamp(-5.0, 5.0);
+    }
 
     // Anonimiseer - geen namen, geen data
     String samenvatting = '''
 Ritme Weekrapport (anoniem)
 
 Periode: Afgelopen 7 dagen
-Aantal gelogde dagen: ${logs.length}
+Aantal gelogde dagen: $aantalDagen
 
 Slaap:
 - Gemiddeld: ${gemSlaap.toStringAsFixed(1)} uur per nacht
 - Aantal nachten gelogd: ${logs.where((l) => l['uren_slaap'] != null).length}
 
 Stemming:
-- Gemiddeld: ${gemStemming.toStringAsFixed(1)} (schaal -5 tot +5)
-- Stemming: ${gemStemming.abs() < 0.5 ? 'Stabiel/Neutraal' : (gemStemming >= 0 ? 'Overwegend positief' : 'Overwegend negatief')}
+- Gemiddeld: ${stemmingSchaal.toStringAsFixed(1)} (schaal -5 tot +5)
+- Stemming: ${stemmingSchaal.abs() < 0.5 ? 'Stabiel/Neutraal' : (stemmingSchaal >= 0 ? 'Overwegend positief' : 'Overwegend negatief')}
 
 Activiteiten:
 - Totaal geregistreerd: $activiteiten
 
 Patronen opgevallen:
-${_insights.map((i) => '- ${i.replaceAll(RegExp(r'^[⚠️✅💤😊📉📈🎯🌟⚡🔄]'), '').trim()}').join('\n')}
+${_insights.map((i) => '- ${i.replaceAll(RegExp(r'^[\u{1F300}-\u{1F9FF}]'), '').trim()}').join('\n')}
 
 -- 
 Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identificatiegegevens.
@@ -363,17 +409,17 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _bouwStatCard('💤', 'Gem. Slaap', _formatSlaapUren((_weeklyStats['gemiddeldeSlaap'] ?? 0).toDouble()), Colors.blue)),
+                      Expanded(child: _bouwStatCard('Slaap', 'Gem. Slaap', _formatSlaapUren((_weeklyStats['gemiddeldeSlaap'] ?? 0).toDouble()), Colors.blue)),
                       const SizedBox(width: 12),
-                      Expanded(child: _bouwStatCard('😊', 'Gem. Stemming', '${(_weeklyStats['gemiddeldeStemming'] ?? 0).toStringAsFixed(1)}', Colors.orange)),
+                      Expanded(child: _bouwStatCard('Stemming', 'Gem. Stemming', _formatStemming((_weeklyStats['gemiddeldeStemming'] ?? 0).toDouble()), Colors.orange)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _bouwStatCard('🎯', 'Sociaal Ritme Meter', '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
+                      Expanded(child: _bouwStatCard('Ritme', 'Sociaal Ritme', '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
                       const SizedBox(width: 12),
-                      Expanded(child: _bouwStatCard('⚡', 'Stabiliteit', '${(_weeklyStats['stabiliteit'] ?? 0).toStringAsFixed(0)}%', Colors.purple)),
+                      Expanded(child: _bouwStatCard('Stabiliteit', 'Stabiliteit', '${(_weeklyStats['stabiliteit'] ?? 0).toStringAsFixed(0)}%', Colors.purple)),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -549,6 +595,18 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
     );
   }
 
+  String _formatStemming(double stemming) {
+    if (stemming == 0) return '0.0';
+    // Converteer naar -5 tot +5 schaal
+    double stemmingSchaal;
+    if (stemming > 10) {
+      stemmingSchaal = ((stemming / 100) * 10 - 5).clamp(-5.0, 5.0);
+    } else {
+      stemmingSchaal = stemming.clamp(-5.0, 5.0);
+    }
+    return stemmingSchaal.toStringAsFixed(1);
+  }
+
   String _formatSlaapUren(double uren) {
     if (uren <= 0) return '0u 0m';
     final uur = uren.floor();
@@ -556,7 +614,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
     return '${uur}u ${minuten}m';
   }
 
-  Widget _bouwStatCard(String emoji, String label, String waarde, Color kleur) {
+  Widget _bouwStatCard(String label, String subtitle, String waarde, Color kleur) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -573,7 +631,14 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: kleur,
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             waarde,
@@ -585,7 +650,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
           ),
           const SizedBox(height: 4),
           Text(
-            label,
+            subtitle,
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey[600],
