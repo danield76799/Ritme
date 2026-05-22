@@ -6,12 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BackupService {
-  /// Export all Hive boxes to a JSON map (runs in isolate)
+  /// Export all Hive boxes to a JSON map (in main thread - isolate doesn't work with Hive)
   static Future<Map<String, dynamic>> exportAllData() async {
-    return await compute(_exportDataInIsolate, null);
-  }
-  
-  static Map<String, dynamic> _exportDataInIsolate(void _) {
     // List of all possible box names
     final boxNames = [
       'settings',
@@ -33,6 +29,11 @@ class BackupService {
 
     for (final boxName in boxNames) {
       try {
+        // Check if box is open first
+        if (!Hive.isBoxOpen(boxName)) {
+          debugPrint('BackupService: box $boxName not open, skipping');
+          continue;
+        }
         final box = Hive.box(boxName);
         final boxData = <String, dynamic>{};
         for (final key in box.keys) {
@@ -43,6 +44,7 @@ class BackupService {
         }
         if (boxData.isNotEmpty) {
           export['data'][boxName] = boxData;
+          debugPrint('BackupService: exported ${boxData.length} items from $boxName');
         }
       } catch (e) {
         debugPrint('BackupService: skipping box $boxName - $e');
