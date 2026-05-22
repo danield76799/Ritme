@@ -58,9 +58,9 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   }
 
   String _getTargetTime(String key) {
-    final value = _settings?[key] as String?;
-    if (value == null || value.isEmpty) return '--:--';
-    return value;
+    final value = _settings?[key];
+    if (value == null || value.toString().isEmpty || value.toString() == '--:--') return '--:--';
+    return value.toString();
   }
 
   Map<String, dynamic>? _getActivityForType(String type) {
@@ -72,10 +72,17 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   }
 
   Color _getPScoreColor(int score) {
-    if (score >= 3) return Colors.green;
-    if (score >= 2) return Colors.orange;
-    if (score >= 1) return Colors.red.shade400;
-    return Colors.grey;
+    if (score >= 3) return Colors.green.shade600;
+    if (score >= 2) return Colors.orange.shade600;
+    if (score >= 1) return Colors.red.shade500;
+    return Colors.grey.shade400;
+  }
+
+  String _getPScoreLabel(int score) {
+    if (score >= 3) return 'Goed';
+    if (score >= 2) return 'Matig';
+    if (score >= 1) return 'Alert';
+    return 'Leeg';
   }
 
   IconData _getPScoreIcon(int score) {
@@ -246,12 +253,16 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      // Richt tijd
-                      Icon(Icons.flag_outlined, size: 14, color: Colors.grey[400]),
+                      // Target tijd
+                      Icon(Icons.schedule_outlined, size: 14, color: Colors.grey[400]),
                       const SizedBox(width: 4),
                       Text(
-                        'Richt: $targetTijd',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                        'Target: $targetTijd',
+                        style: TextStyle(
+                          fontSize: 13, 
+                          color: targetTijd == '--:--' ? Colors.grey[400] : Colors.grey[600],
+                          fontWeight: targetTijd == '--:--' ? FontWeight.normal : FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -272,27 +283,41 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               ),
             ),
 
-            // P-score badge
+            // P-score badge met grafische weergave
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              width: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
               decoration: BoxDecoration(
-                color: pColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: pColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: pColor.withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
               ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     _getPScoreIcon(pScore),
                     color: pColor,
-                    size: 20,
+                    size: 24,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     'P$pScore',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                       color: pColor,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _getPScoreLabel(pScore),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: pColor.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
