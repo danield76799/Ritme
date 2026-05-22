@@ -261,52 +261,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
             }
           },
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         _buildActionButton(
           'Backup maken',
           Icons.backup,
           () async {
             try {
-              final path = await BackupService.saveLocalBackup();
-              if (mounted) {
-                // Show dialog with path so user can copy it
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Backup gemaakt'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Backup opgeslagen in:'),
-                        const SizedBox(height: 8),
-                        SelectableText(
-                          path,
-                          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Tip: Gebruik de deel knop om het via email naar jezelf te sturen.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Sluiten'),
-                      ),
-                    ],
-                  ),
-                );
+              final backupData = await BackupService.createBackup();
+              final fileName = 'ritme_backup_${DateTime.now().toIso8601String().split('T')[0]}.json';
+              
+              // Save to downloads directory
+              final directory = Directory('/storage/emulated/0/Download');
+              if (!directory.existsSync()) {
+                directory.createSync(recursive: true);
               }
-            } catch (e, stack) {
-              debugPrint('Backup error: $e');
-              debugPrint('Stack: $stack');
+              final file = File('${directory.path}/$fileName');
+              await file.writeAsString(backupData);
+              
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Fout bij backup: $e', style: const TextStyle(color: Colors.white)),
+                    content: Text('Backup opgeslagen: ${file.path}'),
+                    backgroundColor: Colors.green[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Backup error: $e'),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -317,33 +304,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             }
           },
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         _buildActionButton(
-          'Backup delen (email)',
-          Icons.share,
-          () async {
-            try {
-              await BackupService.shareBackup();
-            } catch (e, stack) {
-              debugPrint('Share error: $e');
-              debugPrint('Stack: $stack');
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Fout bij delen: $e', style: const TextStyle(color: Colors.white)),
-                    backgroundColor: Colors.red[700],
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              }
-            }
-          },
-        ),
-        const SizedBox(height: 8),
-        _buildActionButton(
-          'Herstellen van backup',
+          'Backup herstellen',
           Icons.restore,
           () async {
             try {
@@ -351,27 +314,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 type: FileType.custom,
                 allowedExtensions: ['json'],
               );
-              if (result != null && result.files.single.path != null) {
-                await BackupService.restoreFromFile(result.files.single.path!);
+              
+              if (result != null && result.files.isNotEmpty) {
+                final file = File(result.files.first.path!);
+                final jsonData = await file.readAsString();
+                await BackupService.restoreBackup(jsonData);
+                
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Data hersteld!', style: TextStyle(color: Colors.white)),
+                      content: const Text('Backup succesvol hersteld!'),
                       backgroundColor: Colors.green[700],
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      duration: const Duration(seconds: 2),
+                      duration: const Duration(seconds: 3),
                     ),
                   );
                 }
+                _loadData(); // Reload settings
               }
-            } catch (e, stack) {
-              debugPrint('Restore error: $e');
-              debugPrint('Stack: $stack');
+            } catch (e) {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Fout bij herstellen: $e', style: const TextStyle(color: Colors.white)),
+                    content: Text('Herstel error: $e'),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -386,123 +352,99 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, VoidCallback onPressed) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, color: AppTheme.primaryTeal),
-        label: Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16)),
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          side: BorderSide(color: AppTheme.primaryTeal, width: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Colors.white,
-        ),
-      ),
-    );
-  }
-
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.primaryTeal,
+          letterSpacing: 0.5,
         ),
       ),
     );
   }
 
   Widget _buildTextField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
         controller: controller,
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-        ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(
-            color: Colors.black87,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+          labelStyle: TextStyle(color: Colors.grey[600]),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
           ),
           filled: true,
           fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.black, width: 2),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.black, width: 2),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF008080), width: 2),
-          ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
+        style: const TextStyle(color: Colors.black87, fontSize: 16),
       ),
     );
   }
 
   Widget _buildTimeField(String label, String key) {
-    final displayValue = _settings?[key]?.toString() ?? '--:--';
+    final timeValue = _settings?[key]?.toString() ?? '--:--';
     
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () => _showTimePicker(label, key),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Color(0xFF008080), width: 2), // Medical Teal
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16, 
-                  color: const Color(0xFF000000), // Charcoal
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Row(
-                children: [
-                  Text(
-                    displayValue,
-                    style: const TextStyle(
-                      fontSize: 16, 
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF000000), // Charcoal
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.access_time, color: Color(0xFF008080)), // Medical Teal
-                ],
-              ),
-            ],
-          ),
+        ],
+      ),
+      child: ListTile(
+        title: Text(
+          label,
+          style: TextStyle(color: Colors.grey[600], fontSize: 14),
+        ),
+        subtitle: Text(
+          timeValue,
+          style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+        trailing: Icon(Icons.access_time, color: AppTheme.primaryTeal),
+        onTap: () => _showTimePicker(label, key),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(String label, IconData icon, VoidCallback onPressed) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: Colors.white),
+        label: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.primaryTeal.withValues(alpha: 0.8),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
         ),
       ),
     );
