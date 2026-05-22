@@ -29,13 +29,14 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   Future<Database> _initDB(String filePath) async {
-    // Use app documents directory for write access on all platforms
+    // Force new database by using a new name - old DB may have wrong schema
     final appDir = await getApplicationDocumentsDirectory();
     final dbDir = Directory(p.join(appDir.path, 'databases'));
     if (!await dbDir.exists()) {
       await dbDir.create(recursive: true);
     }
-    final path = p.join(dbDir.path, filePath);
+    // Use new DB name to force fresh schema with correct columns
+    final path = p.join(dbDir.path, 'ritme_app_v9.db');
     
     // Check if we need to migrate from old location
     final oldDbPath = p.join(await getDatabasesPath(), filePath);
