@@ -52,7 +52,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
@@ -61,6 +61,17 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 9) {
+      // Migrate daily_logs to new schema with Life Chart fields
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN stemming_hoog REAL DEFAULT 50');
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN stemming_laag REAL DEFAULT 50');
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN gesplitste_stemming INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN daglicht INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN sociale_contacten INTEGER DEFAULT 0');
+      // Migrate old data: stemming_ochtend -> stemming_hoog, stemming_avond -> stemming_laag
+      await db.execute('UPDATE daily_logs SET stemming_hoog = stemming_ochtend WHERE stemming_ochtend IS NOT NULL');
+      await db.execute('UPDATE daily_logs SET stemming_laag = stemming_avond WHERE stemming_avond IS NOT NULL');
+    }
     if (oldVersion < 2) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS weight_logs (
@@ -154,10 +165,13 @@ class DatabaseHelper implements DatabaseRepository {
         wake_time TEXT,
         awake_minutes INTEGER DEFAULT 0,
         sleep_hours REAL,
-        stemming_ochtend INTEGER,
-        stemming_avond INTEGER,
+        stemming_hoog REAL DEFAULT 50,
+        stemming_laag REAL DEFAULT 50,
+        gesplitste_stemming INTEGER DEFAULT 0,
         ontstemde_manie INTEGER DEFAULT 0,
         stemmingsomslagen INTEGER DEFAULT 0,
+        daglicht INTEGER DEFAULT 0,
+        sociale_contacten INTEGER DEFAULT 0,
         alcohol_middelen INTEGER DEFAULT 0,
         menstruatie INTEGER DEFAULT 0,
         andere_klachten TEXT
