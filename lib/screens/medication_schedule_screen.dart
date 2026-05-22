@@ -72,7 +72,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           const SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -94,12 +94,12 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           const SizedBox(height: 12),
           Text(
             'Geen schema ingesteld',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
           ),
           const SizedBox(height: 4),
           Text(
             'Voeg een medicatieschema toe',
-            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+            style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
           ),
         ],
       ),

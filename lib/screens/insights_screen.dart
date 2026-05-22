@@ -13,9 +13,13 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-
-
-
+  String _formatSlaap(double uren) {
+    int totaleMinuten = (uren * 60).round();
+    int uur = totaleMinuten ~/ 60;
+    int minuten = totaleMinuten % 60;
+    if (minuten == 0) return '\${uur}u';
+    return '\${uur}u \${minuten}m';
+  }
 
   bool _isLoading = true;
   Map<String, dynamic> _weeklyStats = {};
@@ -94,12 +98,49 @@ class _InsightsScreenState extends State<InsightsScreen> {
     int activiteitenTotaal = 0;
 
     for (var log in recenteLogs) {
-      if (log['stemming_ochtend'] != null) {
-        totaalStemming += log['stemming_ochtend'];
+      // Handle both String and num types for stemming_hoog
+      dynamic rawStemming = log['stemming_hoog'];
+      if (rawStemming != null) {
+        double stemming;
+        if (rawStemming is num) {
+          stemming = rawStemming.toDouble();
+        } else if (rawStemming is String) {
+          stemming = double.tryParse(rawStemming) ?? 0.0;
+        } else {
+          stemming = 0.0;
+        }
+        totaalStemming += stemming;
         stemCount++;
       }
-      if (log['uren_slaap'] != null) {
-        totaalSlaap += log['uren_slaap'];
+
+      // Handle both String and num types for uren_slaap
+      dynamic rawSlaap = log['uren_slaap'];
+      if (rawSlaap != null) {
+        double slaap;
+        if (rawSlaap is num) {
+          slaap = rawSlaap.toDouble();
+        } else if (rawSlaap is String) {
+          slaap = double.tryParse(rawSlaap) ?? 0.0;
+        } else {
+          slaap = 0.0;
+        }
+        totaalSlaap += slaap;
+      }
+
+      // Also check for calculated sleep_hours
+      dynamic rawSleepHours = log['sleep_hours'];
+      if (rawSleepHours != null) {
+        double sleepHours;
+        if (rawSleepHours is num) {
+          sleepHours = rawSleepHours.toDouble();
+        } else if (rawSleepHours is String) {
+          sleepHours = double.tryParse(rawSleepHours) ?? 0.0;
+        } else {
+          sleepHours = 0.0;
+        }
+        if (sleepHours > 0) {
+          totaalSlaap += sleepHours;
+        }
       }
     }
 
@@ -137,7 +178,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
     // Slaap inzichten
     double gemSlaap = stats['gemiddeldeSlaap'];
     if (gemSlaap < 6) {
-      inzichten.add('⚠️ Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beïnvloeden.');
+      final recentCount = stats['aantalDagen'] ?? 0;
+      if (recentCount <= 1) {
+        inzichten.add('⚠️ Afgelopen nacht sliep je minder dan 6 uur. Dit kan je stemming negatief beïnvloeden.');
+      } else {
+        inzichten.add('⚠️ Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beïnvloeden.');
+      }
     } else if (gemSlaap >= 7 && gemSlaap <= 9) {
       inzichten.add('✅ Je slaap van gemiddeld ${gemSlaap.toStringAsFixed(1)} uur is prima!');
     } else if (gemSlaap > 9) {
@@ -152,7 +198,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
       if (stemming10 < 4) {
         inzichten.add('📉 Je gemiddelde stemming is aan de lage kant. Overweeg extra zelfzorg deze week.');
       } else if (stemming10 >= 6) {
-        inzichten.add('😊 Je stemming is overwegend positief!');
+        if (gemStemming.abs() < 0.5) {
+          inzichten.add('😐 Je stemming is stabiel/neutraal.');
+        } else if (gemStemming > 0) {
+          inzichten.add('😊 Je stemming is overwegend positief!');
+        }
       }
     }
 
@@ -198,7 +248,7 @@ Slaap:
 
 Stemming:
 - Gemiddeld: ${gemStemming.toStringAsFixed(1)} (schaal -5 tot +5)
-- Positief/negatief: ${gemStemming >= 0 ? 'Overwegend positief' : 'Overwegend negatief'}
+- Stemming: ${gemStemming.abs() < 0.5 ? 'Stabiel/Neutraal' : (gemStemming >= 0 ? 'Overwegend positief' : 'Overwegend negatief')}
 
 Activiteiten:
 - Totaal geregistreerd: $activiteiten
@@ -313,7 +363,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _bouwStatCard('💤', 'Gem. Slaap', '${(_weeklyStats['gemiddeldeSlaap'] ?? 0).toStringAsFixed(1)} uur', Colors.blue)),
+                      Expanded(child: _bouwStatCard('💤', 'Gem. Slaap', _formatSlaapUren((_weeklyStats['gemiddeldeSlaap'] ?? 0).toDouble()), Colors.blue)),
                       const SizedBox(width: 12),
                       Expanded(child: _bouwStatCard('😊', 'Gem. Stemming', '${(_weeklyStats['gemiddeldeStemming'] ?? 0).toStringAsFixed(1)}', Colors.orange)),
                     ],
@@ -321,7 +371,7 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _bouwStatCard('🎯', 'Activiteiten', '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
+                      Expanded(child: _bouwStatCard('🎯', 'Sociaal Ritme Meter', '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
                       const SizedBox(width: 12),
                       Expanded(child: _bouwStatCard('⚡', 'Stabiliteit', '${(_weeklyStats['stabiliteit'] ?? 0).toStringAsFixed(0)}%', Colors.purple)),
                     ],
@@ -497,6 +547,13 @@ Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identifi
               ),
             ),
     );
+  }
+
+  String _formatSlaapUren(double uren) {
+    if (uren <= 0) return '0u 0m';
+    final uur = uren.floor();
+    final minuten = ((uren - uur) * 60).round();
+    return '${uur}u ${minuten}m';
   }
 
   Widget _bouwStatCard(String emoji, String label, String waarde, Color kleur) {

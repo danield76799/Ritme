@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 class NotificationHelper {
@@ -15,6 +16,15 @@ class NotificationHelper {
 
     try {
       tz.initializeTimeZones();
+      // Initialize local timezone using flutter_timezone
+      try {
+        final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+        final String timeZoneName = timezoneInfo.identifier;
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+        debugPrint('Timezone set to: $timeZoneName');
+      } catch (e) {
+        debugPrint('Failed to set local timezone: $e');
+      }
 
       const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosSettings = DarwinInitializationSettings(
@@ -59,6 +69,18 @@ class NotificationHelper {
         if (granted == null || !granted) {
           debugPrint('Android notificatie permissies geweigerd');
           return false;
+        }
+        
+        // Request exact alarm permission for Android 12+
+        try {
+          final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
+          if (exactAlarmGranted == null || !exactAlarmGranted) {
+            debugPrint('Exact alarm permission denied - scheduled notifications may not work');
+          } else {
+            debugPrint('Exact alarm permission granted');
+          }
+        } catch (e) {
+          debugPrint('Could not request exact alarm permission: $e');
         }
       }
 
@@ -112,12 +134,14 @@ class NotificationHelper {
         channelDescription: 'Herinnert je aan je dagelijkse check-in',
         importance: Importance.high,
         priority: Priority.high,
+        enableVibration: true,
+        playSound: true, // Sound + vibration
       );
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: true,
+        presentSound: true, // Sound + vibration
       );
 
       const details = NotificationDetails(
@@ -135,34 +159,327 @@ class NotificationHelper {
         matchDateTimeComponents: DateTimeComponents.time,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
-      debugPrint('Dagelijkse herinnering gepland voor: $scheduledDate');
+      debugPrint('=== DAGELIJKSE HERINNERING GEPLAND ===');
+      debugPrint('Scheduled for: $scheduledDate');
+      debugPrint('Current device time: ${DateTime.now()}');
     } catch (e) {
       debugPrint('Herinnering planning error: $e');
     }
   }
 
-  Future<void> showTestNotification() async {
+  Future<void> scheduleMedicationReminder({
+    required int medicationId,
+    required String medicationName,
+    required String dosage,
+    required String time,
+    required List<int> daysOfWeek,
+  }) async {
     if (kIsWeb) return;
 
-    const androidDetails = AndroidNotificationDetails(
-      'test_channel',
-      'Test notificaties',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
+    debugPrint('=== SCHEDULE MEDICATION REMINDER ===');
+    debugPrint('Medication: $medicationName, Time: $time, Days: $daysOfWeek');
 
-    const iosDetails = DarwinNotificationDetails();
+    try {
+      // Parse time string (HH:MM)
+      final parts = time.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      debugPrint('Parsed time - Hour: $hour, Minute: $minute');
 
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
+      // Cancel existing notifications for this medication
+      await cancelMedicationReminder(medicationId);
+      
+      // Request permissions first
+      final permissionsGranted = await _requestPermissions();
+      if (!permissionsGranted) {
+        debugPrint('Cannot schedule notification - permissions denied');
+        throw Exception('Notificatie permissies geweigerd');
+      }
 
-    await _notifications.show(
-      1,
-      'Test notificatie',
-      'Ritme notificaties werken!',
-      details,
-    );
+      // Schedule for each day of the week
+      for (final day in daysOfWeek) {
+        // Use smaller notification ID to prevent overflow
+        final notificationId = (medicationId * 10 + day) % 100000;
+        
+        final scheduledDate = _nextInstanceOfTime(hour, minute, day);
+        
+        const androidDetails = AndroidNotificationDetails(
+          'medication_reminders',
+          'Medicatie herinneringen',
+          channelDescription: 'Herinneringen voor medicatie inname',
+          importance: Importance.high,
+          priority: Priority.high,
+          showWhen: true,
+          enableVibration: true,
+          playSound: true, // Sound + vibration
+          actions: [
+            AndroidNotificationAction(
+              'taken',
+              '✓ Ingenomen',
+              showsUserInterface: false,
+            ),
+            AndroidNotificationAction(
+              'skip',
+              '✗ Overslaan',
+              showsUserInterface: false,
+            ),
+          ],
+        );
+
+        const iosDetails = DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true, // Sound + vibration
+          categoryIdentifier: 'medication',
+        );
+
+        const details = NotificationDetails(
+          android: androidDetails,
+          iOS: iosDetails,
+        );
+
+        await _notifications.zonedSchedule(
+          notificationId,
+          '💊 Medicatie herinnering',
+          'Neem $medicationName ($dosage)',
+          scheduledDate,
+          details,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          payload: 'medication:$medicationId',
+        );
+      }
+      debugPrint('Medicatie herinnering gepland voor $medicationName om $time');
+      
+      // Check pending notifications
+      final pending = await _notifications.pendingNotificationRequests();
+      debugPrint('=== PENDING NOTIFICATIONS: ${pending.length} ===');
+      for (var n in pending) {
+        debugPrint('  - ID: ${n.id}, Title: ${n.title}, Body: ${n.body}');
+      }
+    } catch (e) {
+      debugPrint('Medicatie herinnering planning error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> cancelMedicationReminder(int medicationId) async {
+    if (kIsWeb) return;
+    
+    try {
+      // Cancel all notifications for this medication (up to 7 days)
+      // Use modulo to match the smaller IDs
+      final baseId = medicationId % 100000;
+      for (int day = 1; day <= 7; day++) {
+        await _notifications.cancel((baseId * 10 + day) % 100000);
+      }
+      debugPrint('Medicatie herinneringen geannuleerd voor ID: $medicationId');
+    } catch (e) {
+      debugPrint('Medicatie herinnering annulering error: $e');
+    }
+  }
+
+  Future<void> cancelAllReminders() async {
+    if (kIsWeb) return;
+    
+    try {
+      await _notifications.cancelAll();
+      debugPrint('Alle notificaties geannuleerd');
+    } catch (e) {
+      debugPrint('Annulering error: $e');
+    }
+  }
+
+  Future<void> showTestNotification() async {
+    if (kIsWeb) return;
+    
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        'test_channel',
+        'Test Notificaties',
+        channelDescription: 'Test kanaal voor notificaties',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        playSound: true, // Sound + vibration
+        enableLights: true,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true, // Sound + vibration
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _notifications.show(
+        99999,
+        '🧪 Test Notificatie',
+        'Als je dit ziet, werken notificaties!',
+        details,
+      );
+      debugPrint('Test notificatie verzonden (alleen tril)');
+    } catch (e) {
+      debugPrint('Test notificatie error: $e');
+    }
+  }
+
+  tz.TZDateTime _nextInstanceOfTime(int hour, int minute, int dayOfWeek) {
+    final now = tz.TZDateTime.now(tz.local);
+    debugPrint('=== _nextInstanceOfTime ===');
+    debugPrint('Input: hour=$hour, minute=$minute, dayOfWeek=$dayOfWeek');
+    debugPrint('Current time: $now');
+    
+    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    debugPrint('Initial scheduledDate: $scheduledDate, weekday: ${scheduledDate.weekday}');
+
+    // If the time has already passed today, start from tomorrow
+    if (scheduledDate.isBefore(now)) {
+      debugPrint('Time already passed today, moving to tomorrow');
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    // Advance to the correct weekday
+    while (scheduledDate.weekday != dayOfWeek) {
+      debugPrint('Wrong weekday (${scheduledDate.weekday}), advancing to next day');
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    debugPrint('Final scheduledDate: $scheduledDate');
+    return scheduledDate;
+  }
+
+  Future<void> scheduleAppointmentReminder({
+    required int appointmentId,
+    required String title,
+    required String doctorName,
+    required String appointmentDate,
+    required String appointmentTime,
+    required int reminderDays,
+  }) async {
+    if (kIsWeb) return;
+    if (reminderDays <= 0) return; // No reminder
+
+    try {
+      // Parse appointment date/time
+      final dateParts = appointmentDate.split('-');
+      final day = int.parse(dateParts[0]);
+      final month = int.parse(dateParts[1]);
+      final year = int.parse(dateParts[2]);
+      
+      int hour = 9, minute = 0;
+      if (appointmentTime.isNotEmpty) {
+        final timeParts = appointmentTime.split(':');
+        hour = int.parse(timeParts[0]);
+        minute = int.parse(timeParts[1]);
+      }
+
+      // Calculate reminder date/time
+      final appointmentDateTime = tz.TZDateTime(
+        tz.local,
+        year,
+        month,
+        day,
+        hour,
+        minute,
+      );
+      
+      final reminderDateTime = appointmentDateTime.subtract(Duration(days: reminderDays));
+      
+      // Don't schedule if reminder time has passed
+      final now = tz.TZDateTime.now(tz.local);
+      if (reminderDateTime.isBefore(now)) {
+        debugPrint('Appointment reminder time has passed, skipping');
+        return;
+      }
+
+      // Use smaller notification ID
+      final notificationId = (appointmentId * 100) % 100000;
+
+      const androidDetails = AndroidNotificationDetails(
+        'appointment_reminders',
+        'Afspraak herinneringen',
+        channelDescription: 'Herinneringen voor medische afspraken',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        playSound: true, // Sound + vibration
+        actions: [
+          AndroidNotificationAction(
+            'open',
+            'Openen',
+            showsUserInterface: false,
+          ),
+        ],
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true, // Sound + vibration
+        categoryIdentifier: 'appointment',
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _notifications.zonedSchedule(
+        notificationId,
+        '📅 Afspraak herinnering',
+        '$title${doctorName.isNotEmpty ? ' met $doctorName' : ''} over $reminderDays dag${reminderDays > 1 ? 'en' : ''}',
+        reminderDateTime,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'appointment:$appointmentId',
+      );
+      debugPrint('Afspraak herinnering gepland voor $title op $reminderDateTime');
+    } catch (e) {
+      debugPrint('Afspraak herinnering planning error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> cancelAppointmentReminder(int appointmentId) async {
+    if (kIsWeb) return;
+    
+    try {
+      final notificationId = (appointmentId * 100) % 100000;
+      debugPrint('=== CANCEL APPOINTMENT REMINDER ===');
+      debugPrint('Appointment ID: $appointmentId');
+      debugPrint('Calculated notificationId: $notificationId');
+      await _notifications.cancel(notificationId);
+      debugPrint('Afspraak herinnering geannuleerd voor ID: $appointmentId');
+      
+      // Verify cancellation
+      final pending = await _notifications.pendingNotificationRequests();
+      debugPrint('Remaining pending notifications: ${pending.length}');
+      for (var n in pending) {
+        if (n.id == notificationId) {
+          debugPrint('WARNING: Notification $notificationId still pending!');
+        }
+      }
+    } catch (e) {
+      debugPrint('Afspraak herinnering annulering error: $e');
+    }
+  }
+
+  Future<int> getPendingNotificationCount() async {
+    try {
+      final pending = await _notifications.pendingNotificationRequests();
+      return pending.length;
+    } catch (e) {
+      debugPrint('Error getting pending: $e');
+      return 0;
+    }
   }
 }

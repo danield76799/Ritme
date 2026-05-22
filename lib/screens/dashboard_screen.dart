@@ -13,7 +13,7 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObserver {
   Map<String, dynamic>? _settings;
   bool _isLoading = true;
   
@@ -27,8 +27,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadData();
     _setupNotifications();
+  }
+  
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Reload when app comes to foreground
+      _loadData();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload when returning from another screen (e.g. Settings)
+    _loadData();
   }
 
   Future<void> _loadData() async {
@@ -58,7 +80,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
           
           // Slaapkwaliteit
-          final sleep = log['uren_slaap'] as double?;
+          final dynamic rawSleep = log['uren_slaap'];
+          double? sleep;
+          if (rawSleep is num) {
+            sleep = rawSleep.toDouble();
+          } else if (rawSleep is String) {
+            sleep = double.tryParse(rawSleep);
+          }
           if (sleep != null && sleep > 0) {
             totalSleep += sleep;
             sleepCount++;
@@ -75,8 +103,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final srmActivities = await db.getSrmActivities(todayStr);
       int onTimeCount = 0;
       for (var activity in srmActivities) {
-        if (activity['actual_time'] != null && activity['p_score'] != null && activity['p_score'] as int >= 3) {
-          onTimeCount++;
+        if (activity['actual_time'] != null && activity['p_score'] != null) {
+          final dynamic rawPScore = activity['p_score'];
+          int pScore = 0;
+          if (rawPScore is int) {
+            pScore = rawPScore;
+          } else if (rawPScore is String) {
+            pScore = int.tryParse(rawPScore) ?? 0;
+          }
+          if (pScore >= 3) {
+            onTimeCount++;
+          }
         }
       }
       final stability = srmActivities.isNotEmpty ? (onTimeCount / srmActivities.length * 100) : 0;
@@ -185,8 +222,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              Navigator.pushNamed(context, '/settings');
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/settings');
+              // Reload settings when returning from settings screen
+              _loadData();
             },
             tooltip: 'Instellingen',
           ),
@@ -308,7 +347,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       context, 
                       icon: Icons.directions_walk, 
                       iconColor: Colors.green, 
-                      title: 'Activiteit', 
+                      title: 'Activiteit + Slaap', 
                       route: '/activity',
                     ),
                     _buildMedicatieCard(context),
@@ -425,8 +464,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                WeeklyMoodChart(
-                  logs: _weeklyLogs,
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: WeeklyMoodChart(
+                    logs: _weeklyLogs,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 _buildActionCard(
@@ -443,13 +490,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          _showNotImplemented('Nieuwe dagelijkse log');
+        onPressed: () async {
+          await Navigator.pushNamed(context, '/event');
+          _loadData();
         },
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
-          'Log Toevoegen',
+          'Gebeurtenis Toevoegen',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
@@ -460,7 +508,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -485,7 +533,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String route,
   }) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, route),
+      onTap: () async {
+        await Navigator.pushNamed(context, route);
+        _loadData();
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -531,7 +582,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildMedicatieCard(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/medication'),
+      onTap: () async {
+        await Navigator.pushNamed(context, '/medication');
+        _loadData();
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

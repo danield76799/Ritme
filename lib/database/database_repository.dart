@@ -26,7 +26,9 @@ abstract class DatabaseRepository {
   Future<String> exportDatabaseToJson();
   Future<void> importDatabaseFromJson(String jsonString);
   Future<void> clearAllData();
-  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid);
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true});
+  Future<int> deleteMedicationConfig(int id);
+  Future<int> updateMedicationConfig(int id, Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getMedicationConfigs();
 
   // Medication Schedule
@@ -53,7 +55,9 @@ abstract class DatabaseRepository {
   Future<Map<String, dynamic>?> getLatestWeightLog();
   Future<int> deleteWeightLog(int id);
 
-  // Medical Appointments
+  // Sleep Tracking
+  Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes);
+  Future<Map<String, dynamic>?> getSleepLog(String date);
   Future<int> insertMedicalAppointment(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getMedicalAppointments();
   Future<List<Map<String, dynamic>>> getUpcomingAppointments();

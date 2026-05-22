@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -18,17 +20,36 @@ DatabaseRepository get db {
   return _db!;
 }
 
+/// Check if database is initialized (for safe null checking)
+bool get isDbInitialized => _db != null;
+
 /// Initialize the appropriate database based on platform
 Future<void> initDatabase() async {
   if (_db != null) return; // Already initialized
   
-  if (kIsWeb) {
-    // Use Hive for web
-    await Hive.initFlutter();
-    await HiveDatabaseHelper.init();
-    _db = HiveDatabaseHelper.instance;
-  } else {
-    // Use SQLite for mobile
-    _db = DatabaseHelper.instance;
+  print('initDatabase: starting...');
+  print('initDatabase: kIsWeb=$kIsWeb, Platform.isAndroid=${Platform.isAndroid}, Platform.isIOS=${Platform.isIOS}');
+  
+  try {
+    if (kIsWeb) {
+      print('initDatabase: using Hive for web');
+      await Hive.initFlutter();
+      await HiveDatabaseHelper.init();
+      _db = HiveDatabaseHelper.instance;
+    } else if (Platform.isAndroid) {
+      print('initDatabase: using Hive for Android');
+      await Hive.initFlutter();
+      await HiveDatabaseHelper.init();
+      _db = HiveDatabaseHelper.instance;
+    } else {
+      print('initDatabase: using SQLite for iOS');
+      _db = DatabaseHelper.instance;
+      await _db!.getSettings();
+    }
+    print('initDatabase: completed successfully');
+  } catch (e, stack) {
+    print('Database initialization failed: $e');
+    print('Stack: $stack');
+    rethrow;
   }
 }

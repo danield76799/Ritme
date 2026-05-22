@@ -1,16 +1,27 @@
-# ritme
+# Ritme - SRT Tracker
 
-A new Flutter project.
+## Over deze app
+Ritme is een SRT (Sociaal Ritme) tracker voor het dagelijks bijhouden van stemming, activiteiten, medicatie en gewicht.
 
-## Getting Started
+## Features
+- 📊 Dagelijkse stemming tracking
+- 💊 Medicatie management met reminders
+- 📅 Afspraken planner
+- ⚖️ Gewicht tracking
+- 📈 Statistieken en inzichten
+- 🔒 Biometrische authenticatie
 
-This project is a starting point for a Flutter application.
+## Technische details
+- Flutter 3.41.9
+- Dart 3.x
+- SQLite (iOS) / Hive (Android)
+- Local notifications voor medicatie reminders
 
-A few resources to get you started if this is your first Flutter project:
+## Build
+De app wordt automatisch gebouwd via GitHub Actions bij elke push naar main.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Laatste wijzigingen
+- Medicatie reminders toegevoegd
+- Push notificaties voor medicatie
+- Database reset functie
+- UI verbeteringen

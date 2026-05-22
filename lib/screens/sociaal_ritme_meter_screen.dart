@@ -78,13 +78,6 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     return Colors.grey;
   }
 
-  String _getPScoreLabel(int score) {
-    if (score >= 3) return 'Op tijd ✓';
-    if (score >= 2) return 'Deels op tijd';
-    if (score >= 1) return 'Te laat';
-    return 'Niet gedaan';
-  }
-
   IconData _getPScoreIcon(int score) {
     if (score >= 3) return Icons.check_circle;
     if (score >= 2) return Icons.access_time;
@@ -145,9 +138,9 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppTheme.primaryTeal,
-            borderRadius: const BorderRadius.only(
+            borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
             ),

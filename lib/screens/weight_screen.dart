@@ -28,14 +28,131 @@ class _WeightScreenState extends State<WeightScreen> {
   }
 
   Future<void> _loadWeightLogs() async {
-    final logs = await db.getWeightLogs();
-    setState(() {
-      _weightLogs = logs;
-      _isLoading = false;
-    });
+    try {
+      final logs = await db.getWeightLogs();
+      // Sort by date ascending (oldest first) so most recent is on the right
+      logs.sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
+      if (mounted) {
+        setState(() {
+          _weightLogs = logs;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('ERROR loading weight logs: $e');
+      if (mounted) {
+        setState(() {
+          _weightLogs = [];
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _addWeightLog() async {
+    // Check if weight already logged today
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final existingLog = _weightLogs.firstWhere(
+      (log) => log['date'] == today,
+      orElse: () => {},
+    );
+    
+    final alreadyLoggedToday = existingLog.isNotEmpty;
+    
+    if (alreadyLoggedToday) {
+      // Show edit dialog instead of error
+      final weightController = TextEditingController(
+        text: existingLog['weight']?.toString() ?? '',
+      );
+      final notesController = TextEditingController(
+        text: existingLog['notes']?.toString() ?? '',
+      );
+
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Gewicht bewerken'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: weightController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: 'Gewicht (kg) - gebruik punt (.)',
+                  hintText: 'Bijv. 101.5',
+                  prefixIcon: const Icon(Icons.monitor_weight),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: notesController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Notities (optioneel)',
+                  prefixIcon: const Icon(Icons.notes),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuleren'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (weightController.text.isNotEmpty) {
+                  final normalizedWeight = weightController.text.replaceAll(',', '.');
+                  final weight = double.tryParse(normalizedWeight);
+                  
+                  if (weight == null || weight < 20 || weight > 300) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Gewicht moet tussen 20 en 300 kg zijn. Gebruik een punt (.) als decimaal.'),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                    return;
+                  }
+                  
+                  Navigator.pop(context, {
+                    'weight': weight,
+                    'notes': notesController.text,
+                  });
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryTeal,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+      if (result != null) {
+        // Delete old log and insert new one
+        if (existingLog['id'] != null) {
+          await db.deleteWeightLog(existingLog['id']);
+        }
+        await db.insertWeightLog(
+          today,
+          result['weight'],
+          result['notes'].isEmpty ? null : result['notes'],
+        );
+        _loadWeightLogs();
+      }
+      return;
+    }
+    
+    // New weight log
     final weightController = TextEditingController();
     final notesController = TextEditingController();
 
@@ -49,9 +166,10 @@ class _WeightScreenState extends State<WeightScreen> {
           children: [
             TextField(
               controller: weightController,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Gewicht (kg)',
+                labelText: 'Gewicht (kg) - gebruik punt (.)',
+                hintText: 'Bijv. 101.5',
                 prefixIcon: const Icon(Icons.monitor_weight),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -76,13 +194,15 @@ class _WeightScreenState extends State<WeightScreen> {
           ElevatedButton(
             onPressed: () {
               if (weightController.text.isNotEmpty) {
-                final weight = double.tryParse(weightController.text.replaceAll(',', '.'));
+                // Accept both comma and dot as decimal separator
+                final normalizedWeight = weightController.text.replaceAll(',', '.');
+                final weight = double.tryParse(normalizedWeight);
                 
                 // Validatie: gewicht moet realistisch zijn (20-300 kg)
                 if (weight == null || weight < 20 || weight > 300) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Gewicht moet tussen 20 en 300 kg zijn'),
+                      content: const Text('Gewicht moet tussen 20 en 300 kg zijn. Gebruik een punt (.) als decimaal.'),
                       backgroundColor: Colors.red,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -127,7 +247,15 @@ class _WeightScreenState extends State<WeightScreen> {
     final spots = <FlSpot>[];
     for (int i = 0; i < _weightLogs.length; i++) {
       final log = _weightLogs[i];
-      final weight = (log['weight'] as num).toDouble();
+      final weightValue = log['weight'];
+      double weight;
+      if (weightValue is String) {
+        weight = double.tryParse(weightValue) ?? 0.0;
+      } else if (weightValue is num) {
+        weight = weightValue.toDouble();
+      } else {
+        weight = 0.0;
+      }
       spots.add(FlSpot(i.toDouble(), weight));
     }
     return spots;
@@ -264,7 +392,8 @@ class _WeightScreenState extends State<WeightScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _weightLogs.length,
                         itemBuilder: (context, index) {
-                          final log = _weightLogs[index];
+                          // Show in reverse order (newest first)
+                          final log = _weightLogs[_weightLogs.length - 1 - index];
                           final date = DateTime.parse(log['date']);
                           return Dismissible(
                             key: Key(log['id'].toString()),
@@ -345,24 +474,33 @@ class _WeightScreenState extends State<WeightScreen> {
         onPressed: _addWeightLog,
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Gewicht loggen',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        label: Text(
+          _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(DateTime.now())) 
+            ? 'Gewicht bewerken' 
+            : 'Gewicht loggen',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 
   Widget _buildStatsCard() {
-    final weights = _weightLogs.map((log) => (log['weight'] as num).toDouble()).toList();
+    final weights = _weightLogs.map((log) {
+      final w = log['weight'];
+      if (w is String) return double.tryParse(w) ?? 0.0;
+      if (w is num) return w.toDouble();
+      return 0.0;
+    }).toList();
     final minWeight = weights.reduce((a, b) => a < b ? a : b);
     final maxWeight = weights.reduce((a, b) => a > b ? a : b);
     final avgWeight = weights.reduce((a, b) => a + b) / weights.length;
     
     double? weightChange;
     if (_weightLogs.length >= 2) {
-      final first = (_weightLogs.first['weight'] as num).toDouble();
-      final last = (_weightLogs.last['weight'] as num).toDouble();
+      final firstValue = _weightLogs.first['weight'];
+      final lastValue = _weightLogs.last['weight'];
+      final first = (firstValue is String) ? double.tryParse(firstValue) ?? 0.0 : (firstValue as num).toDouble();
+      final last = (lastValue is String) ? double.tryParse(lastValue) ?? 0.0 : (lastValue as num).toDouble();
       weightChange = last - first;
     }
 

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../utils/app_theme.dart';
-import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
-import '../widgets/app_scaffold.dart';
 import '../utils/logger.dart';
 
 class ActivityScreen extends StatefulWidget {
@@ -17,6 +16,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   DateTime _geselecteerdeDatum = DateTime.now();
+
+  // Sleep data
+  String? _bedTime;
+  String? _wakeTime;
+  int _awakeMinutes = 0;
+  double? _calculatedSleepHours;
 
   String get _formattedDate {
     return '${_geselecteerdeDatum.year}-${_geselecteerdeDatum.month.toString().padLeft(2, '0')}-${_geselecteerdeDatum.day.toString().padLeft(2, '0')}';
@@ -57,8 +62,35 @@ class _ActivityScreenState extends State<ActivityScreen> {
       for (var activity in activities) {
         final index = _activiteiten.indexWhere((a) => a['naam'] == activity['activity_type']);
         if (index != -1) {
-          _activiteiten[index]['werkelijke_tijd'] = _parseTimeOfDay(activity['actual_time']);
-          _activiteiten[index]['p_score'] = activity['p_score'] ?? 0;
+          _activiteiten[index]['werkelijke_tijd'] = _parseTimeOfDay(activity['actual_time']?.toString());
+          dynamic rawPScore = activity['p_score'];
+          int pScore;
+          if (rawPScore is int) {
+            pScore = rawPScore;
+          } else if (rawPScore is String) {
+            pScore = int.tryParse(rawPScore) ?? 0;
+          } else {
+            pScore = 0;
+          }
+          _activiteiten[index]['p_score'] = pScore;
+        }
+      }
+
+      // Load sleep data
+      final sleepLog = await db.getSleepLog(_formattedDate);
+      if (sleepLog != null) {
+        setState(() {
+          _bedTime = sleepLog['bed_time']?.toString();
+          _wakeTime = sleepLog['wake_time']?.toString();
+          _awakeMinutes = sleepLog['awake_minutes'] ?? 0;
+          _calculatedSleepHours = sleepLog['sleep_hours']?.toDouble();
+        });
+        
+        // Pre-fill "Opstaan" activity with wake time if sleep log exists
+        final wakeTimeStr = sleepLog['wake_time']?.toString();
+        if (wakeTimeStr != null && wakeTimeStr.isNotEmpty) {
+          _activiteiten[0]['werkelijke_tijd'] = _parseTimeOfDay(wakeTimeStr);
+          _activiteiten[0]['p_score'] = 1; // Mark as completed since wake time was set
         }
       }
     } catch (e, stackTrace) {
@@ -72,7 +104,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   void _onDatumVeranderd(DateTime nieuweDatum) {
-    // Validatie: blokkeer toekomstige datums
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final selected = DateTime(nieuweDatum.year, nieuweDatum.month, nieuweDatum.day);
@@ -92,6 +123,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
     setState(() {
       _geselecteerdeDatum = nieuweDatum;
       _isLoading = true;
+      _bedTime = null;
+      _wakeTime = null;
+      _awakeMinutes = 0;
+      _calculatedSleepHours = null;
       _activiteiten = [
         {'naam': 'Opstaan', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
         {'naam': 'Eerste contact', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
@@ -129,10 +164,44 @@ class _ActivityScreenState extends State<ActivityScreen> {
     try {
       final activity = _activiteiten[index];
       String name = activity['naam'];
-      TimeOfDay nu = TimeOfDay.now();
-      String timeStr = '${nu.hour.toString().padLeft(2, '0')}:${nu.minute.toString().padLeft(2, '0')}';
+      
+      String timeStr;
+      int currentScore;
+      dynamic rawScore = activity['p_score'];
+      if (rawScore is int) {
+        currentScore = rawScore;
+      } else if (rawScore is String) {
+        currentScore = int.tryParse(rawScore) ?? 0;
+      } else {
+        currentScore = 0;
+      }
+      
+      // For "Opstaan", use wake_time from sleep log if available (skip time picker)
+      if (name == 'Opstaan' && _wakeTime != null && _wakeTime!.isNotEmpty) {
+        timeStr = _wakeTime!;
+        // Toggle the score only
+        int newScore = currentScore == 0 ? 1 : 0;
+        await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
+        _loadData();
+        return;
+      }
+      
+      // For other activities or if no wake_time, show time picker
+      final picked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+            child: child!,
+          );
+        },
+      );
+      
+      if (picked == null) return;
+      
+      timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
 
-      int currentScore = activity['p_score'] ?? 0;
       int newScore = currentScore == 0 ? 1 : 0;
 
       await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
@@ -153,13 +222,196 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
+  String _formatSleepDuration(double hours) {
+    final totalMinutes = (hours * 60).round();
+    final h = totalMinutes ~/ 60;
+    final m = totalMinutes % 60;
+    if (h > 0 && m > 0) return '${h}u ${m}m slaap';
+    if (h > 0) return '${h}u slaap';
+    return '${m}m slaap';
+  }
+
+  Future<void> _setBedTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _parseTimeOfDay(_bedTime) ?? const TimeOfDay(hour: 22, minute: 0),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    
+    if (picked != null) {
+      setState(() {
+        _bedTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      });
+      _saveSleepData();
+    }
+  }
+
+  Future<void> _setWakeTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _parseTimeOfDay(_wakeTime) ?? const TimeOfDay(hour: 7, minute: 0),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    
+    if (picked != null) {
+      setState(() {
+        _wakeTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      });
+      _saveSleepData();
+    }
+  }
+
+  Future<void> _setAwakeTime() async {
+    int selectedMinutes = _awakeMinutes;
+    
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      builder: (BuildContext context) {
+        return Container(
+          height: 300,
+          color: Colors.grey[900],
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.grey[850],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Annuleer', style: TextStyle(color: Colors.white, fontSize: 16)),
+                    ),
+                    const Text(
+                      'Wakker gelegen',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _awakeMinutes = selectedMinutes;
+                        });
+                        _saveSleepData();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Klaar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: Colors.grey),
+              Expanded(
+                child: CupertinoPicker(
+                  itemExtent: 40,
+                  onSelectedItemChanged: (index) {
+                    selectedMinutes = index * 15;
+                  },
+                  scrollController: FixedExtentScrollController(initialItem: _awakeMinutes ~/ 15),
+                  backgroundColor: Colors.grey[900],
+                  children: List.generate(49, (index) {
+                    final minutes = index * 15;
+                    final hours = minutes ~/ 60;
+                    final mins = minutes % 60;
+                    String label;
+                    if (hours > 0 && mins > 0) {
+                      label = '${hours}u ${mins}m';
+                    } else if (hours > 0) {
+                      label = '${hours}u';
+                    } else {
+                      label = '${mins}m';
+                    }
+                    return Center(
+                      child: Text(
+                        label,
+                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _saveSleepData() async {
+    if (_bedTime != null && _wakeTime != null) {
+      final sleepHours = _calculateSleepHours(_bedTime!, _wakeTime!, _awakeMinutes);
+      setState(() {
+        _calculatedSleepHours = sleepHours;
+      });
+      
+      await db.insertSleepLog(_formattedDate, _bedTime!, _wakeTime!, _awakeMinutes);
+      
+      // Also update daily log with calculated sleep hours
+      await db.upsertDailyLog({
+        'date': _formattedDate,
+        'uren_slaap': sleepHours,
+      });
+      
+      // Also save "Opstaan" activity with wake_time (auto-completed)
+      if (_wakeTime != null) {
+        await db.insertSrmActivity(_formattedDate, 'Opstaan', _wakeTime!, 1, null);
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Slaapduur: ${_formatSleepDuration(sleepHours)}'),
+            backgroundColor: AppTheme.primaryTeal,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
+    try {
+      final bedParts = bedTime.split(':');
+      final wakeParts = wakeTime.split(':');
+      
+      int bedHour = int.parse(bedParts[0]);
+      int bedMinute = int.parse(bedParts[1]);
+      int wakeHour = int.parse(wakeParts[0]);
+      int wakeMinute = int.parse(wakeParts[1]);
+      
+      int bedMinutes = bedHour * 60 + bedMinute;
+      int wakeMinutes = wakeHour * 60 + wakeMinute;
+      
+      if (wakeMinutes < bedMinutes) {
+        wakeMinutes += 24 * 60;
+      }
+      
+      int totalMinutes = wakeMinutes - bedMinutes - awakeMinutes;
+      return totalMinutes / 60.0;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
-          'Activiteiten',
+          'Activiteit & Slaap',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         backgroundColor: AppTheme.primaryTeal,
@@ -178,12 +430,224 @@ class _ActivityScreenState extends State<ActivityScreen> {
           Expanded(
             child: _isLoading
                 ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
-                : ListView.separated(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: _activiteiten.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, i) => _buildCompactActivityCard(i),
+                : _errorMessage != null
+                    ? _buildErrorState()
+                    : ListView(
+                        padding: const EdgeInsets.all(12),
+                        children: [
+                          // Sleep section
+                          _buildSectionHeader('Slaap'),
+                          _buildSleepCard(),
+                          const SizedBox(height: 24),
+                          
+                          // Activities section
+                          _buildSectionHeader('Sociaal Ritme Meter'),
+                          ..._activiteiten.asMap().entries.map((entry) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: _buildCompactActivityCard(entry.key),
+                            );
+                          }).toList(),
+                        ],
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 24,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryTeal,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSleepCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sleep hours display
+          if (_calculatedSleepHours != null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.nights_stay, color: AppTheme.primaryTeal),
+                  const SizedBox(width: 8),
+                  Text(
+                    _formatSleepDuration(_calculatedSleepHours!),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryTeal,
+                    ),
                   ),
+                ],
+              ),
+            ),
+          if (_calculatedSleepHours != null) const SizedBox(height: 16),
+          
+          // Bed time
+          _buildSleepTimeField(
+            'Naar bed gegaan',
+            _bedTime ?? 'Tik om tijd in te stellen',
+            Icons.bedtime,
+            _setBedTime,
+          ),
+          const SizedBox(height: 12),
+          
+          // Wake time
+          _buildSleepTimeField(
+            'Opgestaan',
+            _wakeTime ?? 'Tik om tijd in te stellen',
+            Icons.wb_sunny,
+            _setWakeTime,
+          ),
+          const SizedBox(height: 12),
+          
+          // Awake time
+          _buildSleepTimeField(
+            'Wakker gelegen',
+            _formatAwakeTime(),
+            Icons.access_time,
+            _setAwakeTime,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatAwakeTime() {
+    if (_awakeMinutes == 0) return 'Tik om tijd in te stellen';
+    final hours = _awakeMinutes ~/ 60;
+    final mins = _awakeMinutes % 60;
+    if (hours > 0 && mins > 0) return '${hours}u ${mins}m';
+    if (hours > 0) return '${hours}u';
+    return '${mins}m';
+  }
+
+  Widget _buildSleepTimeField(String label, String value, IconData icon, VoidCallback onTap) {
+    final hasValue = value != 'Tik om tijd in te stellen';
+    
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.05) : Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey[300]!,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: hasValue ? AppTheme.primaryTeal : Colors.grey[400],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 18, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: hasValue ? FontWeight.w600 : FontWeight.normal,
+                      color: hasValue ? Colors.black : Colors.grey[400],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey[400],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage!,
+            style: TextStyle(fontSize: 16, color: Colors.red[600]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _loadData,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Opnieuw proberen'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryTeal,
+              foregroundColor: Colors.white,
+            ),
           ),
         ],
       ),
@@ -196,7 +660,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
     IconData icoon = activity['icoon'] ?? Icons.circle;
     TimeOfDay? richtTijd = activity['richttijd'];
     TimeOfDay? werkTijd = activity['werkelijke_tijd'];
-    int pScore = activity['p_score'] ?? 0;
+    int pScore;
+    dynamic rawScore = activity['p_score'];
+    if (rawScore is int) {
+      pScore = rawScore;
+    } else if (rawScore is String) {
+      pScore = int.tryParse(rawScore) ?? 0;
+    } else {
+      pScore = 0;
+    }
     bool isDone = werkTijd != null;
 
     return Container(
@@ -216,7 +688,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                // Icon with status
                 Container(
                   width: 40,
                   height: 40,
@@ -231,7 +702,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Name & times
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,8 +711,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: isDone ? AppTheme.textCharcoal : Colors.grey[600],
-                          decoration: isDone ? null : TextDecoration.none,
+                          color: isDone ? Colors.black : Colors.grey.shade700,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -264,13 +733,20 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               _formatTijd(werkTijd),
                               style: TextStyle(fontSize: 11, color: AppTheme.primaryTeal, fontWeight: FontWeight.w500),
                             ),
+                          ] else ...[
+                            const SizedBox(width: 8),
+                            Icon(Icons.touch_app, size: 12, color: Colors.grey.shade500),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Tik om tijd in te stellen',
+                              style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+                            ),
                           ],
                         ],
                       ),
                     ],
                   ),
                 ),
-                // P-score indicator
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
