@@ -93,11 +93,24 @@ class WeeklyMoodChart extends StatelessWidget {
     }
 
     // Prepare chart data - Life Chart 0-100 scale
+    // Deduplicate by date - only show latest entry per unique date
+    final Map<String, Map<String, dynamic>> uniqueLogsByDate = {};
+    for (var log in logs) {
+      final date = log['date'] as String? ?? '';
+      if (date.isNotEmpty) {
+        // Always keep the latest entry for each date (first in DESC ordered list)
+        if (!uniqueLogsByDate.containsKey(date)) {
+          uniqueLogsByDate[date] = log;
+        }
+      }
+    }
+    final deduplicatedLogs = uniqueLogsByDate.values.toList();
+    
     final spots = <FlSpot>[];
     final titles = <String>[];
     
-    for (int i = 0; i < logs.length && i < 7; i++) {
-      final log = logs[i];
+    for (int i = 0; i < deduplicatedLogs.length && i < 7; i++) {
+      final log = deduplicatedLogs[i];
       // Life Chart: stemming_hoog (0-100)
       // Hive stores everything as String, so we need to parse
       final dynamic rawStemming = log['stemming_hoog'];
@@ -133,9 +146,9 @@ class WeeklyMoodChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            logs.length == 1 
+            deduplicatedLogs.length == 1 
                 ? 'Stemming Trend (1 dag)'
-                : 'Stemming Trend (${logs.length} dagen)',
+                : 'Stemming Trend (${deduplicatedLogs.length} dagen)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.black87,
