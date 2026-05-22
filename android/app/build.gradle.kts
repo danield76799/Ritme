@@ -43,8 +43,8 @@ android {
 
     buildTypes {
         release {
-            // Use the release signing config with our fixed keystore
-            signingConfig = signingConfigs.getByName("release")
+            // signing handled by GitHub Actions workflow (build_aab.yml / build_apk.yml)
+            // do NOT use local keystore - it doesn't exist in CI
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
