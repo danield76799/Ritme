@@ -589,7 +589,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Use smaller ID to avoid 32-bit integer overflow in Hive
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
     await _medicationSchedule.put(id, {
       'id': id,
       'medication_id': medicationId,
@@ -637,7 +638,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Use smaller ID to avoid 32-bit integer overflow in Hive
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
     await _medicationIntake.put(id, {
       'id': id,
       'date': date.toString(),
@@ -709,8 +711,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
       });
       return key;
     } else {
-      // Insert new record
-      final id = DateTime.now().millisecondsSinceEpoch;
+      // Insert new record with smaller ID to avoid 32-bit overflow
+      final id = DateTime.now().millisecondsSinceEpoch % 1000000;
       await _medicationIntake.put(id, {
         ...data,
         'id': id,
@@ -756,7 +758,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertLifeEvent(String date, String omschrijving, int invloed) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Use smaller ID to avoid 32-bit integer overflow in Hive
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
     await _lifeEvents.put(id, {
       'id': id,
       'date': date.toString(),
@@ -768,7 +771,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Use smaller ID to avoid 32-bit integer overflow in Hive
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
     final cleanData = <String, dynamic>{
       'id': id,
       'date': (data['date'] as String?)?.toString() ?? '',
@@ -803,7 +807,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertWeightLog(String date, double weight, String? notes) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Use a smaller ID to avoid 32-bit integer overflow in Hive (max 0xFFFFFFFF)
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
     await _weightLogs.put(id, {
       'id': id,
       'date': date.toString(),
@@ -855,7 +860,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
     try {
-      final id = DateTime.now().millisecondsSinceEpoch;
+      // Use a smaller ID to avoid 32-bit integer overflow in Hive (max 0xFFFFFFFF)
+      final id = DateTime.now().millisecondsSinceEpoch % 1000000;
       
       // Ensure all values are properly typed for Hive
       final cleanData = <String, dynamic>{
