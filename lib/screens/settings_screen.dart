@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:convert';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -415,7 +416,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Icons.backup,
           () async {
             try {
-              final backupData = await BackupService.createBackup();
+              final backupData = await BackupService.exportAllData();
+              final jsonString = jsonEncode(backupData);
               final fileName = 'ritme_backup_${DateTime.now().toIso8601String().split('T')[0]}.json';
               
               // Save to downloads directory
@@ -424,7 +426,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 directory.createSync(recursive: true);
               }
               final file = File('${directory.path}/$fileName');
-              await file.writeAsString(backupData);
+              await file.writeAsString(jsonString);
               
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -466,7 +468,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (result != null && result.files.isNotEmpty) {
                 final file = File(result.files.first.path!);
                 final jsonData = await file.readAsString();
-                await BackupService.restoreBackup(jsonData);
+                final data = jsonDecode(jsonData);
+                await BackupService.importAllData(data);
                 
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
