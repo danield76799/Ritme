@@ -70,27 +70,52 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       int sleepCount = 0;
       int activityCount = 0;
       
-      for (var log in dailyLogs) {
-        final logDate = DateTime.parse(log['date'] as String);
+      // Get all sleep logs
+      final allLogs = _dailyLogs.toMap();
+      for (var entry in allLogs.entries) {
+        final log = entry.value;
+        if (log['date'] == null) continue;
         
-        if (logDate.isAfter(weekAgo)) {
-          // Tel activiteiten
-          if (log['activity_type'] != null) {
-            activityCount++;
+        try {
+          final logDate = DateTime.parse(log['date']);
+          if (logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo)) {
+            // Check for sleep_hours (from sleep tracking)
+            final dynamic rawSleep = log['sleep_hours'];
+            if (rawSleep != null) {
+              double? sleep;
+              if (rawSleep is num) {
+                sleep = rawSleep.toDouble();
+              } else if (rawSleep is String) {
+                sleep = double.tryParse(rawSleep);
+              }
+              if (sleep != null && sleep > 0) {
+                totalSleep += sleep;
+                sleepCount++;
+              }
+            }
+            
+            // Check for uren_slaap (from mood tracking)
+            final dynamic rawUrenSlaap = log['uren_slaap'];
+            if (rawUrenSlaap != null) {
+              double? urenSlaap;
+              if (rawUrenSlaap is num) {
+                urenSlaap = rawUrenSlaap.toDouble();
+              } else if (rawUrenSlaap is String) {
+                urenSlaap = double.tryParse(rawUrenSlaap);
+              }
+              if (urenSlaap != null && urenSlaap > 0) {
+                totalSleep += urenSlaap;
+                sleepCount++;
+              }
+            }
+            
+            // Count activities from mood logs
+            if (log['activity_type'] != null || log['sociale_contacten'] != null) {
+              activityCount++;
+            }
           }
-          
-          // Slaapkwaliteit
-          final dynamic rawSleep = log['uren_slaap'];
-          double? sleep;
-          if (rawSleep is num) {
-            sleep = rawSleep.toDouble();
-          } else if (rawSleep is String) {
-            sleep = double.tryParse(rawSleep);
-          }
-          if (sleep != null && sleep > 0) {
-            totalSleep += sleep;
-            sleepCount++;
-          }
+        } catch (e) {
+          // Skip invalid dates
         }
       }
       
@@ -100,23 +125,33 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final sleepScore = avgSleep > 0 ? ((avgSleep / 8) * 10).clamp(0, 10) : 0;
       
       // Ritme stabiliteit: percentage geplande vs daadwerkelijke activiteiten
-      final srmActivities = await db.getSrmActivities(todayStr);
-      int onTimeCount = 0;
-      for (var activity in srmActivities) {
-        if (activity['actual_time'] != null && activity['p_score'] != null) {
-          final dynamic rawPScore = activity['p_score'];
-          int pScore = 0;
-          if (rawPScore is int) {
-            pScore = rawPScore;
-          } else if (rawPScore is String) {
-            pScore = int.tryParse(rawPScore) ?? 0;
-          }
-          if (pScore >= 3) {
-            onTimeCount++;
+      // Haal alle SRM activiteiten op van de afgelopen 7 dagen
+      int totalOnTime = 0;
+      int totalActivities = 0;
+      
+      for (int i = 0; i < 7; i++) {
+        final checkDate = now.subtract(Duration(days: i));
+        final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
+        final dayActivities = await db.getSrmActivities(checkDateStr);
+        
+        for (var activity in dayActivities) {
+          totalActivities++;
+          if (activity['actual_time'] != null && activity['p_score'] != null) {
+            final dynamic rawPScore = activity['p_score'];
+            int pScore = 0;
+            if (rawPScore is int) {
+              pScore = rawPScore;
+            } else if (rawPScore is String) {
+              pScore = int.tryParse(rawPScore) ?? 0;
+            }
+            if (pScore >= 3) {
+              totalOnTime++;
+            }
           }
         }
       }
-      final stability = srmActivities.isNotEmpty ? (onTimeCount / srmActivities.length * 100) : 0;
+      
+      final stability = totalActivities > 0 ? (totalOnTime / totalActivities * 100) : 0;
 
       // Get weekly logs for chart
       final weeklyLogs = dailyLogs.where((log) {
@@ -128,12 +163,21 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           return false;
         }
       }).toList();
+      
+      // Count total SRM activities for the week
+      int totalWeeklyActivities = 0;
+      for (int i = 0; i < 7; i++) {
+        final checkDate = now.subtract(Duration(days: i));
+        final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
+        final dayActivities = await db.getSrmActivities(checkDateStr);
+        totalWeeklyActivities += dayActivities.length;
+      }
 
       setState(() {
         _settings = settings;
         _sleepQuality = sleepScore.toDouble();
         _rhythmStability = stability.toDouble();
-        _weeklyActivities = activityCount;
+        _weeklyActivities = totalWeeklyActivities;
         _weeklyLogs = weeklyLogs;
         _lastUpdated = DateTime.now();
         _isLoading = false;
