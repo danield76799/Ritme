@@ -59,6 +59,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
 
   String _getTargetTime(String key) {
     final value = _settings?[key];
+    AppLogger.debug('Getting target time for key: $key, value: $value, settings: $_settings');
     if (value == null || value.toString().isEmpty || value.toString() == '--:--') {
       // Return default times if not set
       switch (key) {
