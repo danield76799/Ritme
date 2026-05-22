@@ -117,69 +117,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
       currentTime = const TimeOfDay(hour: 8, minute: 0);
     }
 
-    final Duration initialDuration = Duration(hours: currentTime.hour, minutes: currentTime.minute);
-    Duration selectedDuration = initialDuration;
-
-    await showModalBottomSheet(
+    final TimeOfDay? picked = await showTimePicker(
       context: context,
-      backgroundColor: Colors.white, // White background for better contrast
-      builder: (BuildContext context) {
-        return Container(
-          height: 300,
-          color: Colors.white,
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                color: AppTheme.primaryTeal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuleer', style: TextStyle(color: Colors.white, fontSize: 16)),
-                    ),
-                    Text(
-                      label,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Save the selected time
-                        final hours = selectedDuration.inHours;
-                        final minutes = selectedDuration.inMinutes % 60;
-                        final timeString = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-                        setState(() {
-                          _settings ??= {};
-                          _settings![key] = timeString;
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Klaar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1, color: Colors.grey),
-              Expanded(
-                child: Container(
-                  color: Colors.white,
-                  child: CupertinoTimerPicker(
-                    mode: CupertinoTimerPickerMode.hm,
-                    minuteInterval: 15,
-                    initialTimerDuration: initialDuration,
-                    backgroundColor: Colors.white,
-                    onTimerDurationChanged: (Duration newDuration) {
-                      selectedDuration = newDuration;
-                    },
-                  ),
-                ),
-              ),
-            ],
+      initialTime: currentTime,
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppTheme.primaryTeal,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black87,
+            ),
+            dialogBackgroundColor: Colors.white,
           ),
+          child: child!,
         );
       },
     );
+
+    if (picked != null) {
+      final timeString = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      setState(() {
+        _settings ??= {};
+        _settings![key] = timeString;
+      });
+    }
   }
 
   @override
