@@ -24,82 +24,60 @@ jobs:
       with:
         flutter-version: '3.41.9'
         channel: 'stable'
+        cache: true
     
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-    
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      
-    - name: Accept Android SDK licenses
-      run: yes | sdkmanager --licenses || true
-      
-    - name: Install Android SDK components
-      run: |
-        sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-        echo "$ANDROID_HOME/build-tools/34.0.0" >> $GITHUB_PATH
+        cache: 'gradle'
     
     - name: Get dependencies
       run: flutter pub get
     
     - name: Build unsigned APK
-      run: flutter build apk --release
+      run: flutter build apk --release --split-per-abi
     
-    - name: Sign APK
+    - name: Sign APKs
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEYSTORE_PASSWORD: *** secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        KEY_PASSWORD: *** secrets.KEY_PASSWORD }}
       run: |
         set -e
         
         # Decode keystore
         echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
-        echo "Keystore decoded successfully"
         
-        # Check APK exists
-        ls -la build/app/outputs/flutter-apk/app-release.apk
+        # Sign all APKs
+        for apk in build/app/outputs/flutter-apk/*-release.apk; do
+          echo "Signing $apk"
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore /tmp/keystore.jks \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            "$apk" "$KEY_ALIAS"
+        done
         
-        # Sign APK with jarsigner
-        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-          -keystore /tmp/keystore.jks \
-          -storepass "$KEYSTORE_PASSWORD" \
-          -keypass "$KEY_PASSWORD" \
-          build/app/outputs/flutter-apk/app-release.apk "$KEY_ALIAS"
-        
-        # Verify
-        jarsigner -verify build/app/outputs/flutter-apk/app-release.apk
-        
-        # Align APK with zipalign
-        zipalign -v 4 build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/app-release-aligned.apk
-        mv build/app/outputs/flutter-apk/app-release-aligned.apk build/app/outputs/flutter-apk/app-release.apk
-        echo "APK signed and aligned successfully"
+        echo "All APKs signed successfully"
     
-    - name: Upload APK Artifact
+    - name: Upload APK Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ritme-release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: build/app/outputs/flutter-apk/*-release.apk
     
     - name: Create Release
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        files: build/app/outputs/flutter-apk/app-release.apk
+        files: build/app/outputs/flutter-apk/*-release.apk
         tag_name: v1.2.1-build${{ github.run_number }}
         name: Ritme v1.2.1 (Build ${{ github.run_number }})
         body: |
           ## Ritme - SRT Tracker v1.2.1
-          
-          **Nieuwe features:**
-          - Medicatie reminders met tijdstip
-          - Push notificaties voor medicatie
-          - Database reset functie
-          - Delete knop voor medicatie
           
           **Build info:**
           - Build number: ${{ github.run_number }}
@@ -110,4 +88,4 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
