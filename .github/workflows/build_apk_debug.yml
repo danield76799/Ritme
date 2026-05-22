@@ -23,35 +23,10 @@ jobs:
       run: flutter pub get
     
     - name: Build debug APKs (per ABI)
-      env:
-        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: |
         flutter build apk --debug --split-per-abi
-        
-        # Decode keystore
-        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/release.keystore
-        
-        for apk in build/app/outputs/flutter-apk/*-debug.apk; do
-          echo "Processing $apk"
-          
-          # Remove debug signature (META-INF/*)
-          zip -d "$apk" "META-INF/*" || true
-          
-          # Sign with release keystore
-          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
-            -keystore /tmp/release.keystore \
-            -storepass "$KEYSTORE_PASSWORD" \
-            -keypass "$KEY_PASSWORD" \
-            "$apk" "$KEY_ALIAS"
-          
-          # Verify signature
-          jarsigner -verify -verbose "$apk" | head -5
-        done
-        
-        echo "All debug APKs signed with release keystore"
+        echo "Debug APKs built with standard Flutter debug signing"
+        echo "Note: You need to uninstall previous debug builds before installing new ones"
     
     - name: Upload APK Artifacts
       uses: actions/upload-artifact@v4
@@ -69,6 +44,10 @@ jobs:
           ## Ritme - Debug Build
           
           **Let op:** Dit is een debug build voor testen.
+          
+          **Installatie instructies:**
+          - **Deïnstalleer** eerst de oude Ritme app (indien aanwezig)
+          - Installeer dan de nieuwe APK
           
           **Beschikbare APKs:**
           - `app-arm64-v8a-debug.apk` - Voor de meeste moderne Android devices
