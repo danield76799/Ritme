@@ -112461,14 +112461,13 @@ break
 case 1:return B.x(q,r)}})
 return B.y($async$AY,r)},
 zM(a,b,c){return this.aI7(a,b,c)},
-aI7(a,b,c){var s=0,r=B.z(t.S),q,p,o,n,m
+aI7(a,b,c){var s=0,r=B.z(t.S),q,p,o,n
 var $async$zM=B.A(function(d,e){if(d===1)return B.w(e,r)
 for(;;)switch(s){case 0:p=Date.now()
 o=t.z
 n=t.C.a($.d9().c6("weight_logs",!1,o))
-m=A.n.j(b)
 s=3
-return B.o(n.f6(B.a6([p,B.a6(["id",p,"date",a,"weight",m,"notes",c==null?null:c],t.N,t.X)],o,n.$ti.c)),$async$zM)
+return B.o(n.f6(B.a6([p,B.a6(["id",p,"date",a,"weight",b,"notes",c==null?null:c],t.N,t.X)],o,n.$ti.c)),$async$zM)
 case 3:q=p
 s=1
 break
