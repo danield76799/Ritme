@@ -113187,7 +113187,7 @@ B.aGg.prototype={
 $1(a){return J.W(a,"uren_slaap")!=null},
 $S:40}
 B.aGh.prototype={
-$1(a){var s=B.cS("^[\\u{1F300}-\\u{1F9FF}]",!0,!1)
+$1(a){var s=B.cS("^\\p{Emoji}+",!0,!0)
 return"- "+A.p.ja(B.Ca(a,s,""))},
 $S:63}
 B.aGl.prototype={
