@@ -84,7 +84,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   String _getPScoreLabel(int score) {
     if (score >= 3) return 'Goed';
     if (score >= 2) return 'Matig';
-    if (score >= 1) return 'Alert';
+    if (score >= 1) return 'Let op';
     return 'Leeg';
   }
 
