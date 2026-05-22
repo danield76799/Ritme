@@ -1,0 +1,105 @@
+name: Build Android App Bundle (Play Store)
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+        cache: 'gradle'
+
+    - name: Setup Flutter
+      run: |
+        git clone --depth 1 https://github.com/flutter/flutter.git -b stable
+        echo "$PWD/flutter/bin" >> $GITHUB_PATH
+
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ~/.gradle/caches
+        key: flutter-deps-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          flutter-deps-${{ runner.os }}-
+
+    - name: Verify Flutter
+      run: |
+        export PATH="$PWD/flutter/bin:$PATH"
+        flutter --version
+
+    - name: Clean Flutter build
+      run: |
+        export PATH="$PWD/flutter/bin:$PATH"
+        flutter clean
+
+    - name: Get dependencies
+      run: |
+        export PATH="$PWD/flutter/bin:$PATH"
+        flutter pub get
+
+    - name: Build App Bundle
+      run: |
+        export PATH="$PWD/flutter/bin:$PATH"
+        flutter build appbundle --release
+
+    - name: Sign AAB
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      run: |
+        # Decode keystore
+        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
+        
+        # Sign AAB with jarsigner
+        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+          -keystore /tmp/keystore.jks \
+          -storepass "$KEYSTORE_PASSWORD" \
+          -keypass "$KEY_PASSWORD" \
+          build/app/outputs/bundle/release/app-release.aab "$KEY_ALIAS"
+        
+        # Verify
+        jarsigner -verify build/app/outputs/bundle/release/app-release.aab
+
+    - name: Upload AAB
+      uses: actions/upload-artifact@v4
+      with:
+        name: ritme-aab-signed
+        path: build/app/outputs/bundle/release/app-release.aab
+        retention-days: 7
+
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: build/app/outputs/bundle/release/app-release.aab
+        tag_name: playstore-v${{ github.run_number }}
+        name: Play Store Release v${{ github.run_number }}
+        body: |
+          Play Store App Bundle (AAB) voor Ritme
+          
+          ## Upload naar Play Store
+          1. Download `app-release.aab`
+          2. Ga naar https://play.google.com/console
+          3. Upload de AAB bij "App bundles"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
