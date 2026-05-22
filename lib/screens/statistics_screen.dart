@@ -34,42 +34,79 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   }
 
   Future<void> _laadData() async {
-    final logs = await db.getDailyLogs();
+    try {
+      final logs = await db.getDailyLogs();
 
-    // Bereken KPIs
-    if (logs.isNotEmpty) {
-      double totaalStemming = 0;
-      double totaalSlaap = 0;
-      int logCount = 0;
+      // Bereken KPIs
+      if (logs.isNotEmpty) {
+        double totaalStemming = 0;
+        double totaalSlaap = 0;
+        int logCount = 0;
 
-      for (var log in logs) {
-        if (log['stemming_ochtend'] != null) {
-          totaalStemming += log['stemming_ochtend'];
-          logCount++;
+        for (var log in logs) {
+          if (log['stemming_hoog'] != null) {
+            final dynamic rawStemming = log['stemming_hoog'];
+            double stemming = 0;
+            if (rawStemming is num) {
+              stemming = rawStemming.toDouble();
+            } else if (rawStemming is String) {
+              stemming = double.tryParse(rawStemming) ?? 0.0;
+            }
+            totaalStemming += stemming;
+            logCount++;
+          }
+          if (log['uren_slaap'] != null) {
+            final dynamic rawSlaap = log['uren_slaap'];
+            double slaap = 0;
+            if (rawSlaap is num) {
+              slaap = rawSlaap.toDouble();
+            } else if (rawSlaap is String) {
+              slaap = double.tryParse(rawSlaap) ?? 0.0;
+            }
+            totaalSlaap += slaap;
+          }
+          // Also check for calculated sleep_hours from sleep tracking
+          if (log['sleep_hours'] != null) {
+            final sleepVal = log['sleep_hours'] is num ? log['sleep_hours'].toDouble() : double.tryParse(log['sleep_hours'].toString()) ?? 0.0;
+            if (sleepVal > 0) totaalSlaap += sleepVal;
+          }
         }
-        if (log['uren_slaap'] != null) totaalSlaap += log['uren_slaap'];
+
+        _gemStemming = logCount > 0 ? totaalStemming / logCount : 0.0;
+        _gemSlaap = logs.length > 0 ? totaalSlaap / logs.length : 0.0;
       }
 
-      _gemStemming = logCount > 0 ? totaalStemming / logCount : 0.0;
-      _gemSlaap = logs.length > 0 ? totaalSlaap / logs.length : 0.0;
-    }
+      // Ophalen van totaal aantal opgeslagen SRM activiteiten en Life Events
+      int actCount = 0;
+      int eventCount = 0;
+      for (var log in logs) {
+        try {
+          final acts = await db.getSrmActivities(log['date']);
+          final events = await db.getLifeEvents(log['date']);
+          actCount += acts.length;
+          eventCount += events.length;
+        } catch (e) {
+          // Skip logs with database errors
+        }
+      }
 
-    // Ophalen van totaal aantal opgeslagen SRM activiteiten en Life Events
-    int actCount = 0;
-    int eventCount = 0;
-    for (var log in logs) {
-      final acts = await db.getSrmActivities(log['date']);
-      final events = await db.getLifeEvents(log['date']);
-      actCount += acts.length;
-      eventCount += events.length;
+      if (mounted) {
+        setState(() {
+          _logs = logs.reversed.toList();
+          _aantalActiviteiten = actCount;
+          _aantalGebeurtenissen = eventCount;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('ERROR loading statistics: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _logs = [];
+        });
+      }
     }
-
-    setState(() {
-      _logs = logs.reversed.toList();
-      _aantalActiviteiten = actCount;
-      _aantalGebeurtenissen = eventCount;
-      _isLoading = false;
-    });
   }
 
   Future<void> _genereerEnDeelPdf() async {
@@ -101,12 +138,26 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       double totaalSlaap = 0;
       
       for (var log in recentLogs) {
-        if (log['stemming_ochtend'] != null) {
-          totaalStemming += log['stemming_ochtend'];
+        if (log['stemming_hoog'] != null) {
+          final dynamic rawStemming = log['stemming_hoog'];
+          double stemming = 0;
+          if (rawStemming is num) {
+            stemming = rawStemming.toDouble();
+          } else if (rawStemming is String) {
+            stemming = double.tryParse(rawStemming) ?? 0.0;
+          }
+          totaalStemming += stemming;
           logCount30++;
         }
         if (log['uren_slaap'] != null) {
-          totaalSlaap += log['uren_slaap'];
+          final dynamic rawSlaap = log['uren_slaap'];
+          double slaap = 0;
+          if (rawSlaap is num) {
+            slaap = rawSlaap.toDouble();
+          } else if (rawSlaap is String) {
+            slaap = double.tryParse(rawSlaap) ?? 0.0;
+          }
+          totaalSlaap += slaap;
         }
       }
       
@@ -202,7 +253,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                 // Data rijen
                 ...recentLogs.reversed.map((log) {
                   final date = log['date'] ?? '-';
-                  final stemming = log['stemming_ochtend']?.toString() ?? '-';
+                  final stemming = log['stemming_hoog']?.toString() ?? '-';
                   final slaap = log['uren_slaap']?.toString() ?? '-';
                   
                   // Haal activiteiten en gebeurtenissen op voor deze dag
@@ -355,8 +406,17 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
 
     List<FlSpot> spots = [];
     for (int i = 0; i < _logs.length; i++) {
-      if (_logs[i]['stemming_ochtend'] != null) {
-        spots.add(FlSpot(i.toDouble(), _logs[i]['stemming_ochtend'].toDouble()));
+      if (_logs[i]['stemming_hoog'] != null) {
+        dynamic rawStemming = _logs[i]['stemming_hoog'];
+        double stemming;
+        if (rawStemming is num) {
+          stemming = rawStemming.toDouble();
+        } else if (rawStemming is String) {
+          stemming = double.tryParse(rawStemming) ?? 0.0;
+        } else {
+          stemming = 0.0;
+        }
+        spots.add(FlSpot(i.toDouble(), stemming));
       }
     }
 
@@ -403,7 +463,12 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
             x: i,
             barRods: [
               BarChartRodData(
-                toY: _logs[i]['uren_slaap'].toDouble(),
+                toY: (() {
+                  dynamic rawSlaap = _logs[i]['uren_slaap'];
+                  if (rawSlaap is num) return rawSlaap.toDouble();
+                  if (rawSlaap is String) return double.tryParse(rawSlaap) ?? 0.0;
+                  return 0.0;
+                })(),
                 color: Colors.blue,
                 width: 16,
                 borderRadius: BorderRadius.circular(4),

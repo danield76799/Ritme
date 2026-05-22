@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'database_repository.dart';
 import '../utils/security_helper.dart';
 
@@ -12,23 +15,64 @@ class DatabaseHelper implements DatabaseRepository {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('ritme_app.db');
-    return _database!;
+    try {
+      _database = await _initDB('ritme_app.db');
+      // Test if database is writable
+      await _database!.execute('CREATE TABLE IF NOT EXISTS _test_write (id INTEGER PRIMARY KEY)');
+      await _database!.execute('DROP TABLE IF EXISTS _test_write');
+      return _database!;
+    } catch (e) {
+      print('CRITICAL: Database is read-only or corrupted: $e');
+      // Return null to indicate database failure
+      throw Exception('Database not writable: $e');
+    }
   }
 
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = p.join(dbPath, filePath);
+    // Force new database by using a new name - old DB may have wrong schema
+    final appDir = await getApplicationDocumentsDirectory();
+    final dbDir = Directory(p.join(appDir.path, 'databases'));
+    if (!await dbDir.exists()) {
+      await dbDir.create(recursive: true);
+    }
+    // Use new DB name to force fresh schema with correct columns
+    final path = p.join(dbDir.path, 'ritme_app_v9.db');
+    
+    // Check if we need to migrate from old location
+    final oldDbPath = p.join(await getDatabasesPath(), filePath);
+    final oldDbFile = File(oldDbPath);
+    if (await oldDbFile.exists()) {
+      // Try to copy old database to new location
+      try {
+        await oldDbFile.copy(path);
+        print('Migrated database from $oldDbPath to $path');
+      } catch (e) {
+        print('Failed to migrate database: $e');
+      }
+    }
+    
     return await openDatabase(
       path,
-      version: 3, // Version bumped for life_events table
+      version: 9,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
-      readOnly: false, // Explicitly ensure read-write mode
+      readOnly: false,
+      singleInstance: true,
     );
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 9) {
+      // Migrate daily_logs to new schema with Life Chart fields
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN stemming_hoog REAL DEFAULT 50');
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN stemming_laag REAL DEFAULT 50');
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN gesplitste_stemming INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN daglicht INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN sociale_contacten INTEGER DEFAULT 0');
+      // Migrate old data: stemming_ochtend -> stemming_hoog, stemming_avond -> stemming_laag
+      await db.execute('UPDATE daily_logs SET stemming_hoog = stemming_ochtend WHERE stemming_ochtend IS NOT NULL');
+      await db.execute('UPDATE daily_logs SET stemming_laag = stemming_avond WHERE stemming_avond IS NOT NULL');
+    }
     if (oldVersion < 2) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS weight_logs (
@@ -65,6 +109,39 @@ class DatabaseHelper implements DatabaseRepository {
         )
       ''');
     }
+    
+    // Add sleep tracking columns for version 6
+    if (oldVersion < 6) {
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN bed_time TEXT');
+      } catch (e) {
+        print('bed_time column might already exist: $e');
+      }
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN wake_time TEXT');
+      } catch (e) {
+        print('wake_time column might already exist: $e');
+      }
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN awake_minutes INTEGER DEFAULT 0');
+      } catch (e) {
+        print('awake_minutes column might already exist: $e');
+      }
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN sleep_hours REAL');
+      } catch (e) {
+        print('sleep_hours column might already exist: $e');
+      }
+    }
+    
+    // Add reminder_days column for medical_appointments (version 7)
+    if (oldVersion < 7) {
+      try {
+        await db.execute('ALTER TABLE medical_appointments ADD COLUMN reminder_days INTEGER DEFAULT 1');
+      } catch (e) {
+        print('reminder_days column might already exist: $e');
+      }
+    }
   }
 
   Future _createDB(Database db, int version) async {
@@ -85,10 +162,17 @@ class DatabaseHelper implements DatabaseRepository {
       CREATE TABLE IF NOT EXISTS daily_logs (
         date TEXT PRIMARY KEY,
         uren_slaap REAL,
-        stemming_ochtend INTEGER,
-        stemming_avond INTEGER,
+        bed_time TEXT,
+        wake_time TEXT,
+        awake_minutes INTEGER DEFAULT 0,
+        sleep_hours REAL,
+        stemming_hoog REAL DEFAULT 50,
+        stemming_laag REAL DEFAULT 50,
+        gesplitste_stemming INTEGER DEFAULT 0,
         ontstemde_manie INTEGER DEFAULT 0,
         stemmingsomslagen INTEGER DEFAULT 0,
+        daglicht INTEGER DEFAULT 0,
+        sociale_contacten INTEGER DEFAULT 0,
         alcohol_middelen INTEGER DEFAULT 0,
         menstruatie INTEGER DEFAULT 0,
         andere_klachten TEXT
@@ -178,9 +262,82 @@ class DatabaseHelper implements DatabaseRepository {
   
   @override
   Future<Map<String, dynamic>?> getSettings() async {
+    // Use SharedPreferences for settings (reliable on Android)
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Try to get username - if empty, fall back to DB
+    var username = prefs.getString('username') ?? '';
+    var targetOpstaan = prefs.getString('target_opstaan') ?? '';
+    var targetSlapen = prefs.getString('target_slapen') ?? '';
+    var targetContact = prefs.getString('target_contact') ?? '';
+    var targetWerk = prefs.getString('target_werk') ?? '';
+    var targetEten = prefs.getString('target_eten') ?? '';
+    
+    // If any critical field is empty, try to get from DB and sync
+    if (username.isEmpty || targetOpstaan.isEmpty || targetSlapen.isEmpty) {
+      final dbSettings = await _getSettingsFromDb();
+      if (dbSettings != null) {
+        // Sync to SharedPreferences
+        await _syncSettingsToPrefs(dbSettings);
+        
+        // Use DB values (they may be more up-to-date)
+        username = dbSettings['username']?.toString() ?? username;
+        targetOpstaan = dbSettings['target_opstaan']?.toString() ?? targetOpstaan;
+        targetSlapen = dbSettings['target_slapen']?.toString() ?? targetSlapen;
+        targetContact = dbSettings['target_contact']?.toString() ?? targetContact;
+        targetWerk = dbSettings['target_werk']?.toString() ?? targetWerk;
+        targetEten = dbSettings['target_eten']?.toString() ?? targetEten;
+      }
+    }
+    
+    if (username.isEmpty) {
+      return null;
+    }
+    
+    return {
+      'username': username,
+      'target_opstaan': targetOpstaan,
+      'target_slapen': targetSlapen,
+      'target_contact': targetContact,
+      'target_werk': targetWerk,
+      'target_eten': targetEten,
+    };
+  }
+  
+  Future<Map<String, dynamic>?> _getSettingsFromDb() async {
     final db = await database;
-    final results = await db.query('settings', limit: 1);
-    return results.isNotEmpty ? results.first : null;
+    final result = await db.query('settings', limit: 1);
+    if (result.isEmpty) return null;
+    return {
+      'username': result.first['username']?.toString() ?? '',
+      'target_opstaan': result.first['target_opstaan']?.toString() ?? '',
+      'target_slapen': result.first['target_slapen']?.toString() ?? '',
+      'target_contact': result.first['target_contact']?.toString() ?? '',
+      'target_werk': result.first['target_werk']?.toString() ?? '',
+      'target_eten': result.first['target_eten']?.toString() ?? '',
+    };
+  }
+  
+  Future<void> _syncSettingsToPrefs(Map<String, dynamic> settings) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (settings['username'] != null) {
+      await prefs.setString('username', settings['username'].toString());
+    }
+    if (settings['target_opstaan'] != null) {
+      await prefs.setString('target_opstaan', settings['target_opstaan'].toString());
+    }
+    if (settings['target_slapen'] != null) {
+      await prefs.setString('target_slapen', settings['target_slapen'].toString());
+    }
+    if (settings['target_contact'] != null) {
+      await prefs.setString('target_contact', settings['target_contact'].toString());
+    }
+    if (settings['target_werk'] != null) {
+      await prefs.setString('target_werk', settings['target_werk'].toString());
+    }
+    if (settings['target_eten'] != null) {
+      await prefs.setString('target_eten', settings['target_eten'].toString());
+    }
   }
 
   @override
@@ -198,7 +355,45 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> updateSettingsMap(Map<String, dynamic> settings) async {
     final db = await database;
-    return await db.update('settings', settings, where: 'username = ?', whereArgs: ['user']);
+    // Get the first settings row (there should only be one)
+    final existing = await db.query('settings', limit: 1);
+    int result;
+    if (existing.isNotEmpty) {
+      // Preserve the password_hash from the database
+      final merged = Map<String, dynamic>.from(existing.first);
+      // Remove password_hash from settings to preserve database value
+      settings.remove('password_hash');
+      merged.addAll(settings);
+      // Update by id to ensure we update the correct row
+      final id = existing.first['id'] as int;
+      result = await db.update('settings', merged, where: 'id = ?', whereArgs: [id]);
+    } else {
+      // Insert new row - provide required fields with defaults
+      final newRow = Map<String, dynamic>.from(settings);
+      newRow['username'] = newRow['username'] ?? 'user';
+      newRow['password_hash'] = newRow['password_hash'] ?? '';
+      result = await db.insert('settings', newRow);
+    }
+    // Also sync to SharedPreferences so getSettings() can find it
+    // Re-fetch from DB to ensure we sync the correct merged data
+    final updatedSettings = await _getSettingsFromDb();
+    if (updatedSettings != null) {
+      await _syncSettingsToPrefs(updatedSettings);
+    }
+    
+    // Also save individual fields directly to ensure they're persisted
+    final prefs = await SharedPreferences.getInstance();
+    if (settings['username'] != null) {
+      await prefs.setString('username', settings['username'].toString());
+    }
+    if (settings['target_opstaan'] != null) {
+      await prefs.setString('target_opstaan', settings['target_opstaan'].toString());
+    }
+    if (settings['target_slapen'] != null) {
+      await prefs.setString('target_slapen', settings['target_slapen'].toString());
+    }
+    
+    return result;
   }
 
   @override
@@ -253,9 +448,14 @@ class DatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertDailyLog(String date, Map<String, dynamic> data) async {
-    final db = await database;
-    data['date'] = date;
-    return await db.insert('daily_logs', data, conflictAlgorithm: ConflictAlgorithm.replace);
+    try {
+      final db = await database;
+      data['date'] = date;
+      return await db.insert('daily_logs', data, conflictAlgorithm: ConflictAlgorithm.replace);
+    } catch (e) {
+      print('ERROR inserting daily_log: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -331,148 +531,28 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<String> exportDatabaseToJson() async {
     final db = await database;
-    
-    final Map<String, dynamic> result = {
-      'export_date': DateTime.now().toIso8601String(),
-      'app_version': '1.2.0',
-      'tables': <String, dynamic>{},
-    };
-    
-    // Export all tables with error handling
-    try {
-      (result['tables'] as Map<String, dynamic>)['settings'] = await db.query('settings');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['settings'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['daily_logs'] = await db.query('daily_logs');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['daily_logs'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['srm_activities'] = await db.query('srm_activities');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['srm_activities'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['medication_config'] = await db.query('medication_config');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['medication_config'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['medication_intake'] = await db.query('medication_intake');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['medication_intake'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['life_events'] = await db.query('life_events');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['life_events'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['weight_logs'] = await db.query('weight_logs');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['weight_logs'] = [];
-    }
-    
-    try {
-      (result['tables'] as Map<String, dynamic>)['medical_appointments'] = await db.query('medical_appointments');
-    } catch (e) {
-      (result['tables'] as Map<String, dynamic>)['medical_appointments'] = [];
-    }
-    
-    return jsonEncode(result);
-  }
 
-  @override
-  Future<void> importDatabaseFromJson(String jsonString) async {
-    final data = jsonDecode(jsonString) as Map<String, dynamic>;
-    final tables = data['tables'] as Map<String, dynamic>;
-    
-    final db = await database;
-    
-    // Clear all data first
-    await clearAllData();
-    
-    // Import each table with error handling
-    if (tables['settings'] != null) {
-      for (var row in tables['settings'] as List) {
-        try {
-          await db.insert('settings', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['daily_logs'] != null) {
-      for (var row in tables['daily_logs'] as List) {
-        try {
-          await db.insert('daily_logs', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['srm_activities'] != null) {
-      for (var row in tables['srm_activities'] as List) {
-        try {
-          await db.insert('srm_activities', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['medication_config'] != null) {
-      for (var row in tables['medication_config'] as List) {
-        try {
-          await db.insert('medication_config', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['medication_intake'] != null) {
-      for (var row in tables['medication_intake'] as List) {
-        try {
-          await db.insert('medication_intake', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['life_events'] != null) {
-      for (var row in tables['life_events'] as List) {
-        try {
-          await db.insert('life_events', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['weight_logs'] != null) {
-      for (var row in tables['weight_logs'] as List) {
-        try {
-          await db.insert('weight_logs', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
-    if (tables['medical_appointments'] != null) {
-      for (var row in tables['medical_appointments'] as List) {
-        try {
-          await db.insert('medical_appointments', row as Map<String, dynamic>);
-        } catch (e) {
-          // Skip problematic rows
-        }
-      }
-    }
+    final dailyLogs = await db.query('daily_logs', orderBy: 'date DESC');
+    final srmActivities = await db.query('srm_activities', orderBy: 'date DESC');
+    final medicationConfig = await db.query('medication_config');
+    final medicationSchedule = await db.query('medication_schedule');
+    final medicationIntake = await db.query('medication_intake', orderBy: 'date DESC');
+    final weightLogs = await db.query('weight_logs', orderBy: 'date DESC');
+    final appointments = await db.query('medical_appointments', orderBy: 'appointment_date DESC');
+    final lifeEvents = await db.query('life_events', orderBy: 'date DESC');
+
+    final exportData = {
+      'daily_logs': dailyLogs,
+      'srm_activities': srmActivities,
+      'medication_config': medicationConfig,
+      'medication_schedule': medicationSchedule,
+      'medication_intake': medicationIntake,
+      'weight_logs': weightLogs,
+      'medical_appointments': appointments,
+      'life_events': lifeEvents,
+    };
+
+    return jsonEncode(exportData);
   }
 
   @override
@@ -481,17 +561,42 @@ class DatabaseHelper implements DatabaseRepository {
     await db.delete('daily_logs');
     await db.delete('srm_activities');
     await db.delete('medication_intake');
+    await db.delete('medication_schedule');
     await db.delete('medication_config');
-    await db.delete('life_events');
     await db.delete('weight_logs');
     await db.delete('medical_appointments');
+    await db.delete('life_events');
     await db.delete('settings');
   }
 
+  // ===================
+  // MEDICATION CONFIG
+  // ===================
+  
   @override
-  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid) async {
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
     final db = await database;
-    return await db.insert('medication_config', {'naam': naam, 'dosering': dosering, 'eenheid': eenheid});
+    return await db.insert('medication_config', {
+      'naam': naam,
+      'dosering': dosering,
+      'eenheid': eenheid,
+      'reminder_enabled': reminderEnabled ? 1 : 0,
+    });
+  }
+
+  @override
+  Future<int> insertMedicationConfigMap(Map<String, dynamic> data) async {
+    return await insertMedicationConfig(
+      data['naam'] as String,
+      data['dosering'] as String,
+      data['eenheid'] as String,
+    );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationConfig() async {
+    final db = await database;
+    return await db.query('medication_config');
   }
 
   @override
@@ -500,16 +605,114 @@ class DatabaseHelper implements DatabaseRepository {
     return await db.query('medication_config');
   }
 
-  // ===================
-  // MEDICATION SCHEDULE
-  // ===================
-  
+  @override
+  Future<int> deleteMedicationConfig(int id) async {
+    final db = await database;
+    return await db.delete('medication_config', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> updateMedicationConfig(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('medication_config', data, where: 'id = ?', whereArgs: [id]);
+  }
+
   @override
   Future<List<Map<String, dynamic>>> getMedicationSchedules() async {
     final db = await database;
     return await db.query('medication_schedule');
   }
 
+  @override
+  Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('medication_schedule', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async {
+    final db = await database;
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final weekday = DateTime.now().weekday.toString();
+    return await db.query(
+      'medication_schedule',
+      where: 'days_of_week LIKE ? AND enabled = 1',
+      whereArgs: ['%$weekday%'],
+    );
+  }
+
+  @override
+  Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
+    final db = await database;
+    return await db.update(
+      'medication_intake',
+      {'confirmed': confirmed},
+      where: 'date = ? AND medication_id = ?',
+      whereArgs: [date, medicationId],
+    );
+  }
+
+  @override
+  Future<void> importDatabaseFromJson(String jsonString) async {
+    final db = await database;
+    final data = jsonDecode(jsonString) as Map<String, dynamic>;
+    
+    // Clear existing data
+    await clearAllData();
+    
+    // Import daily logs
+    final dailyLogs = data['daily_logs'] as List<dynamic>? ?? [];
+    for (final log in dailyLogs) {
+      await db.insert('daily_logs', log as Map<String, dynamic>);
+    }
+    
+    // Import SRM activities
+    final srmActivities = data['srm_activities'] as List<dynamic>? ?? [];
+    for (final activity in srmActivities) {
+      await db.insert('srm_activities', activity as Map<String, dynamic>);
+    }
+    
+    // Import medication config
+    final medicationConfig = data['medication_config'] as List<dynamic>? ?? [];
+    for (final config in medicationConfig) {
+      await db.insert('medication_config', config as Map<String, dynamic>);
+    }
+    
+    // Import medication schedule
+    final medicationSchedule = data['medication_schedule'] as List<dynamic>? ?? [];
+    for (final schedule in medicationSchedule) {
+      await db.insert('medication_schedule', schedule as Map<String, dynamic>);
+    }
+    
+    // Import medication intake
+    final medicationIntake = data['medication_intake'] as List<dynamic>? ?? [];
+    for (final intake in medicationIntake) {
+      await db.insert('medication_intake', intake as Map<String, dynamic>);
+    }
+    
+    // Import weight logs
+    final weightLogs = data['weight_logs'] as List<dynamic>? ?? [];
+    for (final log in weightLogs) {
+      await db.insert('weight_logs', log as Map<String, dynamic>);
+    }
+    
+    // Import medical appointments
+    final appointments = data['medical_appointments'] as List<dynamic>? ?? [];
+    for (final appointment in appointments) {
+      await db.insert('medical_appointments', appointment as Map<String, dynamic>);
+    }
+    
+    // Import life events
+    final lifeEvents = data['life_events'] as List<dynamic>? ?? [];
+    for (final event in lifeEvents) {
+      await db.insert('life_events', event as Map<String, dynamic>);
+    }
+  }
+
+  // ===================
+  // MEDICATION SCHEDULE
+  // ===================
+  
   @override
   Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
     final db = await database;
@@ -522,55 +725,24 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data) async {
+  Future<int> insertMedicationScheduleMap(Map<String, dynamic> data) async {
+    return await insertMedicationSchedule(
+      data['medication_id'] as int,
+      data['reminder_time'] as String,
+      data['days_of_week'] as String,
+    );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationSchedule(int medicationId) async {
     final db = await database;
-    return await db.update('medication_schedule', data, where: 'id = ?', whereArgs: [id]);
+    return await db.query('medication_schedule', where: 'medication_id = ?', whereArgs: [medicationId]);
   }
 
   @override
   Future<int> deleteMedicationSchedule(int id) async {
     final db = await database;
     return await db.delete('medication_schedule', where: 'id = ?', whereArgs: [id]);
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async {
-    final db = await database;
-    final today = DateTime.now().weekday; // 1= Monday, 7=Sunday
-    final allSchedules = await db.query('medication_schedule', where: 'enabled = ?', whereArgs: [1]);
-    
-    return allSchedules.where((schedule) {
-      final days = (schedule['days_of_week'] as String).split(',');
-      return days.contains(today.toString());
-    }).toList();
-  }
-
-  @override
-  Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
-    final db = await database;
-    final existing = await db.query(
-      'medication_intake',
-      where: 'date = ? AND medication_id = ?',
-      whereArgs: [date, medicationId],
-      limit: 1,
-    );
-    
-    if (existing.isNotEmpty) {
-      return await db.update(
-        'medication_intake',
-        {'confirmed': confirmed, 'confirmed_at': DateTime.now().toIso8601String()},
-        where: 'date = ? AND medication_id = ?',
-        whereArgs: [date, medicationId],
-      );
-    } else {
-      return await db.insert('medication_intake', {
-        'date': date,
-        'medication_id': medicationId,
-        'aantal_ingenomen': 1,
-        'confirmed': confirmed,
-        'confirmed_at': confirmed == 1 ? DateTime.now().toIso8601String() : null,
-      });
-    }
   }
 
   // ===================
@@ -670,6 +842,85 @@ class DatabaseHelper implements DatabaseRepository {
   Future<int> deleteWeightLog(int id) async {
     final db = await database;
     return await db.delete('weight_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ===================
+  // SLEEP TRACKING
+  // ===================
+  
+  @override
+  Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
+    final db = await database;
+    
+    // Check if sleep log exists for this date
+    final existing = await db.query(
+      'daily_logs',
+      where: 'date = ?',
+      whereArgs: [date],
+    );
+    
+    final sleepHours = _calculateSleepHours(bedTime, wakeTime, awakeMinutes);
+    
+    if (existing.isNotEmpty) {
+      // Update existing
+      return await db.update(
+        'daily_logs',
+        {
+          'bed_time': bedTime,
+          'wake_time': wakeTime,
+          'awake_minutes': awakeMinutes,
+          'sleep_hours': sleepHours,
+        },
+        where: 'date = ?',
+        whereArgs: [date],
+      );
+    } else {
+      // Insert new
+      return await db.insert('daily_logs', {
+        'date': date,
+        'bed_time': bedTime,
+        'wake_time': wakeTime,
+        'awake_minutes': awakeMinutes,
+        'sleep_hours': sleepHours,
+      });
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getSleepLog(String date) async {
+    final db = await database;
+    final results = await db.query(
+      'daily_logs',
+      where: 'date = ? AND bed_time IS NOT NULL',
+      whereArgs: [date],
+    );
+    
+    if (results.isEmpty) return null;
+    return results.first;
+  }
+
+  double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
+    try {
+      final bedParts = bedTime.split(':');
+      final wakeParts = wakeTime.split(':');
+      
+      int bedHour = int.parse(bedParts[0]);
+      int bedMinute = int.parse(bedParts[1]);
+      int wakeHour = int.parse(wakeParts[0]);
+      int wakeMinute = int.parse(wakeParts[1]);
+      
+      int bedMinutes = bedHour * 60 + bedMinute;
+      int wakeMinutes = wakeHour * 60 + wakeMinute;
+      
+      if (wakeMinutes < bedMinutes) {
+        wakeMinutes += 24 * 60;
+      }
+      
+      int totalMinutes = wakeMinutes - bedMinutes - awakeMinutes;
+      return totalMinutes / 60.0;
+    } catch (e) {
+      return 0.0;
+    }
   }
 
   // ===================

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import '../utils/app_theme.dart';
+import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import '../services/backup_service.dart';
+import '../services/notification_helper.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -72,10 +76,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.green,
+          content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          backgroundColor: Colors.green[700],
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -85,10 +90,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
+          content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          backgroundColor: Colors.red[700],
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -116,24 +122,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     await showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.grey[300], // Light background for visibility
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.white,
+          color: Colors.grey[300],
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.grey[300],
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuleer'),
+                      child: const Text('Annuleer', style: TextStyle(color: Colors.black87, fontSize: 16)),
                     ),
                     Text(
                       label,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
                     ),
                     TextButton(
                       onPressed: () {
@@ -147,19 +155,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         });
                         Navigator.pop(context);
                       },
-                      child: const Text('Klaar'),
+                      child: const Text('Klaar', style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
               ),
+              const Divider(height: 1, color: Colors.grey), // Will be grey[300]
               Expanded(
-                child: CupertinoTimerPicker(
-                  mode: CupertinoTimerPickerMode.hm,
-                  minuteInterval: 15,
-                  initialTimerDuration: initialDuration,
-                  onTimerDurationChanged: (Duration newDuration) {
-                    selectedDuration = newDuration;
-                  },
+                child: Container(
+                  color: Colors.grey[200],
+                  child: CupertinoTimerPicker(
+                    mode: CupertinoTimerPickerMode.hm,
+                    minuteInterval: 15,
+                    initialTimerDuration: initialDuration,
+                    backgroundColor: Colors.grey[200],
+                    onTimerDurationChanged: (Duration newDuration) {
+                      selectedDuration = newDuration;
+                    },
+                  ),
                 ),
               ),
             ],
@@ -172,7 +185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Colors.grey[50], // Very light grey background
       appBar: AppBar(
         title: const Text('Instellingen', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryTeal,
@@ -196,7 +209,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 16, color: Colors.black),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -240,7 +253,189 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
+          const SizedBox(height: 24),
+          _buildSectionHeader('Backup & Herstel'),
+          _buildBackupButtons(),
+          const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBackupButtons() {
+    return Column(
+      children: [
+        // Test notification button
+        _buildActionButton(
+          'Test notificatie',
+          Icons.notifications_active,
+          () async {
+            try {
+              await NotificationHelper.instance.showTestNotification();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Test notificatie verzonden! Check je notificatie paneel.'),
+                    backgroundColor: Colors.green[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Notificatie error: $e'),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            }
+          },
+        ),
+        const SizedBox(height: 8),
+        _buildActionButton(
+          'Backup maken',
+          Icons.backup,
+          () async {
+            try {
+              final path = await BackupService.saveLocalBackup();
+              if (mounted) {
+                // Show dialog with path so user can copy it
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Backup gemaakt'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Backup opgeslagen in:'),
+                        const SizedBox(height: 8),
+                        SelectableText(
+                          path,
+                          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Tip: Gebruik de deel knop om het via email naar jezelf te sturen.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Sluiten'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            } catch (e, stack) {
+              debugPrint('Backup error: $e');
+              debugPrint('Stack: $stack');
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Fout bij backup: $e', style: const TextStyle(color: Colors.white)),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            }
+          },
+        ),
+        const SizedBox(height: 8),
+        _buildActionButton(
+          'Backup delen (email)',
+          Icons.share,
+          () async {
+            try {
+              await BackupService.shareBackup();
+            } catch (e, stack) {
+              debugPrint('Share error: $e');
+              debugPrint('Stack: $stack');
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Fout bij delen: $e', style: const TextStyle(color: Colors.white)),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            }
+          },
+        ),
+        const SizedBox(height: 8),
+        _buildActionButton(
+          'Herstellen van backup',
+          Icons.restore,
+          () async {
+            try {
+              final result = await FilePicker.platform.pickFiles(
+                type: FileType.custom,
+                allowedExtensions: ['json'],
+              );
+              if (result != null && result.files.single.path != null) {
+                await BackupService.restoreFromFile(result.files.single.path!);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Data hersteld!', style: TextStyle(color: Colors.white)),
+                      backgroundColor: Colors.green[700],
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              }
+            } catch (e, stack) {
+              debugPrint('Restore error: $e');
+              debugPrint('Stack: $stack');
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Fout bij herstellen: $e', style: const TextStyle(color: Colors.white)),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String label, IconData icon, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: AppTheme.primaryTeal),
+        label: Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16)),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          side: BorderSide(color: AppTheme.primaryTeal, width: 2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Colors.white,
+        ),
       ),
     );
   }
@@ -253,7 +448,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: AppTheme.textCharcoal,
+          color: Colors.black,
         ),
       ),
     );
@@ -264,9 +459,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: controller,
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          labelStyle: const TextStyle(
+            color: Colors.black87,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.black, width: 2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.black, width: 2),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF008080), width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
     );
@@ -283,24 +502,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[400]!),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Color(0xFF008080), width: 2), // Medical Teal
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 label,
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                style: const TextStyle(
+                  fontSize: 16, 
+                  color: const Color(0xFF000000), // Charcoal
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               Row(
                 children: [
                   Text(
                     displayValue,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF000000), // Charcoal
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.access_time, color: Colors.grey[600]),
+                  Icon(Icons.access_time, color: Color(0xFF008080)), // Medical Teal
                 ],
               ),
             ],

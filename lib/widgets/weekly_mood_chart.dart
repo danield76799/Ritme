@@ -10,24 +10,106 @@ class WeeklyMoodChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (logs.isEmpty) {
-      return const Center(
-        child: Text(
-          'Geen data beschikbaar',
-          style: TextStyle(color: Colors.grey),
+      return Container(
+        height: 160,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.show_chart,
+                size: 48,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Nog geen stemming data',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Voeg minimaal 2 logs toe om een trend te zien',
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    // Prepare chart data
+    // Need at least 2 data points for a meaningful trend line
+    if (logs.length < 2) {
+      return Container(
+        height: 160,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.trending_up,
+                size: 48,
+                color: AppTheme.primaryTeal.withOpacity(0.5),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Eén log opgeslagen!',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Voeg nog één log toe voor een trendlijn',
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Prepare chart data - Life Chart 0-100 scale
     final spots = <FlSpot>[];
     final titles = <String>[];
     
     for (int i = 0; i < logs.length && i < 7; i++) {
       final log = logs[i];
-      final stemming = log['stemming_ochtend'] as int? ?? 0;
-      // Convert -5..5 to 0..10 for display
-      final value = stemming + 5;
-      spots.add(FlSpot(i.toDouble(), value.toDouble()));
+      // Life Chart: stemming_hoog (0-100)
+      // Hive stores everything as String, so we need to parse
+      final dynamic rawStemming = log['stemming_hoog'];
+      double value;
+      if (rawStemming is num) {
+        value = rawStemming.toDouble();
+      } else if (rawStemming is String) {
+        value = double.tryParse(rawStemming) ?? 50.0;
+      } else {
+        value = 50.0;
+      }
+      spots.add(FlSpot(i.toDouble(), value));
       
       final date = log['date'] as String? ?? '';
       if (date.isNotEmpty) {
@@ -56,19 +138,21 @@ class WeeklyMoodChart extends StatelessWidget {
                 : 'Stemming Trend (${logs.length} dagen)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 16),
-          Expanded(
+          SizedBox(
+            height: 100,
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: 2,
+                  horizontalInterval: 20,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withOpacity(0.15),
                       strokeWidth: 1,
                     );
                   },
@@ -99,45 +183,36 @@ class WeeklyMoodChart extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      interval: 2,
+                      interval: 20,
                       getTitlesWidget: (value, meta) {
-                        // Convert 0..10 back to -5..5
-                        final moodValue = value.toInt() - 5;
-                        String label;
-                        if (moodValue <= -3) label = '😢';
-                        else if (moodValue <= -1) label = '😕';
-                        else if (moodValue <= 1) label = '😐';
-                        else if (moodValue <= 3) label = '🙂';
-                        else label = '😄';
-                        return Text(label, style: const TextStyle(fontSize: 12));
+                        // Life Chart 0-100 labels
+                        if (value == 50) return const Text('50', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold));
+                        if (value == 0 || value == 100) return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                        return const Text('');
                       },
                     ),
                   ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: spots.length - 1.0,
+                minX: -0.5,
+                maxX: spots.length - 0.5,
                 minY: 0,
-                maxY: 10,
+                maxY: 100,
                 lineBarsData: [
                   LineChartBarData(
                     spots: spots,
                     isCurved: true,
                     color: AppTheme.primaryTeal,
-                    barWidth: 3,
+                    barWidth: 4,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
                       show: true,
                       getDotPainter: (spot, percent, barData, index) {
                         return FlDotCirclePainter(
-                          radius: 4,
-                          color: AppTheme.primaryTeal,
+                          radius: 5,
+                          color: _getStemmingKleur(spot.y),
                           strokeWidth: 2,
                           strokeColor: Colors.white,
                         );
@@ -145,15 +220,52 @@ class WeeklyMoodChart extends StatelessWidget {
                     ),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: AppTheme.primaryTeal.withOpacity(0.1),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppTheme.primaryTeal.withAlpha(100),
+                          AppTheme.primaryTeal.withAlpha(10),
+                        ],
+                      ),
                     ),
                   ),
                 ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) {
+                      return Colors.black87;
+                    },
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) {
+                        return LineTooltipItem(
+                          '${spot.y.toInt()}/100',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Color _getStemmingKleur(double waarde) {
+    if (waarde <= 10) return Colors.grey[800]!;     // Uiterst depressief
+    if (waarde <= 25) return Colors.grey[600]!;      // Ernstig depressief
+    if (waarde <= 40) return Colors.blue[400]!;      // Matig depressief
+    if (waarde <= 45) return Colors.blue[200]!;      // Licht depressief
+    if (waarde <= 55) return Colors.green[400]!;      // Neutraal
+    if (waarde <= 65) return Colors.yellow[600]!;     // Licht manisch
+    if (waarde <= 75) return Colors.orange[500]!;     // Matig manisch
+    if (waarde <= 90) return Colors.orange[700]!;     // Ernstig manisch
+    return Colors.red[500]!;                          // Uiterst manisch
   }
 }
