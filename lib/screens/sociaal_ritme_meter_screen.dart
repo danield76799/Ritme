@@ -95,6 +95,30 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     return Icons.circle_outlined;
   }
 
+  int _calculatePScore(String? targetTime, String? actualTime) {
+    if (targetTime == null || targetTime == '--:--' || actualTime == null || actualTime.isEmpty) {
+      return 0;
+    }
+    
+    // Parse times
+    final targetParts = targetTime.split(':');
+    final actualParts = actualTime.split(':');
+    
+    if (targetParts.length < 2 || actualParts.length < 2) return 0;
+    
+    final targetMinutes = (int.tryParse(targetParts[0]) ?? 0) * 60 + (int.tryParse(targetParts[1]) ?? 0);
+    final actualMinutes = (int.tryParse(actualParts[0]) ?? 0) * 60 + (int.tryParse(actualParts[1]) ?? 0);
+    
+    final diff = (actualMinutes - targetMinutes).abs();
+    
+    // P3 = exact op tijd (binnen 15 minuten)
+    if (diff <= 15) return 3;
+    // P2 = binnen 30 minuten
+    if (diff <= 30) return 2;
+    // P1 = meer dan 30 minuten verschil
+    return 1;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -200,9 +224,9 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
 
     final targetTijd = _getTargetTime(targetKey);
     final dbActiviteit = _getActivityForType(naam);
-    final isGedaan = dbActiviteit != null && (dbActiviteit['p_score'] ?? 0) > 0;
+    final isGedaan = dbActiviteit != null && (dbActiviteit['actual_time']?.toString().isNotEmpty ?? false);
     final werkTijd = dbActiviteit?['actual_time'] as String? ?? null;
-    final pScore = dbActiviteit?['p_score'] as int? ?? 0;
+    final pScore = _calculatePScore(targetTijd, werkTijd);
 
     final pColor = _getPScoreColor(pScore);
 
