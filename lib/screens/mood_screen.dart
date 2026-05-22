@@ -52,24 +52,33 @@ class _MoodScreenState extends State<MoodScreen> {
         final dynamic rawStemmingLaag = log['stemming_laag'];
         final dynamic rawGesplitst = log['gesplitste_stemming'];
         
+        // Hive stores everything as String, so we need to parse
         if (rawStemmingHoog is num) {
           _stemmingHoog = rawStemmingHoog.toDouble();
+        } else if (rawStemmingHoog is String) {
+          _stemmingHoog = double.tryParse(rawStemmingHoog) ?? 50.0;
         } else {
           _stemmingHoog = 50.0;
         }
         
-        if (rawGesplitst == 1 && rawStemmingLaag is num) {
-          _stemmingLaag = rawStemmingLaag.toDouble();
+        if (rawGesplitst == 1 || rawGesplitst == '1' || rawGesplitst == true) {
+          if (rawStemmingLaag is num) {
+            _stemmingLaag = rawStemmingLaag.toDouble();
+          } else if (rawStemmingLaag is String) {
+            _stemmingLaag = double.tryParse(rawStemmingLaag) ?? _stemmingHoog;
+          } else {
+            _stemmingLaag = _stemmingHoog;
+          }
           _gesplitsteStemming = true;
         } else {
           _stemmingLaag = _stemmingHoog;
           _gesplitsteStemming = false;
         }
         
-        _stemmingsOmslagen = log['stemmingsomslagen'] as int? ?? 0;
-        _ontstemdeManie = log['ontstemde_manie'] as bool? ?? false;
-        _daglicht = (log['daglicht'] as int? ?? 0) == 1;
-        _socialeContacten = log['sociale_contacten'] as int? ?? 0;
+        _stemmingsOmslagen = log['stemmingsomslagen'] is int ? log['stemmingsomslagen'] : int.tryParse(log['stemmingsomslagen']?.toString() ?? '0') ?? 0;
+        _ontstemdeManie = log['ontstemde_manie'] == true || log['ontstemde_manie'] == 1 || log['ontstemde_manie'] == '1';
+        _daglicht = log['daglicht'] == 1 || log['daglicht'] == '1' || log['daglicht'] == true;
+        _socialeContacten = log['sociale_contacten'] is int ? log['sociale_contacten'] : int.tryParse(log['sociale_contacten']?.toString() ?? '0') ?? 0;
         // _urenSlaap removed - now calculated from sleep tracking
       } else {
         _stemmingHoog = 50.0;
