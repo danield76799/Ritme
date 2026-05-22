@@ -99,8 +99,16 @@ class WeeklyMoodChart extends StatelessWidget {
     for (int i = 0; i < logs.length && i < 7; i++) {
       final log = logs[i];
       // Life Chart: stemming_hoog (0-100)
-      final stemming = log['stemming_hoog'] as double? ?? log['stemming_hoog'] as int? ?? 50;
-      final value = stemming.toDouble();
+      // Hive stores everything as String, so we need to parse
+      final dynamic rawStemming = log['stemming_hoog'];
+      double value;
+      if (rawStemming is num) {
+        value = rawStemming.toDouble();
+      } else if (rawStemming is String) {
+        value = double.tryParse(rawStemming) ?? 50.0;
+      } else {
+        value = 50.0;
+      }
       spots.add(FlSpot(i.toDouble(), value));
       
       final date = log['date'] as String? ?? '';
