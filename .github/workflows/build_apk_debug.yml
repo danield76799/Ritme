@@ -31,19 +31,27 @@ jobs:
       run: |
         flutter build apk --debug --split-per-abi
         
-        # Sign debug APKs with release keystore for consistent signing
-        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/debug.keystore
+        # Decode keystore
+        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/release.keystore
         
         for apk in build/app/outputs/flutter-apk/*-debug.apk; do
-          echo "Signing $apk"
+          echo "Processing $apk"
+          
+          # Remove debug signature (META-INF/*)
+          zip -d "$apk" "META-INF/*" || true
+          
+          # Sign with release keystore
           jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
-            -keystore /tmp/debug.keystore \
+            -keystore /tmp/release.keystore \
             -storepass "$KEYSTORE_PASSWORD" \
             -keypass "$KEY_PASSWORD" \
             "$apk" "$KEY_ALIAS"
+          
+          # Verify signature
+          jarsigner -verify -verbose "$apk" | head -5
         done
         
-        echo "All debug APKs signed with consistent keystore"
+        echo "All debug APKs signed with release keystore"
     
     - name: Upload APK Artifacts
       uses: actions/upload-artifact@v4
