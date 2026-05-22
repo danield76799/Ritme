@@ -114478,8 +114478,12 @@ return B.z($async$ui,r)},
 an6(a){var s=this.e,r=s==null?null:J.W(s,a)
 if(r!=null){s=J.iZ(r)
 s=s.j(r).length===0||s.j(r)==="--:--"}else s=!0
-if(s)return"--:--"
-return J.bi(r)},
+if(s)switch(a){case"target_opstaan":return"07:00"
+case"target_contact":return"09:00"
+case"target_werk":return"10:00"
+case"target_eten":return"18:00"
+case"target_slapen":return"23:00"
+default:return"--:--"}return J.bi(r)},
 amb(a){var s,r
 try{s=J.b6g(this.d,new B.aLE(a))
 return s}catch(r){return null}},
