@@ -256,9 +256,17 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         } else {
           stemming = 0.0;
         }
+        // Converteer naar -5 tot +5 schaal
+        if (stemming > 10) {
+          stemming = ((stemming / 100) * 10 - 5).clamp(-5.0, 5.0);
+        } else {
+          stemming = stemming.clamp(-5.0, 5.0);
+        }
         spots.add(FlSpot(i.toDouble(), stemming));
       }
     }
+
+    if (spots.isEmpty) return _bouwLegePlaceholder('Stemming');
 
     return _bouwGrafiekKaart(
       titel: 'Stemming (-5 tot +5)',
@@ -268,6 +276,18 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
           maxY: 5,
           gridData: FlGridData(show: true, drawVerticalLine: false),
           titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    value.toInt().toString(),
+                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                  );
+                },
+              ),
+            ),
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -278,8 +298,18 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
               spots: spots,
               isCurved: true,
               color: Colors.orange,
-              barWidth: 4,
-              dotData: FlDotData(show: true),
+              barWidth: 3,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) {
+                  return FlDotCirclePainter(
+                    radius: 4,
+                    color: Colors.orange,
+                    strokeWidth: 2,
+                    strokeColor: Colors.white,
+                  );
+                },
+              ),
               belowBarData: BarAreaData(
                 show: true,
                 color: Colors.orange.withValues(alpha: 0.1),
@@ -293,22 +323,31 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
 
   // --- SLAAP (Staafgrafiek) ---
   Widget _bouwSlaapGrafiek() {
-    if (_logs.isEmpty) return _bouwLegePlaceholder('Slaapkwaliteit');
+    if (_logs.isEmpty) return _bouwLegePlaceholder('Slaap (uren)');
 
     List<BarChartGroupData> barGroups = [];
+    int dataCount = 0;
     for (int i = 0; i < _logs.length; i++) {
-      if (_logs[i]['uren_slaap'] != null) {
+      double? slaapUren;
+      
+      // Check sleep_hours first
+      if (_logs[i]['sleep_hours'] != null) {
+        dynamic rawSleep = _logs[i]['sleep_hours'];
+        if (rawSleep is num) slaapUren = rawSleep.toDouble();
+        else if (rawSleep is String) slaapUren = double.tryParse(rawSleep);
+      } else if (_logs[i]['uren_slaap'] != null) {
+        dynamic rawSlaap = _logs[i]['uren_slaap'];
+        if (rawSlaap is num) slaapUren = rawSlaap.toDouble();
+        else if (rawSlaap is String) slaapUren = double.tryParse(rawSlaap);
+      }
+      
+      if (slaapUren != null && slaapUren > 0) {
         barGroups.add(
           BarChartGroupData(
-            x: i,
+            x: dataCount++,
             barRods: [
               BarChartRodData(
-                toY: (() {
-                  dynamic rawSlaap = _logs[i]['uren_slaap'];
-                  if (rawSlaap is num) return rawSlaap.toDouble();
-                  if (rawSlaap is String) return double.tryParse(rawSlaap) ?? 0.0;
-                  return 0.0;
-                })(),
+                toY: slaapUren.clamp(0.0, 12.0),
                 color: Colors.blue,
                 width: 16,
                 borderRadius: BorderRadius.circular(4),
@@ -319,6 +358,8 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       }
     }
 
+    if (barGroups.isEmpty) return _bouwLegePlaceholder('Slaap (uren)');
+
     return _bouwGrafiekKaart(
       titel: 'Slaap (uren)',
       child: BarChart(
@@ -326,6 +367,18 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
           maxY: 12,
           gridData: FlGridData(show: false),
           titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    value.toInt().toString(),
+                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                  );
+                },
+              ),
+            ),
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
