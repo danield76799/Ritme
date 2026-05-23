@@ -109839,61 +109839,60 @@ break
 case 6:case 1:return A.x(q,r)
 case 2:return A.w(o.at(-1),r)}})
 return A.y($async$xe,r)},
-wE(){var s=0,r=A.z(t.P),q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6
-var $async$wE=A.A(function(a7,a8){if(a7===1)return A.w(a8,r)
-for(;;)switch(s){case 0:a4=new A.bn(Date.now(),0,!1).i_(-6048e8)
-a5=$.bT
-if(a5==null)A.O(A.a2(u.O))
-a6=J
+wE(){var s=0,r=A.z(t.P),q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7
+var $async$wE=A.A(function(a8,a9){if(a8===1)return A.w(a9,r)
+for(;;)switch(s){case 0:a5=new A.bn(Date.now(),0,!1).i_(-6048e8)
+a6=$.bT
+if(a6==null)A.O(A.a2(u.O))
+a7=J
 s=3
-return A.o(a5.jM(),$async$wE)
-case 3:a5=a6.oP(a8,new A.aE9(a4))
-p=A.a3(a5,a5.$ti.h("n.E"))
-a5=p.length
-if(a5===0){q=A.a8(["aantalDagen",0,"gemiddeldeStemming",0,"gemiddeldeSlaap",0,"totaleActiviteiten",0,"stabiliteit",0,"trends",[]],t.N,t.z)
+return A.o(a6.jM(),$async$wE)
+case 3:a6=a7.oP(a9,new A.aE9(a5))
+p=A.a3(a6,a6.$ti.h("n.E"))
+a6=p.length
+if(a6===0){q=A.a8(["aantalDagen",0,"gemiddeldeStemming",0,"gemiddeldeSlaap",0,"totaleActiviteiten",0,"stabiliteit",0,"trends",[]],t.N,t.z)
 s=1
 break}o=t.N
 n=A.aY(o)
-for(m=0,l=0,k=0,j=0;i=p.length,j<i;p.length===a5||(0,A.H)(p),++j){h=p[j]
-i=J.ai(h)
-if(i.i(h,"date")!=null)n.G(0,J.aX(i.i(h,"date")))
-g=i.i(h,"stemming_hoog")
-if(g!=null){if(typeof g=="number")f=g
-else if(typeof g=="string"){f=A.dB(g)
-if(f==null)f=0}else f=0
-m+=f;++k}e=i.i(h,"sleep_hours")
-if(e!=null){if(typeof e=="number")d=e
-else if(typeof e=="string"){d=A.dB(e)
-if(d==null)d=0}else d=0
-if(d>0)l+=d}else{c=i.i(h,"uren_slaap")
-if(c!=null){if(typeof c=="number")d=c
-else if(typeof c=="string"){d=A.dB(c)
-if(d==null)d=0}else d=0
-if(d>0)l+=d}}}b=0,j=0
-case 4:if(!(a5=p.length,j<a5)){s=6
-break}h=p[j]
-a5=$.bT
-if(a5==null)A.O(A.a2(u.O))
-a6=J
+for(m=0,l=0,k=0,j=0,i=0;h=p.length,i<h;p.length===a6||(0,A.H)(p),++i){g=p[i]
+h=J.ai(g)
+if(h.i(g,"date")!=null)n.G(0,J.aX(h.i(g,"date")))
+f=h.i(g,"stemming_hoog")
+if(f!=null){if(typeof f=="number")e=f
+else if(typeof f=="string"){e=A.dB(f)
+if(e==null)e=0}else e=0
+m+=e;++k}d=h.i(g,"sleep_hours")
+if(d!=null){if(typeof d=="number")c=d
+else if(typeof d=="string"){c=A.dB(d)
+if(c==null)c=0}else c=0
+if(c>0){l+=c;++j}}else{b=h.i(g,"uren_slaap")
+if(b!=null){if(typeof b=="number")c=b
+else if(typeof b=="string"){c=A.dB(b)
+if(c==null)c=0}else c=0
+if(c>0){l+=c;++j}}}}a=0,i=0
+case 4:if(!(a6=p.length,i<a6)){s=6
+break}g=p[i]
+a6=$.bT
+if(a6==null)A.O(A.a2(u.O))
+a7=J
 s=7
-return A.o(a5.hr(J.M(h,"date")),$async$wE)
-case 7:b+=a6.c_(a8)
-case 5:p.length===i||(0,A.H)(p),++j
+return A.o(a6.hr(J.M(g,"date")),$async$wE)
+case 7:a+=a7.c_(a9)
+case 5:p.length===h||(0,A.H)(p),++i
 s=4
 break
-case 6:if(n.a>=2){if(k>1){a=m/k
-for(a0=0,j=0;j<p.length;p.length===a5||(0,A.H)(p),++j){g=J.M(p[j],"stemming_hoog")
-if(g!=null){if(typeof g=="number")f=g
-else if(typeof g=="string"){f=A.dB(g)
-if(f==null)f=0}else f=0
-i=f-a
-a0+=i*i}}a1=a0/k}else a1=0
-a2=(1-B.c.cU(a1/100,0,1))*100}else a2=0
-a5=n.a
-i=k>0?m/k:0
-a3=p.length
-a3=a3!==0?l/a3:0
-q=A.a8(["aantalDagen",a5,"gemiddeldeStemming",i,"gemiddeldeSlaap",a3,"totaleActiviteiten",b,"stabiliteit",B.c.cU(a2,0,100),"logs",p],o,t.z)
+case 6:if(n.a>=2){if(k>1){a0=m/k
+for(a1=0,i=0;i<p.length;p.length===a6||(0,A.H)(p),++i){f=J.M(p[i],"stemming_hoog")
+if(f!=null){if(typeof f=="number")e=f
+else if(typeof f=="string"){e=A.dB(f)
+if(e==null)e=0}else e=0
+h=e-a0
+a1+=h*h}}a2=a1/k}else a2=0
+a3=(1-B.c.cU(a2/100,0,1))*100}else a3=0
+a6=n.a
+h=k>0?m/k:0
+a4=j>0?l/j:0
+q=A.a8(["aantalDagen",a6,"gemiddeldeStemming",h,"gemiddeldeSlaap",a4,"totaleActiviteiten",a,"stabiliteit",B.c.cU(a3,0,100),"logs",p],o,t.z)
 s=1
 break
 case 1:return A.x(q,r)}})
