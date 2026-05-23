@@ -53,7 +53,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
@@ -62,6 +62,132 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 10) {
+      // Fix daily_logs schema: add id column and ensure date is UNIQUE
+      // First, create a backup of existing data
+      await db.execute('''
+        CREATE TABLE daily_logs_backup AS 
+        SELECT * FROM daily_logs
+      ''');
+      
+      // Drop old table
+      await db.execute('DROP TABLE daily_logs');
+      
+      // Create new table with correct schema
+      await db.execute('''
+        CREATE TABLE daily_logs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL UNIQUE,
+          uren_slaap REAL,
+          bed_time TEXT,
+          wake_time TEXT,
+          awake_minutes INTEGER DEFAULT 0,
+          sleep_hours REAL,
+          stemming_hoog REAL DEFAULT 50,
+          stemming_laag REAL DEFAULT 50,
+          gesplitste_stemming INTEGER DEFAULT 0,
+          ontstemde_manie INTEGER DEFAULT 0,
+          stemmingsomslagen INTEGER DEFAULT 0,
+          daglicht INTEGER DEFAULT 0,
+          sociale_contacten INTEGER DEFAULT 0,
+          alcohol_middelen INTEGER DEFAULT 0,
+          menstruatie INTEGER DEFAULT 0,
+          andere_klachten TEXT
+        )
+      ''');
+      
+      // Restore data, merging duplicates
+      await db.execute('''
+        INSERT INTO daily_logs (date, uren_slaap, bed_time, wake_time, awake_minutes, sleep_hours, 
+          stemming_hoog, stemming_laag, gesplitste_stemming, ontstemde_manie, stemmingsomslagen, 
+          daglicht, sociale_contacten, alcohol_middelen, menstruatie, andere_klachten)
+        SELECT 
+          date,
+          MAX(uren_slaap) as uren_slaap,
+          MAX(bed_time) as bed_time,
+          MAX(wake_time) as wake_time,
+          MAX(awake_minutes) as awake_minutes,
+          MAX(sleep_hours) as sleep_hours,
+          MAX(stemming_hoog) as stemming_hoog,
+          MAX(stemming_laag) as stemming_laag,
+          MAX(gesplitste_stemming) as gesplitste_stemming,
+          MAX(ontstemde_manie) as ontstemde_manie,
+          MAX(stemmingsomslagen) as stemmingsomslagen,
+          MAX(daglicht) as daglicht,
+          MAX(sociale_contacten) as sociale_contacten,
+          MAX(alcohol_middelen) as alcohol_middelen,
+          MAX(menstruatie) as menstruatie,
+          MAX(andere_klachten) as andere_klachten
+        FROM daily_logs_backup
+        GROUP BY date
+      ''');
+      
+      // Drop backup
+      await db.execute('DROP TABLE daily_logs_backup');
+    }
+    if (oldVersion < 10) {
+      // Fix daily_logs schema: add id column and ensure date is UNIQUE
+      // First, create a backup of existing data
+      await db.execute('''
+        CREATE TABLE daily_logs_backup AS 
+        SELECT * FROM daily_logs
+      ''');
+      
+      // Drop old table
+      await db.execute('DROP TABLE daily_logs');
+      
+      // Create new table with correct schema
+      await db.execute('''
+        CREATE TABLE daily_logs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL UNIQUE,
+          uren_slaap REAL,
+          bed_time TEXT,
+          wake_time TEXT,
+          awake_minutes INTEGER DEFAULT 0,
+          sleep_hours REAL,
+          stemming_hoog REAL DEFAULT 50,
+          stemming_laag REAL DEFAULT 50,
+          gesplitste_stemming INTEGER DEFAULT 0,
+          ontstemde_manie INTEGER DEFAULT 0,
+          stemmingsomslagen INTEGER DEFAULT 0,
+          daglicht INTEGER DEFAULT 0,
+          sociale_contacten INTEGER DEFAULT 0,
+          alcohol_middelen INTEGER DEFAULT 0,
+          menstruatie INTEGER DEFAULT 0,
+          andere_klachten TEXT
+        )
+      ''');
+      
+      // Restore data, merging duplicates
+      await db.execute('''
+        INSERT INTO daily_logs (date, uren_slaap, bed_time, wake_time, awake_minutes, sleep_hours, 
+          stemming_hoog, stemming_laag, gesplitste_stemming, ontstemde_manie, stemmingsomslagen, 
+          daglicht, sociale_contacten, alcohol_middelen, menstruatie, andere_klachten)
+        SELECT 
+          date,
+          MAX(uren_slaap) as uren_slaap,
+          MAX(bed_time) as bed_time,
+          MAX(wake_time) as wake_time,
+          MAX(awake_minutes) as awake_minutes,
+          MAX(sleep_hours) as sleep_hours,
+          MAX(stemming_hoog) as stemming_hoog,
+          MAX(stemming_laag) as stemming_laag,
+          MAX(gesplitste_stemming) as gesplitste_stemming,
+          MAX(ontstemde_manie) as ontstemde_manie,
+          MAX(stemmingsomslagen) as stemmingsomslagen,
+          MAX(daglicht) as daglicht,
+          MAX(sociale_contacten) as sociale_contacten,
+          MAX(alcohol_middelen) as alcohol_middelen,
+          MAX(menstruatie) as menstruatie,
+          MAX(andere_klachten) as andere_klachten
+        FROM daily_logs_backup
+        GROUP BY date
+      ''');
+      
+      // Drop backup
+      await db.execute('DROP TABLE daily_logs_backup');
+    }
     if (oldVersion < 9) {
       // Migrate daily_logs to new schema with Life Chart fields
       await db.execute('ALTER TABLE daily_logs ADD COLUMN stemming_hoog REAL DEFAULT 50');
@@ -158,9 +284,11 @@ class DatabaseHelper implements DatabaseRepository {
       )
     ''');
 
+  Future<void> _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS daily_logs (
-        date TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL UNIQUE,
         uren_slaap REAL,
         bed_time TEXT,
         wake_time TEXT,
