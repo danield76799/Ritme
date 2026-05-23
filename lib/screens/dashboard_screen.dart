@@ -136,9 +136,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       }
       int sleepCount = sleepPerDay.length;
       
-      // Slaapkwaliteit score: 0-10 (8 uur = 10, minder = lager)
+      // Slaapscore: toon gemiddelde slaapduur in uren (geen 0-10 schaal)
+      // Life Chart Methode: "Geef bij benadering aan hoeveel uren u hebt geslapen"
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0;
-      final sleepScore = avgSleep > 0 ? ((avgSleep / 8) * 10).clamp(0, 10) : 0;
+      // Score is gewoon het gemiddelde, afgerond op 1 decimaal
+      final sleepScore = avgSleep;
       
       // Ritme stabiliteit: percentage geplande vs daadwerkelijke activiteiten
       // Haal alle SRM activiteiten op van de afgelopen 7 dagen
@@ -479,10 +481,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/sleep-detail'),
                   child: _buildOverviewCard(
-                    icon: Icons.show_chart,
-                    title: 'Slaapkwaliteit',
+                    icon: Icons.bedtime,
+                    title: 'Slaapscore',
                     value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
-                    unit: '/10',
+                    unit: 'u',
                     color: Colors.blue,
                   ),
                 ),
