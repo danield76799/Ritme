@@ -489,7 +489,18 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<List<Map<String, dynamic>>> getDailyLogs() async {
     final db = await database;
-    return await db.query('daily_logs', orderBy: 'date DESC');
+    final logs = await db.query('daily_logs', orderBy: 'date DESC, id DESC');
+    
+    // Groepeer per datum en behoud alleen de meest recente log per dag
+    Map<String, Map<String, dynamic>> latestLogsByDate = {};
+    for (var log in logs) {
+      final date = log['date']?.toString();
+      if (date != null && !latestLogsByDate.containsKey(date)) {
+        latestLogsByDate[date] = log;
+      }
+    }
+    
+    return latestLogsByDate.values.toList();
   }
 
   @override
