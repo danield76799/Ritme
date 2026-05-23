@@ -21,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   double _sleepQuality = 0.0;
   double _rhythmStability = 0.0;
   int _weeklyActivities = 0;
+  int _loggedDaysCount = 0;  // Aantal gelogde dagen binnen periode
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
 
@@ -70,11 +71,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       Map<String, double> sleepPerDay = {};
       int activityCount = 0;
       
+      // CORRECTIE: Tel alleen unieke dagen binnen de laatste 7 dagen
+      int loggedDaysCount = 0;
+      
       for (var log in dailyLogs) {
         if (log['date'] == null) continue;
         
         try {
           final logDate = DateTime.parse(log['date'] as String);
+          // Alleen tellen als binnen de laatste 7 dagen
           if (logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo)) {
             final dateStr = log['date'] as String;
             
@@ -95,6 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 if (!sleepPerDay.containsKey(dateStr)) {
                   // Eerste log voor deze dag
                   sleepPerDay[dateStr] = sleep;
+                  loggedDaysCount++; // Tel unieke dagen
                 } else if (hasAwakeMinutes) {
                   // Deze log heeft awake_minutes, die is meer accurate
                   sleepPerDay[dateStr] = sleep;
@@ -115,6 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 }
                 if (urenSlaap != null && urenSlaap > 0) {
                   sleepPerDay[dateStr] = urenSlaap;
+                  loggedDaysCount++; // Tel unieke dagen
                 }
               }
             }
@@ -196,6 +203,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         _sleepQuality = sleepScore.toDouble();
         _rhythmStability = stability.toDouble();
         _weeklyActivities = totalWeeklyActivities;
+        _loggedDaysCount = loggedDaysCount;  // Unieke dagen met slaapdata
         _weeklyLogs = weeklyLogs;
         _lastUpdated = DateTime.now();
         _isLoading = false;
@@ -485,6 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     title: 'Slaapscore',
                     value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
                     unit: 'u',
+                    subtitle: _loggedDaysCount > 0 ? 'Gebaseerd op $_loggedDaysCount nachten' : 'Geen data',
                     color: Colors.blue,
                   ),
                 ),
@@ -706,6 +715,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     required String title,
     required String value,
     required String unit,
+    String? subtitle,
     required Color color,
   }) {
     return Container(
@@ -764,6 +774,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     ],
                   ),
                 ),
+                if (subtitle != null)
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 12,
+                    ),
+                  ),
               ],
             ),
           ),
