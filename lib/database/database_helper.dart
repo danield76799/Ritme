@@ -570,17 +570,6 @@ class DatabaseHelper implements DatabaseRepository {
     return isValid ? results.first : null;
   }
 
-  Future<bool> setPin(String username, String passwordHash) async {
-    final db = await database;
-    final existing = await getSettings();
-    if (existing != null) {
-      await db.update('settings', {'password_hash': passwordHash}, where: 'username = ?', whereArgs: [username]);
-    } else {
-      await db.insert('settings', {'username': username, 'password_hash': passwordHash});
-    }
-    return true;
-  }
-
   // ===================
   // DAILY LOGS
   // ===================
@@ -1070,30 +1059,6 @@ class DatabaseHelper implements DatabaseRepository {
     
     if (results.isEmpty) return null;
     return results.first;
-  }
-
-  double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
-    try {
-      final bedParts = bedTime.split(':');
-      final wakeParts = wakeTime.split(':');
-      
-      int bedHour = int.parse(bedParts[0]);
-      int bedMinute = int.parse(bedParts[1]);
-      int wakeHour = int.parse(wakeParts[0]);
-      int wakeMinute = int.parse(wakeParts[1]);
-      
-      int bedMinutes = bedHour * 60 + bedMinute;
-      int wakeMinutes = wakeHour * 60 + wakeMinute;
-      
-      if (wakeMinutes < bedMinutes) {
-        wakeMinutes += 24 * 60;
-      }
-      
-      int totalMinutes = wakeMinutes - bedMinutes - awakeMinutes;
-      return totalMinutes / 60.0;
-    } catch (e) {
-      return 0.0;
-    }
   }
 
   double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
