@@ -175,9 +175,10 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   }
 
   Widget _buildContent() {
-    // Tel hoeveel activiteiten zijn VOLTOOID (hebben een werkelijke_tijd OF p_score > 0)
+    // Tel hoeveel activiteiten zijn VOLTOOID (hebben een actual_time OF p_score > 0)
     final voltooidCount = _activities.where((a) {
-      final hasActualTime = a['werkelijke_tijd'] != null && a['werkelijke_tijd'] != '--:--';
+      final actualTime = a['actual_time']?.toString();
+      final hasActualTime = actualTime != null && actualTime.isNotEmpty && actualTime != '--:--';
       final hasPScore = (a['p_score'] ?? 0) > 0;
       return hasActualTime || hasPScore;
     }).length;
