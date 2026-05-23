@@ -78,8 +78,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           if (logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo)) {
             final dateStr = log['date'] as String;
             
-            // Check for sleep_hours (from sleep tracking) - voorkeur
+            // Check for sleep_hours (from sleep tracking) - voorkeur voor logs met awake_minutes
             final dynamic rawSleep = log['sleep_hours'];
+            final dynamic rawAwake = log['awake_minutes'];
             if (rawSleep != null) {
               double? sleep;
               if (rawSleep is num) {
@@ -88,7 +89,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 sleep = double.tryParse(rawSleep);
               }
               if (sleep != null && sleep > 0) {
-                sleepPerDay[dateStr] = sleep;
+                // Bepaal of deze log awake_minutes heeft
+                final hasAwakeMinutes = rawAwake != null && (rawAwake is num ? rawAwake.toInt() : int.tryParse(rawAwake.toString()) ?? 0) > 0;
+                
+                if (!sleepPerDay.containsKey(dateStr)) {
+                  // Eerste log voor deze dag
+                  sleepPerDay[dateStr] = sleep;
+                } else if (hasAwakeMinutes) {
+                  // Deze log heeft awake_minutes, die is meer accurate
+                  sleepPerDay[dateStr] = sleep;
+                }
+                // Als we al een log met awake_minutes hebben, overschrijf die niet met een log zonder
               }
             }
             
