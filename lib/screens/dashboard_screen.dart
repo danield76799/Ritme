@@ -97,6 +97,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 // Bepaal of deze log awake_minutes heeft
                 final hasAwakeMinutes = rawAwake != null && (rawAwake is num ? rawAwake.toInt() : int.tryParse(rawAwake.toString()) ?? 0) > 0;
                 
+                // Trek awake_minutes af van slaap
+                int awakeMinutes = 0;
+                if (rawAwake != null) {
+                  if (rawAwake is num) awakeMinutes = rawAwake.toInt();
+                  else if (rawAwake is String) awakeMinutes = int.tryParse(rawAwake) ?? 0;
+                }
+                final awakeHours = awakeMinutes / 60.0;
+                sleep = sleep - awakeHours;
+                if (sleep < 0) sleep = 0;
+                
                 if (!sleepPerDay.containsKey(dateStr)) {
                   // Eerste log voor deze dag
                   sleepPerDay[dateStr] = sleep;

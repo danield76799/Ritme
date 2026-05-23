@@ -49,22 +49,40 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
           double? sleep;
           final rawSleep = log['sleep_hours'];
           final rawUren = log['uren_slaap'];
+          final rawAwake = log['awake_minutes'];
           
+          // EERST kijken naar sleep_hours (van slaap tracking)
           if (rawSleep != null) {
             if (rawSleep is num) sleep = rawSleep.toDouble();
             else if (rawSleep is String) sleep = double.tryParse(rawSleep);
           }
+          // Dan kijken naar uren_slaap (van mood tracking)
           if (sleep == null && rawUren != null) {
             if (rawUren is num) sleep = rawUren.toDouble();
             else if (rawUren is String) sleep = double.tryParse(rawUren);
           }
 
+          // Trek awake_minutes af als die bestaat
           if (sleep != null && sleep > 0) {
+            int awakeMinutes = 0;
+            if (rawAwake != null) {
+              if (rawAwake is num) awakeMinutes = rawAwake.toInt();
+              else if (rawAwake is String) awakeMinutes = int.tryParse(rawAwake) ?? 0;
+            }
+            
+            // Converteer awake_minutes naar uren en trek af
+            final awakeHours = awakeMinutes / 60.0;
+            sleep = sleep - awakeHours;
+            
+            // Zorg dat slaap niet negatief wordt
+            if (sleep < 0) sleep = 0;
+            
             sleepEntries.add({
               'date': log['date'],
               'sleep': sleep,
               'day': _dayName(logDate.weekday),
               'dateShort': '${logDate.day}/${logDate.month}',
+              'awakeMinutes': awakeMinutes,  // Toon ook wakker tijd
             });
             totalSleep += sleep;
             if (sleep > best) best = sleep;
@@ -299,6 +317,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
 
   Widget _buildSleepLogItem(Map<String, dynamic> entry) {
     final sleep = entry['sleep'] as double;
+    final awakeMinutes = entry['awakeMinutes'] as int? ?? 0;
     final quality = sleep >= 8 ? 'Uitstekend' : sleep >= 6 ? 'Goed' : sleep >= 5 ? 'Matig' : 'Slecht';
     final qualityColor = sleep >= 8 ? AppTheme.primaryTeal : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
 
@@ -345,7 +364,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$quality',
+                  '$quality${awakeMinutes > 0 ? ' (${awakeMinutes}m wakker)' : ''}',
                   style: TextStyle(
                     fontSize: 14,
                     color: qualityColor,
