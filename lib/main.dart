@@ -186,6 +186,8 @@ class RitmeApp extends StatelessWidget {
         '/activity': (context) => const ActivityScreen(),
         '/medication': (context) => const MedicationScreen(),
         '/event': (context) => const EventScreen(),
+        '/database-debug': (context) => const DatabaseDebugScreen(),
+        '/database-debug': (context) => const DatabaseDebugScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/medication-schedule': (context) => const MedicationScheduleScreen(),
         '/weight': (context) => const WeightScreen(),
