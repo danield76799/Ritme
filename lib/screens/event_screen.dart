@@ -34,27 +34,17 @@ class _EventScreenState extends State<EventScreen> {
     setState(() => _isLoading = true);
     try {
       // Haal alle events op van alle dagen
-      final logs = await db.getDailyLogs();
-      List<Map<String, dynamic>> allEvents = [];
-      
-      for (var log in logs) {
-        final date = log['date'] as String?;
-        if (date == null) continue;
-        
-        final events = await db.getLifeEvents(date);
-        for (var event in events) {
-          allEvents.add({
-            ...event,
-            'date': date,
-          });
-        }
-      }
+      final allDbEvents = await db.getAllLifeEvents();
       
       // Sorteer op datum (nieuwste eerst)
-      allEvents.sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
+      allDbEvents.sort((a, b) {
+        final dateA = a['date']?.toString() ?? '';
+        final dateB = b['date']?.toString() ?? '';
+        return dateB.compareTo(dateA);
+      });
       
       setState(() {
-        _events = allEvents;
+        _events = allDbEvents;
         _applyFilter();
         _isLoading = false;
       });
