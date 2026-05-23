@@ -76,7 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         try {
           final logDate = DateTime.parse(log['date'] as String);
           if (logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo)) {
-            // Check for sleep_hours (from sleep tracking)
+            // Check for sleep_hours (from sleep tracking) - priority over uren_slaap
             final dynamic rawSleep = log['sleep_hours'];
             if (rawSleep != null) {
               double? sleep;
@@ -88,10 +88,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               if (sleep != null && sleep > 0) {
                 totalSleep += sleep;
                 sleepCount++;
+                continue; // Skip uren_slaap check if sleep_hours exists
               }
             }
             
-            // Check for uren_slaap (from mood tracking)
+            // Fallback to uren_slaap (from mood tracking) only if no sleep_hours
             final dynamic rawUrenSlaap = log['uren_slaap'];
             if (rawUrenSlaap != null) {
               double? urenSlaap;
@@ -458,11 +459,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 const SizedBox(height: 16),
                 
                 _buildOverviewCard(
-                  icon: Icons.show_chart,
+                  icon: Icons.nightlight_round,
                   title: 'Slaapkwaliteit',
                   value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
                   unit: '/10',
-                  color: Colors.blue,
+                  subtitle: sleepCount > 0 ? 'Gebaseerd op $sleepCount nachten' : null,
+                  color: Colors.indigo,
                 ),
                 const SizedBox(height: 12),
                 _buildOverviewCard(
@@ -676,6 +678,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     required String title,
     required String value,
     required String unit,
+    String? subtitle,
     required Color color,
   }) {
     return Container(
@@ -734,6 +737,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     ],
                   ),
                 ),
+                if (subtitle != null)
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 12,
+                    ),
+                  ),
               ],
             ),
           ),

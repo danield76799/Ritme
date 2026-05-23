@@ -55,7 +55,12 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
             totaalStemming += stemming;
             logCount++;
           }
-          if (log['uren_slaap'] != null) {
+          if (log['sleep_hours'] != null) {
+            final sleepVal = log['sleep_hours'] is num ? log['sleep_hours'].toDouble() : double.tryParse(log['sleep_hours'].toString()) ?? 0.0;
+            if (sleepVal > 0) {
+              totaalSlaap += sleepVal;
+            }
+          } else if (log['uren_slaap'] != null) {
             final dynamic rawSlaap = log['uren_slaap'];
             double slaap = 0;
             if (rawSlaap is num) {
@@ -63,12 +68,9 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
             } else if (rawSlaap is String) {
               slaap = double.tryParse(rawSlaap) ?? 0.0;
             }
-            totaalSlaap += slaap;
-          }
-          // Also check for calculated sleep_hours from sleep tracking
-          if (log['sleep_hours'] != null) {
-            final sleepVal = log['sleep_hours'] is num ? log['sleep_hours'].toDouble() : double.tryParse(log['sleep_hours'].toString()) ?? 0.0;
-            if (sleepVal > 0) totaalSlaap += sleepVal;
+            if (slaap > 0) {
+              totaalSlaap += slaap;
+            }
           }
         }
 
