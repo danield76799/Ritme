@@ -570,6 +570,17 @@ class DatabaseHelper implements DatabaseRepository {
     return isValid ? results.first : null;
   }
 
+  Future<bool> setPin(String username, String passwordHash) async {
+    final db = await database;
+    final existing = await getSettings();
+    if (existing != null) {
+      await db.update('settings', {'password_hash': passwordHash}, where: 'username = ?', whereArgs: [username]);
+    } else {
+      await db.insert('settings', {'username': username, 'password_hash': passwordHash});
+    }
+    return true;
+  }
+
   // ===================
   // DAILY LOGS
   // ===================
