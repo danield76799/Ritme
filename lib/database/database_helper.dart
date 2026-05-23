@@ -530,14 +530,6 @@ class DatabaseHelper implements DatabaseRepository {
     return settings != null && settings['password_hash'] != null;
   }
 
-  @override
-  Future<bool> updatePin(String pin) async {
-    const username = 'user';
-    // Hash de PIN voor veilige opslag
-    final hashedPin = SecurityHelper.hashPin(pin);
-    return await setPin(username, hashedPin);
-  }
-
   Future<bool> setPin(String username, String passwordHash) async {
     final db = await database;
     final existing = await getSettings();
@@ -547,6 +539,14 @@ class DatabaseHelper implements DatabaseRepository {
       await db.insert('settings', {'username': username, 'password_hash': passwordHash});
     }
     return true;
+  }
+
+  @override
+  Future<bool> updatePin(String pin) async {
+    const username = 'user';
+    // Hash de PIN voor veilige opslag
+    final hashedPin = SecurityHelper.hashPin(pin);
+    return await setPin(username, hashedPin);
   }
 
   @override
