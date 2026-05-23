@@ -763,6 +763,67 @@ class DatabaseHelper implements DatabaseRepository {
     }
   }
 
+  @override
+  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
+    final db = await database;
+    return await db.insert('medication_schedule', {
+      'medication_id': medicationId,
+      'reminder_time': reminderTime,
+      'days_of_week': daysOfWeek,
+      'enabled': 1,
+    });
+  }
+
+  @override
+  Future<int> deleteMedicationSchedule(int id) async {
+    final db = await database;
+    return await db.delete('medication_schedule', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
+    final db = await database;
+    return await db.insert('medication_intake', {
+      'date': date,
+      'medication_id': medicationId,
+      'aantal_ingenomen': aantal,
+      'confirmed': 0,
+    });
+  }
+
+  @override
+  Future<int> insertMedicationIntakeMap(Map<String, dynamic> data) async {
+    return await insertMedicationIntake(
+      data['date'] as String,
+      data['medication_id'] as int,
+      data['aantal_ingenomen'] as int,
+    );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationIntake(String date) async {
+    final db = await database;
+    return await db.query('medication_intake', where: 'date = ?', whereArgs: [date]);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
+    final db = await database;
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    return await db.query(
+      'medical_appointments',
+      where: 'appointment_date >= ?',
+      whereArgs: [today],
+      orderBy: 'appointment_date ASC',
+    );
+  }
+
+  @override
+  Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('medical_appointments', data, where: 'id = ?', whereArgs: [id]);
+  }
+
   // ===================
   // SLEEP TRACKING
   // ===================
@@ -879,9 +940,18 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getLifeEvents() async {
+  Future<List<Map<String, dynamic>>> getLifeEvents(String date) async {
     final db = await database;
-    return await db.query('life_events', orderBy: 'date DESC');
+    return await db.query('life_events', where: 'date = ?', whereArgs: [date], orderBy: 'date DESC');
+  }
+
+  @override
+  Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
+    return await insertLifeEvent(
+      data['date'] as String,
+      data['omschrijving'] as String,
+      data['invloed'] as int,
+    );
   }
 
   @override
@@ -895,7 +965,7 @@ class DatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<int> insertWeightLog(String date, double weight, {String? notes}) async {
+  Future<int> insertWeightLog(String date, double weight, String? notes) async {
     final db = await database;
     return await db.insert('weight_logs', {
       'date': date,
@@ -908,6 +978,13 @@ class DatabaseHelper implements DatabaseRepository {
   Future<List<Map<String, dynamic>>> getWeightLogs() async {
     final db = await database;
     return await db.query('weight_logs', orderBy: 'date DESC');
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getLatestWeightLog() async {
+    final db = await database;
+    final results = await db.query('weight_logs', orderBy: 'date DESC', limit: 1);
+    return results.isNotEmpty ? results.first : null;
   }
 
   @override
