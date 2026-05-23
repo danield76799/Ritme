@@ -278,7 +278,7 @@ class _MoodScreenState extends State<MoodScreen> {
                               const Expanded(
                                 child: Text(
                                   'Stemming veranderde vandaag',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
                                 ),
                               ),
                               Switch(
