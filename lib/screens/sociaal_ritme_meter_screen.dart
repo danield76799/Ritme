@@ -175,8 +175,8 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   }
 
   Widget _buildContent() {
-    // Tel hoeveel activiteiten zijn ingepland
-    final ingeplandCount = _activities.where((a) => (a['p_score'] ?? 0) > 0).length;
+    // Tel hoeveel activiteiten zijn VOLTOOID (hebben een p_score > 0)
+    final voltooidCount = _activities.where((a) => (a['p_score'] ?? 0) > 0).length;
 
     return Column(
       children: [
@@ -202,7 +202,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '$ingeplandCount / 5 activiteiten ingepland',
+                '$voltooidCount / 5 activiteiten voltooid',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
