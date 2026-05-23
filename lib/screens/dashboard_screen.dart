@@ -170,7 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         }
       }
       
-      // Slaapscore: toon gemiddelde slaapduur in uren (geen 0-10 schaal)
+      // Slaapscore: toon gemiddelde slaapduur in uren (LAATSTE 7 DAGEN)
       // Life Chart Methode: "Geef bij benadering aan hoeveel uren u hebt geslapen"
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0;
       // Score is gewoon het gemiddelde, afgerond op 1 decimaal
