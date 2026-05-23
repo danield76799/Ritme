@@ -142,9 +142,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       // Score is gewoon het gemiddelde, afgerond op 1 decimaal
       final sleepScore = avgSleep;
       
-      // SRT score: percentage activiteiten binnen 45 min van richttijd
-      // Officiële SRM methode: 1 punt = binnen 45 min, 0 = meer dan 45 min
-      int totalOnTime = 0;
+      // SRT score: gemiddelde van alle p-scores (officiële IPSRT methode)
+      // p-score schaal: 5=perfect (±15min), 4=goed (±30min), 3=ok (±45min), 2=matig (±60min), 1=slecht (>60min), 0=geen activiteit
+      double totalPScore = 0;
       int totalActivities = 0;
       
       for (int i = 0; i < 7; i++) {
@@ -153,7 +153,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         final dayActivities = await db.getSrmActivities(checkDateStr);
         
         for (var activity in dayActivities) {
-          totalActivities++;
           if (activity['actual_time'] != null && activity['p_score'] != null) {
             final dynamic rawPScore = activity['p_score'];
             int pScore = 0;
@@ -162,15 +161,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             } else if (rawPScore is String) {
               pScore = int.tryParse(rawPScore) ?? 0;
             }
-            // Volgens officiële SRM: p_score = 1 betekent binnen 45 min
-            if (pScore >= 1) {
-              totalOnTime++;
+            // Alleen tellen als er een activiteit is (pScore > 0)
+            if (pScore > 0) {
+              totalPScore += pScore;
+              totalActivities++;
             }
           }
         }
       }
       
-      final stability = totalActivities > 0 ? (totalOnTime / totalActivities * 100) : 0;
+      // SRT Score = (gemiddelde p-score / 5) * 100 = percentage
+      final stability = totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0;
 
       // Get weekly logs for chart
       final weeklyLogs = dailyLogs.where((log) {
