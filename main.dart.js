@@ -116677,7 +116677,7 @@ if(r.f)p=B.ch(B.nA(q,A.M,q,q,q,q,q,q,q,q),q,q)
 else{s=r.r
 p=s!=null?B.ch(B.aO(B.b([B.bF(A.fp,A.jZ,q,48),A.aO,B.W(s,q,q,q,B.ai(q,q,A.aM,q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),A.b4,B.hP(A.jg,p,q)],o),A.N,A.bz,A.I,0,A.T),q,q):r.aiz()}return B.fH(n,A.c7,p,q)},
 aiz(){var s=null,r=J.rO(this.d,new B.aNb()).gu(0),q=t.p
-return B.aO(B.b([B.at(s,B.aO(B.b([B.W(B.l_("EEEE d MMMM","nl_NL").j7(new B.bn(Date.now(),0,!1)),s,s,s,B.ai(s,s,A.A.aV(0.9),s,s,s,s,s,s,s,s,14,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),s,s,s),A.db,B.W(""+r+" / 5 activiteiten ingepland",s,s,s,A.WR,s,s,s)],q),A.N,A.J,A.I,0,A.T),A.F,s,s,A.Zm,s,s,s,s,A.aS,s,s,1/0),B.bI(B.aZP(new B.aNc(this),5,A.aS,new B.aNd()),1)],q),A.N,A.J,A.I,0,A.T)}}
+return B.aO(B.b([B.at(s,B.aO(B.b([B.W(B.l_("EEEE d MMMM","nl_NL").j7(new B.bn(Date.now(),0,!1)),s,s,s,B.ai(s,s,A.A.aV(0.9),s,s,s,s,s,s,s,s,14,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),s,s,s),A.db,B.W(""+r+" / 5 activiteiten voltooid",s,s,s,A.WR,s,s,s)],q),A.N,A.J,A.I,0,A.T),A.F,s,s,A.Zm,s,s,s,s,A.aS,s,s,1/0),B.bI(B.aZP(new B.aNc(this),5,A.aS,new B.aNd()),1)],q),A.N,A.J,A.I,0,A.T)}}
 B.aNf.prototype={
 $0(){var s=this.a
 s.f=!0
