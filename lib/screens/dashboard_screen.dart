@@ -21,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   double _sleepQuality = 0.0;
   double _rhythmStability = 0.0;
   int _weeklyActivities = 0;
+  int _loggedDaysCount = 0;  // Aantal gelogde dagen binnen periode
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
 
@@ -66,18 +67,25 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final dailyLogs = await db.getDailyLogs();
       
       // Bereken slaapkwaliteit (gemiddelde van laatste 7 dagen)
-      double totalSleep = 0;
-      int sleepCount = 0;
+      // Gebruik een Map om dubbele entries per dag te voorkomen
+      Map<String, double> sleepPerDay = {};
       int activityCount = 0;
+      
+      // CORRECTIE: Tel alleen unieke dagen binnen de laatste 7 dagen
+      int loggedDaysCount = 0;
       
       for (var log in dailyLogs) {
         if (log['date'] == null) continue;
         
         try {
           final logDate = DateTime.parse(log['date'] as String);
+          // Alleen tellen als binnen de laatste 7 dagen
           if (logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo)) {
+            final dateStr = log['date'] as String;
+            
             // Check for sleep_hours (from sleep tracking) - priority over uren_slaap
             final dynamic rawSleep = log['sleep_hours'];
+            final dynamic rawAwake = log['awake_minutes'];
             if (rawSleep != null) {
               double? sleep;
               if (rawSleep is num) {
@@ -86,24 +94,37 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 sleep = double.tryParse(rawSleep);
               }
               if (sleep != null && sleep > 0) {
-                totalSleep += sleep;
-                sleepCount++;
-                continue; // Skip uren_slaap check if sleep_hours exists
+                // Trek awake_minutes af van slaap
+                int awakeMinutes = 0;
+                if (rawAwake != null) {
+                  if (rawAwake is num) awakeMinutes = rawAwake.toInt();
+                  else if (rawAwake is String) awakeMinutes = int.tryParse(rawAwake) ?? 0;
+                }
+                final awakeHours = awakeMinutes / 60.0;
+                sleep = sleep - awakeHours;
+                if (sleep < 0) sleep = 0;
+                
+                if (!sleepPerDay.containsKey(dateStr)) {
+                  sleepPerDay[dateStr] = sleep;
+                  loggedDaysCount++;
+                }
               }
             }
             
             // Fallback to uren_slaap (from mood tracking) only if no sleep_hours
-            final dynamic rawUrenSlaap = log['uren_slaap'];
-            if (rawUrenSlaap != null) {
-              double? urenSlaap;
-              if (rawUrenSlaap is num) {
-                urenSlaap = rawUrenSlaap.toDouble();
-              } else if (rawUrenSlaap is String) {
-                urenSlaap = double.tryParse(rawUrenSlaap);
-              }
-              if (urenSlaap != null && urenSlaap > 0) {
-                totalSleep += urenSlaap;
-                sleepCount++;
+            if (!sleepPerDay.containsKey(dateStr)) {
+              final dynamic rawUrenSlaap = log['uren_slaap'];
+              if (rawUrenSlaap != null) {
+                double? urenSlaap;
+                if (rawUrenSlaap is num) {
+                  urenSlaap = rawUrenSlaap.toDouble();
+                } else if (rawUrenSlaap is String) {
+                  urenSlaap = double.tryParse(rawUrenSlaap);
+                }
+                if (urenSlaap != null && urenSlaap > 0) {
+                  sleepPerDay[dateStr] = urenSlaap;
+                  loggedDaysCount++;
+                }
               }
             }
             
@@ -117,14 +138,50 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         }
       }
       
-      // Bereken gemiddelden
-      final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0;
-      // Slaapkwaliteit score: 0-10 (8 uur = 10, minder = lager)
-      final sleepScore = avgSleep > 0 ? ((avgSleep / 8) * 10).clamp(0, 10) : 0;
+      // Bereken gemiddelde slaap over de unieke dagen (LAATSTE 7 DAGEN)
+      double totalSleep = 0;
+      int sleepCount = 0;
+      for (int i = 0; i < 7; i++) {
+        final checkDate = now.subtract(Duration(days: i));
+        final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
+        final sleepLog = await db.getSleepLog(checkDateStr);
+        if (sleepLog != null && sleepLog['sleep_hours'] != null) {
+          final dynamic rawSleep = sleepLog['sleep_hours'];
+          double sleepHours = 0;
+          if (rawSleep is double) {
+            sleepHours = rawSleep;
+          } else if (rawSleep is int) {
+            sleepHours = rawSleep.toDouble();
+          } else if (rawSleep is String) {
+            sleepHours = double.tryParse(rawSleep) ?? 0;
+          }
+          // Trek wakker minuten af van slaapuren
+          final dynamic rawAwake = sleepLog['awake_minutes'];
+          double awakeHours = 0;
+          if (rawAwake is int) {
+            awakeHours = rawAwake / 60.0;
+          } else if (rawAwake is double) {
+            awakeHours = rawAwake / 60.0;
+          } else if (rawAwake is String) {
+            awakeHours = (int.tryParse(rawAwake) ?? 0) / 60.0;
+          }
+          sleepHours -= awakeHours;
+          if (sleepHours > 0) {
+            totalSleep += sleepHours;
+            sleepCount++;
+          }
+        }
+      }
       
-      // Ritme stabiliteit: percentage geplande vs daadwerkelijke activiteiten
-      // Haal alle SRM activiteiten op van de afgelopen 7 dagen
-      int totalOnTime = 0;
+      // Slaapscore: toon gemiddelde slaapduur in uren (LAATSTE 7 DAGEN)
+      // Life Chart Methode: "Geef bij benadering aan hoeveel uren u hebt geslapen"
+      final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0;
+      // Score is gewoon het gemiddelde, afgerond op 1 decimaal
+      final sleepScore = avgSleep;
+      
+      // SRT score: gemiddelde van alle p-scores (officiële IPSRT methode)
+      // p-score schaal: 5=perfect (±15min), 4=goed (±30min), 3=ok (±45min), 2=matig (±60min), 1=slecht (>60min), 0=geen activiteit
+      double totalPScore = 0;
       int totalActivities = 0;
       
       for (int i = 0; i < 7; i++) {
@@ -133,7 +190,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         final dayActivities = await db.getSrmActivities(checkDateStr);
         
         for (var activity in dayActivities) {
-          totalActivities++;
           if (activity['actual_time'] != null && activity['p_score'] != null) {
             final dynamic rawPScore = activity['p_score'];
             int pScore = 0;
@@ -142,14 +198,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             } else if (rawPScore is String) {
               pScore = int.tryParse(rawPScore) ?? 0;
             }
-            if (pScore >= 3) {
-              totalOnTime++;
-            }
+            // Tel ALLE activiteiten, ook met pScore = 0 (niet gedaan)
+            totalPScore += pScore;
+            totalActivities++;
           }
         }
       }
       
-      final stability = totalActivities > 0 ? (totalOnTime / totalActivities * 100) : 0;
+      // SRT Score = (gemiddelde p-score / 5) * 100 = percentage
+      final stability = totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0;
 
       // Get weekly logs for chart
       final weeklyLogs = dailyLogs.where((log) {
@@ -176,6 +233,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         _sleepQuality = sleepScore.toDouble();
         _rhythmStability = stability.toDouble();
         _weeklyActivities = totalWeeklyActivities;
+        _loggedDaysCount = loggedDaysCount;  // Unieke dagen met slaapdata
         _weeklyLogs = weeklyLogs;
         _lastUpdated = DateTime.now();
         _isLoading = false;
@@ -458,29 +516,49 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 ),
                 const SizedBox(height: 16),
                 
-                _buildOverviewCard(
-                  icon: Icons.nightlight_round,
-                  title: 'Slaapkwaliteit',
-                  value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
-                  unit: '/10',
-                  subtitle: sleepCount > 0 ? 'Gebaseerd op $sleepCount nachten' : null,
-                  color: Colors.indigo,
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/sleep-detail'),
+                  child: _buildOverviewCard(
+                    icon: Icons.bedtime,
+                    title: 'Slaapkwaliteit',
+                    value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
+                    unit: '/10',
+                    subtitle: _loggedDaysCount > 0 ? 'Gebaseerd op $_loggedDaysCount nachten' : 'Geen data',
+                    color: Colors.blue,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _buildOverviewCard(
-                  icon: Icons.schedule,
-                  title: 'Ritme stabiliteit',
-                  value: _rhythmStability > 0 ? _rhythmStability.round().toString() : '-',
-                  unit: '%',
-                  color: Colors.green,
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/rhythm-detail'),
+                  child: _buildOverviewCard(
+                    icon: Icons.schedule,
+                    title: 'SRT Score',
+                    value: _rhythmStability > 0 ? _rhythmStability.round().toString() : '-',
+                    unit: '%',
+                    color: Colors.green,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _buildOverviewCard(
-                  icon: Icons.local_activity,
-                  title: 'Activiteiten deze week',
-                  value: _weeklyActivities > 0 ? _weeklyActivities.toString() : '-',
-                  unit: '',
-                  color: Colors.orange,
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/activities-detail'),
+                  child: _buildOverviewCard(
+                    icon: Icons.local_activity,
+                    title: 'Activiteiten deze week',
+                    value: _weeklyActivities > 0 ? _weeklyActivities.toString() : '-',
+                    unit: '',
+                    color: Colors.orange,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/life-events'),
+                  child: _buildOverviewCard(
+                    icon: Icons.event_note,
+                    title: 'Life Events',
+                    value: 'Bekijk',
+                    unit: '',
+                    color: Colors.yellow,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 

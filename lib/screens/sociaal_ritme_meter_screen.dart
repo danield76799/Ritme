@@ -75,23 +75,29 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   }
 
   Color _getPScoreColor(int score) {
-    if (score >= 3) return Colors.green.shade600;
-    if (score >= 2) return Colors.orange.shade600;
-    if (score >= 1) return Colors.red.shade500;
-    return Colors.grey.shade400;
+    if (score >= 5) return Colors.green.shade600;  // Perfect
+    if (score >= 4) return Colors.green.shade400;  // Goed
+    if (score >= 3) return Colors.orange.shade400; // OK (cutoff)
+    if (score >= 2) return Colors.orange.shade600; // Matig
+    if (score >= 1) return Colors.red.shade500;    // Slecht
+    return Colors.grey.shade400;                    // Geen activiteit
   }
 
   String _getPScoreLabel(int score) {
-    if (score >= 3) return '✓';
-    if (score >= 2) return '~';
-    if (score >= 1) return '!';
-    return '-';
+    if (score >= 5) return '✓✓';  // Perfect
+    if (score >= 4) return '✓';   // Goed
+    if (score >= 3) return '~';   // OK
+    if (score >= 2) return '!';   // Matig
+    if (score >= 1) return '!!';  // Slecht
+    return '-';                    // Geen activiteit
   }
 
   IconData _getPScoreIcon(int score) {
-    if (score >= 3) return Icons.check_circle;
-    if (score >= 2) return Icons.access_time;
-    if (score >= 1) return Icons.warning_amber;
+    if (score >= 5) return Icons.check_circle;
+    if (score >= 4) return Icons.check_circle_outline;
+    if (score >= 3) return Icons.access_time;
+    if (score >= 2) return Icons.warning_amber;
+    if (score >= 1) return Icons.error_outline;
     return Icons.circle_outlined;
   }
 
@@ -109,14 +115,20 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     final targetMinutes = (int.tryParse(targetParts[0]) ?? 0) * 60 + (int.tryParse(targetParts[1]) ?? 0);
     final actualMinutes = (int.tryParse(actualParts[0]) ?? 0) * 60 + (int.tryParse(actualParts[1]) ?? 0);
     
+    // P-score berekening volgens officiële SRM methode (IPSRT):
+    // 5 punten = binnen 15 minuten
+    // 4 punten = binnen 30 minuten
+    // 3 punten = binnen 45 minuten (cutoff)
+    // 2 punten = binnen 60 minuten
+    // 1 punt = meer dan 60 minuten
+    // 0 punten = geen activiteit
     final diff = (actualMinutes - targetMinutes).abs();
     
-    // P3 = exact op tijd (binnen 15 minuten)
-    if (diff <= 15) return 3;
-    // P2 = binnen 30 minuten
-    if (diff <= 30) return 2;
-    // P1 = meer dan 30 minuten verschil
-    return 1;
+    if (diff <= 15) return 5;
+    if (diff <= 30) return 4;
+    if (diff <= 45) return 3;
+    if (diff <= 60) return 2;
+    return 1; // Meer dan 60 min maar wel gedaan
   }
 
   @override
@@ -163,8 +175,13 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   }
 
   Widget _buildContent() {
-    // Tel hoeveel activiteiten zijn ingepland
-    final ingeplandCount = _activities.where((a) => (a['p_score'] ?? 0) > 0).length;
+    // Tel hoeveel activiteiten zijn VOLTOOID (hebben een actual_time OF p_score > 0)
+    final voltooidCount = _activities.where((a) {
+      final actualTime = a['actual_time']?.toString();
+      final hasActualTime = actualTime != null && actualTime.isNotEmpty && actualTime != '--:--';
+      final hasPScore = (a['p_score'] ?? 0) > 0;
+      return hasActualTime || hasPScore;
+    }).length;
 
     return Column(
       children: [
@@ -190,7 +207,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '$ingeplandCount / 5 activiteiten ingepland',
+                '$voltooidCount / 5 activiteiten voltooid',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,

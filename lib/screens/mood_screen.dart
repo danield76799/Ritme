@@ -14,8 +14,8 @@ class MoodScreen extends StatefulWidget {
 class _MoodScreenState extends State<MoodScreen> {
 
   DateTime _geselecteerdeDatum = DateTime.now();
-  double _stemmingHoog = 50.0;  // Hoogste stemming niveau (0-100)
-  double _stemmingLaag = 50.0;  // Laagste stemming niveau (0-100)
+  double _stemmingHoog = 0.0;  // Hoogste stemming niveau (-5 tot +5)
+  double _stemmingLaag = 0.0;  // Laagste stemming niveau (-5 tot +5)
   bool _gesplitsteStemming = false; // Of er een gesplitste stemming is
   int _stemmingsOmslagen = 0;
   bool _ontstemdeManie = false;
@@ -47,25 +47,39 @@ class _MoodScreenState extends State<MoodScreen> {
       final log = await db.getDailyLog(_formattedDate);
       if (!mounted) return;
       if (log != null) {
-        // Life Chart: stemming 0-100 (gesplitst mogelijk)
+        // SRM Methode: stemming -5 tot +5 (gesplitst mogelijk)
         final dynamic rawStemmingHoog = log['stemming_hoog'];
         final dynamic rawStemmingLaag = log['stemming_laag'];
         final dynamic rawGesplitst = log['gesplitste_stemming'];
         
-        // Hive stores everything as String, so we need to parse
+        // Converteer oude 0-100 waarden naar nieuwe -5..+5 schaal
+        // new_value = (old_value - 50) / 10
         if (rawStemmingHoog is num) {
           _stemmingHoog = rawStemmingHoog.toDouble();
+          // Als waarde > 5, dan is het een oude 0-100 waarde
+          if (_stemmingHoog > 5 || _stemmingHoog < -5) {
+            _stemmingHoog = (_stemmingHoog - 50) / 10;
+          }
         } else if (rawStemmingHoog is String) {
-          _stemmingHoog = double.tryParse(rawStemmingHoog) ?? 50.0;
+          _stemmingHoog = double.tryParse(rawStemmingHoog) ?? 0.0;
+          if (_stemmingHoog > 5 || _stemmingHoog < -5) {
+            _stemmingHoog = (_stemmingHoog - 50) / 10;
+          }
         } else {
-          _stemmingHoog = 50.0;
+          _stemmingHoog = 0.0;
         }
         
         if (rawGesplitst == 1 || rawGesplitst == '1' || rawGesplitst == true) {
           if (rawStemmingLaag is num) {
             _stemmingLaag = rawStemmingLaag.toDouble();
+            if (_stemmingLaag > 5 || _stemmingLaag < -5) {
+              _stemmingLaag = (_stemmingLaag - 50) / 10;
+            }
           } else if (rawStemmingLaag is String) {
             _stemmingLaag = double.tryParse(rawStemmingLaag) ?? _stemmingHoog;
+            if (_stemmingLaag > 5 || _stemmingLaag < -5) {
+              _stemmingLaag = (_stemmingLaag - 50) / 10;
+            }
           } else {
             _stemmingLaag = _stemmingHoog;
           }
@@ -81,8 +95,8 @@ class _MoodScreenState extends State<MoodScreen> {
         _socialeContacten = log['sociale_contacten'] is int ? log['sociale_contacten'] : int.tryParse(log['sociale_contacten']?.toString() ?? '0') ?? 0;
         // _urenSlaap removed - now calculated from sleep tracking
       } else {
-        _stemmingHoog = 50.0;
-        _stemmingLaag = 50.0;
+        _stemmingHoog = 0.0;
+        _stemmingLaag = 0.0;
         _gesplitsteStemming = false;
         _stemmingsOmslagen = 0;
         _ontstemdeManie = false;
@@ -149,27 +163,30 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   String _getStemmingLabel(double waarde) {
-    if (waarde <= 10) return 'Uiterst depressief';
-    if (waarde <= 25) return 'Ernstig depressief';
-    if (waarde <= 40) return 'Matig depressief';
-    if (waarde <= 45) return 'Licht depressief';
-    if (waarde <= 55) return 'Neutraal';
-    if (waarde <= 65) return 'Licht manisch';
-    if (waarde <= 75) return 'Matig manisch';
-    if (waarde <= 90) return 'Ernstig manisch';
+    if (waarde <= -5) return 'Uiterst depressief';
+    if (waarde <= -4) return 'Ernstig depressief';
+    if (waarde <= -3) return 'Matig depressief';
+    if (waarde <= -2) return 'Licht depressief';
+    if (waarde <= -1) return 'Somber';
+    if (waarde == 0) return 'Stabiel / Neutraal';
+    if (waarde <= 1) return 'Licht manisch';
+    if (waarde <= 2) return 'Matig manisch';
+    if (waarde <= 3) return 'Druk / Actief';
+    if (waarde <= 4) return 'Ernstig manisch';
     return 'Uiterst manisch';
   }
 
   Color _getStemmingKleur(double waarde) {
-    if (waarde <= 10) return Colors.grey[800]!;     // Uiterst depressief - donkergrijs
-    if (waarde <= 25) return Colors.grey[600]!;     // Ernstig depressief - grijs
-    if (waarde <= 40) return Colors.blue[400]!;     // Matig depressief - blauw
-    if (waarde <= 45) return Colors.blue[200]!;     // Licht depressief - lichtblauw
-    if (waarde <= 55) return Colors.green[400]!;    // Neutraal - groen
-    if (waarde <= 65) return Colors.yellow[600]!;   // Licht manisch - geel
-    if (waarde <= 75) return Colors.orange[500]!;   // Matig manisch - oranje
-    if (waarde <= 90) return Colors.orange[700]!;   // Ernstig manisch - donkeroranje
-    return Colors.red[500]!;                          // Uiterst manisch - rood
+    if (waarde <= -4) return Colors.grey[800]!;     // Uiterst depressief
+    if (waarde <= -3) return Colors.grey[600]!;      // Ernstig depressief
+    if (waarde <= -2) return Colors.blue[400]!;      // Matig depressief
+    if (waarde <= -1) return Colors.blue[200]!;      // Licht depressief
+    if (waarde == 0) return Colors.green[400]!;       // Neutraal
+    if (waarde <= 1) return Colors.yellow[600]!;     // Licht manisch
+    if (waarde <= 2) return Colors.orange[500]!;     // Matig manisch
+    if (waarde <= 3) return Colors.orange[700]!;     // Druk / Actief
+    if (waarde <= 4) return Colors.red[400]!;        // Ernstig manisch
+    return Colors.red[600]!;                          // Uiterst manisch
   }
 
   void _veranderOmslagen(int change) {
@@ -230,7 +247,7 @@ class _MoodScreenState extends State<MoodScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Hoogste stemming (0-100)
+                        // Hoogste stemming (-5 tot +5)
                         _buildStemmingCard(
                           title: 'Hoogste stemming vandaag',
                           value: _stemmingHoog,
@@ -261,7 +278,7 @@ class _MoodScreenState extends State<MoodScreen> {
                               const Expanded(
                                 child: Text(
                                   'Stemming veranderde vandaag',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
                                 ),
                               ),
                               Switch(
@@ -526,8 +543,8 @@ class _MoodScreenState extends State<MoodScreen> {
             ),
             child: Slider(
               value: value,
-              min: 0,
-              max: 100,
+              min: -5,
+              max: 5,
               divisions: 10,
               onChanged: onChanged,
             ),
@@ -537,9 +554,9 @@ class _MoodScreenState extends State<MoodScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('😞 0', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
-                Text('50', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
-                Text('100 😄', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
+                Text('-5 😞', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
+                Text('0', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
+                Text('+5 😄', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
               ],
             ),
           ),
