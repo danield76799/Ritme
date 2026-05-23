@@ -28,6 +28,16 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
       final now = DateTime.now();
       final weekAgo = now.subtract(const Duration(days: 7));
       
+      // Haal settings op voor target times
+      final settings = await db.getSettings();
+      final targetTimes = {
+        'Opstaan': settings?['target_opstaan']?.toString(),
+        'Eerste contact': settings?['target_contact']?.toString(),
+        'Werk / Hobby': settings?['target_werk']?.toString(),
+        'Avondeten': settings?['target_eten']?.toString(),
+        'Naar bed': settings?['target_slapen']?.toString(),
+      };
+      
       List<Map<String, dynamic>> allActivities = [];
       int totalOnTime = 0;
       int totalActs = 0;
@@ -42,14 +52,17 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
           final type = activity['activity_type']?.toString() ?? 'Onbekend';
           final dbPScore = _parseInt(activity['p_score']);
           final actualTime = activity['actual_time']?.toString();
-          final targetTime = activity['target_time']?.toString();
+          final dbTargetTime = activity['target_time']?.toString();
+          
+          // Gebruik target_time uit database, anders uit settings
+          final targetTime = dbTargetTime ?? targetTimes[type];
           
           // Bereken p-score opnieuw als we target_time hebben
           int pScore;
           if (targetTime != null && targetTime.isNotEmpty && actualTime != null && actualTime.isNotEmpty) {
             pScore = _calculatePScore(targetTime, actualTime);
           } else {
-            pScore = dbPScore; // Gebruik opgeslagen waarde
+            pScore = dbPScore;
           }
           
           allActivities.add({
@@ -334,6 +347,16 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                     color: Colors.grey[600],
                   ),
                 ),
+                if (activity['target_time'] != '-') ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'Target: ${activity['target_time']}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
