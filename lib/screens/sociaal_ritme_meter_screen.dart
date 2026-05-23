@@ -75,23 +75,29 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   }
 
   Color _getPScoreColor(int score) {
-    if (score >= 3) return Colors.green.shade600;
-    if (score >= 2) return Colors.orange.shade600;
-    if (score >= 1) return Colors.red.shade500;
-    return Colors.grey.shade400;
+    if (score >= 5) return Colors.green.shade600;  // Perfect
+    if (score >= 4) return Colors.green.shade400;  // Goed
+    if (score >= 3) return Colors.orange.shade400; // OK (cutoff)
+    if (score >= 2) return Colors.orange.shade600; // Matig
+    if (score >= 1) return Colors.red.shade500;    // Slecht
+    return Colors.grey.shade400;                    // Geen activiteit
   }
 
   String _getPScoreLabel(int score) {
-    if (score >= 3) return '✓';
-    if (score >= 2) return '~';
-    if (score >= 1) return '!';
-    return '-';
+    if (score >= 5) return '✓✓';  // Perfect
+    if (score >= 4) return '✓';   // Goed
+    if (score >= 3) return '~';   // OK
+    if (score >= 2) return '!';   // Matig
+    if (score >= 1) return '!!';  // Slecht
+    return '-';                    // Geen activiteit
   }
 
   IconData _getPScoreIcon(int score) {
-    if (score >= 3) return Icons.check_circle;
-    if (score >= 2) return Icons.access_time;
-    if (score >= 1) return Icons.warning_amber;
+    if (score >= 5) return Icons.check_circle;
+    if (score >= 4) return Icons.check_circle_outline;
+    if (score >= 3) return Icons.access_time;
+    if (score >= 2) return Icons.warning_amber;
+    if (score >= 1) return Icons.error_outline;
     return Icons.circle_outlined;
   }
 
@@ -109,13 +115,20 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     final targetMinutes = (int.tryParse(targetParts[0]) ?? 0) * 60 + (int.tryParse(targetParts[1]) ?? 0);
     final actualMinutes = (int.tryParse(actualParts[0]) ?? 0) * 60 + (int.tryParse(actualParts[1]) ?? 0);
     
-    // P-score berekening volgens officiële SRM methode:
-    // 1 punt = binnen 45 minuten van richttijd
-    // 0 punten = meer dan 45 minuten verschil
+    // P-score berekening volgens officiële SRM methode (IPSRT):
+    // 5 punten = binnen 15 minuten
+    // 4 punten = binnen 30 minuten
+    // 3 punten = binnen 45 minuten (cutoff)
+    // 2 punten = binnen 60 minuten
+    // 1 punt = meer dan 60 minuten
+    // 0 punten = geen activiteit
     final diff = (actualMinutes - targetMinutes).abs();
     
-    if (diff <= 45) return 1; // Binnen 45 min = 1 punt
-    return 0; // Meer dan 45 min = 0 punten
+    if (diff <= 15) return 5;
+    if (diff <= 30) return 4;
+    if (diff <= 45) return 3;
+    if (diff <= 60) return 2;
+    return 1; // Meer dan 60 min maar wel gedaan
   }
 
   @override
