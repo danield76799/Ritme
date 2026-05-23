@@ -23,11 +23,15 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
     setState(() => _isLoading = true);
     try {
       final logs = await db.getDailyLogs();
-      // Sort by date descending
+      // Sort by date descending, then by id descending (most recent first)
       logs.sort((a, b) {
         final dateA = a['date']?.toString() ?? '';
         final dateB = b['date']?.toString() ?? '';
-        return dateB.compareTo(dateA);
+        final dateCompare = dateB.compareTo(dateA);
+        if (dateCompare != 0) return dateCompare;
+        final idA = a['id'] as int? ?? 0;
+        final idB = b['id'] as int? ?? 0;
+        return idB.compareTo(idA);
       });
       setState(() {
         _logs = logs;
@@ -39,13 +43,13 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
   }
 
   Future<void> _cleanupDatabase() async {
-    // Toon bevestigingsdialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Database Opruimen'),
         content: const Text(
-          'Dit verwijdert alle dubbele logs per dag en houdt alleen de meest recente log over.\n\n'
+          'Dit markeert alle dubbele logs per dag als leeg.\n\n'
+          'Alleen de meest recente log per dag blijft behouden.\n\n'
           'Weet je zeker dat je door wilt gaan?',
         ),
         actions: [
@@ -55,7 +59,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: Colors.orange),
             child: const Text('Opruimen'),
           ),
         ],
@@ -66,43 +70,49 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final database = await db.database;
-      
-      // Haal alle logs op
-      final allLogs = await database.query('daily_logs', orderBy: 'date DESC, id DESC');
-      
       // Groepeer per datum
-      Map<String, List<int>> logsByDate = {};
-      for (var log in allLogs) {
+      Map<String, List<Map<String, dynamic>>> logsByDate = {};
+      for (var log in _logs) {
         final date = log['date']?.toString();
-        final id = log['id'] as int?;
-        if (date != null && id != null) {
-          logsByDate.putIfAbsent(date, () => []).add(id);
+        if (date != null) {
+          logsByDate.putIfAbsent(date, () => []).add(log);
         }
       }
-      
-      int deletedCount = 0;
-      
-      // Verwijder alle logs behalve de eerste (meest recente) per datum
+
+      int cleanedCount = 0;
+
+      // Voor elke datum, behoud alleen de eerste (meest recente) log
       for (var entry in logsByDate.entries) {
-        final ids = entry.value;
-        if (ids.length > 1) {
-          // Behoud de eerste (hoogste ID = meest recente)
-          final idsToDelete = ids.sublist(1);
-          for (var id in idsToDelete) {
-            await database.delete('daily_logs', where: 'id = ?', whereArgs: [id]);
-            deletedCount++;
+        final logsForDate = entry.value;
+        if (logsForDate.length > 1) {
+          // Overschrijf oude logs met lege waarden (behalve de eerste)
+          for (int i = 1; i < logsForDate.length; i++) {
+            final oldLog = logsForDate[i];
+            await db.upsertDailyLog({
+              'date': entry.key,
+              'stemming_hoog': null,
+              'stemming_laag': null,
+              'gesplitste_stemming': null,
+              'stemmingsomslagen': null,
+              'ontstemde_manie': null,
+              'daglicht': null,
+              'sociale_contacten': null,
+              'sleep_hours': null,
+              'uren_slaap': null,
+              'awake_minutes': null,
+            });
+            cleanedCount++;
           }
         }
       }
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$deletedCount dubbele logs verwijderd!'),
+          content: Text('$cleanedCount dubbele logs opgeruimd!'),
           backgroundColor: Colors.green,
         ),
       );
-      
+
       _loadData(); // Herlaad de lijst
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +126,6 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
   }
 
   Future<void> _resetDatabase() async {
-    // Toon bevestigingsdialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -144,18 +153,34 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final database = await db.database;
-      await database.delete('daily_logs');
-      await database.delete('life_events');
-      await database.delete('srm_activities');
-      
+      // Wis alle data door lege logs te maken voor alle datums
+      final allLogs = await db.getDailyLogs();
+      for (var log in allLogs) {
+        final date = log['date']?.toString();
+        if (date != null) {
+          await db.upsertDailyLog({
+            'date': date,
+            'stemming_hoog': null,
+            'stemming_laag': null,
+            'gesplitste_stemming': null,
+            'stemmingsomslagen': null,
+            'ontstemde_manie': null,
+            'daglicht': null,
+            'sociale_contacten': null,
+            'sleep_hours': null,
+            'uren_slaap': null,
+            'awake_minutes': null,
+          });
+        }
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Alle data is verwijderd!'),
           backgroundColor: Colors.green,
         ),
       );
-      
+
       _loadData(); // Herlaad de lijst
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -196,7 +221,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _cleanupDatabase,
                           icon: const Icon(Icons.cleaning_services),
-                          label: const Text('Dubbele Verwijderen'),
+                          label: const Text('Dubbele Opruimen'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
