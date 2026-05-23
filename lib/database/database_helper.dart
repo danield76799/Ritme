@@ -451,7 +451,23 @@ class DatabaseHelper implements DatabaseRepository {
     try {
       final db = await database;
       data['date'] = date;
-      return await db.insert('daily_logs', data, conflictAlgorithm: ConflictAlgorithm.replace);
+      
+      // Check if a log already exists for this date
+      final existing = await db.query('daily_logs', where: 'date = ?', whereArgs: [date], limit: 1);
+      
+      if (existing.isNotEmpty) {
+        // Update only the provided fields, preserve existing data
+        final updateData = Map<String, dynamic>.from(data);
+        updateData.remove('date');
+        
+        if (updateData.isNotEmpty) {
+          return await db.update('daily_logs', updateData, where: 'date = ?', whereArgs: [date]);
+        }
+        return 0;
+      } else {
+        // Insert new log
+        return await db.insert('daily_logs', data);
+      }
     } catch (e) {
       print('ERROR inserting daily_log: $e');
       rethrow;
@@ -487,8 +503,26 @@ class DatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> upsertDailyLog(Map<String, dynamic> data) async {
+    final db = await database;
     final date = data['date'] as String;
-    return await insertDailyLog(date, data);
+    
+    // Check if a log already exists for this date
+    final existing = await db.query('daily_logs', where: 'date = ?', whereArgs: [date], limit: 1);
+    
+    if (existing.isNotEmpty) {
+      // Update only the provided fields, preserve existing data
+      // Remove 'date' from update data since it's the key
+      final updateData = Map<String, dynamic>.from(data);
+      updateData.remove('date');
+      
+      if (updateData.isNotEmpty) {
+        return await db.update('daily_logs', updateData, where: 'date = ?', whereArgs: [date]);
+      }
+      return 0;
+    } else {
+      // Insert new log with defaults for missing fields
+      return await db.insert('daily_logs', data);
+    }
   }
 
   // ===================
