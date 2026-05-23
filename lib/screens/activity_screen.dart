@@ -248,7 +248,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         newScore = currentScore == 0 ? 1 : 0; // Toggle als er geen target is
       }
 
-      await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
+      await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null, targetTime: targetTijd);
 
       _loadData();
     } catch (e, stackTrace) {

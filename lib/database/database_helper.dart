@@ -550,12 +550,13 @@ class DatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint) async {
+  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint, {String? targetTime}) async {
     final db = await database;
     return await db.insert('srm_activities', {
       'date': date,
       'activity_type': activityType,
       'actual_time': actualTime,
+      'target_time': targetTime,
       'p_score': pScore,
       'srt_point': srtPoint,
     });
