@@ -66,8 +66,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final dailyLogs = await db.getDailyLogs();
       
       // Bereken slaapkwaliteit (gemiddelde van laatste 7 dagen)
-      double totalSleep = 0;
-      int sleepCount = 0;
+      // Gebruik een Map om dubbele entries per dag te voorkomen
+      Map<String, double> sleepPerDay = {};
       int activityCount = 0;
       
       for (var log in dailyLogs) {
@@ -76,7 +76,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         try {
           final logDate = DateTime.parse(log['date'] as String);
           if (logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo)) {
-            // Check for sleep_hours (from sleep tracking)
+            final dateStr = log['date'] as String;
+            
+            // Check for sleep_hours (from sleep tracking) - voorkeur
             final dynamic rawSleep = log['sleep_hours'];
             if (rawSleep != null) {
               double? sleep;
@@ -86,23 +88,23 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 sleep = double.tryParse(rawSleep);
               }
               if (sleep != null && sleep > 0) {
-                totalSleep += sleep;
-                sleepCount++;
+                sleepPerDay[dateStr] = sleep;
               }
             }
             
-            // Check for uren_slaap (from mood tracking)
-            final dynamic rawUrenSlaap = log['uren_slaap'];
-            if (rawUrenSlaap != null) {
-              double? urenSlaap;
-              if (rawUrenSlaap is num) {
-                urenSlaap = rawUrenSlaap.toDouble();
-              } else if (rawUrenSlaap is String) {
-                urenSlaap = double.tryParse(rawUrenSlaap);
-              }
-              if (urenSlaap != null && urenSlaap > 0) {
-                totalSleep += urenSlaap;
-                sleepCount++;
+            // Check for uren_slaap (from mood tracking) - alleen als sleep_hours niet bestaat
+            if (!sleepPerDay.containsKey(dateStr)) {
+              final dynamic rawUrenSlaap = log['uren_slaap'];
+              if (rawUrenSlaap != null) {
+                double? urenSlaap;
+                if (rawUrenSlaap is num) {
+                  urenSlaap = rawUrenSlaap.toDouble();
+                } else if (rawUrenSlaap is String) {
+                  urenSlaap = double.tryParse(rawUrenSlaap);
+                }
+                if (urenSlaap != null && urenSlaap > 0) {
+                  sleepPerDay[dateStr] = urenSlaap;
+                }
               }
             }
             
@@ -116,9 +118,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         }
       }
       
-      // Bereken gemiddelden
-      final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0;
+      // Bereken gemiddelde slaap over de unieke dagen
+      double totalSleep = 0;
+      for (var sleep in sleepPerDay.values) {
+        totalSleep += sleep;
+      }
+      int sleepCount = sleepPerDay.length;
+      
       // Slaapkwaliteit score: 0-10 (8 uur = 10, minder = lager)
+      final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0;
       final sleepScore = avgSleep > 0 ? ((avgSleep / 8) * 10).clamp(0, 10) : 0;
       
       // Ritme stabiliteit: percentage geplande vs daadwerkelijke activiteiten
