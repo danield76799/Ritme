@@ -66,10 +66,10 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final db = await db.database;
+      final database = await db.database;
       
       // Haal alle logs op
-      final allLogs = await db.query('daily_logs', orderBy: 'date DESC, id DESC');
+      final allLogs = await database.query('daily_logs', orderBy: 'date DESC, id DESC');
       
       // Groepeer per datum
       Map<String, List<int>> logsByDate = {};
@@ -90,7 +90,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
           // Behoud de eerste (hoogste ID = meest recente)
           final idsToDelete = ids.sublist(1);
           for (var id in idsToDelete) {
-            await db.delete('daily_logs', where: 'id = ?', whereArgs: [id]);
+            await database.delete('daily_logs', where: 'id = ?', whereArgs: [id]);
             deletedCount++;
           }
         }
@@ -144,10 +144,10 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final db = await db.database;
-      await db.delete('daily_logs');
-      await db.delete('life_events');
-      await db.delete('srm_activities');
+      final database = await db.database;
+      await database.delete('daily_logs');
+      await database.delete('life_events');
+      await database.delete('srm_activities');
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
