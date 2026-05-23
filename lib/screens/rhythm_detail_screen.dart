@@ -40,9 +40,17 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
         
         for (var activity in dayActivities) {
           final type = activity['activity_type']?.toString() ?? 'Onbekend';
-          final pScore = _parseInt(activity['p_score']);
+          final dbPScore = _parseInt(activity['p_score']);
           final actualTime = activity['actual_time']?.toString();
           final targetTime = activity['target_time']?.toString();
+          
+          // Bereken p-score opnieuw als we target_time hebben
+          int pScore;
+          if (targetTime != null && targetTime.isNotEmpty && actualTime != null && actualTime.isNotEmpty) {
+            pScore = _calculatePScore(targetTime, actualTime);
+          } else {
+            pScore = dbPScore; // Gebruik opgeslagen waarde
+          }
           
           allActivities.add({
             'date': checkDateStr,
@@ -78,6 +86,25 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
     if (value is int) return value;
     if (value is String) return int.tryParse(value) ?? 0;
     return 0;
+  }
+  
+  // Bereken p-score op basis van tijdsverschil
+  int _calculatePScore(String targetTime, String actualTime) {
+    final targetParts = targetTime.split(':');
+    final actualParts = actualTime.split(':');
+    
+    if (targetParts.length < 2 || actualParts.length < 2) return 0;
+    
+    final targetMinutes = (int.tryParse(targetParts[0]) ?? 0) * 60 + (int.tryParse(targetParts[1]) ?? 0);
+    final actualMinutes = (int.tryParse(actualParts[0]) ?? 0) * 60 + (int.tryParse(actualParts[1]) ?? 0);
+    
+    final diff = (actualMinutes - targetMinutes).abs();
+    
+    if (diff <= 15) return 5;
+    if (diff <= 30) return 4;
+    if (diff <= 45) return 3;
+    if (diff <= 60) return 2;
+    return 1;
   }
 
   String _dayName(int weekday) {
