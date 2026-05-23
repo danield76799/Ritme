@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:printing/printing.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../service_locator.dart';
 import '../theme/app_theme.dart';
@@ -127,214 +127,17 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   }
 
   Future<void> _genereerEnDeelPdf() async {
-    final pdf = pw.Document();
-    
-    // Haal logs van afgelopen 30 dagen op
-    final now = DateTime.now();
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-    
-    final allLogs = await db.getDailyLogs();
-    final recentLogs = allLogs.where((log) {
-      if (log['date'] == null) return false;
-      try {
-        final logDate = DateTime.parse(log['date']);
-        return logDate.isAfter(thirtyDaysAgo) || logDate.isAtSameMomentAs(thirtyDaysAgo);
-      } catch (e) {
-        return false;
-      }
-    }).toList();
-    
-    // Bereken KPIs voor afgelopen 30 dagen
-    double gemStemming30 = 0.0;
-    double gemSlaap30 = 0.0;
-    int stemCount30 = 0;
-    int sleepCount30 = 0;
-    int eventCount30 = 0;
-    
-    if (recentLogs.isNotEmpty) {
-      double totaalStemming = 0;
-      double totaalSlaap = 0;
-      
-      for (var log in recentLogs) {
-        if (log['stemming_hoog'] != null) {
-          final dynamic rawStemming = log['stemming_hoog'];
-          double stemming = 0;
-          if (rawStemming is num) {
-            stemming = rawStemming.toDouble();
-          } else if (rawStemming is String) {
-            stemming = double.tryParse(rawStemming) ?? 0.0;
-          }
-          totaalStemming += stemming;
-          stemCount30++;
-        }
-        
-        // Check sleep_hours first (calculated from sleep tracking)
-        if (log['sleep_hours'] != null) {
-          final sleepVal = log['sleep_hours'] is num ? log['sleep_hours'].toDouble() : double.tryParse(log['sleep_hours'].toString()) ?? 0.0;
-          if (sleepVal > 0) {
-            totaalSlaap += sleepVal;
-            sleepCount30++;
-          }
-        } else if (log['uren_slaap'] != null) {
-          final dynamic rawSlaap = log['uren_slaap'];
-          double slaap = 0;
-          if (rawSlaap is num) {
-            slaap = rawSlaap.toDouble();
-          } else if (rawSlaap is String) {
-            slaap = double.tryParse(rawSlaap) ?? 0.0;
-          }
-          if (slaap > 0) {
-            totaalSlaap += slaap;
-            sleepCount30++;
-          }
-        }
-      }
-      
-      // Converteer stemming naar -5 tot +5 schaal
-      double rawGemStemming = stemCount30 > 0 ? totaalStemming / stemCount30 : 0.0;
-      if (rawGemStemming > 10) {
-        gemStemming30 = ((rawGemStemming / 100) * 10 - 5).clamp(-5.0, 5.0);
-      } else {
-        gemStemming30 = rawGemStemming.clamp(-5.0, 5.0);
-      }
-      
-      // Slaap: alleen delen door dagen MET slaapdata
-      gemSlaap30 = sleepCount30 > 0 ? totaalSlaap / sleepCount30 : 0.0;
-      
-      // Tel events
-      for (var log in recentLogs) {
-        final events = await db.getLifeEvents(log['date']);
-        eventCount30 += events.length;
-      }
-    }
-    
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            // Header
-            pw.Text(
-              'Ritme App - Digitaal Life Chart Rapport',
-              style: pw.TextStyle(
-                fontSize: 28,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColor.fromHex('#4FB2C1'),
-              ),
-            ),
-            pw.SizedBox(height: 8),
-            pw.Text(
-              'Gegenereerd op: ${now.day}-${now.month}-${now.year}',
-              style: pw.TextStyle(
-                fontSize: 14,
-                color: PdfColors.grey600,
-              ),
-            ),
-            pw.Divider(thickness: 2, color: PdfColor.fromHex('#4FB2C1')),
-            pw.SizedBox(height: 20),
-            
-            // Sectie 1: KPI Samenvatting
-            pw.Text(
-              'KPI Samenvatting (Laatste 30 dagen)',
-              style: pw.TextStyle(
-                fontSize: 18,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.grey800,
-              ),
-            ),
-            pw.SizedBox(height: 12),
-            pw.Container(
-              padding: const pw.EdgeInsets.all(12),
-              decoration: pw.BoxDecoration(
-                color: PdfColors.grey100,
-                borderRadius: pw.BorderRadius.circular(8),
-              ),
-              child: pw.Column(
-                children: [
-                  _buildKpiRow('Gemiddelde stemming', gemStemming30.toStringAsFixed(2)),
-                  _buildKpiRow('Gemiddelde slaap (uren)', gemSlaap30.toStringAsFixed(2)),
-                  _buildKpiRow('Aantal gelogde dagen', '$stemCount30'),
-                  _buildKpiRow('Aantal gebeurtenissen', '$eventCount30'),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 24),
-            
-            // Sectie 2: Logboek
-            pw.Text(
-              'Logboek (Laatste 30 dagen)',
-              style: pw.TextStyle(
-                fontSize: 18,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.grey800,
-              ),
-            ),
-            pw.SizedBox(height: 12),
-            
-            // Tabel met logs
-            pw.Table(
-              border: pw.TableBorder.all(color: PdfColors.grey300, width: 1),
-              children: [
-                // Header rij
-                pw.TableRow(
-                  decoration: pw.BoxDecoration(color: PdfColor.fromHex('#4FB2C1')),
-                  children: [
-                    _buildTableHeader('Datum'),
-                    _buildTableHeader('Stemming'),
-                    _buildTableHeader('Slaap (uren)'),
-                    _buildTableHeader('Activiteiten/Gebeurtenissen'),
-                  ],
-                ),
-                // Data rijen
-                ...recentLogs.reversed.map((log) {
-                  final date = log['date'] ?? '-';
-                  final stemming = log['stemming_hoog']?.toString() ?? '-';
-                  final slaap = log['uren_slaap']?.toString() ?? '-';
-                  
-                  // Haal activiteiten en gebeurtenissen op voor deze dag
-                  String activiteiten = '-';
-                  if (log['activiteiten'] != null && log['activiteiten'] is List) {
-                    final acts = log['activiteiten'] as List;
-                    if (acts.isNotEmpty) {
-                      activiteiten = acts.take(2).join(', ');
-                      if (acts.length > 2) activiteiten += '...';
-                    }
-                  }
-                  
-                  return pw.TableRow(
-                    children: [
-                      _buildTableCell(date),
-                      _buildTableCell(stemming),
-                      _buildTableCell(slaap),
-                      _buildTableCell(activiteiten),
-                    ],
-                  );
-                }).toList(),
-              ],
-            ),
-            
-            pw.SizedBox(height: 20),
-            pw.Text(
-              'Dit rapport is gegenereerd door de Ritme App.',
-              style: pw.TextStyle(
-                fontSize: 10,
-                color: PdfColors.grey500,
-                fontStyle: pw.FontStyle.italic,
-              ),
-            ),
-          ],
-        ),
+    // PDF functionaliteit tijdelijk uitgeschakeld wegens dependency conflict
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('PDF export tijdelijk niet beschikbaar'),
+        backgroundColor: Colors.orange,
       ),
-    );
-
-    // Deel de PDF
-    await Printing.sharePdf(
-      bytes: await pdf.save(),
-      filename: 'life_chart_rapport_${now.day}-${now.month}-${now.year}.pdf',
     );
   }
   
+  // PDF helper functies tijdelijk uitgeschakeld
+  /*
   pw.Widget _buildKpiRow(String label, String value) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
@@ -383,6 +186,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       ),
     );
   }
+  */
 
   @override
   Widget build(BuildContext context) {
