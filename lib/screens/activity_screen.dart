@@ -90,7 +90,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
         final wakeTimeStr = sleepLog['wake_time']?.toString();
         if (wakeTimeStr != null && wakeTimeStr.isNotEmpty) {
           _activiteiten[0]['werkelijke_tijd'] = _parseTimeOfDay(wakeTimeStr);
-          _activiteiten[0]['p_score'] = 1; // Mark as completed since wake time was set
+          // Bereken p_score op basis van target vs actual time
+          final targetTijd = _activiteiten[0]['richttijd'];
+          if (targetTijd != null && targetTijd != '--:--') {
+            final diff = _berekenTijdVerschil(targetTijd, wakeTimeStr);
+            _activiteiten[0]['p_score'] = _berekenPScore(diff);
+          } else {
+            _activiteiten[0]['p_score'] = 1; // Geen target, markeer als gedaan
+          }
         }
       }
     } catch (e, stackTrace) {
@@ -148,6 +155,35 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
+  // Bereken tijdsverschil in minuten tussen twee tijden (HH:MM format)
+  int _berekenTijdVerschil(String targetTime, String actualTime) {
+    final targetParts = targetTime.split(':');
+    final actualParts = actualTime.split(':');
+    
+    if (targetParts.length < 2 || actualParts.length < 2) return 0;
+    
+    final targetMinutes = (int.tryParse(targetParts[0]) ?? 0) * 60 + (int.tryParse(targetParts[1]) ?? 0);
+    final actualMinutes = (int.tryParse(actualParts[0]) ?? 0) * 60 + (int.tryParse(actualParts[1]) ?? 0);
+    
+    return (actualMinutes - targetMinutes).abs();
+  }
+  
+  // Bereken p-score op basis van tijdsverschil in minuten
+  int _berekenPScore(int diffMinutes) {
+    // P-score berekening volgens officiële SRM methode (IPSRT):
+    // 5 punten = binnen 15 minuten
+    // 4 punten = binnen 30 minuten
+    // 3 punten = binnen 45 minuten (cutoff)
+    // 2 punten = binnen 60 minuten
+    // 1 punt = meer dan 60 minuten
+    // 0 punten = geen activiteit
+    if (diffMinutes <= 15) return 5;
+    if (diffMinutes <= 30) return 4;
+    if (diffMinutes <= 45) return 3;
+    if (diffMinutes <= 60) return 2;
+    return 1; // Meer dan 60 min maar wel gedaan
+  }
+
   String _formatTijd(TimeOfDay? tijd) {
     if (tijd == null) return '--:--';
     return '${tijd.hour.toString().padLeft(2, '0')}:${tijd.minute.toString().padLeft(2, '0')}';
@@ -202,9 +238,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
       
       timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
 
-      int newScore = currentScore == 0 ? 1 : 0;
+      // Bereken p_score op basis van target vs actual time
+      final targetTijd = activity['richttijd'];
+      int newScore;
+      if (targetTijd != null && targetTijd != '--:--') {
+        final diff = _berekenTijdVerschil(targetTijd, timeStr);
+        newScore = _berekenPScore(diff);
+      } else {
+        newScore = currentScore == 0 ? 1 : 0; // Toggle als er geen target is
+      }
 
-      await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
+      await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null, targetTime: targetTijd);
 
       _loadData();
     } catch (e, stackTrace) {
@@ -364,7 +408,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
       
       // Also save "Opstaan" activity with wake_time (auto-completed)
       if (_wakeTime != null) {
-        await db.insertSrmActivity(_formattedDate, 'Opstaan', _wakeTime!, 1, null);
+        // Bereken p_score op basis van target vs actual wake time
+        final targetTijd = _activiteiten[0]['richttijd'];
+        int pScore = 1; // Default als er geen target is
+        if (targetTijd != null && targetTijd != '--:--') {
+          final diff = _berekenTijdVerschil(targetTijd, _wakeTime!);
+          pScore = _berekenPScore(diff);
+        }
+        await db.insertSrmActivity(_formattedDate, 'Opstaan', _wakeTime!, pScore, null);
       }
       
       if (mounted) {

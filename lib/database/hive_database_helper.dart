@@ -254,7 +254,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint) async {
+  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint, {String? targetTime}) async {
     // Find existing record for this date + activity
     final existing = _srmActivities.values.where((e) =>
       e['date'] == date && e['activity_type'] == activityType
@@ -272,6 +272,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'actual_time': actualTime?.toString(),
         'p_score': pScore,
         'srt_point': srtPoint,
+        'target_time': targetTime?.toString(),
       });
       return key;
     } else {
@@ -284,6 +285,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'actual_time': actualTime?.toString(),
         'p_score': pScore,
         'srt_point': srtPoint,
+        'target_time': targetTime?.toString(),
       });
       return id;
     }
@@ -799,6 +801,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
       });
       return cleanMap;
     }).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> getAllLifeEvents() async {
+    return _lifeEvents.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      // Ensure all values are properly typed
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList()
+      ..sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
   }
 
   // ===================

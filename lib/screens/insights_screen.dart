@@ -96,8 +96,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
     double totaalSlaap = 0;
     int stemCount = 0;
     int activiteitenTotaal = 0;
-
+    
+    // CORRECTIE: Gebruik een Set om unieke dagen te tellen
+    Set<String> uniekeDagen = {};
+    
     for (var log in recenteLogs) {
+      // Tel unieke dagen
+      if (log['date'] != null) {
+        uniekeDagen.add(log['date'].toString());
+      }
+      
       // Handle both String and num types for stemming_hoog
       dynamic rawStemming = log['stemming_hoog'];
       if (rawStemming != null) {
@@ -154,7 +162,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     // Stabiliteit berekenen (hoe constanter, hoe hoger)
     double stabiliteit = 0;
-    if (recenteLogs.length >= 2) {
+    if (uniekeDagen.length >= 2) {
       // Bereken variantie in stemming en slaap
       double stemmingVariantie = 0;
       double slaapVariantie = 0;
@@ -189,7 +197,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
 
     return {
-      'aantalDagen': recenteLogs.length,
+      'aantalDagen': uniekeDagen.length,  // CORRECTIE: Unieke dagen in plaats van totale logs
       'gemiddeldeStemming': stemCount > 0 ? totaalStemming / stemCount : 0.0,
       'gemiddeldeSlaap': recenteLogs.isNotEmpty ? totaalSlaap / recenteLogs.length : 0.0,
       'totaleActiviteiten': activiteitenTotaal,
@@ -234,12 +242,47 @@ class _InsightsScreenState extends State<InsightsScreen> {
         stemmingSchaal = gemStemming.clamp(-5.0, 5.0);
       }
       
-      if (stemmingSchaal < -2) {
+      // CORRECTIE: Check of er genoeg data is voor betekenisvolle conclusies
+      int aantalStemmingen = 0;
+      var logs = stats['logs'] as List<Map<String, dynamic>>? ?? [];
+      for (var log in logs) {
+        if (log['stemming_hoog'] != null) aantalStemmingen++;
+      }
+      
+      if (aantalStemmingen < 3) {
+        inzichten.add('Je hebt ${aantalStemmingen == 1 ? '1 stemming' : '$aantalStemmingen stemmingen'} gelogd. Log meer voor betrouwbare inzichten.');
+      } else if (stemmingSchaal.abs() < 0.5) {
+        // CORRECTIE: Neutrale stemming kan stabiel zijn of fluctuerend
+        // Check de variantie
+        double variantie = 0;
+        if (aantalStemmingen > 1) {
+          double sumSquaredDiff = 0;
+          for (var log in logs) {
+            dynamic rawStemming = log['stemming_hoog'];
+            if (rawStemming != null) {
+              double stemming;
+              if (rawStemming is num) {
+                stemming = rawStemming.toDouble();
+              } else if (rawStemming is String) {
+                stemming = double.tryParse(rawStemming) ?? 0.0;
+              } else {
+                stemming = 0.0;
+              }
+              sumSquaredDiff += (stemming - gemStemming) * (stemming - gemStemming);
+            }
+          }
+          variantie = sumSquaredDiff / aantalStemmingen;
+        }
+        
+        if (variantie > 2.0) {
+          inzichten.add('Je stemming fluctueert rond het gemiddelde. Er is variatie in je dagelijkse stemming.');
+        } else {
+          inzichten.add('Je stemming is stabiel/neutraal.');
+        }
+      } else if (stemmingSchaal < -2) {
         inzichten.add('Je gemiddelde stemming is aan de lage kant. Overweeg extra zelfzorg deze week.');
       } else if (stemmingSchaal > 2) {
         inzichten.add('Je stemming is overwegend positief!');
-      } else {
-        inzichten.add('Je stemming is stabiel/neutraal.');
       }
     }
 
@@ -288,18 +331,21 @@ class _InsightsScreenState extends State<InsightsScreen> {
 Ritme Weekrapport (anoniem)
 
 Periode: Afgelopen 7 dagen
-Aantal gelogde dagen: $aantalDagen
+Aantal gelogde dagen: $aantalDagen (unieke dagen binnen periode)
 
 Slaap:
 - Gemiddeld: ${gemSlaap.toStringAsFixed(1)} uur per nacht
-- Aantal nachten gelogd: ${logs.where((l) => l['uren_slaap'] != null).length}
+- Aantal nachten gelogd: ${logs.where((l) => l['uren_slaap'] != null || l['sleep_hours'] != null).map((l) => l['date']).toSet().length}
 
 Stemming:
 - Gemiddeld: ${stemmingSchaal.toStringAsFixed(1)} (schaal -5 tot +5)
+- Aantal stemmingen gelogd: ${logs.where((l) => l['stemming_hoog'] != null).length}
 - Stemming: ${stemmingSchaal.abs() < 0.5 ? 'Stabiel/Neutraal' : (stemmingSchaal >= 0 ? 'Overwegend positief' : 'Overwegend negatief')}
 
 Activiteiten:
 - Totaal geregistreerd: $activiteiten
+
+Opmerking: Dit rapport is gebaseerd op $aantalDagen unieke dagen binnen de afgelopen 7 dagen.
 
 Patronen opgevallen:
 ${_insights.map((i) => '- ${i.replaceAll(RegExp(r'^\p{Emoji}+', unicode: true), '').trim()}').join('\n')}

@@ -36,7 +36,7 @@ class DatabaseHelper implements DatabaseRepository {
       await dbDir.create(recursive: true);
     }
     // Use new DB name to force fresh schema with correct columns
-    final path = p.join(dbDir.path, 'ritme_app_v9.db');
+    final path = p.join(dbDir.path, 'ritme_app_v11.db');
     
     // Check if we need to migrate from old location
     final oldDbPath = p.join(await getDatabasesPath(), filePath);
@@ -53,7 +53,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 9,
+      version: 11,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
@@ -73,101 +73,103 @@ class DatabaseHelper implements DatabaseRepository {
       await db.execute('UPDATE daily_logs SET stemming_hoog = stemming_ochtend WHERE stemming_ochtend IS NOT NULL');
       await db.execute('UPDATE daily_logs SET stemming_laag = stemming_avond WHERE stemming_avond IS NOT NULL');
     }
-    if (oldVersion < 2) {
+    if (oldVersion < 10) {
+      // Fix daily_logs schema: add id column and ensure date is UNIQUE
+      // First, create a backup of existing data
       await db.execute('''
-        CREATE TABLE IF NOT EXISTS weight_logs (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          date TEXT NOT NULL,
-          weight REAL NOT NULL,
-          notes TEXT
-        )
+        CREATE TABLE daily_logs_backup AS 
+        SELECT * FROM daily_logs
       ''');
-
+      
+      // Drop old table
+      await db.execute('DROP TABLE daily_logs');
+      
+      // Create new table with correct schema
       await db.execute('''
-        CREATE TABLE IF NOT EXISTS medical_appointments (
+        CREATE TABLE daily_logs (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          doctor_name TEXT,
-          location TEXT,
-          appointment_date TEXT NOT NULL,
-          appointment_time TEXT,
-          notes TEXT,
-          reminder_enabled INTEGER DEFAULT 1,
+          date TEXT NOT NULL UNIQUE,
+          uren_slaap REAL,
+          bed_time TEXT,
+          wake_time TEXT,
+          awake_minutes INTEGER DEFAULT 0,
+          sleep_hours REAL,
+          stemming_hoog REAL DEFAULT 50,
+          stemming_laag REAL DEFAULT 50,
+          gesplitste_stemming INTEGER DEFAULT 0,
+          ontstemde_manie INTEGER DEFAULT 0,
+          stemmingsomslagen INTEGER DEFAULT 0,
+          daglicht INTEGER DEFAULT 0,
+          sociale_contacten INTEGER DEFAULT 0,
+          alcohol_middelen INTEGER DEFAULT 0,
+          menstruatie INTEGER DEFAULT 0,
+          gewicht REAL,
+          medication TEXT,
           created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
       ''');
-    }
-    
-    // Add life_events table for version 3
-    if (oldVersion < 3) {
+      
+      // Restore data, merging duplicates
       await db.execute('''
-        CREATE TABLE IF NOT EXISTS life_events (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          date TEXT NOT NULL,
-          omschrijving TEXT NOT NULL,
-          invloed INTEGER NOT NULL
-        )
+        INSERT INTO daily_logs (date, uren_slaap, bed_time, wake_time, awake_minutes, sleep_hours, 
+          stemming_hoog, stemming_laag, gesplitste_stemming, ontstemde_manie, stemmingsomslagen, 
+          daglicht, sociale_contacten, alcohol_middelen, menstruatie, gewicht, medication)
+        SELECT 
+          date,
+          MAX(uren_slaap) as uren_slaap,
+          MAX(bed_time) as bed_time,
+          MAX(wake_time) as wake_time,
+          MAX(awake_minutes) as awake_minutes,
+          MAX(sleep_hours) as sleep_hours,
+          MAX(stemming_hoog) as stemming_hoog,
+          MAX(stemming_laag) as stemming_laag,
+          MAX(gesplitste_stemming) as gesplitste_stemming,
+          MAX(ontstemde_manie) as ontstemde_manie,
+          MAX(stemmingsomslagen) as stemmingsomslagen,
+          MAX(daglicht) as daglicht,
+          MAX(sociale_contacten) as sociale_contacten,
+          MAX(alcohol_middelen) as alcohol_middelen,
+          MAX(menstruatie) as menstruatie,
+          MAX(gewicht) as gewicht,
+          MAX(medication) as medication
+        FROM daily_logs_backup
+        GROUP BY date
       ''');
+      
+      // Drop backup table
+      await db.execute('DROP TABLE daily_logs_backup');
     }
-    
-    // Add sleep tracking columns for version 6
-    if (oldVersion < 6) {
-      try {
-        await db.execute('ALTER TABLE daily_logs ADD COLUMN bed_time TEXT');
-      } catch (e) {
-        print('bed_time column might already exist: $e');
-      }
-      try {
-        await db.execute('ALTER TABLE daily_logs ADD COLUMN wake_time TEXT');
-      } catch (e) {
-        print('wake_time column might already exist: $e');
-      }
-      try {
-        await db.execute('ALTER TABLE daily_logs ADD COLUMN awake_minutes INTEGER DEFAULT 0');
-      } catch (e) {
-        print('awake_minutes column might already exist: $e');
-      }
-      try {
-        await db.execute('ALTER TABLE daily_logs ADD COLUMN sleep_hours REAL');
-      } catch (e) {
-        print('sleep_hours column might already exist: $e');
-      }
-    }
-    
-    // Add reminder_days column for medical_appointments (version 7)
-    if (oldVersion < 7) {
-      try {
-        await db.execute('ALTER TABLE medical_appointments ADD COLUMN reminder_days INTEGER DEFAULT 1');
-      } catch (e) {
-        print('reminder_days column might already exist: $e');
-      }
+    if (oldVersion < 11) {
+      // Convert stemming scale from 0-100 to -5..+5
+      // Formula: new_value = (old_value - 50) / 10
+      // 0 -> -5, 50 -> 0, 100 -> +5
+      await db.execute('''
+        UPDATE daily_logs 
+        SET stemming_hoog = CASE 
+          WHEN stemming_hoog IS NOT NULL THEN ((stemming_hoog - 50) / 10.0)
+          ELSE 0
+        END,
+        stemming_laag = CASE 
+          WHEN stemming_laag IS NOT NULL THEN ((stemming_laag - 50) / 10.0)
+          ELSE 0
+        END
+      ''');
     }
   }
 
   Future _createDB(Database db, int version) async {
+    // Create daily_logs table with correct schema
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS settings (
+      CREATE TABLE daily_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
-        password_hash TEXT NOT NULL,
-        target_opstaan TEXT,
-        target_contact TEXT,
-        target_werk TEXT,
-        target_eten TEXT,
-        target_slapen TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS daily_logs (
-        date TEXT PRIMARY KEY,
+        date TEXT NOT NULL UNIQUE,
         uren_slaap REAL,
         bed_time TEXT,
         wake_time TEXT,
         awake_minutes INTEGER DEFAULT 0,
         sleep_hours REAL,
-        stemming_hoog REAL DEFAULT 50,
-        stemming_laag REAL DEFAULT 50,
+        stemming_hoog REAL DEFAULT 0,
+        stemming_laag REAL DEFAULT 0,
         gesplitste_stemming INTEGER DEFAULT 0,
         ontstemde_manie INTEGER DEFAULT 0,
         stemmingsomslagen INTEGER DEFAULT 0,
@@ -175,32 +177,56 @@ class DatabaseHelper implements DatabaseRepository {
         sociale_contacten INTEGER DEFAULT 0,
         alcohol_middelen INTEGER DEFAULT 0,
         menstruatie INTEGER DEFAULT 0,
-        andere_klachten TEXT
+        gewicht REAL,
+        medication TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
 
+    // Create index for faster queries
+    await db.execute('CREATE INDEX idx_daily_logs_date ON daily_logs(date)');
+
+    // Create settings table
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS srm_activities (
+      CREATE TABLE settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        password_hash TEXT,
+        target_opstaan TEXT DEFAULT '08:00',
+        target_slapen TEXT DEFAULT '23:00',
+        target_contact TEXT,
+        target_werk TEXT,
+        target_eten TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
+    // Create srm_activities table
+    await db.execute('''
+      CREATE TABLE srm_activities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         activity_type TEXT NOT NULL,
         actual_time TEXT,
-        p_score INTEGER,
-        srt_point INTEGER
+        target_time TEXT,
+        p_score INTEGER DEFAULT 0,
+        srt_point INTEGER DEFAULT 0
       )
     ''');
 
+    // Create medication tables
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS medication_config (
+      CREATE TABLE medication_config (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         naam TEXT NOT NULL,
         dosering TEXT,
-        eenheid TEXT
+        eenheid TEXT,
+        reminder_enabled INTEGER DEFAULT 1
       )
     ''');
 
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS medication_schedule (
+      CREATE TABLE medication_schedule (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         medication_id INTEGER,
         reminder_time TEXT NOT NULL,
@@ -211,7 +237,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''');
 
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS medication_intake (
+      CREATE TABLE medication_intake (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         medication_id INTEGER,
@@ -222,8 +248,9 @@ class DatabaseHelper implements DatabaseRepository {
       )
     ''');
 
+    // Create weight_logs table
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS weight_logs (
+      CREATE TABLE weight_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         weight REAL NOT NULL,
@@ -231,8 +258,9 @@ class DatabaseHelper implements DatabaseRepository {
       )
     ''');
 
+    // Create medical_appointments table
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS medical_appointments (
+      CREATE TABLE medical_appointments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         doctor_name TEXT,
@@ -245,9 +273,9 @@ class DatabaseHelper implements DatabaseRepository {
       )
     ''');
 
-    // FIX: Added missing life_events table
+    // Create life_events table
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS life_events (
+      CREATE TABLE life_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         omschrijving TEXT NOT NULL,
@@ -402,14 +430,6 @@ class DatabaseHelper implements DatabaseRepository {
     return settings != null && settings['password_hash'] != null;
   }
 
-  @override
-  Future<bool> updatePin(String pin) async {
-    const username = 'user';
-    // Hash de PIN voor veilige opslag
-    final hashedPin = SecurityHelper.hashPin(pin);
-    return await setPin(username, hashedPin);
-  }
-
   Future<bool> setPin(String username, String passwordHash) async {
     final db = await database;
     final existing = await getSettings();
@@ -419,6 +439,14 @@ class DatabaseHelper implements DatabaseRepository {
       await db.insert('settings', {'username': username, 'password_hash': passwordHash});
     }
     return true;
+  }
+
+  @override
+  Future<bool> updatePin(String pin) async {
+    const username = 'user';
+    // Hash de PIN voor veilige opslag
+    final hashedPin = SecurityHelper.hashPin(pin);
+    return await setPin(username, hashedPin);
   }
 
   @override
@@ -488,7 +516,33 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> upsertDailyLog(Map<String, dynamic> data) async {
     final date = data['date'] as String;
-    return await insertDailyLog(date, data);
+    final db = await database;
+    
+    // Check if a log already exists for this date
+    final existing = await db.query('daily_logs', where: 'date = ?', whereArgs: [date]);
+    
+    if (existing.isNotEmpty) {
+      // Update existing row, preserving fields not in the new data
+      final existingData = Map<String, dynamic>.from(existing.first);
+      final updateData = Map<String, dynamic>.from(data);
+      
+      // Remove fields that are null in the new data to preserve existing values
+      updateData.removeWhere((key, value) => value == null);
+      
+      // Merge new data with existing data
+      existingData.addAll(updateData);
+      existingData.remove('id'); // Don't update the ID
+      
+      return await db.update(
+        'daily_logs',
+        existingData,
+        where: 'date = ?',
+        whereArgs: [date],
+      );
+    } else {
+      // Insert new row
+      return await db.insert('daily_logs', data);
+    }
   }
 
   // ===================
@@ -496,12 +550,13 @@ class DatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint) async {
+  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint, {String? targetTime}) async {
     final db = await database;
     return await db.insert('srm_activities', {
       'date': date,
       'activity_type': activityType,
       'actual_time': actualTime,
+      'target_time': targetTime,
       'p_score': pScore,
       'srt_point': srtPoint,
     });
@@ -709,10 +764,6 @@ class DatabaseHelper implements DatabaseRepository {
     }
   }
 
-  // ===================
-  // MEDICATION SCHEDULE
-  // ===================
-  
   @override
   Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
     final db = await database;
@@ -725,53 +776,20 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<int> insertMedicationScheduleMap(Map<String, dynamic> data) async {
-    return await insertMedicationSchedule(
-      data['medication_id'] as int,
-      data['reminder_time'] as String,
-      data['days_of_week'] as String,
-    );
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getMedicationSchedule(int medicationId) async {
-    final db = await database;
-    return await db.query('medication_schedule', where: 'medication_id = ?', whereArgs: [medicationId]);
-  }
-
-  @override
   Future<int> deleteMedicationSchedule(int id) async {
     final db = await database;
     return await db.delete('medication_schedule', where: 'id = ?', whereArgs: [id]);
   }
 
-  // ===================
-  // MEDICATION INTAKE
-  // ===================
-  
   @override
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
     final db = await database;
-    
-    // Check of er al een entry is voor deze datum/medicatie
-    final existing = await db.query(
-      'medication_intake',
-      where: 'date = ? AND medication_id = ?',
-      whereArgs: [date, medicationId],
-      limit: 1,
-    );
-    
-    if (existing.isNotEmpty) {
-      // Update bestaande entry in plaats van nieuwe toe te voegen
-      return await db.update(
-        'medication_intake',
-        {'aantal_ingenomen': aantal},
-        where: 'date = ? AND medication_id = ?',
-        whereArgs: [date, medicationId],
-      );
-    }
-    
-    return await db.insert('medication_intake', {'date': date, 'medication_id': medicationId, 'aantal_ingenomen': aantal});
+    return await db.insert('medication_intake', {
+      'date': date,
+      'medication_id': medicationId,
+      'aantal_ingenomen': aantal,
+      'confirmed': 0,
+    });
   }
 
   @override
@@ -784,70 +802,57 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  @override
   Future<List<Map<String, dynamic>>> getMedicationIntake(String date) async {
     final db = await database;
     return await db.query('medication_intake', where: 'date = ?', whereArgs: [date]);
   }
 
-  // ===================
-  // LIFE EVENTS
-  // ===================
-  
   @override
-  Future<int> insertLifeEvent(String date, String omschrijving, int invloed) async {
+  Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
     final db = await database;
-    return await db.insert('life_events', {'date': date, 'omschrijving': omschrijving, 'invloed': invloed});
-  }
-
-  @override
-  Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
-    return await insertLifeEvent(
-      data['date'] as String,
-      data['omschrijving'] as String,
-      data['invloed'] as int,
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    return await db.query(
+      'medical_appointments',
+      where: 'appointment_date >= ?',
+      whereArgs: [today],
+      orderBy: 'appointment_date ASC',
     );
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getLifeEvents(String date) async {
+  Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
     final db = await database;
-    return await db.query('life_events', where: 'date = ?', whereArgs: [date]);
-  }
-
-  // ===================
-  // WEIGHT LOGS
-  // ===================
-  
-  @override
-  Future<int> insertWeightLog(String date, double weight, String? notes) async {
-    final db = await database;
-    return await db.insert('weight_logs', {'date': date, 'weight': weight, 'notes': notes});
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getWeightLogs() async {
-    final db = await database;
-    return await db.query('weight_logs', orderBy: 'date DESC');
-  }
-
-  @override
-  Future<Map<String, dynamic>?> getLatestWeightLog() async {
-    final db = await database;
-    final results = await db.query('weight_logs', orderBy: 'date DESC', limit: 1);
-    return results.isNotEmpty ? results.first : null;
-  }
-
-  @override
-  Future<int> deleteWeightLog(int id) async {
-    final db = await database;
-    return await db.delete('weight_logs', where: 'id = ?', whereArgs: [id]);
+    return await db.update('medical_appointments', data, where: 'id = ?', whereArgs: [id]);
   }
 
   // ===================
   // SLEEP TRACKING
   // ===================
   
+  double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
+    try {
+      final bedParts = bedTime.split(':');
+      final wakeParts = wakeTime.split(':');
+      
+      int bedHour = int.parse(bedParts[0]);
+      int bedMinute = int.parse(bedParts[1]);
+      int wakeHour = int.parse(wakeParts[0]);
+      int wakeMinute = int.parse(wakeParts[1]);
+      
+      int bedMinutes = bedHour * 60 + bedMinute;
+      int wakeMinutes = wakeHour * 60 + wakeMinute;
+      
+      if (wakeMinutes < bedMinutes) {
+        wakeMinutes += 24 * 60;
+      }
+      
+      int totalMinutes = wakeMinutes - bedMinutes - awakeMinutes;
+      return totalMinutes / 60.0;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
   @override
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
     final db = await database;
@@ -899,30 +904,6 @@ class DatabaseHelper implements DatabaseRepository {
     return results.first;
   }
 
-  double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
-    try {
-      final bedParts = bedTime.split(':');
-      final wakeParts = wakeTime.split(':');
-      
-      int bedHour = int.parse(bedParts[0]);
-      int bedMinute = int.parse(bedParts[1]);
-      int wakeHour = int.parse(wakeParts[0]);
-      int wakeMinute = int.parse(wakeParts[1]);
-      
-      int bedMinutes = bedHour * 60 + bedMinute;
-      int wakeMinutes = wakeHour * 60 + wakeMinute;
-      
-      if (wakeMinutes < bedMinutes) {
-        wakeMinutes += 24 * 60;
-      }
-      
-      int totalMinutes = wakeMinutes - bedMinutes - awakeMinutes;
-      return totalMinutes / 60.0;
-    } catch (e) {
-      return 0.0;
-    }
-  }
-
   // ===================
   // MEDICAL APPOINTMENTS
   // ===================
@@ -940,26 +921,82 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
+  Future<int> deleteMedicalAppointment(int id) async {
     final db = await database;
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    return await db.query(
-      'medical_appointments',
-      where: 'appointment_date >= ?',
-      whereArgs: [today],
-      orderBy: 'appointment_date ASC',
+    return await db.delete('medical_appointments', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ===================
+  // LIFE EVENTS
+  // ===================
+  
+  @override
+  Future<int> insertLifeEvent(String date, String omschrijving, int invloed) async {
+    final db = await database;
+    return await db.insert('life_events', {
+      'date': date,
+      'omschrijving': omschrijving,
+      'invloed': invloed,
+    });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getLifeEvents(String date) async {
+    final db = await database;
+    return await db.query('life_events', where: 'date = ?', whereArgs: [date], orderBy: 'date DESC');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllLifeEvents() async {
+    final db = await database;
+    return await db.query('life_events', orderBy: 'date DESC');
+  }
+
+  @override
+  Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
+    return await insertLifeEvent(
+      data['date'] as String,
+      data['omschrijving'] as String,
+      data['invloed'] as int,
     );
   }
 
   @override
-  Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
+  Future<int> deleteLifeEvent(int id) async {
     final db = await database;
-    return await db.update('medical_appointments', data, where: 'id = ?', whereArgs: [id]);
+    return await db.delete('life_events', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ===================
+  // WEIGHT LOGS
+  // ===================
+  
+  @override
+  Future<int> insertWeightLog(String date, double weight, String? notes) async {
+    final db = await database;
+    return await db.insert('weight_logs', {
+      'date': date,
+      'weight': weight,
+      'notes': notes,
+    });
   }
 
   @override
-  Future<int> deleteMedicalAppointment(int id) async {
+  Future<List<Map<String, dynamic>>> getWeightLogs() async {
     final db = await database;
-    return await db.delete('medical_appointments', where: 'id = ?', whereArgs: [id]);
+    return await db.query('weight_logs', orderBy: 'date DESC');
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getLatestWeightLog() async {
+    final db = await database;
+    final results = await db.query('weight_logs', orderBy: 'date DESC', limit: 1);
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  @override
+  Future<int> deleteWeightLog(int id) async {
+    final db = await database;
+    return await db.delete('weight_logs', where: 'id = ?', whereArgs: [id]);
   }
 }

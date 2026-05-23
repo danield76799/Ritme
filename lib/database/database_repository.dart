@@ -18,7 +18,7 @@ abstract class DatabaseRepository {
   Future<int> upsertDailyLog(Map<String, dynamic> data);
 
   // SRM Activities
-  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint);
+  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint, {String? targetTime});
   Future<int> insertSrmActivityMap(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getSrmActivities(String date);
 
@@ -48,6 +48,7 @@ abstract class DatabaseRepository {
   Future<int> insertLifeEvent(String date, String omschrijving, int invloed);
   Future<int> insertLifeEventMap(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getLifeEvents(String date);
+  Future<List<Map<String, dynamic>>> getAllLifeEvents();
 
   // Weight Logs
   Future<int> insertWeightLog(String date, double weight, String? notes);

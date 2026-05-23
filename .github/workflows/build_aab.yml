@@ -40,20 +40,52 @@ jobs:
         restore-keys: |
           flutter-deps-${{ runner.os }}-
 
-    - name: Verify Flutter
+    - name: Auto-increment version code
       run: |
-        export PATH="$PWD/flutter/bin:$PATH"
-        flutter --version
+        # Extract current version from pubspec.yaml
+        CURRENT_VERSION=$(grep "^version:" pubspec.yaml | sed 's/version: //')
+        echo "Current version: $CURRENT_VERSION"
+        
+        # Split into version name and code
+        VERSION_NAME=$(echo $CURRENT_VERSION | cut -d'+' -f1)
+        VERSION_CODE=$(echo $CURRENT_VERSION | cut -d'+' -f2)
+        
+        # Increment version code
+        NEW_VERSION_CODE=$((VERSION_CODE + 1))
+        NEW_VERSION="${VERSION_NAME}+${NEW_VERSION_CODE}"
+        
+        echo "New version: $NEW_VERSION"
+        
+        # Update pubspec.yaml
+        sed -i "s/^version: .*/version: ${NEW_VERSION}/" pubspec.yaml
+        
+        # Show result
+        grep "^version:" pubspec.yaml
+
+    - name: Commit version bump
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add pubspec.yaml
+        git diff --cached --quiet || git commit -m "Auto-increment version code to +${NEW_VERSION_CODE}"
+        
+    - name: Push version bump
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
 
     - name: Clean Flutter build
       run: |
         export PATH="$PWD/flutter/bin:$PATH"
         flutter clean
+        rm -rf build/ .dart_tool/ .flutter-plugins*
 
     - name: Get dependencies
       run: |
         export PATH="$PWD/flutter/bin:$PATH"
         flutter pub get
+        flutter pub upgrade
 
     - name: Build App Bundle
       run: |
