@@ -163,6 +163,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           } else if (rawSleep is String) {
             sleepHours = double.tryParse(rawSleep) ?? 0;
           }
+          // Trek wakker minuten af van slaapuren
+          final dynamic rawAwake = sleepLog['awake_minutes'];
+          double awakeHours = 0;
+          if (rawAwake is int) {
+            awakeHours = rawAwake / 60.0;
+          } else if (rawAwake is double) {
+            awakeHours = rawAwake / 60.0;
+          } else if (rawAwake is String) {
+            awakeHours = (int.tryParse(rawAwake) ?? 0) / 60.0;
+          }
+          sleepHours -= awakeHours;
           if (sleepHours > 0) {
             totalSleep += sleepHours;
             sleepCount++;
