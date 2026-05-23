@@ -95,6 +95,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     double totaalStemming = 0;
     double totaalSlaap = 0;
     int stemCount = 0;
+    int sleepCount = 0;  // <-- NIEUW: Tel alleen dagen met slaap
     int activiteitenTotaal = 0;
     
     // CORRECTIE: Gebruik een Set om unieke dagen te tellen
@@ -121,7 +122,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
         stemCount++;
       }
 
-      // Handle both String and num types for uren_slaap - but prioritize sleep_hours
+      // Handle both String and num types for sleep_hours - prioritize over uren_slaap
       dynamic rawSlaap = log['sleep_hours'];
       if (rawSlaap != null) {
         double slaap;
@@ -134,6 +135,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
         }
         if (slaap > 0) {
           totaalSlaap += slaap;
+          sleepCount++;  // <-- NIEUW: Tel deze dag als slaapdag
         }
       } else {
         // Fallback to uren_slaap only if no sleep_hours
@@ -149,6 +151,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           }
           if (slaap > 0) {
             totaalSlaap += slaap;
+            sleepCount++;  // <-- NIEUW: Tel deze dag als slaapdag
           }
         }
       }
@@ -199,7 +202,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     return {
       'aantalDagen': uniekeDagen.length,  // CORRECTIE: Unieke dagen in plaats van totale logs
       'gemiddeldeStemming': stemCount > 0 ? totaalStemming / stemCount : 0.0,
-      'gemiddeldeSlaap': recenteLogs.isNotEmpty ? totaalSlaap / recenteLogs.length : 0.0,
+      'gemiddeldeSlaap': sleepCount > 0 ? totaalSlaap / sleepCount : 0.0,
       'totaleActiviteiten': activiteitenTotaal,
       'stabiliteit': stabiliteit.clamp(0.0, 100.0),
       'logs': recenteLogs,
