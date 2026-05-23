@@ -113,8 +113,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
         stemCount++;
       }
 
-      // Handle both String and num types for uren_slaap
-      dynamic rawSlaap = log['uren_slaap'];
+      // Handle both String and num types for uren_slaap - but prioritize sleep_hours
+      dynamic rawSlaap = log['sleep_hours'];
       if (rawSlaap != null) {
         double slaap;
         if (rawSlaap is num) {
@@ -124,22 +124,24 @@ class _InsightsScreenState extends State<InsightsScreen> {
         } else {
           slaap = 0.0;
         }
-        totaalSlaap += slaap;
-      }
-
-      // Also check for calculated sleep_hours
-      dynamic rawSleepHours = log['sleep_hours'];
-      if (rawSleepHours != null) {
-        double sleepHours;
-        if (rawSleepHours is num) {
-          sleepHours = rawSleepHours.toDouble();
-        } else if (rawSleepHours is String) {
-          sleepHours = double.tryParse(rawSleepHours) ?? 0.0;
-        } else {
-          sleepHours = 0.0;
+        if (slaap > 0) {
+          totaalSlaap += slaap;
         }
-        if (sleepHours > 0) {
-          totaalSlaap += sleepHours;
+      } else {
+        // Fallback to uren_slaap only if no sleep_hours
+        dynamic rawUrenSlaap = log['uren_slaap'];
+        if (rawUrenSlaap != null) {
+          double slaap;
+          if (rawUrenSlaap is num) {
+            slaap = rawUrenSlaap.toDouble();
+          } else if (rawUrenSlaap is String) {
+            slaap = double.tryParse(rawUrenSlaap) ?? 0.0;
+          } else {
+            slaap = 0.0;
+          }
+          if (slaap > 0) {
+            totaalSlaap += slaap;
+          }
         }
       }
     }
