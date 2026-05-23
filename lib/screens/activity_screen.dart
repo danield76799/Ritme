@@ -238,7 +238,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
       
       timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
 
-      int newScore = currentScore == 0 ? 1 : 0;
+      // Bereken p_score op basis van target vs actual time
+      final targetTijd = activity['richttijd'];
+      int newScore;
+      if (targetTijd != null && targetTijd != '--:--') {
+        final diff = _berekenTijdVerschil(targetTijd, timeStr);
+        newScore = _berekenPScore(diff);
+      } else {
+        newScore = currentScore == 0 ? 1 : 0; // Toggle als er geen target is
+      }
 
       await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null);
 
