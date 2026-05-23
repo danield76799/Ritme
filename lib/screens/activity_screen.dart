@@ -400,7 +400,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
       
       // Also save "Opstaan" activity with wake_time (auto-completed)
       if (_wakeTime != null) {
-        await db.insertSrmActivity(_formattedDate, 'Opstaan', _wakeTime!, 1, null);
+        // Bereken p_score op basis van target vs actual wake time
+        final targetTijd = _activiteiten[0]['richttijd'];
+        int pScore = 1; // Default als er geen target is
+        if (targetTijd != null && targetTijd != '--:--') {
+          final diff = _berekenTijdVerschil(targetTijd, _wakeTime!);
+          pScore = _berekenPScore(diff);
+        }
+        await db.insertSrmActivity(_formattedDate, 'Opstaan', _wakeTime!, pScore, null);
       }
       
       if (mounted) {
