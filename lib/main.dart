@@ -20,7 +20,7 @@ import 'screens/sociaal_ritme_meter_screen.dart';
 import 'screens/appointments_screen.dart';
 import 'screens/sleep_detail_screen.dart';
 import 'screens/rhythm_detail_screen.dart';
-import 'screens/activities_detail_screen.dart';
+import 'screens/life_events_screen.dart';
 import 'service_locator.dart';
 import 'theme/app_theme.dart';
 import 'utils/logger.dart';
@@ -195,6 +195,7 @@ class RitmeApp extends StatelessWidget {
         '/sleep-detail': (context) => const SleepDetailScreen(),
         '/rhythm-detail': (context) => const RhythmDetailScreen(),
         '/activities-detail': (context) => const ActivitiesDetailScreen(),
+        '/life-events': (context) => const LifeEventsScreen(),
       },
     );
   }

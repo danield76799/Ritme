@@ -529,6 +529,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     color: Colors.orange,
                   ),
                 ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/life-events'),
+                  child: _buildOverviewCard(
+                    icon: Icons.event_note,
+                    title: 'Life Events',
+                    value: 'Bekijk',
+                    unit: '',
+                    color: Colors.yellow,
+                  ),
+                ),
                 const SizedBox(height: 24),
                 
                 // --- WEEKLY MOOD CHART ---

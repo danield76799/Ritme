@@ -48,6 +48,7 @@ abstract class DatabaseRepository {
   Future<int> insertLifeEvent(String date, String omschrijving, int invloed);
   Future<int> insertLifeEventMap(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getLifeEvents(String date);
+  Future<List<Map<String, dynamic>>> getAllLifeEvents();
 
   // Weight Logs
   Future<int> insertWeightLog(String date, double weight, String? notes);
