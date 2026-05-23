@@ -41,7 +41,8 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       if (logs.isNotEmpty) {
         double totaalStemming = 0;
         double totaalSlaap = 0;
-        int logCount = 0;
+        int stemCount = 0;
+        int sleepCount = 0;
 
         for (var log in logs) {
           if (log['stemming_hoog'] != null) {
@@ -53,12 +54,15 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
               stemming = double.tryParse(rawStemming) ?? 0.0;
             }
             totaalStemming += stemming;
-            logCount++;
+            stemCount++;
           }
+          
+          // Check sleep_hours first (calculated from sleep tracking)
           if (log['sleep_hours'] != null) {
             final sleepVal = log['sleep_hours'] is num ? log['sleep_hours'].toDouble() : double.tryParse(log['sleep_hours'].toString()) ?? 0.0;
             if (sleepVal > 0) {
               totaalSlaap += sleepVal;
+              sleepCount++;
             }
           } else if (log['uren_slaap'] != null) {
             final dynamic rawSlaap = log['uren_slaap'];
@@ -70,12 +74,23 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
             }
             if (slaap > 0) {
               totaalSlaap += slaap;
+              sleepCount++;
             }
           }
         }
 
-        _gemStemming = logCount > 0 ? totaalStemming / logCount : 0.0;
-        _gemSlaap = logs.length > 0 ? totaalSlaap / logs.length : 0.0;
+        // Converteer stemming naar -5 tot +5 schaal
+        double rawGemStemming = stemCount > 0 ? totaalStemming / stemCount : 0.0;
+        if (rawGemStemming > 10) {
+          // 0-100 schaal, converteer naar -5 tot +5
+          _gemStemming = ((rawGemStemming / 100) * 10 - 5).clamp(-5.0, 5.0);
+        } else {
+          // Al op -5 tot +5 schaal
+          _gemStemming = rawGemStemming.clamp(-5.0, 5.0);
+        }
+        
+        // Slaap: alleen delen door dagen MET slaapdata
+        _gemSlaap = sleepCount > 0 ? totaalSlaap / sleepCount : 0.0;
       }
 
       // Ophalen van totaal aantal opgeslagen SRM activiteiten en Life Events
@@ -132,7 +147,8 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     // Bereken KPIs voor afgelopen 30 dagen
     double gemStemming30 = 0.0;
     double gemSlaap30 = 0.0;
-    int logCount30 = 0;
+    int stemCount30 = 0;
+    int sleepCount30 = 0;
     int eventCount30 = 0;
     
     if (recentLogs.isNotEmpty) {
@@ -149,9 +165,17 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
             stemming = double.tryParse(rawStemming) ?? 0.0;
           }
           totaalStemming += stemming;
-          logCount30++;
+          stemCount30++;
         }
-        if (log['uren_slaap'] != null) {
+        
+        // Check sleep_hours first (calculated from sleep tracking)
+        if (log['sleep_hours'] != null) {
+          final sleepVal = log['sleep_hours'] is num ? log['sleep_hours'].toDouble() : double.tryParse(log['sleep_hours'].toString()) ?? 0.0;
+          if (sleepVal > 0) {
+            totaalSlaap += sleepVal;
+            sleepCount30++;
+          }
+        } else if (log['uren_slaap'] != null) {
           final dynamic rawSlaap = log['uren_slaap'];
           double slaap = 0;
           if (rawSlaap is num) {
@@ -159,13 +183,23 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
           } else if (rawSlaap is String) {
             slaap = double.tryParse(rawSlaap) ?? 0.0;
           }
-          totaalSlaap += slaap;
+          if (slaap > 0) {
+            totaalSlaap += slaap;
+            sleepCount30++;
+          }
         }
       }
       
-      // Division by zero protection
-      gemStemming30 = logCount30 > 0 ? totaalStemming / logCount30 : 0.0;
-      gemSlaap30 = recentLogs.length > 0 ? totaalSlaap / recentLogs.length : 0.0;
+      // Converteer stemming naar -5 tot +5 schaal
+      double rawGemStemming = stemCount30 > 0 ? totaalStemming / stemCount30 : 0.0;
+      if (rawGemStemming > 10) {
+        gemStemming30 = ((rawGemStemming / 100) * 10 - 5).clamp(-5.0, 5.0);
+      } else {
+        gemStemming30 = rawGemStemming.clamp(-5.0, 5.0);
+      }
+      
+      // Slaap: alleen delen door dagen MET slaapdata
+      gemSlaap30 = sleepCount30 > 0 ? totaalSlaap / sleepCount30 : 0.0;
       
       // Tel events
       for (var log in recentLogs) {
