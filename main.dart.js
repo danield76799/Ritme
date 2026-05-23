@@ -116698,8 +116698,10 @@ B.aNe.prototype={
 $1(a){return J.c(J.M(a,"activity_type"),this.a)},
 $S:24}
 B.aNb.prototype={
-$1(a){var s=J.M(a,"p_score")
-return J.abx(s==null?0:s,0)},
+$1(a){var s,r=J.ae(a),q=r.h(a,"actual_time"),p=q==null?null:J.b0(q),o=p!=null&&p.length!==0&&p!=="--:--"
+r=r.h(a,"p_score")
+s=J.abx(r==null?0:r,0)
+return o||s},
 $S:24}
 B.aNd.prototype={
 $2(a,b){return A.aO},
