@@ -142,8 +142,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       // Score is gewoon het gemiddelde, afgerond op 1 decimaal
       final sleepScore = avgSleep;
       
-      // Ritme stabiliteit: percentage geplande vs daadwerkelijke activiteiten
-      // Haal alle SRM activiteiten op van de afgelopen 7 dagen
+      // SRT score: percentage activiteiten binnen 45 min van richttijd
+      // Officiële SRM methode: 1 punt = binnen 45 min, 0 = meer dan 45 min
       int totalOnTime = 0;
       int totalActivities = 0;
       
@@ -162,7 +162,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             } else if (rawPScore is String) {
               pScore = int.tryParse(rawPScore) ?? 0;
             }
-            if (pScore >= 3) {
+            // Volgens officiële SRM: p_score = 1 betekent binnen 45 min
+            if (pScore >= 1) {
               totalOnTime++;
             }
           }
@@ -493,7 +494,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   onTap: () => Navigator.pushNamed(context, '/rhythm-detail'),
                   child: _buildOverviewCard(
                     icon: Icons.schedule,
-                    title: 'Ritme stabiliteit',
+                    title: 'SRT Score',
                     value: _rhythmStability > 0 ? _rhythmStability.round().toString() : '-',
                     unit: '%',
                     color: Colors.green,
