@@ -109,14 +109,13 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     final targetMinutes = (int.tryParse(targetParts[0]) ?? 0) * 60 + (int.tryParse(targetParts[1]) ?? 0);
     final actualMinutes = (int.tryParse(actualParts[0]) ?? 0) * 60 + (int.tryParse(actualParts[1]) ?? 0);
     
+    // P-score berekening volgens officiële SRM methode:
+    // 1 punt = binnen 45 minuten van richttijd
+    // 0 punten = meer dan 45 minuten verschil
     final diff = (actualMinutes - targetMinutes).abs();
     
-    // P3 = exact op tijd (binnen 15 minuten)
-    if (diff <= 15) return 3;
-    // P2 = binnen 30 minuten
-    if (diff <= 30) return 2;
-    // P1 = meer dan 30 minuten verschil
-    return 1;
+    if (diff <= 45) return 1; // Binnen 45 min = 1 punt
+    return 0; // Meer dan 45 min = 0 punten
   }
 
   @override
