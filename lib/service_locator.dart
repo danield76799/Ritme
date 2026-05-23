@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'database/database_repository.dart';
 import 'database/database_helper.dart';
 import 'database/hive_database_helper.dart';
+import 'utils/database_cleanup.dart';
 
 // Service locator - exports the db instance for use across the app
 export 'database/database_repository.dart';
@@ -47,9 +48,25 @@ Future<void> initDatabase() async {
       await _db!.getSettings();
     }
     print('initDatabase: completed successfully');
+    
+    // Run one-time database cleanup for duplicate logs (v9 -> v10 migration)
+    await _runDatabaseCleanupIfNeeded();
   } catch (e, stack) {
     print('Database initialization failed: $e');
     print('Stack: $stack');
     rethrow;
+  }
+}
+
+/// Run database cleanup once after v10 migration
+Future<void> _runDatabaseCleanupIfNeeded() async {
+  try {
+    // Only run for SQLite (Android uses Hive which doesn't have this issue)
+    if (!kIsWeb && !Platform.isAndroid && Platform.isIOS) {
+      await DatabaseCleanup.cleanupDuplicateLogs();
+    }
+  } catch (e) {
+    print('Database cleanup failed: $e');
+    // Don't rethrow - app should still work even if cleanup fails
   }
 }
