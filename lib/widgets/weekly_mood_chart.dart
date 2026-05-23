@@ -111,16 +111,20 @@ class WeeklyMoodChart extends StatelessWidget {
     
     for (int i = 0; i < deduplicatedLogs.length && i < 7; i++) {
       final log = deduplicatedLogs[i];
-      // Life Chart: stemming_hoog (0-100)
-      // Hive stores everything as String, so we need to parse
+      // SRM Methode: stemming -5 tot +5
+      // Converteer oude 0-100 waarden naar nieuwe schaal
       final dynamic rawStemming = log['stemming_hoog'];
       double value;
       if (rawStemming is num) {
         value = rawStemming.toDouble();
       } else if (rawStemming is String) {
-        value = double.tryParse(rawStemming) ?? 50.0;
+        value = double.tryParse(rawStemming) ?? 0.0;
       } else {
-        value = 50.0;
+        value = 0.0;
+      }
+      // Converteer oude 0-100 waarden naar -5..+5
+      if (value > 5 || value < -5) {
+        value = (value - 50) / 10;
       }
       spots.add(FlSpot(i.toDouble(), value));
       
@@ -194,11 +198,11 @@ class WeeklyMoodChart extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      interval: 20,
+                      interval: 2,
                       getTitlesWidget: (value, meta) {
-                        // Life Chart 0-100 labels
-                        if (value == 50) return const Text('50', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold));
-                        if (value == 0 || value == 100) return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                        // SRM -5 tot +5 labels
+                        if (value == 0) return const Text('0', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold));
+                        if (value == -5 || value == 5) return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
                         return const Text('');
                       },
                     ),
@@ -209,8 +213,8 @@ class WeeklyMoodChart extends StatelessWidget {
                 borderData: FlBorderData(show: false),
                 minX: -0.5,
                 maxX: spots.length - 0.5,
-                minY: 0,
-                maxY: 100,
+                minY: -5,
+                maxY: 5,
                 lineBarsData: [
                   LineChartBarData(
                     spots: spots,
@@ -269,14 +273,15 @@ class WeeklyMoodChart extends StatelessWidget {
   }
 
   Color _getStemmingKleur(double waarde) {
-    if (waarde <= 10) return Colors.grey[800]!;     // Uiterst depressief
-    if (waarde <= 25) return Colors.grey[600]!;      // Ernstig depressief
-    if (waarde <= 40) return Colors.blue[400]!;      // Matig depressief
-    if (waarde <= 45) return Colors.blue[200]!;      // Licht depressief
-    if (waarde <= 55) return Colors.green[400]!;      // Neutraal
-    if (waarde <= 65) return Colors.yellow[600]!;     // Licht manisch
-    if (waarde <= 75) return Colors.orange[500]!;     // Matig manisch
-    if (waarde <= 90) return Colors.orange[700]!;     // Ernstig manisch
-    return Colors.red[500]!;                          // Uiterst manisch
+    if (waarde <= -4) return Colors.grey[800]!;     // Uiterst depressief
+    if (waarde <= -3) return Colors.grey[600]!;      // Ernstig depressief
+    if (waarde <= -2) return Colors.blue[400]!;      // Matig depressief
+    if (waarde <= -1) return Colors.blue[200]!;      // Licht depressief
+    if (waarde == 0) return Colors.green[400]!;       // Neutraal
+    if (waarde <= 1) return Colors.yellow[600]!;     // Licht manisch
+    if (waarde <= 2) return Colors.orange[500]!;     // Matig manisch
+    if (waarde <= 3) return Colors.orange[700]!;     // Druk / Actief
+    if (waarde <= 4) return Colors.red[400]!;        // Ernstig manisch
+    return Colors.red[600]!;                          // Uiterst manisch
   }
 }
