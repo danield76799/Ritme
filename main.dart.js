@@ -114089,7 +114089,7 @@ if(J.R(b2,"actual_time")!=null&&J.R(b2,"p_score")!=null){b3=J.R(b2,"p_score")
 b4=0
 if(B.dI(b3))b4=b3
 else if(typeof b3=="string"){c8=B.dd(b3,null)
-b4=c8==null?0:c8}if(b4>0){a6+=b4;++a7}}}case 9:++a8
+b4=c8==null?0:c8}a6+=b4;++a7}}case 9:++a8
 s=8
 break
 case 10:b5=a7>0?a6/a7/5*100:0
