@@ -254,7 +254,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                 children: [
                   _buildKpiRow('Gemiddelde stemming', gemStemming30.toStringAsFixed(2)),
                   _buildKpiRow('Gemiddelde slaap (uren)', gemSlaap30.toStringAsFixed(2)),
-                  _buildKpiRow('Aantal gelogde dagen', '$logCount30'),
+                  _buildKpiRow('Aantal gelogde dagen', '$stemCount30'),
                   _buildKpiRow('Aantal gebeurtenissen', '$eventCount30'),
                 ],
               ),
