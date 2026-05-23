@@ -106,11 +106,23 @@ class WeeklyMoodChart extends StatelessWidget {
     }
     final deduplicatedLogs = uniqueLogsByDate.values.toList();
     
+    // Sort by date to ensure chronological order
+    deduplicatedLogs.sort((a, b) {
+      final dateA = a['date'] as String? ?? '';
+      final dateB = b['date'] as String? ?? '';
+      return dateA.compareTo(dateB);
+    });
+    
+    // Take only last 7 unique dates
+    final recentLogs = deduplicatedLogs.length > 7 
+        ? deduplicatedLogs.sublist(deduplicatedLogs.length - 7) 
+        : deduplicatedLogs;
+    
     final spots = <FlSpot>[];
     final titles = <String>[];
     
-    for (int i = 0; i < deduplicatedLogs.length && i < 7; i++) {
-      final log = deduplicatedLogs[i];
+    for (int i = 0; i < recentLogs.length && i < 7; i++) {
+      final log = recentLogs[i];
       // SRM Methode: stemming -5 tot +5
       // Converteer oude 0-100 waarden naar nieuwe schaal
       final dynamic rawStemming = log['stemming_hoog'];
@@ -148,9 +160,9 @@ class WeeklyMoodChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            deduplicatedLogs.length == 1 
+            recentLogs.length == 1 
                 ? 'Stemming Trend (1 dag)'
-                : 'Stemming Trend (${deduplicatedLogs.length} dagen)',
+                : 'Stemming Trend (${recentLogs.length} dagen)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.black87,
