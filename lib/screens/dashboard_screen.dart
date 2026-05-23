@@ -146,12 +146,29 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         }
       }
       
-      // Bereken gemiddelde slaap over de unieke dagen
+      // Bereken gemiddelde slaap over de unieke dagen (LAATSTE 7 DAGEN)
       double totalSleep = 0;
-      for (var sleep in sleepPerDay.values) {
-        totalSleep += sleep;
+      int sleepCount = 0;
+      for (int i = 0; i < 7; i++) {
+        final checkDate = now.subtract(Duration(days: i));
+        final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
+        final sleepLog = await db.getSleepLog(checkDateStr);
+        if (sleepLog != null && sleepLog['sleep_hours'] != null) {
+          final dynamic rawSleep = sleepLog['sleep_hours'];
+          double sleepHours = 0;
+          if (rawSleep is double) {
+            sleepHours = rawSleep;
+          } else if (rawSleep is int) {
+            sleepHours = rawSleep.toDouble();
+          } else if (rawSleep is String) {
+            sleepHours = double.tryParse(rawSleep) ?? 0;
+          }
+          if (sleepHours > 0) {
+            totalSleep += sleepHours;
+            sleepCount++;
+          }
+        }
       }
-      int sleepCount = sleepPerDay.length;
       
       // Slaapscore: toon gemiddelde slaapduur in uren (geen 0-10 schaal)
       // Life Chart Methode: "Geef bij benadering aan hoeveel uren u hebt geslapen"
