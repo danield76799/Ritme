@@ -947,6 +947,12 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getAllLifeEvents() async {
+    final db = await database;
+    return await db.query('life_events', orderBy: 'date DESC');
+  }
+
+  @override
   Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
     return await insertLifeEvent(
       data['date'] as String,
