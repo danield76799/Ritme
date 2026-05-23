@@ -183,7 +183,7 @@ class WeeklyMoodChart extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
                               titles[index],
-                              style: const TextStyle(fontSize: 10),
+                              style: const TextStyle(fontSize: 10, color: Colors.black87),
                             ),
                           );
                         }

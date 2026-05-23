@@ -457,28 +457,37 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 ),
                 const SizedBox(height: 16),
                 
-                _buildOverviewCard(
-                  icon: Icons.show_chart,
-                  title: 'Slaapkwaliteit',
-                  value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
-                  unit: '/10',
-                  color: Colors.blue,
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/sleep-detail'),
+                  child: _buildOverviewCard(
+                    icon: Icons.show_chart,
+                    title: 'Slaapkwaliteit',
+                    value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
+                    unit: '/10',
+                    color: Colors.blue,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _buildOverviewCard(
-                  icon: Icons.schedule,
-                  title: 'Ritme stabiliteit',
-                  value: _rhythmStability > 0 ? _rhythmStability.round().toString() : '-',
-                  unit: '%',
-                  color: Colors.green,
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/rhythm-detail'),
+                  child: _buildOverviewCard(
+                    icon: Icons.schedule,
+                    title: 'Ritme stabiliteit',
+                    value: _rhythmStability > 0 ? _rhythmStability.round().toString() : '-',
+                    unit: '%',
+                    color: Colors.green,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _buildOverviewCard(
-                  icon: Icons.local_activity,
-                  title: 'Activiteiten deze week',
-                  value: _weeklyActivities > 0 ? _weeklyActivities.toString() : '-',
-                  unit: '',
-                  color: Colors.orange,
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/activities-detail'),
+                  child: _buildOverviewCard(
+                    icon: Icons.local_activity,
+                    title: 'Activiteiten deze week',
+                    value: _weeklyActivities > 0 ? _weeklyActivities.toString() : '-',
+                    unit: '',
+                    color: Colors.orange,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 
