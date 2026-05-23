@@ -36,12 +36,15 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
       double worst = double.infinity;
       int count = 0;
 
-      for (var log in dailyLogs.reversed) {
+      for (var log in dailyLogs) {
         if (log['date'] == null) continue;
         
         try {
           final logDate = DateTime.parse(log['date'] as String);
           if (logDate.isBefore(weekAgo)) continue;
+
+          // Skip if we already have an entry for this date (take the first/latest one)
+          if (sleepEntries.any((e) => e['date'] == log['date'])) continue;
 
           double? sleep;
           final rawSleep = log['sleep_hours'];
