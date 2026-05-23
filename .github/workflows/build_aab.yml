@@ -49,11 +49,13 @@ jobs:
       run: |
         export PATH="$PWD/flutter/bin:$PATH"
         flutter clean
+        rm -rf build/ .dart_tool/ .flutter-plugins*
 
     - name: Get dependencies
       run: |
         export PATH="$PWD/flutter/bin:$PATH"
         flutter pub get
+        flutter pub upgrade
 
     - name: Build App Bundle
       run: |
