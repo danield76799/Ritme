@@ -18,6 +18,16 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
   double _worstSleep = 0;
   int _daysTracked = 0;
 
+  // Format hours as "9u 30m" instead of "9.5u"
+  String _formatHours(double hours) {
+    final totalMinutes = (hours * 60).round();
+    final h = totalMinutes ~/ 60;
+    final m = totalMinutes % 60;
+    if (h > 0 && m > 0) return '${h}u ${m}m';
+    if (h > 0) return '${h}u';
+    return '${m}m';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -144,11 +154,11 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                     // Stats cards
                     Row(
                       children: [
-                        Expanded(child: _buildStatCard('Gemiddeld', '${_avgSleep.toStringAsFixed(1)}u', Icons.trending_flat)),
+                        Expanded(child: _buildStatCard('Gemiddeld', _formatHours(_avgSleep), Icons.trending_flat)),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildStatCard('Beste', '${_bestSleep.toStringAsFixed(1)}u', Icons.trending_up)),
+                        Expanded(child: _buildStatCard('Beste', _formatHours(_bestSleep), Icons.trending_up)),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildStatCard('Minste', '${_worstSleep.toStringAsFixed(1)}u', Icons.trending_down)),
+                        Expanded(child: _buildStatCard('Minste', _formatHours(_worstSleep), Icons.trending_down)),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -187,7 +197,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
                                   final data = _sleepData[groupIndex];
                                   return BarTooltipItem(
-                                    '${data['sleep'].toStringAsFixed(1)}u\n${data['dateShort']}',
+                                    '${_formatHours(data['sleep'] as double)}\n${data['dateShort']}',
                                     const TextStyle(color: Colors.white, fontSize: 12),
                                   );
                                 },
@@ -377,7 +387,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             ),
           ),
           Text(
-            '${sleep.toStringAsFixed(1)}u',
+            '${_formatHours(sleep)}',
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
