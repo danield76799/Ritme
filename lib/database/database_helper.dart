@@ -29,8 +29,9 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
       readOnly: false,
       singleInstance: true,
     );
@@ -118,6 +119,26 @@ class DatabaseHelper implements DatabaseRepository {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
+
+    // Add extra columns to daily_logs for additional features
+    await db.execute('ALTER TABLE daily_logs ADD COLUMN life_event TEXT');
+    await db.execute('ALTER TABLE daily_logs ADD COLUMN life_event_influence INTEGER DEFAULT 0');
+    await db.execute('ALTER TABLE daily_logs ADD COLUMN gewicht_notes TEXT');
+    await db.execute('ALTER TABLE daily_logs ADD COLUMN appointment TEXT');
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Handle database migrations for version 2+
+    if (oldVersion < 2) {
+      try {
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN life_event TEXT');
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN life_event_influence INTEGER DEFAULT 0');
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN gewicht_notes TEXT');
+        await db.execute('ALTER TABLE daily_logs ADD COLUMN appointment TEXT');
+      } catch (e) {
+        // Columns may already exist
+      }
+    }
   }
 
   // ===================
@@ -360,9 +381,189 @@ class DatabaseHelper implements DatabaseRepository {
   @override Future<List<Map<String, dynamic>>> getDailyLogsForWeek() async => getDailyLogs();
   @override Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async => [];
   @override Future<List<Map<String, dynamic>>> getMedicalAppointments() async => [];
-  @override Future<int> insertMedicalAppointment(Map<String, dynamic> data) async => 0;
-  @override Future<List<Map<String, dynamic>>> getWeightLogs() async => [];
-  @override Future<int> insertWeightLog(Map<String, dynamic> data) async => 0;
-  @override Future<List<Map<String, dynamic>>> getLifeEvents() async => [];
-  @override Future<int> insertLifeEvent(Map<String, dynamic> data) async => 0;
+  @override Future<List<Map<String, dynamic>>> getUpcomingAppointments() async => [];
+  @override Future<Map<String, dynamic>?> getLatestWeightLog() async {
+    final db = await database;
+    final results = await db.query('daily_logs', where: 'gewicht IS NOT NULL', orderBy: 'date DESC', limit: 1);
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  // ===================
+  // ADDITIONAL METHODS (required by interface)
+  // ===================
+
+  @override
+  Future<int> insertSettings(Map<String, dynamic> settings) async {
+    final db = await database;
+    return await db.insert('settings', settings, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  @override
+  Future<int> updateSettingsMap(Map<String, dynamic> settings) async {
+    return await updateSettings(settings);
+  }
+
+  @override
+  Future<int> updateSettings(String username, Map<String, dynamic> settings) async {
+    final db = await database;
+    return await db.update('settings', settings, where: 'username = ?', whereArgs: [username]);
+  }
+
+  @override
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
+    final db = await database;
+    return await db.insert('medication_config', {
+      'naam': naam,
+      'dosering': dosering,
+      'eenheid': eenheid,
+      'reminder_enabled': reminderEnabled ? 1 : 0,
+    });
+  }
+
+  @override
+  Future<int> deleteMedicationConfig(int id) async {
+    final db = await database;
+    return await db.delete('medication_config', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> updateMedicationConfig(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('medication_config', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
+    final db = await database;
+    return await db.insert('medication_schedule', {
+      'medication_id': medicationId,
+      'reminder_time': reminderTime,
+      'days_of_week': daysOfWeek,
+    });
+  }
+
+  @override
+  Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('medication_schedule', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> deleteMedicationSchedule(int id) async {
+    final db = await database;
+    return await db.delete('medication_schedule', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
+    final db = await database;
+    return await db.insert('medication_intake', {
+      'medication_id': medicationId,
+      'date': date,
+      'aantal_ingenomen': aantal,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  @override
+  Future<int> insertMedicationIntakeMap(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('medication_intake', data, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationIntake(String date) async {
+    return await getMedicationIntakes(date);
+  }
+
+  @override
+  Future<int> insertLifeEvent(String date, String omschrijving, int invloed) async {
+    return await upsertDailyLog({
+      'date': date,
+      'life_event': omschrijving,
+      'life_event_influence': invloed,
+    });
+  }
+
+  @override
+  Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
+    return await upsertDailyLog(data);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getLifeEvents(String date) async {
+    final log = await getDailyLog(date);
+    if (log == null || log['life_event'] == null) return [];
+    return [{
+      'date': date,
+      'omschrijving': log['life_event'],
+      'invloed': log['life_event_influence'],
+    }];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllLifeEvents() async {
+    final db = await database;
+    return await db.query('daily_logs', where: 'life_event IS NOT NULL', orderBy: 'date DESC');
+  }
+
+  @override
+  Future<int> insertWeightLog(String date, double weight, String? notes) async {
+    return await upsertDailyLog({
+      'date': date,
+      'gewicht': weight,
+      'gewicht_notes': notes,
+    });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getWeightLogs() async {
+    final db = await database;
+    return await db.query('daily_logs', where: 'gewicht IS NOT NULL', orderBy: 'date DESC');
+  }
+
+  @override
+  Future<int> deleteWeightLog(int id) async {
+    final db = await database;
+    return await db.update('daily_logs', {'gewicht': null}, where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint, {String? targetTime}) async {
+    final db = await database;
+    return await db.insert('srm_activities', {
+      'date': date,
+      'activity_type': activityType,
+      'actual_time': actualTime,
+      'target_time': targetTime,
+      'p_score': pScore ?? 1,
+      'srt_point': srtPoint,
+    });
+  }
+
+  @override
+  Future<int> insertSrmActivityMap(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('srm_activities', data);
+  }
+
+  @override
+  Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
+    // Medical appointments not stored separately - stored in daily_logs
+    return await upsertDailyLog({
+      'date': data['date'],
+      'appointment': data['omschrijving'],
+    });
+  }
+
+  @override
+  Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('daily_logs', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> deleteMedicalAppointment(int id) async {
+    final db = await database;
+    return await db.update('daily_logs', {'appointment': null}, where: 'id = ?', whereArgs: [id]);
+  }
 }
