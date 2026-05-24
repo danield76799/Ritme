@@ -168,18 +168,44 @@ class DatabaseHelper implements DatabaseRepository {
       ''');
       
       // Recalculate sleep_hours for rows with bed_time and wake_time
-      // This ensures sleep_hours is always netto (total - awake_minutes)
-      await db.execute('''
-        UPDATE daily_logs 
-        SET sleep_hours = (
-          CASE 
-            WHEN bed_time IS NOT NULL AND wake_time IS NOT NULL THEN
-              (strftime('%s', wake_time) - strftime('%s', bed_time)) / 3600.0 - (awake_minutes / 60.0)
-            ELSE sleep_hours
-          END
-        )
-        WHERE bed_time IS NOT NULL AND wake_time IS NOT NULL
-      ''');
+      // Parse HH:MM format and calculate: (wake - bed) in hours - awake_minutes/60
+      final rows = await db.query('daily_logs', where: 'bed_time IS NOT NULL AND wake_time IS NOT NULL');
+      for (var row in rows) {
+        final bedTime = row['bed_time'] as String?;
+        final wakeTime = row['wake_time'] as String?;
+        final awakeMinutes = (row['awake_minutes'] as num?)?.toInt() ?? 0;
+        
+        if (bedTime != null && wakeTime != null) {
+          try {
+            final bedParts = bedTime.split(':');
+            final wakeParts = wakeTime.split(':');
+            int bedHour = int.parse(bedParts[0]);
+            int bedMinute = int.parse(bedParts[1]);
+            int wakeHour = int.parse(wakeParts[0]);
+            int wakeMinute = int.parse(wakeParts[1]);
+            
+            int bedMinutes = bedHour * 60 + bedMinute;
+            int wakeMinutes = wakeHour * 60 + wakeMinute;
+            
+            if (wakeMinutes < bedMinutes) {
+              wakeMinutes += 24 * 60;
+            }
+            
+            int totalMinutes = wakeMinutes - bedMinutes - awakeMinutes;
+            double sleepHours = totalMinutes / 60.0;
+            if (sleepHours < 0) sleepHours = 0;
+            
+            await db.update(
+              'daily_logs',
+              {'sleep_hours': sleepHours},
+              where: 'id = ?',
+              whereArgs: [row['id']],
+            );
+          } catch (e) {
+            // Skip rows with invalid time format
+          }
+        }
+      }
     }
   }
 
