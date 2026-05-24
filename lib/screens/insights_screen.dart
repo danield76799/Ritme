@@ -357,6 +357,9 @@ ${_insights.map((i) => '- ${i.replaceAll(RegExp(r'^\p{Emoji}+', unicode: true), 
 
 -- 
 Dit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identificatiegegevens.
+
+---AI Prompt---
+Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapritme te verbeteren?
 ''';
 
     return samenvatting;
