@@ -326,8 +326,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   Future<void> _setAwakeTime() async {
-    int selectedMinutes = _awakeMinutes;
-    
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.grey[900],
@@ -353,9 +351,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        setState(() {
-                          _awakeMinutes = selectedMinutes;
-                        });
+                        // _awakeMinutes is already updated by onChanged callbacks
                         _saveSleepData();
                         Navigator.pop(context);
                       },
@@ -369,7 +365,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 child: _AwakeTimePicker(
                   initialMinutes: _awakeMinutes,
                   onChanged: (minutes) {
-                    // Just update, don't close - user must press Klaar
                     setState(() {
                       _awakeMinutes = minutes;
                     });
