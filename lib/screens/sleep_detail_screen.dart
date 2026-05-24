@@ -119,7 +119,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
         backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
-          'Slaap Details',
+          'Slaap Details (Netto)',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
@@ -363,7 +363,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$quality${awakeMinutes > 0 ? ' (${awakeMinutes}m wakker)' : ''}',
+                  '$quality (${awakeMinutes}m wakker)',
                   style: TextStyle(
                     fontSize: 14,
                     color: qualityColor,
