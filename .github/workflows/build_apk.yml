@@ -38,10 +38,15 @@ jobs:
     
     - name: Build unsigned APK
       run: |
-        flutter build apk --release --split-per-abi || {
-          echo "Build failed with split-per-abi, trying without..."
+        echo "=== Starting APK build ==="
+        flutter doctor -v || true
+        echo "=== Building with split-per-abi ==="
+        flutter build apk --release --split-per-abi --verbose || {
+          echo "=== Build failed with split-per-abi ==="
+          echo "=== Cleaning and trying without split-per-abi ==="
           flutter clean
-          flutter build apk --release
+          flutter pub get
+          flutter build apk --release --verbose
         }
     
     - name: Sign APKs
@@ -89,7 +94,9 @@ jobs:
       if: always()
       with:
         name: ritme-release-apk
-        path: build/app/outputs/flutter-apk/*-release.apk
+        path: |
+          build/app/outputs/flutter-apk/*-release.apk
+          build/app/outputs/apk/release/*.apk
         if-no-files-found: warn
     
     - name: Create Release
