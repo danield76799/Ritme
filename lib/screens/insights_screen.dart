@@ -17,8 +17,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
     int totaleMinuten = (uren * 60).round();
     int uur = totaleMinuten ~/ 60;
     int minuten = totaleMinuten % 60;
-    if (minuten == 0) return '\${uur}u';
-    return '\${uur}u \${minuten}m';
+    if (minuten == 0) return '${uur}u';
+    return '${uur}u ${minuten}m';
   }
 
   bool _isLoading = true;
@@ -201,6 +201,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     return {
       'aantalDagen': uniekeDagen.length,  // CORRECTIE: Unieke dagen in plaats van totale logs
+      'sleepDays': sleepCount,  // Aantal dagen met slaap data
       'gemiddeldeStemming': stemCount > 0 ? totaalStemming / stemCount : 0.0,
       'gemiddeldeSlaap': sleepCount > 0 ? totaalSlaap / sleepCount : 0.0,
       'totaleActiviteiten': activiteitenTotaal,
@@ -220,9 +221,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
     // Slaap inzichten
     double gemSlaap = stats['gemiddeldeSlaap'];
     int aantalDagen = stats['aantalDagen'] ?? 0;
+    int sleepDays = stats['sleepDays'] ?? 0;
     if (gemSlaap > 0) {
-      if (aantalDagen <= 2) {
-        inzichten.add('Je hebt ${aantalDagen == 1 ? '1 nacht' : '$aantalDagen nachten'} slaap gelogd. Log meer dagen voor betere inzichten.');
+      if (sleepDays <= 2) {
+        inzichten.add('Je hebt ${sleepDays == 1 ? '1 nacht' : '$sleepDays nachten'} slaap gelogd. Log meer dagen voor betere inzichten.');
       } else if (gemSlaap < 6) {
         inzichten.add('Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beinvloeden.');
       } else if (gemSlaap >= 7 && gemSlaap <= 9) {
