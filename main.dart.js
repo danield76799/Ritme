@@ -110387,7 +110387,7 @@ k=k.jM(s,new A.aEH()).gA(0)
 if(Math.abs(n)<0.5)h="Stabiel/Neutraal"
 else h=n>=0?"Overwegend positief":"Overwegend negatief"
 g=f.f
-return"Ritme Weekrapport (anoniem)\n\nPeriode: Afgelopen 7 dagen\nAantal gelogde dagen: "+m+" (unieke dagen binnen periode)\n\nSlaap:\n- Gemiddeld: "+l+" per nacht\n- Aantal nachten gelogd: "+i+"\n\nStemming:\n- Gemiddeld: "+j+" (schaal -5 tot +5)\n- Aantal stemmingen gelogd: "+k+"\n- Stemming: "+h+"\n\nActiviteiten:\n- Totaal geregistreerd: "+A.k(p)+"\n\nOpmerking: Dit rapport is gebaseerd op "+m+" unieke dagen binnen de afgelopen 7 dagen.\n\nPatronen opgevallen:\n"+new A.ac(g,new A.aEI(),A.a4(g).h("ac<1,r>")).bT(0,"\n")+"\n\n-- \nDit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identificatiegegevens.\n"},
+return"Ritme Weekrapport (anoniem)\n\nPeriode: Afgelopen 7 dagen\nAantal gelogde dagen: "+m+" (unieke dagen binnen periode)\n\nSlaap:\n- Gemiddeld: "+l+" per nacht\n- Aantal nachten gelogd: "+i+"\n\nStemming:\n- Gemiddeld: "+j+" (schaal -5 tot +5)\n- Aantal stemmingen gelogd: "+k+"\n- Stemming: "+h+"\n\nActiviteiten:\n- Totaal geregistreerd: "+A.k(p)+"\n\nOpmerking: Dit rapport is gebaseerd op "+m+" unieke dagen binnen de afgelopen 7 dagen.\n\nPatronen opgevallen:\n"+new A.ac(g,new A.aEI(),A.a4(g).h("ac<1,r>")).bT(0,"\n")+"\n\n-- \nDit rapport is gegenereerd door de Ritme app en bevat geen persoonlijke identificatiegegevens.\n\n---AI Prompt---\nGemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapritme te verbeteren?\n"},
 Cv(){var s=0,r=A.z(t.H),q=1,p=[],o=this,n,m,l,k,j,i
 var $async$Cv=A.A(function(a,b){if(a===1){p.push(b)
 s=q}for(;;)switch(s){case 0:q=3
