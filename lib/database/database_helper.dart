@@ -541,10 +541,12 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<List<Map<String, dynamic>>> getDailyLogs() async {
     final db = await database;
+    
+    // Get all logs, preferring numeric IDs over string IDs
     final logs = await db.query('daily_logs', orderBy: 'date DESC, id DESC');
     
     // Groepeer per datum en behoud alleen de meest recente log per dag
-    // Voorkeur aan rijen met bed_time (sleep tracking) over rijen zonder
+    // Voorkeur aan rijen met bed_time (sleep tracking) en numeric ID
     Map<String, Map<String, dynamic>> latestLogsByDate = {};
     for (var log in logs) {
       final date = log['date']?.toString();
@@ -567,7 +569,7 @@ class DatabaseHelper implements DatabaseRepository {
           final id = log['id'];
           final existingId = existing['id'];
           if (id != null && existingId != null) {
-            // Vergelijk als nummers
+            // Vergelijk als nummers als mogelijk
             try {
               final idNum = id is num ? id.toInt() : int.parse(id.toString());
               final existingIdNum = existingId is num ? existingId.toInt() : int.parse(existingId.toString());
@@ -575,7 +577,10 @@ class DatabaseHelper implements DatabaseRepository {
                 latestLogsByDate[date] = log;
               }
             } catch (e) {
-              // Als parse faalt, neem eerste
+              // Als parse faalt, vergelijk als strings (fallback)
+              if (id.toString().compareTo(existingId.toString()) > 0) {
+                latestLogsByDate[date] = log;
+              }
             }
           }
         }
@@ -611,17 +616,18 @@ class DatabaseHelper implements DatabaseRepository {
     final date = data['date'] as String;
     final db = await database;
     
-    // Find the most recent row for this date
+    // Find the most recent row for this date with numeric ID
+    // String IDs (like "2026-05-23") are from old data and should not be preferred
     final existing = await db.query(
       'daily_logs',
-      where: 'date = ?',
+      where: 'date = ? AND typeof(id) = \'integer\'',
       whereArgs: [date],
       orderBy: 'id DESC',
       limit: 1,
     );
     
     if (existing.isNotEmpty) {
-      // Update the most recent row, preserving fields not in the new data
+      // Update the most recent numeric row
       final existingData = Map<String, dynamic>.from(existing.first);
       final updateData = Map<String, dynamic>.from(data);
       
@@ -649,6 +655,30 @@ class DatabaseHelper implements DatabaseRepository {
       
       return result;
     } else {
+      // Check if there's a string ID row (old data)
+      final stringExisting = await db.query(
+        'daily_logs',
+        where: 'date = ?',
+        whereArgs: [date],
+        limit: 1,
+      );
+      
+      if (stringExisting.isNotEmpty) {
+        // Update the string ID row
+        final existingData = Map<String, dynamic>.from(stringExisting.first);
+        final updateData = Map<String, dynamic>.from(data);
+        updateData.removeWhere((key, value) => value == null);
+        existingData.addAll(updateData);
+        existingData.remove('id');
+        
+        return await db.update(
+          'daily_logs',
+          existingData,
+          where: 'id = ?',
+          whereArgs: [stringExisting.first['id']],
+        );
+      }
+      
       // Insert new row
       return await db.insert('daily_logs', data);
     }
@@ -968,10 +998,10 @@ class DatabaseHelper implements DatabaseRepository {
     
     final sleepHours = _calculateSleepHours(bedTime, wakeTime, awakeMinutes);
     
-    // Find the most recent row for this date to update
+    // Find the most recent row with numeric ID for this date
     final existing = await db.query(
       'daily_logs',
-      where: 'date = ?',
+      where: 'date = ? AND typeof(id) = \'integer\'',
       whereArgs: [date],
       orderBy: 'id DESC',
       limit: 1,
@@ -979,7 +1009,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     if (existing.isNotEmpty) {
       final existingId = existing.first['id'];
-      // Update the most recent row
+      // Update the most recent numeric row
       final result = await db.update(
         'daily_logs',
         {
@@ -1001,6 +1031,29 @@ class DatabaseHelper implements DatabaseRepository {
       
       return result;
     } else {
+      // Check for string ID row (old data)
+      final stringExisting = await db.query(
+        'daily_logs',
+        where: 'date = ?',
+        whereArgs: [date],
+        limit: 1,
+      );
+      
+      if (stringExisting.isNotEmpty) {
+        // Update the string ID row
+        return await db.update(
+          'daily_logs',
+          {
+            'bed_time': bedTime,
+            'wake_time': wakeTime,
+            'awake_minutes': awakeMinutes,
+            'sleep_hours': sleepHours,
+          },
+          where: 'id = ?',
+          whereArgs: [stringExisting.first['id']],
+        );
+      }
+      
       // Insert new
       return await db.insert('daily_logs', {
         'date': date,
