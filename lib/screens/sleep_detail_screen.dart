@@ -15,7 +15,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
   List<Map<String, dynamic>> _sleepData = [];
   double _avgSleep = 0;
   double _bestSleep = 0;
-  double _worstSleep = double.infinity;
+  double _worstSleep = 0;
   int _daysTracked = 0;
 
   @override
