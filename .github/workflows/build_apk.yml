@@ -22,7 +22,7 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.24.5'
+        flutter-version: '3.27.4'
         channel: 'stable'
         cache: true
     
@@ -39,11 +39,6 @@ jobs:
     - name: Get dependencies
       run: |
         flutter pub get
-        flutter pub upgrade
-    
-    - name: Analyze code
-      run: flutter analyze || true
-      continue-on-error: true
     
     - name: Build APK
       run: |
@@ -52,14 +47,15 @@ jobs:
         flutter doctor
         
         echo "=== Starting Build ==="
-        flutter build apk --release --verbose 2>&1 | tee build.log || {
+        flutter build apk --release 2>&1 | tee build.log || {
           echo "=== BUILD FAILED ==="
-          echo "Last 100 lines of build log:"
-          tail -100 build.log
+          echo "Last 200 lines of build log:"
+          tail -200 build.log
           exit 1
         }
         
         echo "=== Build Output ==="
+        find build/app/outputs -name "*.apk" -type f
         ls -la build/app/outputs/apk/release/ || true
         ls -la build/app/outputs/flutter-apk/ || true
     
@@ -126,10 +122,10 @@ jobs:
         files: |
           build/app/outputs/apk/release/*.apk
           build/app/outputs/flutter-apk/*.apk
-        tag_name: v1.2.2-build${{ github.run_number }}
-        name: Ritme v1.2.2 (Build ${{ github.run_number }})
+        tag_name: v1.3.4-build${{ github.run_number }}
+        name: Ritme v1.3.4 (Build ${{ github.run_number }})
         body: |
-          ## Ritme - SRT Tracker v1.2.2
+          ## Ritme - SRT Tracker v1.3.4
           
           **Build info:**
           - Build number: ${{ github.run_number }}
