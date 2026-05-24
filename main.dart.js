@@ -31504,8 +31504,7 @@ v6:function v6(a){this.a=a},
 Mz:function Mz(a){var _=this
 _.d=!0
 _.e=a
-_.r=_.f=0
-_.w=1/0
+_.w=_.r=_.f=0
 _.c=_.a=null},
 aK9:function aK9(a){this.a=a},
 aKa:function aKa(a,b,c){this.a=a
@@ -112013,17 +112012,16 @@ h=null
 g=J.L(j,"sleep_hours")
 f=J.L(j,"uren_slaap")
 e=J.L(j,"awake_minutes")
-if(g!=null)if(typeof g=="number")h=g
-else if(typeof g=="string")h=A.dC(g)
-if(h==null&&f!=null)if(typeof f=="number")h=f
-else if(typeof f=="string")h=A.dC(f)
-if(h!=null&&h>0){d=0
+d=0
 if(e!=null)if(typeof e=="number")d=B.c.d3(e)
 else if(typeof e=="string"){a5=A.cn(e,null)
-d=a5==null?0:a5}c=d/60
+d=a5==null?0:a5}if(g!=null)if(typeof g=="number")h=g
+else if(typeof g=="string")h=A.dC(g)
+if(h==null&&f!=null){if(typeof f=="number")h=f
+else if(typeof f=="string")h=A.dC(f)
+if(h!=null&&h>0&&d>0){c=d/60
 h-=c
-if(h<0)h=0
-J.f0(k,A.a8(["date",J.L(j,"date"),"sleep",h,"day",B.pJ[A.G_(i)],"dateShort",""+A.dT(i)+"/"+A.cq(i),"awakeMinutes",d],a0,a1))
+if(h<0)h=0}}if(h!=null&&h>0){J.f0(k,A.a8(["date",J.L(j,"date"),"sleep",h,"day",B.pJ[A.G_(i)],"dateShort",""+A.dT(i)+"/"+A.cq(i),"awakeMinutes",d],a0,a1))
 b.b=b.b+h
 if(h>b.a)b.a=h
 if(h<b.c)b.c=h;++b.d}}catch(a8){continue}}o.L(new A.aKa(b,o,k))
