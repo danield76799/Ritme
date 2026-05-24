@@ -88,7 +88,6 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             if (sleep < worst) worst = sleep;
             count++;
           }
-          }
         } catch (e) {
           continue;
         }
