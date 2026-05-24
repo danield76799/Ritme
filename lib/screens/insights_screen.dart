@@ -333,6 +333,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     // Anonimiseer - geen namen, geen data
     String samenvatting = '''
+Hoi Gemini, wil jij mijn data analyseren?
+
 Ritme Weekrapport (anoniem)
 
 Periode: Afgelopen 7 dagen
