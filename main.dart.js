@@ -109555,8 +109555,8 @@ return A.x(null,r)}})
 return A.y($async$Lw,r)},
 alX(a){var s=A.FZ(new A.bn(Date.now(),0,!1))
 if(s<12)return"Goedemorgen, "+a+"!"
-else if(s<17)return"Goedemiddag, "+a+"!"
-else if(s<21)return"Goedenavond, "+a+"!"
+else if(s<18)return"Goedemiddag, "+a+"!"
+else if(s<23)return"Goedenavond, "+a+"!"
 else return"Goedenacht, "+a+"!"},
 alb(){var s,r
 if(this.y==null)return""
