@@ -1,6 +1,8 @@
 name: Build Android APK
 
 on:
+  push:
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -11,36 +13,54 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
+      - name: Setup Flutter 3.22.0
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.0'
+          flutter-version: '3.22.0'
           channel: 'stable'
 
       - name: Get dependencies
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release 2>&1 | tee build.log || true
+          
+          # Check if APK was created
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            echo "✅ APK built successfully"
+            ls -la build/app/outputs/flutter-apk/app-release.apk
+          else
+            echo "❌ APK not found"
+            cat build.log
+            exit 1
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: ritme-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && always()
         with:
           files: build/app/outputs/flutter-apk/app-release.apk
-          tag_name: v${{ github.run_number }}
-          name: Ritme APK v${{ github.run_number }}
+          tag_name: v1.3.4-build${{ github.run_number }}
+          name: Ritme v1.3.4 (Build ${{ github.run_number }})
           body: |
-            Automated build of Ritme Android APK
+            ## Ritme v1.3.4 Build ${{ github.run_number }}
             
-            **Build:** ${{ github.run_number }}
-            **Date:** ${{ github.event.head_commit.timestamp }}
+            **Build:** ${{ github.run_number }}  
+            **Commit:** ${{ github.sha }}
+            
+            **Wijzigingen:**
+            - Flutter 3.22.0 gebruikt voor betere compatibiliteit
+            
+            **Let op:** Automatische build.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
