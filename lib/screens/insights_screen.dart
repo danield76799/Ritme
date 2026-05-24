@@ -226,9 +226,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
       } else if (gemSlaap < 6) {
         inzichten.add('Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beinvloeden.');
       } else if (gemSlaap >= 7 && gemSlaap <= 9) {
-        inzichten.add('Je slaap van gemiddeld ${gemSlaap.toStringAsFixed(1)} uur is prima!');
+        inzichten.add('Je slaap van gemiddeld ${_formatSlaap(gemSlaap)} is prima!');
       } else if (gemSlaap > 9) {
-        inzichten.add('Je slaapt gemiddeld ${gemSlaap.toStringAsFixed(1)} uur - veel rust is goed!');
+        inzichten.add('Je slaapt gemiddeld ${_formatSlaap(gemSlaap)} - veel rust is goed!');
       }
     }
 
@@ -337,7 +337,7 @@ Periode: Afgelopen 7 dagen
 Aantal gelogde dagen: $aantalDagen (unieke dagen binnen periode)
 
 Slaap:
-- Gemiddeld: ${gemSlaap.toStringAsFixed(1)} uur per nacht
+- Gemiddeld: ${_formatSlaap(gemSlaap)} per nacht
 - Aantal nachten gelogd: ${logs.where((l) => l['uren_slaap'] != null || l['sleep_hours'] != null).map((l) => l['date']).toSet().length}
 
 Stemming:
