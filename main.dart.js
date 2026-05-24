@@ -108777,7 +108777,7 @@ return A.o(j.FS(p,n,m,q.x),$async$mL)
 case 4:j=$.bL
 if(j==null)A.N(A.a1(u.O))
 s=5
-return A.o(j.rF(A.a8(["date",q.gpQ(),"uren_slaap",o],t.N,t.z)),$async$mL)
+return A.o(j.rF(A.a8(["date",q.gpQ(),"uren_slaap",o,"awake_minutes",q.x],t.N,t.z)),$async$mL)
 case 5:s=q.w!=null?6:7
 break
 case 6:l=J.L(q.z[0],"richttijd")
