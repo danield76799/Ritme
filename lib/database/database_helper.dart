@@ -571,48 +571,23 @@ class DatabaseHelper implements DatabaseRepository {
   Future<List<Map<String, dynamic>>> getDailyLogs() async {
     final db = await database;
     
-    // Get all logs, preferring numeric IDs over string IDs
-    final logs = await db.query('daily_logs', orderBy: 'date DESC, id DESC');
+    // Get all logs with numeric IDs only (exclude string IDs like "2026-05-23")
+    // Sort by date DESC, then by id DESC (most recent first)
+    final logs = await db.rawQuery('''
+      SELECT * FROM daily_logs 
+      WHERE typeof(id) = 'integer' OR CAST(id AS INTEGER) > 0
+      ORDER BY date DESC, id DESC
+    ''');
     
-    // Groepeer per datum en behoud alleen de meest recente log per dag
-    // Voorkeur aan rijen met bed_time (sleep tracking) en numeric ID
+    // Groepeer per datum en behoud ALLEEN de eerste (meest recente) log per dag
     Map<String, Map<String, dynamic>> latestLogsByDate = {};
     for (var log in logs) {
       final date = log['date']?.toString();
       if (date == null) continue;
       
-      final existing = latestLogsByDate[date];
-      if (existing == null) {
-        // Eerste rij voor deze datum
+      // Alleen de eerste rij voor deze datum behouden (meest recente vanwege id DESC)
+      if (!latestLogsByDate.containsKey(date)) {
         latestLogsByDate[date] = log;
-      } else {
-        // Vergelijk: voorkeur aan rij met bed_time (meer complete data)
-        final hasBedTime = log['bed_time'] != null;
-        final existingHasBedTime = existing['bed_time'] != null;
-        
-        if (hasBedTime && !existingHasBedTime) {
-          // Deze rij heeft bed_time, bestaande niet - neem deze
-          latestLogsByDate[date] = log;
-        } else if (hasBedTime == existingHasBedTime) {
-          // Beide hebben of geen bed_time - neem meest recente (hoogste id)
-          final id = log['id'];
-          final existingId = existing['id'];
-          if (id != null && existingId != null) {
-            // Vergelijk als nummers als mogelijk
-            try {
-              final idNum = id is num ? id.toInt() : int.parse(id.toString());
-              final existingIdNum = existingId is num ? existingId.toInt() : int.parse(existingId.toString());
-              if (idNum > existingIdNum) {
-                latestLogsByDate[date] = log;
-              }
-            } catch (e) {
-              // Als parse faalt, vergelijk als strings (fallback)
-              if (id.toString().compareTo(existingId.toString()) > 0) {
-                latestLogsByDate[date] = log;
-              }
-            }
-          }
-        }
       }
     }
     
@@ -626,16 +601,26 @@ class DatabaseHelper implements DatabaseRepository {
     final weekAgo = now.subtract(const Duration(days: 7));
     final weekAgoStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
     
-    // Get all logs from the past week
-    final logs = await db.query(
-      'daily_logs',
-      where: 'date >= ?',
-      whereArgs: [weekAgoStr],
-      orderBy: 'date DESC, id DESC',
-    );
+    // Get all logs from the past week with numeric IDs only
+    final logs = await db.rawQuery('''
+      SELECT * FROM daily_logs 
+      WHERE date >= ? AND (typeof(id) = 'integer' OR CAST(id AS INTEGER) > 0)
+      ORDER BY date DESC, id DESC
+    ''', [weekAgoStr]);
     
     // Group by date and keep only the most recent log per day
     Map<String, Map<String, dynamic>> latestLogsByDate = {};
+    for (var log in logs) {
+      final date = log['date']?.toString();
+      if (date == null) continue;
+      
+      if (!latestLogsByDate.containsKey(date)) {
+        latestLogsByDate[date] = log;
+      }
+    }
+    
+    return latestLogsByDate.values.toList();
+  }
     for (var log in logs) {
       final date = log['date']?.toString();
       if (date == null) continue;
@@ -677,14 +662,13 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<Map<String, dynamic>?> getDailyLog(String date) async {
     final db = await database;
-    // Get the most recent row for this date (highest numeric ID)
-    final results = await db.query(
-      'daily_logs', 
-      where: 'date = ?', 
-      whereArgs: [date], 
-      orderBy: 'id DESC',
-      limit: 1,
-    );
+    // Get the most recent row for this date with numeric ID
+    final results = await db.rawQuery('''
+      SELECT * FROM daily_logs 
+      WHERE date = ? AND (typeof(id) = 'integer' OR CAST(id AS INTEGER) > 0)
+      ORDER BY id DESC
+      LIMIT 1
+    ''', [date]);
     return results.isNotEmpty ? results.first : null;
   }
 
