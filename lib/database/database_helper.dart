@@ -492,11 +492,41 @@ class DatabaseHelper implements DatabaseRepository {
     final logs = await db.query('daily_logs', orderBy: 'date DESC, id DESC');
     
     // Groepeer per datum en behoud alleen de meest recente log per dag
+    // Voorkeur aan rijen met bed_time (sleep tracking) over rijen zonder
     Map<String, Map<String, dynamic>> latestLogsByDate = {};
     for (var log in logs) {
       final date = log['date']?.toString();
-      if (date != null && !latestLogsByDate.containsKey(date)) {
+      if (date == null) continue;
+      
+      final existing = latestLogsByDate[date];
+      if (existing == null) {
+        // Eerste rij voor deze datum
         latestLogsByDate[date] = log;
+      } else {
+        // Vergelijk: voorkeur aan rij met bed_time (meer complete data)
+        final hasBedTime = log['bed_time'] != null;
+        final existingHasBedTime = existing['bed_time'] != null;
+        
+        if (hasBedTime && !existingHasBedTime) {
+          // Deze rij heeft bed_time, bestaande niet - neem deze
+          latestLogsByDate[date] = log;
+        } else if (hasBedTime == existingHasBedTime) {
+          // Beide hebben of geen bed_time - neem meest recente (hoogste id)
+          final id = log['id'];
+          final existingId = existing['id'];
+          if (id != null && existingId != null) {
+            // Vergelijk als nummers
+            try {
+              final idNum = id is num ? id.toInt() : int.parse(id.toString());
+              final existingIdNum = existingId is num ? existingId.toInt() : int.parse(existingId.toString());
+              if (idNum > existingIdNum) {
+                latestLogsByDate[date] = log;
+              }
+            } catch (e) {
+              // Als parse faalt, neem eerste
+            }
+          }
+        }
       }
     }
     
@@ -529,11 +559,17 @@ class DatabaseHelper implements DatabaseRepository {
     final date = data['date'] as String;
     final db = await database;
     
-    // Check if a log already exists for this date
-    final existing = await db.query('daily_logs', where: 'date = ?', whereArgs: [date]);
+    // Find the most recent row for this date
+    final existing = await db.query(
+      'daily_logs',
+      where: 'date = ?',
+      whereArgs: [date],
+      orderBy: 'id DESC',
+      limit: 1,
+    );
     
     if (existing.isNotEmpty) {
-      // Update existing row, preserving fields not in the new data
+      // Update the most recent row, preserving fields not in the new data
       final existingData = Map<String, dynamic>.from(existing.first);
       final updateData = Map<String, dynamic>.from(data);
       
@@ -544,12 +580,22 @@ class DatabaseHelper implements DatabaseRepository {
       existingData.addAll(updateData);
       existingData.remove('id'); // Don't update the ID
       
-      return await db.update(
+      final existingId = existing.first['id'];
+      final result = await db.update(
         'daily_logs',
         existingData,
-        where: 'date = ?',
-        whereArgs: [date],
+        where: 'id = ?',
+        whereArgs: [existingId],
       );
+      
+      // Delete other rows for this date to prevent duplicates
+      await db.delete(
+        'daily_logs',
+        where: 'date = ? AND id != ?',
+        whereArgs: [date, existingId],
+      );
+      
+      return result;
     } else {
       // Insert new row
       return await db.insert('daily_logs', data);
@@ -868,18 +914,21 @@ class DatabaseHelper implements DatabaseRepository {
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
     final db = await database;
     
-    // Check if sleep log exists for this date
+    final sleepHours = _calculateSleepHours(bedTime, wakeTime, awakeMinutes);
+    
+    // Find the most recent row for this date to update
     final existing = await db.query(
       'daily_logs',
       where: 'date = ?',
       whereArgs: [date],
+      orderBy: 'id DESC',
+      limit: 1,
     );
     
-    final sleepHours = _calculateSleepHours(bedTime, wakeTime, awakeMinutes);
-    
     if (existing.isNotEmpty) {
-      // Update existing
-      return await db.update(
+      final existingId = existing.first['id'];
+      // Update the most recent row
+      final result = await db.update(
         'daily_logs',
         {
           'bed_time': bedTime,
@@ -887,9 +936,18 @@ class DatabaseHelper implements DatabaseRepository {
           'awake_minutes': awakeMinutes,
           'sleep_hours': sleepHours,
         },
-        where: 'date = ?',
-        whereArgs: [date],
+        where: 'id = ?',
+        whereArgs: [existingId],
       );
+      
+      // Delete other rows for this date to prevent duplicates
+      await db.delete(
+        'daily_logs',
+        where: 'date = ? AND id != ?',
+        whereArgs: [date, existingId],
+      );
+      
+      return result;
     } else {
       // Insert new
       return await db.insert('daily_logs', {
