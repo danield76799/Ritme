@@ -292,6 +292,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.help_outline, color: Colors.white),
+            onPressed: () {
+              Navigator.pushNamed(context, '/help');
+            },
+            tooltip: 'Gebruiksaanwijzing',
+          ),
+          IconButton(
             icon: const Icon(Icons.bar_chart, color: Colors.white),
             onPressed: () {
               Navigator.pushNamed(context, '/statistics');

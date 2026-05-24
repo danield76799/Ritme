@@ -23,6 +23,7 @@ import 'screens/rhythm_detail_screen.dart';
 import 'screens/life_events_screen.dart';
 import 'screens/activities_detail_screen.dart';
 import 'screens/database_debug_screen.dart';
+import 'screens/help_screen.dart';
 import 'service_locator.dart';
 import 'theme/app_theme.dart';
 import 'utils/logger.dart';
@@ -200,6 +201,7 @@ class RitmeApp extends StatelessWidget {
         '/rhythm-detail': (context) => const RhythmDetailScreen(),
         '/activities-detail': (context) => const ActivitiesDetailScreen(),
         '/life-events': (context) => const LifeEventsScreen(),
+        '/help': (context) => const HelpScreen(),
       },
     );
   }
