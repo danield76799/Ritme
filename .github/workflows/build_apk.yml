@@ -138,6 +138,11 @@ jobs:
           - Commit: ${{ github.sha }}
           - Type: Release build
           
+          **Wijzigingen in deze build:**
+          - Workflow verbeterd voor betrouwbaardere builds
+          - Flutter 3.27.4 gebruikt (compatible met Dart 3.7.0)
+          - APK signing verbeterd
+          
           **Let op:** Dit is een automatische build.
         draft: false
         prerelease: false
