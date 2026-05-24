@@ -157,15 +157,27 @@ class DatabaseHelper implements DatabaseRepository {
     }
     if (oldVersion < 12) {
       // Fix duplicate rows and recalculate sleep_hours
-      // Remove duplicate rows keeping the one with highest id (most recent)
-      await db.execute('''
-        DELETE FROM daily_logs 
-        WHERE id NOT IN (
-          SELECT MAX(id) 
-          FROM daily_logs 
-          GROUP BY date
-        )
+      // Remove duplicate rows keeping the one with highest numeric id (most recent)
+      // First, find the max numeric id per date
+      final dateRows = await db.rawQuery('''
+        SELECT date, MAX(CAST(id AS INTEGER)) as max_id 
+        FROM daily_logs 
+        WHERE typeof(id) = 'integer' OR CAST(id AS INTEGER) > 0
+        GROUP BY date
       ''');
+      
+      // Delete rows that are not the max numeric id for their date
+      for (var dateRow in dateRows) {
+        final date = dateRow['date'] as String?;
+        final maxId = dateRow['max_id'];
+        if (date != null && maxId != null) {
+          await db.delete(
+            'daily_logs',
+            where: 'date = ? AND id != ?',
+            whereArgs: [date, maxId],
+          );
+        }
+      }
       
       // Recalculate sleep_hours for rows with bed_time and wake_time
       // Parse HH:MM format and calculate: (wake - bed) in hours - awake_minutes/60
@@ -197,13 +209,30 @@ class DatabaseHelper implements DatabaseRepository {
             
             await db.update(
               'daily_logs',
-              {'sleep_hours': sleepHours},
+              {
+                'sleep_hours': sleepHours,
+                'uren_slaap': sleepHours, // Also update uren_slaap to match
+              },
               where: 'id = ?',
               whereArgs: [row['id']],
             );
           } catch (e) {
             // Skip rows with invalid time format
           }
+        }
+      }
+      
+      // For rows without bed_time, set uren_slaap to match sleep_hours if it exists
+      final noBedTimeRows = await db.query('daily_logs', where: 'bed_time IS NULL AND sleep_hours IS NOT NULL');
+      for (var row in noBedTimeRows) {
+        final sleepHours = row['sleep_hours'] as num?;
+        if (sleepHours != null) {
+          await db.update(
+            'daily_logs',
+            {'uren_slaap': sleepHours.toDouble()},
+            where: 'id = ?',
+            whereArgs: [row['id']],
+          );
         }
       }
     }
