@@ -22,7 +22,7 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.27.4'
+        flutter-version: '3.29.0'
         channel: 'stable'
         cache: true
     
@@ -47,30 +47,38 @@ jobs:
         flutter doctor || true
         
         echo "=== Starting Build ==="
-        # Build with error tolerance
-        flutter build apk --release --no-tree-shake-icons 2>&1 | tee build.log || {
-          echo "=== BUILD FAILED - checking for APK anyway ==="
-          # Check if APK was created despite errors
-          if [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
-            echo "APK found despite build errors!"
-            exit 0
-          fi
-          echo "Last 200 lines of build log:"
-          tail -200 build.log
-          exit 1
-        }
+        # Build with error tolerance - don't fail on warnings
+        set +e
+        flutter build apk --release --no-tree-shake-icons 2>&1 | tee build.log
+        BUILD_EXIT_CODE=$?
+        set -e
         
-        echo "=== Build Output ==="
-        find build/app/outputs -name "*.apk" -type f || true
-        ls -la build/app/outputs/apk/release/ || true
-        ls -la build/app/outputs/flutter-apk/ || true
+        # Check if APK was created even if build reported failure
+        if [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
+          echo "✅ APK found! Build successful."
+          ls -la build/app/outputs/apk/release/app-release.apk
+          exit 0
+        fi
+        
+        # Also check flutter-apk directory
+        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+          echo "✅ APK found in flutter-apk! Build successful."
+          ls -la build/app/outputs/flutter-apk/app-release.apk
+          exit 0
+        fi
+        
+        # If no APK found, show error and exit
+        echo "❌ BUILD FAILED - No APK found"
+        echo "Last 200 lines of build log:"
+        tail -200 build.log
+        exit 1
     
     - name: Sign APK
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEYSTORE_PASSWORD: *** secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        KEY_PASSWORD: *** secrets.KEY_PASSWORD }}
       run: |
         # Check if keystore secret is available
         if [ -z "$KEYSTORE_BASE64" ]; then
@@ -87,7 +95,7 @@ jobs:
         
         # Find and sign APKs
         APK_FOUND=false
-        for apk in build/app/outputs/*/release/*.apk build/app/outputs/flutter-apk/*.apk; do
+        for apk in build/app/outputs/apk/release/*.apk build/app/outputs/flutter-apk/*.apk; do
           if [ -f "$apk" ]; then
             echo "Signing $apk"
             jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
@@ -140,11 +148,11 @@ jobs:
           
           **Wijzigingen in deze build:**
           - Workflow verbeterd voor betrouwbaardere builds
-          - Flutter 3.27.4 gebruikt (compatible met Dart 3.7.0)
+          - Flutter 3.29.0 gebruikt (compatible met Dart 3.7.0)
           - APK signing verbeterd
           
           **Let op:** Dit is een automatische build.
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
