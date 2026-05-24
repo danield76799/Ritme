@@ -568,9 +568,13 @@ class DatabaseHelper implements DatabaseRepository {
       final date = log['date']?.toString();
       if (date == null) continue;
       
+      // DEBUG: Log alle rijen voor debugging
+      print('DEBUG getDailyLogs: date=$date, id=${log['id']}, sleep_hours=${log['sleep_hours']}, uren_slaap=${log['uren_slaap']}, awake_minutes=${log['awake_minutes']}, bed_time=${log['bed_time']}, wake_time=${log['wake_time']}');
+      
       // Alleen de eerste rij voor deze datum behouden (meest recente vanwege id DESC)
       if (!latestLogsByDate.containsKey(date)) {
         latestLogsByDate[date] = log;
+        print('DEBUG getDailyLogs: SELECTED date=$date, id=${log['id']}');
       }
     }
     
