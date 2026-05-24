@@ -37,7 +37,11 @@ jobs:
       run: flutter pub get
     
     - name: Build unsigned APK
-      run: flutter build apk --release --split-per-abi
+      run: |
+        flutter build apk --release --split-per-abi || {
+          echo "Build failed, trying without split-per-abi..."
+          flutter build apk --release
+        }
     
     - name: Sign APKs
       env:
