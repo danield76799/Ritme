@@ -108399,7 +108399,7 @@ $1(a){return B.Wh},
 $S:662}
 A.X1.prototype={
 I(a){var s=null,r=A.b([new A.b4(2,B.G,A.ar(B.c.av(25.5),B.m.u()>>>16&255,B.m.u()>>>8&255,B.m.u()&255),B.k,10)],t.V)
-return A.eU(s,B.n,A.c6(A.aB(A.b([A.af(s,A.bt(B.vL,B.n,s,80),B.i,s,s,new A.ao(B.h,s,s,s,r,s,B.d1),s,140,s,s,s,s,s,140),B.bu,B.ao1,B.by,B.anf,B.ah5,B.ah1],t.p),B.p,B.aJ,B.j,0,B.q),s,s),s)}}
+return A.eU(s,B.n,A.c6(A.aB(A.b([A.af(s,A.bt(B.vL,B.n,s,80),B.i,s,s,new A.ao(B.h,s,s,s,r,s,B.d1),s,140,s,s,s,s,s,140),B.bu,B.ao0,B.by,B.anf,B.ah5,B.ah1],t.p),B.p,B.aJ,B.j,0,B.q),s,s),s)}}
 A.HC.prototype={
 a8(){return new A.a5E()}}
 A.a5E.prototype={
@@ -108498,7 +108498,7 @@ p=m.r
 n=A.j(p).h("cF<1,2>")
 n=A.hF(new A.cF(p,n),new A.awO(m),n.h("m.E"),t.iF)
 p=A.a3(n,A.j(n).h("m.E"))
-B.b.a0(s,A.b([B.aom,B.a4,A.af(l,A.aB(p,B.p,B.l,B.j,0,B.q),B.i,l,l,new A.ao(B.h,l,l,r,q,l,B.u),l,l,l,l,B.a0,l,l,l),B.bu],o))}s.push(B.anI)
+B.b.a0(s,A.b([B.aom,B.a4,A.af(l,A.aB(p,B.p,B.l,B.j,0,B.q),B.i,l,l,new A.ao(B.h,l,l,r,q,l,B.u),l,l,l,l,B.a0,l,l,l),B.bu],o))}s.push(B.anH)
 s.push(B.a4)
 r=m.e
 if(r.length===0){r=A.Y(20)
@@ -108683,7 +108683,7 @@ c=A.ac(a3)
 b=A.aV(a3)
 A.fy("Failed to toggle activity",c,b)
 a0=n.c
-if(a0!=null)a0.a2(t.q).f.cB(A.dk(null,null,null,B.ar,B.aD,B.x,null,B.anF,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
+if(a0!=null)a0.a2(t.q).f.cB(A.dk(null,null,null,B.ar,B.aD,B.x,null,B.anE,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
 s=6
 break
 case 3:s=2
@@ -108906,7 +108906,7 @@ $0(){var s=this.b
 this.a.w=B.d.br(B.e.k(s.a),2,"0")+":"+B.d.br(B.e.k(s.b),2,"0")},
 $S:0}
 A.ax3.prototype={
-$1(a){var s,r=null,q=this.a,p=this.b,o=t.p,n=A.af(r,A.b2(A.b([A.e1(B.ao9,new A.ax_(a),r),B.an3,A.e1(B.anb,new A.ax0(q,p,a),r)],o),B.p,B.de,B.j,0,r),B.i,B.kw,r,r,r,r,r,r,B.fc,r,r,r)
+$1(a){var s,r=null,q=this.a,p=this.b,o=t.p,n=A.af(r,A.b2(A.b([A.e1(B.ao8,new A.ax_(a),r),B.an3,A.e1(B.anb,new A.ax0(q,p,a),r)],o),B.p,B.de,B.j,0,r),B.i,B.kw,r,r,r,r,r,r,B.fc,r,r,r)
 p=A.aVV(B.e.c7(p.x,15))
 s=A.aR1(49,new A.ax1(),!0,t.l7)
 return A.af(r,A.aB(A.b([n,B.UQ,A.bs(new A.D3(B.iG,p,40,new A.ax2(q),new A.ajr(s),r),1)],o),B.p,B.l,B.j,0,B.q),B.i,B.iG,r,r,r,300,r,r,r,r,r,r)},
@@ -109120,7 +109120,7 @@ I(a){var s,r=this,q=null,p=4281545523,o=A.fx(q,B.n,0,B.cI,q,B.an0)
 if(r.e)s=A.c6(A.p5(q,B.n,q,q,q,q,q,q,q,q),q,q)
 else{s=r.f
 if(s!=null)s=A.c6(A.aB(A.b([A.bt(B.es,B.iO,q,48),B.a4,A.P(s,q,q,q,A.a9(q,q,A.bc(p),q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),B.b1,q,q),B.al,A.hw(B.i6,r.garP(),q)],t.p),B.p,B.aJ,B.j,0,B.q),q,q)
-else s=J.fj(r.d)?A.c6(A.aB(A.b([A.bt(B.vW,B.ao,q,48),B.a4,A.P("Geen afspraken",q,q,q,A.a9(q,q,A.bc(p),q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),B.bD,A.P("Tik + om een afspraak toe te voegen",q,q,q,A.a9(q,q,A.bc(4283782485),q,q,q,q,q,q,q,q,13,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q)],t.p),B.p,B.aJ,B.j,0,B.q),q,q):r.ah1()}return A.eU(o,B.bh,s,A.afu(B.n,B.le,B.anX,r.gagj()))},
+else s=J.fj(r.d)?A.c6(A.aB(A.b([A.bt(B.vW,B.ao,q,48),B.a4,A.P("Geen afspraken",q,q,q,A.a9(q,q,A.bc(p),q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),B.bD,A.P("Tik + om een afspraak toe te voegen",q,q,q,A.a9(q,q,A.bc(4283782485),q,q,q,q,q,q,q,q,13,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q)],t.p),B.p,B.aJ,B.j,0,B.q),q,q):r.ah1()}return A.eU(o,B.bh,s,A.afu(B.n,B.le,B.anW,r.gagj()))},
 ah1(){return A.EW(new A.axX(this),J.bU(this.d),B.bi,null,!1)},
 ah0(a){var s,r,q,p,o,n,m,l,k,j=null,i=J.ag(a),h=i.i(a,"title")
 if(h==null)h="Onbekend"
@@ -109239,8 +109239,8 @@ r=p.r
 r===$&&A.a()
 q=t.p
 r=A.b([k,B.bt,new A.ih(1,B.dv,A.ix(A.aQG(o,A.aB(A.b([j,B.al,s,B.al,p.UP("Locatie",r),B.al,p.ah6(),B.al,p.agL(),B.al,p.aho()],q),B.p,B.l,B.at,0,B.q),p.d),o,o,o,B.a6),o),B.bt],q)
-if(p.a.c!=null)r.push(new A.aY(B.uT,A.e1(B.anZ,new A.axR(p,a),o),o))
-r.push(A.b2(A.b([A.e1(B.anG,new A.axS(a),o),B.aK,A.hw(B.rq,new A.axT(p,a),A.fm(o,o,B.n,o,o,o,o,o,o,B.h,o,o,B.kR,o,new A.bh(A.Y(12),B.t),o,o,o,o,o))],q),B.p,B.jy,B.j,0,o))
+if(p.a.c!=null)r.push(new A.aY(B.uT,A.e1(B.anY,new A.axR(p,a),o),o))
+r.push(A.b2(A.b([A.e1(B.anF,new A.axS(a),o),B.aK,A.hw(B.rq,new A.axT(p,a),A.fm(o,o,B.n,o,o,o,o,o,o,B.h,o,o,B.kR,o,new A.bh(A.Y(12),B.t),o,o,o,o,o))],q),B.p,B.jy,B.j,0,o))
 return A.Rg(o,B.h,A.af(o,new A.hU(l,new A.aY(B.bC,A.aB(r,B.M,B.l,B.at,0,B.q),o),o),B.i,o,new A.ak(0,1/0,0,n.a.b*0.85),new A.ao(B.h,o,o,m,o,o,B.u),o,o,o,o,o,o,o,1/0),o,o,o,B.a0,B.mW,o,o,B.y)},
 UQ(a,b,c){var s=null
 return new A.aY(B.cF,A.aRK(!1,b,A.il(s,new A.cp(4,A.Y(12),B.ej),s,s,s,s,s,s,!0,new A.cp(4,A.Y(12),B.ej),s,s,s,s,s,B.h,!0,s,s,s,s,new A.cp(4,A.Y(12),B.eX),s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,B.n5,a,!0,!0,!1,s,s,s,s,s,s,s,s,s,s,s,s,s,s),!1,s,s,s,1,s,s,s,s,s,B.aj_,B.ah,s,c),s)},
@@ -109282,7 +109282,7 @@ return A.y($async$$0,r)},
 $S:3}
 A.axP.prototype={
 $1(a){var s=null
-return A.mX(A.b([A.e1(B.eK,new A.axN(a),s),A.hw(B.anl,new A.axO(a),A.fm(s,s,B.ar,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),B.anT,s,B.anq)},
+return A.mX(A.b([A.e1(B.eK,new A.axN(a),s),A.hw(B.anl,new A.axO(a),A.fm(s,s,B.ar,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),B.anS,s,B.anp)},
 $S:41}
 A.axN.prototype={
 $0(){A.c3(this.a,!1).cp(!1)
@@ -109817,12 +109817,12 @@ case 7:case 1:return A.x(q,r)
 case 2:return A.w(o.at(-1),r)}})
 return A.y($async$tb,r)},
 I(a){var s=this,r=null,q=t.p,p=A.fx(A.b([A.dQ(r,r,B.pu,r,r,s.gaj2(),r,r,r)],q),B.n,r,r,r,B.aog)
-return A.eU(p,B.bh,s.e?B.RC:A.aB(A.b([A.af(r,A.b2(A.b([A.bs(A.xi(B.X8,B.aoy,s.gaij(),A.fm(r,r,B.br,r,r,r,r,r,r,B.h,r,r,r,r,r,r,r,r,r,r)),1),B.aK,A.bs(A.xi(B.Xp,B.any,s.gaj3(),A.fm(r,r,B.ar,r,r,r,r,r,r,B.h,r,r,r,r,r,r,r,r,r,r)),1)],q),B.p,B.l,B.j,0,r),B.i,B.h,r,r,r,r,r,r,B.a0,r,r,r),B.uN,A.bs(A.EW(new A.aAY(s),J.bU(s.d),B.a0,r,!1),1)],q),B.p,B.l,B.j,0,B.q),r)},
+return A.eU(p,B.bh,s.e?B.RC:A.aB(A.b([A.af(r,A.b2(A.b([A.bs(A.xi(B.X8,B.aoy,s.gaij(),A.fm(r,r,B.br,r,r,r,r,r,r,B.h,r,r,r,r,r,r,r,r,r,r)),1),B.aK,A.bs(A.xi(B.Xp,B.anx,s.gaj3(),A.fm(r,r,B.ar,r,r,r,r,r,r,B.h,r,r,r,r,r,r,r,r,r,r)),1)],q),B.p,B.l,B.j,0,r),B.i,B.h,r,r,r,r,r,r,B.a0,r,r,r),B.uN,A.bs(A.EW(new A.aAY(s),J.bU(s.d),B.a0,r,!1),1)],q),B.p,B.l,B.j,0,B.q),r)},
 Jd(a,b,c){var s,r=null,q=b!=="-"&&b!=="null"&&b.length!==0,p=A.P(a,r,r,r,A.a9(r,r,B.a1,r,r,r,r,r,r,r,r,14,r,r,r,r,r,!0,r,r,r,r,r,r,r,r),r,r,r)
 if(c&&q)s=B.bk
 else s=q?B.m:B.ao
 s=A.b([p,B.c7,A.P(b,r,r,r,A.a9(r,r,s,r,r,r,r,r,r,r,r,14,r,r,B.O,r,r,!0,r,r,r,r,r,r,r,r),r,r,r)],t.p)
-if(c&&q)s.push(A.af(r,B.ao3,B.i,r,r,new A.ao(A.ar(B.c.av(25.5),B.bk.u()>>>16&255,B.bk.u()>>>8&255,B.bk.u()&255),r,r,A.Y(4),r,r,B.u),r,r,r,B.VN,B.VL,r,r,r))
+if(c&&q)s.push(A.af(r,B.ao2,B.i,r,r,new A.ao(A.ar(B.c.av(25.5),B.bk.u()>>>16&255,B.bk.u()>>>8&255,B.bk.u()&255),r,r,A.Y(4),r,r,B.u),r,r,r,B.VN,B.VL,r,r,r))
 return new A.aY(B.Vt,A.b2(s,B.p,B.l,B.j,0,r),r)},
 UF(a,b){return this.Jd(a,b,!1)}}
 A.aAP.prototype={
@@ -109852,7 +109852,7 @@ $0(){return this.a.e=!1},
 $S:0}
 A.aAL.prototype={
 $1(a){var s=null
-return A.mX(A.b([A.e1(B.eK,new A.aAJ(a),s),A.e1(B.aoo,new A.aAK(a),A.ld(s,s,s,s,s,s,s,s,s,B.br,s,s,s,s,s,s,s,s,s,s))],t.p),B.anJ,s,B.aoe)},
+return A.mX(A.b([A.e1(B.eK,new A.aAJ(a),s),A.e1(B.aoo,new A.aAK(a),A.ld(s,s,s,s,s,s,s,s,s,B.br,s,s,s,s,s,s,s,s,s,s))],t.p),B.anI,s,B.aoe)},
 $S:41}
 A.aAJ.prototype={
 $0(){A.c3(this.a,!1).cp(!1)
@@ -109873,7 +109873,7 @@ $0(){return this.a.e=!1},
 $S:0}
 A.aAV.prototype={
 $1(a){var s=null
-return A.mX(A.b([A.e1(B.eK,new A.aAT(a),s),A.e1(B.an7,new A.aAU(a),A.ld(s,s,s,s,s,s,s,s,s,B.ar,s,s,s,s,s,s,s,s,s,s))],t.p),B.anx,s,B.aoj)},
+return A.mX(A.b([A.e1(B.eK,new A.aAT(a),s),A.e1(B.an7,new A.aAU(a),A.ld(s,s,s,s,s,s,s,s,s,B.ar,s,s,s,s,s,s,s,s,s,s))],t.p),B.anw,s,B.aoj)},
 $S:41}
 A.aAT.prototype={
 $0(){A.c3(this.a,!1).cp(!1)
@@ -109991,11 +109991,11 @@ break
 case 6:case 1:return A.x(q,r)
 case 2:return A.w(o.at(-1),r)}})
 return A.y($async$BQ,r)},
-I(a){var s,r,q=this,p=null,o=t.p,n=A.fx(A.b([A.dQ(p,p,B.pu,p,p,q.garR(),p,p,"Verversen")],o),B.n,0,B.cI,p,B.anN)
+I(a){var s,r,q=this,p=null,o=t.p,n=A.fx(A.b([A.dQ(p,p,B.pu,p,p,q.garR(),p,p,"Verversen")],o),B.n,0,B.cI,p,B.anM)
 if(q.f)o=B.f2
 else{s=A.af(p,A.b2(A.b([q.Jf("Alle",q.r==="Alle"),B.c7,q.Jf("Positief",q.r==="Positief"),B.c7,q.Jf("Negatief",q.r==="Negatief")],o),B.p,B.l,B.j,0,p),B.i,B.h,p,p,p,p,p,p,B.a0,p,p,p)
 r=q.e.length
-o=A.aB(A.b([s,B.uN,A.bs(r===0?A.c6(A.aB(A.b([A.bt(B.vK,B.d6,p,64),B.al,A.P("Geen gebeurtenissen gevonden",p,p,p,A.a9(p,p,B.ba,p,p,p,p,p,p,p,p,16,p,p,B.ag,p,p,!0,p,p,p,p,p,p,p,p),p,p,p),B.by,A.P("Voeg je eerste gebeurtenis toe met de knop onderaan",p,p,p,A.a9(p,p,B.ao,p,p,p,p,p,p,p,p,14,p,p,p,p,p,!0,p,p,p,p,p,p,p,p),p,p,p)],o),B.p,B.aJ,B.j,0,B.q),p,p):A.EW(new A.aCO(q),r,B.a0,p,!1),1)],o),B.p,B.l,B.j,0,B.q)}return A.eU(n,B.bh,o,A.afu(B.n,B.le,B.anK,new A.aCP(q)))},
+o=A.aB(A.b([s,B.uN,A.bs(r===0?A.c6(A.aB(A.b([A.bt(B.vK,B.d6,p,64),B.al,A.P("Geen gebeurtenissen gevonden",p,p,p,A.a9(p,p,B.ba,p,p,p,p,p,p,p,p,16,p,p,B.ag,p,p,!0,p,p,p,p,p,p,p,p),p,p,p),B.by,A.P("Voeg je eerste gebeurtenis toe met de knop onderaan",p,p,p,A.a9(p,p,B.ao,p,p,p,p,p,p,p,p,14,p,p,p,p,p,!0,p,p,p,p,p,p,p,p),p,p,p)],o),B.p,B.aJ,B.j,0,B.q),p,p):A.EW(new A.aCO(q),r,B.a0,p,!1),1)],o),B.p,B.l,B.j,0,B.q)}return A.eU(n,B.bh,o,A.afu(B.n,B.le,B.anJ,new A.aCP(q)))},
 Jf(a,b){var s=null,r=b?B.n:B.em,q=A.Y(8),p=A.b([],t.p)
 if(b)p.push(B.Xx)
 if(b)p.push(B.fG)
@@ -110373,7 +110373,7 @@ s=6
 return A.o(A.CT(new A.rI(n)),$async$Cq)
 case 6:A.dv("Kopieer rapport: clipboard setData succesvol")
 k=o.c
-if(k!=null)k.a2(t.q).f.cB(A.dk(null,null,null,B.bw,B.aD,B.x,null,B.anu,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(12),B.t),null,null))
+if(k!=null)k.a2(t.q).f.cB(A.dk(null,null,null,B.bw,B.aD,B.x,null,B.ant,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(12),B.t),null,null))
 q=1
 s=5
 break
@@ -110403,7 +110403,7 @@ case 2:s=5
 return A.o(A.aTd(q,B.Yp),$async$xz)
 case 5:case 3:return A.x(null,r)}})
 return A.y($async$xz,r)},
-I(a){var s,r,q,p,o,n=this,m=null,l="Stabiliteit",k=t.p,j=A.fx(A.b([A.dQ(m,m,B.ld,m,m,n.garz(),m,m,"Vernieuwen")],k),B.n,0,B.cI,m,B.anw)
+I(a){var s,r,q,p,o,n=this,m=null,l="Stabiliteit",k=t.p,j=A.fx(A.b([A.dQ(m,m,B.ld,m,m,n.garz(),m,m,"Vernieuwen")],k),B.n,0,B.cI,m,B.anv)
 if(n.d)k=A.c6(A.p5(m,B.n,m,m,m,m,m,m,m,m),m,m)
 else{s=B.n.aO(0.1)
 r=A.Y(12)
@@ -110426,7 +110426,7 @@ s.push(A.af(m,A.c6(A.P("Nog niet genoeg data voor inzichten.\nBlijf bijhouden!",
 s.push(B.fH)
 r=A.b([B.n,B.n.aO(0.8)],t.t_)
 q=A.Y(16)
-s.push(A.af(m,A.aB(A.b([A.b2(A.b([A.af(m,B.Xu,B.i,m,m,new A.ao(B.h.aO(0.2),m,m,A.Y(8),m,m,B.u),m,m,m,m,B.j0,m,m,m),B.aK,B.anD],k),B.p,B.l,B.j,0,m),B.al,A.P("Kopieer je anonieme weekrapport en plak het in Google Gemini voor gepersonaliseerde tips.",m,m,m,A.a9(m,m,B.h.aO(0.9),m,m,m,m,m,m,m,m,14,m,m,m,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),B.bt,A.b2(A.b([A.bs(A.xi(B.Xv,B.ao2,n.gary(),A.fm(m,m,B.h,m,m,m,m,m,m,B.n,m,m,B.uU,m,new A.bh(A.Y(10),B.t),m,m,m,m,m)),1),B.aK,A.bs(A.xi(B.Xn,B.ang,n.gatx(),A.fm(m,m,B.h.aO(0.2),m,m,m,m,m,m,B.h,m,m,B.uU,m,new A.bh(A.Y(10),B.t),m,m,m,m,m)),1)],k),B.p,B.l,B.j,0,m)],k),B.M,B.l,B.j,0,B.q),B.i,m,m,new A.ao(m,m,m,q,m,new A.kR(B.dq,B.is,B.cX,r,m,m),B.u),m,m,m,m,B.bC,m,m,m))
+s.push(A.af(m,A.aB(A.b([A.b2(A.b([A.af(m,B.Xu,B.i,m,m,new A.ao(B.h.aO(0.2),m,m,A.Y(8),m,m,B.u),m,m,m,m,B.j0,m,m,m),B.aK,B.anC],k),B.p,B.l,B.j,0,m),B.al,A.P("Kopieer je anonieme weekrapport en plak het in Google Gemini voor gepersonaliseerde tips.",m,m,m,A.a9(m,m,B.h.aO(0.9),m,m,m,m,m,m,m,m,14,m,m,m,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),B.bt,A.b2(A.b([A.bs(A.xi(B.Xv,B.ao1,n.gary(),A.fm(m,m,B.h,m,m,m,m,m,m,B.n,m,m,B.uU,m,new A.bh(A.Y(10),B.t),m,m,m,m,m)),1),B.aK,A.bs(A.xi(B.Xn,B.ang,n.gatx(),A.fm(m,m,B.h.aO(0.2),m,m,m,m,m,m,B.h,m,m,B.uU,m,new A.bh(A.Y(10),B.t),m,m,m,m,m)),1)],k),B.p,B.l,B.j,0,m)],k),B.M,B.l,B.j,0,B.q),B.i,m,m,new A.ao(m,m,m,q,m,new A.kR(B.dq,B.is,B.cX,r,m,m),B.u),m,m,m,m,B.bC,m,m,m))
 s.push(B.bt)
 r=A.Y(12)
 s.push(A.af(m,A.b2(A.b([A.bt(B.Wy,B.a1,m,20),B.aK,A.bs(A.P("Ritme deelt nooit data met derden. AI-analyse doe je bewust en persoonlijk.",m,m,m,A.a9(m,m,B.a1,m,m,m,m,m,m,m,m,12,m,m,m,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),1)],k),B.p,B.l,B.j,0,m),B.i,m,m,new A.ao(B.bP,m,m,r,m,m,B.u),m,m,m,m,B.a0,m,m,m))
@@ -110752,7 +110752,7 @@ $0(){this.a.w="Inloggen mislukt. Probeer opnieuw."},
 $S:0}
 A.aFB.prototype={
 $1(a){var s=null,r=t.p,q=A.b2(A.b([A.bt(B.X2,B.iI,s,s),B.c7,B.aox],r),B.p,B.l,B.j,0,s)
-return A.mX(A.b([A.e1(B.eK,new A.aFz(a),s),A.e1(B.anE,new A.aFA(this.a,a),A.ld(s,s,s,s,s,s,s,s,s,B.ar,s,s,s,s,s,s,s,s,s,s))],r),B.ani,s,q)},
+return A.mX(A.b([A.e1(B.eK,new A.aFz(a),s),A.e1(B.anD,new A.aFA(this.a,a),A.ld(s,s,s,s,s,s,s,s,s,B.ar,s,s,s,s,s,s,s,s,s,s))],r),B.ani,s,q)},
 $S:41}
 A.aFz.prototype={
 $0(){A.c3(this.a,!1).cp(null)
@@ -110764,7 +110764,7 @@ this.a.awO()},
 $S:0}
 A.aFE.prototype={
 $1(a){var s=null
-return A.mX(A.b([A.e1(B.aot,new A.aFC(a),s),A.hw(B.anP,new A.aFD(this.a),A.fm(s,s,B.ar,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),B.anh,s,B.ao4)},
+return A.mX(A.b([A.e1(B.aot,new A.aFC(a),s),A.hw(B.anO,new A.aFD(this.a),A.fm(s,s,B.ar,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),B.anh,s,B.ao3)},
 $S:41}
 A.aFC.prototype={
 $0(){A.c3(this.a,!1).cp(null)
@@ -110820,7 +110820,7 @@ break
 case 5:return A.x(null,r)
 case 1:return A.w(p.at(-1),r)}})
 return A.y($async$xw,r)},
-I(a){var s,r=this,q=null,p=4281545523,o=A.fx(q,B.n,0,B.cI,q,B.aoc)
+I(a){var s,r=this,q=null,p=4281545523,o=A.fx(q,B.n,0,B.cI,q,B.aob)
 if(r.e)s=A.c6(A.p5(q,B.n,q,q,q,q,q,q,q,q),q,q)
 else{s=r.f
 if(s!=null)s=A.c6(A.aB(A.b([A.bt(B.es,B.iO,q,48),B.a4,A.P(s,q,q,q,A.a9(q,q,A.bc(p),q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),B.b1,q,q),B.al,A.hw(B.i6,r.gasd(),q)],t.p),B.p,B.aJ,B.j,0,B.q),q,q)
@@ -111003,7 +111003,7 @@ k=A.ac(f)
 j=A.aV(f)
 A.fy("Failed to update medication intake",k,j)
 h=n.c
-if(h!=null)h.a2(t.q).f.cB(A.dk(null,null,null,B.ar,B.aD,B.x,null,B.ao5,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
+if(h!=null)h.a2(t.q).f.cB(A.dk(null,null,null,B.ar,B.aD,B.x,null,B.ao4,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
 s=6
 break
 case 3:s=2
@@ -111040,7 +111040,7 @@ m=A.ac(i)
 l=A.aV(i)
 A.fy("Failed to delete medication",m,l)
 k=o.c
-if(k!=null)k.a2(t.q).f.cB(A.dk(null,null,null,B.ar,B.aD,B.x,null,B.anY,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
+if(k!=null)k.a2(t.q).f.cB(A.dk(null,null,null,B.ar,B.aD,B.x,null,B.anX,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
 s=5
 break
 case 2:s=1
@@ -111104,7 +111104,7 @@ return A.o(k.lO(),$async$tF)
 case 9:s=10
 return A.o($.BH().NK(),$async$tF)
 case 10:k=o.c
-if(k!=null)k.a2(t.q).f.cB(A.dk(null,null,null,B.bw,B.aD,B.x,null,B.aob,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
+if(k!=null)k.a2(t.q).f.cB(A.dk(null,null,null,B.bw,B.aD,B.x,null,B.aoa,null,B.aH,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
 o.jW()
 case 8:q=1
 s=5
@@ -111132,7 +111132,7 @@ q.e=!0
 s=this.c
 s.toString
 A.iP(r,r,!0,r,new A.aGv(q,this),s,r,!0,t.z)},
-I(a){var s,r=this,q=null,p=t.p,o=A.fx(A.b([A.dQ(q,q,B.XA,q,q,r.gawJ(),q,q,q),A.dQ(q,q,B.Xg,q,q,r.gavf(),q,q,"Reset database")],p),B.n,0,B.cI,q,B.anr),n=A.af(q,A.acK(r.d,r.gasg()),B.i,B.h,q,q,q,q,q,q,q,q,q,q)
+I(a){var s,r=this,q=null,p=t.p,o=A.fx(A.b([A.dQ(q,q,B.XA,q,q,r.gawJ(),q,q,q),A.dQ(q,q,B.Xg,q,q,r.gavf(),q,q,"Reset database")],p),B.n,0,B.cI,q,B.anq),n=A.af(q,A.acK(r.d,r.gasg()),B.i,B.h,q,q,q,q,q,q,q,q,q,q)
 if(r.r)s=A.c6(A.p5(q,B.n,q,q,q,q,q,q,q,q),q,q)
 else{s=r.w
 if(s!=null)s=A.c6(A.aB(A.b([A.bt(B.es,B.f5,q,48),B.a4,A.P(s,q,q,q,A.a9(q,q,B.iL,q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),B.b1,q,q),B.al,A.xi(B.ld,B.i6,r.gasf(),A.fm(q,q,B.n,q,q,q,q,q,q,B.h,q,q,q,q,q,q,q,q,q,q))],p),B.p,B.aJ,B.j,0,B.q),q,q)
@@ -111205,7 +111205,7 @@ $0(){return this.a.d=this.b},
 $S:0}
 A.aGd.prototype={
 $1(a){var s=null
-return A.mX(A.b([A.e1(B.eK,new A.aGb(a),s),A.hw(B.aof,new A.aGc(a),A.fm(s,s,B.ar,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),B.an5,s,B.anL)},
+return A.mX(A.b([A.e1(B.eK,new A.aGb(a),s),A.hw(B.aof,new A.aGc(a),A.fm(s,s,B.ar,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),B.an5,s,B.anK)},
 $S:41}
 A.aGb.prototype={
 $0(){A.c3(this.a,!1).cp(!1)
@@ -111217,7 +111217,7 @@ return null},
 $S:0}
 A.aGk.prototype={
 $1(a){var s=null
-return A.mX(A.b([A.e1(B.eK,new A.aGi(a),s),A.hw(B.an4,new A.aGj(a),A.fm(s,s,B.ar,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),B.ao6,s,B.aoA)},
+return A.mX(A.b([A.e1(B.eK,new A.aGi(a),s),A.hw(B.an4,new A.aGj(a),A.fm(s,s,B.ar,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s))],t.p),B.ao5,s,B.aoA)},
 $S:41}
 A.aGi.prototype={
 $0(){A.c3(this.a,!1).cp(!1)
@@ -111231,7 +111231,7 @@ A.aGv.prototype={
 $1(a){return new A.ql(new A.aGu(this.a,this.b),null)},
 $S:682}
 A.aGu.prototype={
-$2(a,b){var s,r,q,p=null,o=A.oi(p,B.aF,p,p,p,p,p,p,p,p,p).aCb(B.h,B.amY),n=this.a,m=t.p,l=A.b([A.ml(p,B.ch,!1,p,!0,B.x,p,A.oO(),p,p,p,p,p,p,2,A.il(p,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,p,!0,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,B.h,!0,p,p,p,p,new A.cp(4,A.Y(12),B.eX),p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,B.n5,"Naam (bijv. Lithium)",!0,!0,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p),B.a2,!0,p,!0,p,!1,p,B.cb,p,p,p,p,p,p,p,p,1,p,p,!1,"\u2022",p,new A.aGn(n),p,p,p,!1,p,p,!1,p,!0,p,B.bC,p,p,p,p,p,p,p,p,p,p,p,p,!0,B.ah,p,B.dk,p,p,p,p),A.ml(p,B.ch,!1,p,!0,B.x,p,A.oO(),p,p,p,p,p,p,2,A.il(p,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,p,!0,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,B.h,!0,p,p,p,p,new A.cp(4,A.Y(12),B.eX),p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,B.n5,"Dosering",!0,!0,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p),B.a2,!0,p,!0,p,!1,p,B.cb,p,p,p,p,B.rk,p,p,p,1,p,p,!1,"\u2022",p,new A.aGo(n),p,p,p,!1,p,p,!1,p,!0,p,B.bC,p,p,p,p,p,p,p,p,p,p,p,p,!0,B.ah,p,B.dk,p,p,p,p),A.ml(p,B.ch,!1,p,!0,B.x,p,A.oO(),p,p,p,p,p,p,2,A.il(p,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,p,!0,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,B.h,!0,p,p,p,p,new A.cp(4,A.Y(12),B.eX),p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,B.n5,"Eenheid (mg, ml, stuks)",!0,!0,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p),B.a2,!0,p,!0,p,!1,p,B.cb,p,p,p,p,p,p,p,p,1,p,p,!1,"\u2022",p,new A.aGp(n),p,p,p,!1,p,p,!1,p,!0,p,B.bC,p,p,p,p,p,p,p,p,p,p,p,p,!0,B.ah,p,B.dk,p,p,p,p),B.al,A.b2(A.b([B.anV,B.jS,A.aRG(B.n,new A.aGq(n,b),n.e)],m),B.p,B.l,B.j,0,p)],m)
+$2(a,b){var s,r,q,p=null,o=A.oi(p,B.aF,p,p,p,p,p,p,p,p,p).aCb(B.h,B.amY),n=this.a,m=t.p,l=A.b([A.ml(p,B.ch,!1,p,!0,B.x,p,A.oO(),p,p,p,p,p,p,2,A.il(p,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,p,!0,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,B.h,!0,p,p,p,p,new A.cp(4,A.Y(12),B.eX),p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,B.n5,"Naam (bijv. Lithium)",!0,!0,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p),B.a2,!0,p,!0,p,!1,p,B.cb,p,p,p,p,p,p,p,p,1,p,p,!1,"\u2022",p,new A.aGn(n),p,p,p,!1,p,p,!1,p,!0,p,B.bC,p,p,p,p,p,p,p,p,p,p,p,p,!0,B.ah,p,B.dk,p,p,p,p),A.ml(p,B.ch,!1,p,!0,B.x,p,A.oO(),p,p,p,p,p,p,2,A.il(p,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,p,!0,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,B.h,!0,p,p,p,p,new A.cp(4,A.Y(12),B.eX),p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,B.n5,"Dosering",!0,!0,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p),B.a2,!0,p,!0,p,!1,p,B.cb,p,p,p,p,B.rk,p,p,p,1,p,p,!1,"\u2022",p,new A.aGo(n),p,p,p,!1,p,p,!1,p,!0,p,B.bC,p,p,p,p,p,p,p,p,p,p,p,p,!0,B.ah,p,B.dk,p,p,p,p),A.ml(p,B.ch,!1,p,!0,B.x,p,A.oO(),p,p,p,p,p,p,2,A.il(p,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,p,!0,new A.cp(4,A.Y(12),B.ej),p,p,p,p,p,B.h,!0,p,p,p,p,new A.cp(4,A.Y(12),B.eX),p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,B.n5,"Eenheid (mg, ml, stuks)",!0,!0,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p),B.a2,!0,p,!0,p,!1,p,B.cb,p,p,p,p,p,p,p,p,1,p,p,!1,"\u2022",p,new A.aGp(n),p,p,p,!1,p,p,!1,p,!0,p,B.bC,p,p,p,p,p,p,p,p,p,p,p,p,!0,B.ah,p,B.dk,p,p,p,p),B.al,A.b2(A.b([B.anU,B.jS,A.aRG(B.n,new A.aGq(n,b),n.e)],m),B.p,B.l,B.j,0,p)],m)
 if(n.e){s=A.il(p,new A.cp(4,A.rv(new A.aQ(8,8)),new A.b1(B.ao,1,B.B,-1)),p,p,p,p,p,p,!0,new A.cp(4,A.rv(new A.aQ(8,8)),new A.b1(B.ao,1,B.B,-1)),p,p,p,p,p,B.em,!0,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,"Tijdstip herinnering",!0,!0,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p)
 r=n.d
 q=r==null
@@ -111398,7 +111398,7 @@ f=o.z?1:0
 s=9
 return A.o(m.rD(A.a8(["date",l,"stemming_hoog",k,"stemming_laag",i,"gesplitste_stemming",j,"stemmingsomslagen",h,"ontstemde_manie",g,"daglicht",f,"sociale_contacten",o.Q],t.N,t.z)),$async$xA)
 case 9:m=o.c
-if(m!=null)m.a2(t.q).f.cB(A.dk(null,null,null,B.n,B.aD,B.x,null,B.aod,null,B.f9,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
+if(m!=null)m.a2(t.q).f.cB(A.dk(null,null,null,B.n,B.aD,B.x,null,B.aoc,null,B.f9,null,null,null,null,null,null,null,new A.bh(A.Y(10),B.t),null,null))
 q=1
 s=5
 break
@@ -111443,7 +111443,7 @@ return q}catch(p){s=A.ac(p)
 r=A.aV(p)
 A.dB().$1("MoodScreen build error: "+A.k(s))
 A.dB().$1("Stack: "+A.k(r))
-q=A.eU(A.fx(o,o,o,o,o,B.anR),o,A.c6(A.aB(A.b([B.Xz,B.al,A.P("Fout: "+A.k(s),o,o,o,B.Nu,o,o,o)],t.p),B.p,B.aJ,B.j,0,B.q),o,o),o)
+q=A.eU(A.fx(o,o,o,o,o,B.anQ),o,A.c6(A.aB(A.b([B.Xz,B.al,A.P("Fout: "+A.k(s),o,o,o,B.Nu,o,o,o)],t.p),B.p,B.aJ,B.j,0,B.q),o,o),o)
 return q}},
 ahj(a){var s,r,q,p,o,n,m=this,l=null,k=t.p,j=A.fx(A.b([A.e1(B.aoi,m.gaty(),l)],k),B.n,0,B.cI,l,B.ank)
 if(m.as)k=A.c6(A.p5(l,B.n,l,l,l,l,l,l,l,l),l,l)
@@ -111472,7 +111472,7 @@ r.push(B.a4)
 q=A.Y(12)
 p=A.fz(B.bP,1)
 o=A.af(l,B.Xt,B.i,l,l,new A.ao(B.bk.aO(0.1),l,l,A.Y(10),l,l,B.u),l,40,l,l,l,l,l,40)
-n=A.bs(A.aB(A.b([B.ano,A.P("Aantal sociale interacties vandaag",l,l,l,A.a9(l,l,B.m,l,l,l,l,l,l,l,l,12,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l,l)],k),B.M,B.l,B.j,0,B.q),1)
+n=A.bs(A.aB(A.b([B.ann,A.P("Aantal sociale interacties vandaag",l,l,l,A.a9(l,l,B.m,l,l,l,l,l,l,l,l,12,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l,l)],k),B.M,B.l,B.j,0,B.q),1)
 r.push(A.af(l,A.b2(A.b([o,B.aK,n,A.b2(A.b([m.UE(B.pp,m.Q>0?new A.aGY(m):l),A.af(B.ae,A.P(""+m.Q,l,l,l,B.n4,l,l,l),B.i,l,l,l,l,l,l,l,l,l,l,36),m.Jc(B.j6,new A.aGZ(m),!0)],k),B.p,B.l,B.at,0,l)],k),B.p,B.l,B.j,0,l),B.i,l,l,new A.ao(B.h,l,p,q,l,l,B.u),l,l,l,l,B.bi,l,l,l))
 k=A.aB(A.b([s,A.bs(A.ix(A.aB(r,B.M,B.l,B.j,0,B.q),B.bi,l,l,B.a6),1)],k),B.p,B.l,B.j,0,B.q)}return A.eU(j,B.bh,k,l)},
 UO(a,b,c,d){var s=null,r=A.Y(12),q=A.fz(B.bP,1),p=A.P(c,s,s,s,A.a9(s,s,B.m,s,s,s,s,s,s,s,s,13,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),s,s,s),o=a.aO(0.1),n=A.Y(12),m=t.p
@@ -111676,18 +111676,18 @@ avt(a){if(a>=5)return"Perfect"
 if(a>=3)return"Op tijd"
 if(a>=1)return"Enigszins"
 return"Gemist"},
-I(a){var s,r,q,p,o=this,n=null,m=A.fx(n,B.n,0,n,A.dQ(n,n,B.hl,n,n,new A.aJa(a),n,n,n),B.anA)
+I(a){var s,r,q,p,o=this,n=null,m=A.fx(n,B.n,0,n,A.dQ(n,n,B.hl,n,n,new A.aJa(a),n,n,n),B.anz)
 if(o.d)s=B.f2
 else{s=A.b([B.n,B.n.aO(0.8)],t.t_)
 r=A.Y(20)
 q=A.b([new A.b4(0,B.G,B.n.aO(0.3),B.hM,12)],t.V)
 p=t.p
-s=A.b([A.af(n,A.aB(A.b([B.anz,B.a4,A.P(B.c.ac(o.f,0)+"%",n,n,n,B.Ni,n,n,n),B.by,A.P(""+o.w+" van "+o.r+" activiteiten op tijd",n,n,n,A.a9(n,n,B.h.aO(0.8),n,n,n,n,n,n,n,n,14,n,n,n,n,n,!0,n,n,n,n,n,n,n,n),n,n,n)],p),B.p,B.l,B.j,0,B.q),B.i,n,n,new A.ao(n,n,n,r,q,new A.kR(B.dq,B.is,B.cX,s,n,n),B.u),n,n,n,n,B.kS,n,n,1/0),B.bu],p)
+s=A.b([A.af(n,A.aB(A.b([B.any,B.a4,A.P(B.c.ac(o.f,0)+"%",n,n,n,B.Ni,n,n,n),B.by,A.P(""+o.w+" van "+o.r+" activiteiten op tijd",n,n,n,A.a9(n,n,B.h.aO(0.8),n,n,n,n,n,n,n,n,14,n,n,n,n,n,!0,n,n,n,n,n,n,n,n),n,n,n)],p),B.p,B.l,B.j,0,B.q),B.i,n,n,new A.ao(n,n,n,r,q,new A.kR(B.dq,B.is,B.cX,s,n,n),B.u),n,n,n,n,B.kS,n,n,1/0),B.bu],p)
 r=o.x
 if(r.a!==0){q=A.j(r).h("cF<1,2>")
 q=A.hF(new A.cF(r,q),new A.aJb(o),q.h("m.E"),t.QX)
 r=A.a3(q,A.j(q).h("m.E"))
-B.b.a0(s,A.b([B.anH,B.a4,A.aS3(r,8,8),B.bu],p))}s.push(B.aon)
+B.b.a0(s,A.b([B.anG,B.a4,A.aS3(r,8,8),B.bu],p))}s.push(B.aon)
 s.push(B.a4)
 r=o.e
 if(r.length===0){r=A.Y(20)
@@ -111744,7 +111744,7 @@ m=q.ahk(23,0,new A.aAq(q),m)
 s=q.e
 s===$&&A.a()
 r=t.p
-return A.Rg(p,B.h,A.af(p,A.aB(A.b([n,B.bt,A.b2(A.b([m,B.adb,q.UJ(59,0,new A.aAr(q),15,s)],r),B.p,B.aJ,B.j,0,p),B.bu,A.b2(A.b([A.e1(B.aor,new A.aAs(a),p),A.hw(B.ao7,new A.aAt(q,a),A.fm(p,p,B.n,p,p,p,p,p,p,B.h,p,p,B.kR,p,new A.bh(A.Y(12),B.t),p,p,p,p,p))],r),B.p,B.qd,B.j,0,p)],r),B.p,B.l,B.at,0,B.q),B.i,p,p,p,p,p,p,p,B.bC,p,p,300),p,p,p,p,B.mW,p,new A.bh(o,B.t),p)},
+return A.Rg(p,B.h,A.af(p,A.aB(A.b([n,B.bt,A.b2(A.b([m,B.adb,q.UJ(59,0,new A.aAr(q),15,s)],r),B.p,B.aJ,B.j,0,p),B.bu,A.b2(A.b([A.e1(B.aor,new A.aAs(a),p),A.hw(B.ao6,new A.aAt(q,a),A.fm(p,p,B.n,p,p,p,p,p,p,B.h,p,p,B.kR,p,new A.bh(A.Y(12),B.t),p,p,p,p,p))],r),B.p,B.qd,B.j,0,p)],r),B.p,B.l,B.at,0,B.q),B.i,p,p,p,p,p,p,p,B.bC,p,p,300),p,p,p,p,B.mW,p,new A.bh(o,B.t),p)},
 UJ(a,b,c,d,e){var s=null,r=A.Y(12),q=A.aVV(B.e.hZ(e-b,d))
 return A.af(s,A.aWQ(B.tN,new A.ajp(new A.aAm(b,d,a,e),B.e.hZ(a-b,d)+1),q,1.2,B.a2,50,1.2,0,new A.aAn(c,b,d),1,s,1,!0),B.i,s,s,new A.ao(B.bP,s,s,r,s,s,B.u),s,180,s,s,s,s,s,80)},
 ahk(a,b,c,d){return this.UJ(a,b,c,1,d)}}
@@ -112049,7 +112049,7 @@ break
 case 5:return A.x(null,r)
 case 1:return A.w(p.at(-1),r)}})
 return A.y($async$xL,r)},
-I(a){var s,r,q,p,o,n,m,l=this,k=null,j=A.fx(k,B.n,0,k,A.dQ(k,k,B.hl,k,k,new A.aKc(a),k,k,k),B.ann)
+I(a){var s,r,q,p,o,n,m,l=this,k=null,j=A.fx(k,B.n,0,k,A.dQ(k,k,B.hl,k,k,new A.aKc(a),k,k,k),B.aod)
 if(l.d)s=B.f2
 else{s=t.p
 r=A.b([A.b2(A.b([A.bs(l.Jj("Gemiddeld",B.c.ac(l.f,1)+"u",B.WV),1),B.aK,A.bs(l.Jj("Beste",B.c.ac(l.r,1)+"u",B.pq),1),B.aK,A.bs(l.Jj("Minste",B.c.ac(l.w,1)+"u",B.vU),1)],s),B.p,B.l,B.j,0,k),B.bu],s)
@@ -112059,8 +112059,8 @@ o=A.aUM(k,k,k,k,k,k,k,new A.Cm(B.fc,16,B.l2,0,120,new A.aKd(l),!1,!1,B.rv,0,B.t,
 n=A.xr(k,!1)
 m=l.e
 m=new A.fZ(m,A.a4(m).h("fZ<1>"))
-B.b.a0(r,A.b([B.anO,B.al,A.af(k,A.aUL(A.aam(B.OO,k,m.gia(m).fu(0,new A.aKe(),t.DK).ed(0),o,k,n,B.vp,k,new A.lN(!0,!0,4,A.mO(),A.lr(),!1,k,A.mO(),A.lr()),k,12,k,k,0,new A.lO(!0,new A.e6(16,k,new A.eb(!0,new A.aKf(),30,4,!0,!0),!0,B.bl),B.te,B.te,new A.e6(16,k,new A.eb(!0,new A.aKg(l),30,k,!0,!0),!0,B.bl)))),B.i,k,k,new A.ao(B.h,k,k,q,p,k,B.u),k,220,k,k,B.a0,k,k,k)],s))}r.push(B.bu)
-r.push(B.anU)
+B.b.a0(r,A.b([B.anN,B.al,A.af(k,A.aUL(A.aam(B.OO,k,m.gia(m).fu(0,new A.aKe(),t.DK).ed(0),o,k,n,B.vp,k,new A.lN(!0,!0,4,A.mO(),A.lr(),!1,k,A.mO(),A.lr()),k,12,k,k,0,new A.lO(!0,new A.e6(16,k,new A.eb(!0,new A.aKf(),30,4,!0,!0),!0,B.bl),B.te,B.te,new A.e6(16,k,new A.eb(!0,new A.aKg(l),30,k,!0,!0),!0,B.bl)))),B.i,k,k,new A.ao(B.h,k,k,q,p,k,B.u),k,220,k,k,B.a0,k,k,k)],s))}r.push(B.bu)
+r.push(B.anT)
 r.push(B.a4)
 q=l.e
 if(q.length===0){q=A.Y(20)
@@ -112111,23 +112111,20 @@ else q=J.aUh(p.i(q,s),5)?B.br:B.eF
 return A.aat(A.b([A.aPU(r,r,B.OZ,r,q,r,r,B.tg,r,o,r,20)],t.UA),r,r,r,a.a)},
 $S:690}
 A.aKh.prototype={
-$1(a){var s,r,q,p,o,n,m,l=null,k=J.ag(a),j=A.cZ(k.i(a,"sleep")),i=A.fO(k.i(a,"awakeMinutes"))
-if(i==null)i=0
-s=j>=8
+$1(a){var s,r,q,p,o,n,m=null,l=J.ag(a),k=A.cZ(l.i(a,"sleep")),j=A.fO(l.i(a,"awakeMinutes"))
+if(j==null)j=0
+s=k>=8
 if(s)r="Uitstekend"
-else if(j>=6)r="Goed"
-else{q=j>=5?"Matig":"Slecht"
+else if(k>=6)r="Goed"
+else{q=k>=5?"Matig":"Slecht"
 r=q}if(s)p=B.n
-else if(j>=6)p=B.bw
-else{s=j>=5?B.br:B.eF
+else if(k>=6)p=B.bw
+else{s=k>=5?B.br:B.eF
 p=s}s=A.Y(16)
 q=A.b([new A.b4(0,B.G,B.m.aO(0.05),B.bd,10)],t.V)
 o=p.aO(0.1)
-o=A.af(l,A.bt(j>=6?B.lc:B.X3,p,l,24),B.i,l,l,new A.ao(o,l,l,l,l,l,B.d1),l,l,l,l,B.bi,l,l,l)
-k=A.P(A.k(k.i(a,"day"))+" "+A.k(k.i(a,"dateShort")),l,l,l,B.i4,l,l,l)
-n=i>0?" ("+i+"m wakker)":""
-m=t.p
-return A.af(l,A.b2(A.b([o,B.fF,A.bs(A.aB(A.b([k,B.bD,A.P(r+n,l,l,l,A.a9(l,l,p,l,l,l,l,l,l,l,l,14,l,l,B.ag,l,l,!0,l,l,l,l,l,l,l,l),l,l,l)],m),B.M,B.l,B.j,0,B.q),1),A.P(B.c.ac(j,1)+"u",l,l,l,B.ro,l,l,l)],m),B.p,B.l,B.j,0,l),B.i,l,l,new A.ao(B.h,l,l,s,q,l,B.u),l,l,l,B.cF,B.a0,l,l,l)},
+n=t.p
+return A.af(m,A.b2(A.b([A.af(m,A.bt(k>=6?B.lc:B.X3,p,m,24),B.i,m,m,new A.ao(o,m,m,m,m,m,B.d1),m,m,m,m,B.bi,m,m,m),B.fF,A.bs(A.aB(A.b([A.P(A.k(l.i(a,"day"))+" "+A.k(l.i(a,"dateShort")),m,m,m,B.i4,m,m,m),B.bD,A.P(r+" ("+j+"m wakker)",m,m,m,A.a9(m,m,p,m,m,m,m,m,m,m,m,14,m,m,B.ag,m,m,!0,m,m,m,m,m,m,m,m),m,m,m)],n),B.M,B.l,B.j,0,B.q),1),A.P(B.c.ac(k,1)+"u",m,m,m,B.ro,m,m,m)],n),B.p,B.l,B.j,0,m),B.i,m,m,new A.ao(B.h,m,m,s,q,m,B.u),m,m,m,B.cF,B.a0,m,m,m)},
 $S:101}
 A.v8.prototype={
 a8(){var s=t.c,r=t.N,q=t.z
@@ -112507,7 +112504,7 @@ for(s=0;s<J.bU(this.d);++s){r=J.L(J.L(this.d,s),"weight")
 if(typeof r=="string"){q=A.dC(r)
 if(q==null)q=0}else q=typeof r=="number"?r:0
 p.push(new A.dh(s,q,null,null))}return p},
-I(a){var s,r,q,p,o,n,m=this,l=null,k=A.fx(l,B.n,0,l,A.dQ(l,l,B.hl,l,l,new A.aMT(a),l,l,l),B.anM)
+I(a){var s,r,q,p,o,n,m=this,l=null,k=A.fx(l,B.n,0,l,A.dQ(l,l,B.hl,l,l,new A.aMT(a),l,l,l),B.anL)
 if(m.e)s=B.f2
 else{s=t.p
 r=A.b([A.acK(m.f,new A.aMU(m)),B.bu],s)
@@ -112537,7 +112534,7 @@ p=A.b([B.n,B.n.aO(0.8)],t.t_)
 l=A.Y(20)
 k=A.b([new A.b4(0,B.G,B.n.aO(0.3),B.hM,12)],t.V)
 j=t.p
-s=A.b([B.ao8,B.al,A.b2(A.b([A.bs(f.Jk("Gemiddeld",B.c.ac(d/s,1)+" kg"),1),A.bs(f.Jk("Min",B.c.ac(b,1)+" kg"),1),A.bs(f.Jk("Max",B.c.ac(a,1)+" kg"),1)],j),B.p,B.l,B.j,0,e)],j)
+s=A.b([B.ao7,B.al,A.b2(A.b([A.bs(f.Jk("Gemiddeld",B.c.ac(d/s,1)+" kg"),1),A.bs(f.Jk("Min",B.c.ac(b,1)+" kg"),1),A.bs(f.Jk("Max",B.c.ac(a,1)+" kg"),1)],j),B.p,B.l,B.j,0,e)],j)
 if(m!=null){d=B.h.aO(0.2)
 i=A.Y(12)
 h=A.bt(m<=0?B.vU:B.pq,B.h,e,20)
@@ -112566,7 +112563,7 @@ $0(){return A.C(t.N,t.z)},
 $S:692}
 A.aMI.prototype={
 $1(a){var s=null,r=A.Y(20),q=this.a,p=this.b,o=t.p,n=A.aB(A.b([A.ml(s,B.ch,!1,s,!0,B.x,s,A.oO(),q,s,s,s,s,s,2,A.il(s,new A.cp(4,A.Y(12),B.dS),s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"Bijv. 101.5",s,s,s,s,s,s,s,s,"Gewicht (kg) - gebruik punt (.)",!0,!0,!1,s,B.vZ,s,s,s,s,s,s,s,s,s,s,s,s),B.a2,!0,s,!0,s,!1,s,B.cb,s,s,s,s,B.Nh,s,s,s,1,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.bC,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ah,s,B.dk,s,s,s,s),B.a4,A.ml(s,B.ch,!1,s,!0,B.x,s,A.oO(),p,s,s,s,s,s,2,A.il(s,new A.cp(4,A.Y(12),B.dS),s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"Notities (optioneel)",!0,!0,!1,s,B.w_,s,s,s,s,s,s,s,s,s,s,s,s),B.a2,!0,s,!0,s,!1,s,B.cb,s,s,s,s,s,s,s,s,2,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.bC,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ah,s,B.dk,s,s,s,s)],o),B.p,B.l,B.at,0,B.q)
-return A.mX(A.b([A.e1(B.eK,new A.aME(a),s),A.hw(B.Nz,new A.aMF(q,a,p),A.fm(s,s,B.n,s,s,s,s,s,s,s,s,s,s,s,new A.bh(A.Y(12),B.t),s,s,s,s,s))],o),n,new A.bh(r,B.t),B.anQ)},
+return A.mX(A.b([A.e1(B.eK,new A.aME(a),s),A.hw(B.Nz,new A.aMF(q,a,p),A.fm(s,s,B.n,s,s,s,s,s,s,s,s,s,s,s,new A.bh(A.Y(12),B.t),s,s,s,s,s))],o),n,new A.bh(r,B.t),B.anP)},
 $S:41}
 A.aME.prototype={
 $0(){A.c3(this.a,!1).cp(null)
@@ -112581,7 +112578,7 @@ A.c3(r.b,!1).cp(p)}},
 $S:0}
 A.aMJ.prototype={
 $1(a){var s=null,r=A.Y(20),q=this.a,p=this.b,o=t.p,n=A.aB(A.b([A.ml(s,B.ch,!1,s,!0,B.x,s,A.oO(),q,s,s,s,s,s,2,A.il(s,new A.cp(4,A.Y(12),B.dS),s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"Bijv. 101.5",s,s,s,s,s,s,s,s,"Gewicht (kg) - gebruik punt (.)",!0,!0,!1,s,B.vZ,s,s,s,s,s,s,s,s,s,s,s,s),B.a2,!0,s,!0,s,!1,s,B.cb,s,s,s,s,B.Nh,s,s,s,1,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.bC,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ah,s,B.dk,s,s,s,s),B.a4,A.ml(s,B.ch,!1,s,!0,B.x,s,A.oO(),p,s,s,s,s,s,2,A.il(s,new A.cp(4,A.Y(12),B.dS),s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"Notities (optioneel)",!0,!0,!1,s,B.w_,s,s,s,s,s,s,s,s,s,s,s,s),B.a2,!0,s,!0,s,!1,s,B.cb,s,s,s,s,s,s,s,s,2,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.bC,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ah,s,B.dk,s,s,s,s)],o),B.p,B.l,B.at,0,B.q)
-return A.mX(A.b([A.e1(B.eK,new A.aMC(a),s),A.hw(B.Nz,new A.aMD(q,a,p),A.fm(s,s,B.n,s,s,s,s,s,s,s,s,s,s,s,new A.bh(A.Y(12),B.t),s,s,s,s,s))],o),n,new A.bh(r,B.t),B.anB)},
+return A.mX(A.b([A.e1(B.eK,new A.aMC(a),s),A.hw(B.Nz,new A.aMD(q,a,p),A.fm(s,s,B.n,s,s,s,s,s,s,s,s,s,s,s,new A.bh(A.Y(12),B.t),s,s,s,s,s))],o),n,new A.bh(r,B.t),B.anA)},
 $S:41}
 A.aMC.prototype={
 $0(){A.c3(this.a,!1).cp(null)
@@ -112787,7 +112784,7 @@ return B.rr},
 $S:265}
 A.awr.prototype={
 $2(a,b){var s=null
-if(a===0)return B.aoa
+if(a===0)return B.ao9
 if(a===-5||a===5)return A.P(""+B.c.cR(a),s,s,s,B.akS,s,s,s)
 return B.rr},
 $S:73}
@@ -117792,25 +117789,25 @@ B.v4=new A.t9(!1,!1,!1,!1)
 B.v5=new A.t9(!1,!1,!1,!0)
 B.fg=new A.S6(0,"tight")
 B.rn=new A.q(!0,B.m,null,null,null,null,14,B.b0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.anS=new A.aD("Stemming veranderde vandaag",null,B.rn,null,null,null,null,null,null,null)
-B.VU=new A.nh(1,B.fg,B.anS,null)
+B.anR=new A.aD("Stemming veranderde vandaag",null,B.rn,null,null,null,null,null,null,null)
+B.VU=new A.nh(1,B.fg,B.anR,null)
 B.aqU=new A.a_G(null)
 B.v6=new A.nh(1,B.fg,B.aqU,null)
 B.l=new A.pH(0,"start")
 B.j=new A.TI(1,"max")
 B.q=new A.XX(1,"down")
 B.Np=new A.q(!0,null,null,null,null,null,14,B.b0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.anp=new A.aD("Ontstemde manie",null,B.Np,null,null,null,null,null,null,null)
+B.ano=new A.aD("Ontstemde manie",null,B.Np,null,null,null,null,null,null,null)
 B.Nr=new A.q(!0,B.m,null,null,null,null,12,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.ans=new A.aD("Manisch maar ongelukkig/irritant",null,B.Nr,null,null,null,null,null,null,null)
-B.a03=s([B.anp,B.ans],t.p)
+B.anr=new A.aD("Manisch maar ongelukkig/irritant",null,B.Nr,null,null,null,null,null,null,null)
+B.a03=s([B.ano,B.anr],t.p)
 B.U8=new A.p7(B.a6,B.l,B.j,B.M,null,B.q,null,0,B.a03,null)
 B.VV=new A.nh(1,B.fg,B.U8,null)
 B.aqV=new A.a_H(null)
 B.v7=new A.nh(1,B.fg,B.aqV,null)
-B.anW=new A.aD("Daglicht",null,B.Np,null,null,null,null,null,null,null)
+B.anV=new A.aD("Daglicht",null,B.Np,null,null,null,null,null,null,null)
 B.ane=new A.aD("Vandaag buiten geweest",null,B.Nr,null,null,null,null,null,null,null)
-B.a_K=s([B.anW,B.ane],t.p)
+B.a_K=s([B.anV,B.ane],t.p)
 B.U9=new A.p7(B.a6,B.l,B.j,B.M,null,B.q,null,0,B.a_K,null)
 B.VW=new A.nh(1,B.fg,B.U9,null)
 B.VX=new A.DL(null,null,null,null,null,null,null,null,null,null,null,null,null)
@@ -120736,8 +120733,8 @@ B.I3=new A.Us(0,"nearestOverlay")
 B.ada=new A.Us(1,"rootOverlay")
 B.VA=new A.ai(12,0,12,0)
 B.amb=new A.q(!0,B.m,null,null,null,null,32,B.O,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.anC=new A.aD(":",null,B.amb,null,null,null,null,null,null,null)
-B.adb=new A.aY(B.VA,B.anC,null)
+B.anB=new A.aD(":",null,B.amb,null,null,null,null,null,null,null)
+B.adb=new A.aY(B.VA,B.anB,null)
 B.adc=new A.FJ(null)
 B.be=new A.UA(0,"fill")
 B.aC=new A.UA(1,"stroke")
@@ -121138,18 +121135,18 @@ B.ahe=new A.mg(3,"hide")
 B.asL=new A.mg(4,"remove")
 B.ahf=new A.mg(5,"timeout")
 B.ahg=new A.zc(null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.ant=new A.aD("PDF export tijdelijk niet beschikbaar",null,null,null,null,null,null,null,null,null)
-B.ahh=new A.k4(B.ant,B.br,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
-B.ao_=new A.aD("Kon gebeurtenis niet opslaan. Probeer opnieuw.",null,null,null,null,null,null,null,null,null)
-B.ahi=new A.k4(B.ao_,B.ar,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
+B.ans=new A.aD("PDF export tijdelijk niet beschikbaar",null,null,null,null,null,null,null,null,null)
+B.ahh=new A.k4(B.ans,B.br,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
+B.anZ=new A.aD("Kon gebeurtenis niet opslaan. Probeer opnieuw.",null,null,null,null,null,null,null,null,null)
+B.ahi=new A.k4(B.anZ,B.ar,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
 B.aou=new A.aD("Gebeurtenis opgeslagen!",null,null,null,null,null,null,null,null,null)
 B.ahj=new A.k4(B.aou,B.n,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
-B.anv=new A.aD("Vul eerst een korte omschrijving in.",null,null,null,null,null,null,null,null,null)
-B.ahk=new A.k4(B.anv,B.eF,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
+B.anu=new A.aD("Vul eerst een korte omschrijving in.",null,null,null,null,null,null,null,null,null)
+B.ahk=new A.k4(B.anu,B.eF,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
 B.an9=new A.aD("Alle data is verwijderd!",null,null,null,null,null,null,null,null,null)
 B.ahl=new A.k4(B.an9,B.bw,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
-B.ao0=new A.aD("App is gereset. Start opnieuw.",null,null,null,null,null,null,null,null,null)
-B.ahm=new A.k4(B.ao0,B.bw,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
+B.ao_=new A.aD("App is gereset. Start opnieuw.",null,null,null,null,null,null,null,null,null)
+B.ahm=new A.k4(B.ao_,B.bw,null,null,null,null,null,null,null,null,null,null,null,B.aH,!1,null,null,null,B.x,null)
 B.MX=new A.HA(0,"permissive")
 B.ahn=new A.HA(1,"normal")
 B.aho=new A.HA(2,"forced")
@@ -121588,61 +121585,61 @@ B.anj=new A.aD("Belangrijke Gebeurtenis",null,B.cz,null,null,null,null,null,null
 B.ank=new A.aD("Life Chart",null,B.cW,null,null,null,null,null,null,null)
 B.anl=new A.aD("Verwijderen",null,null,null,null,null,null,null,null,null)
 B.anm=new A.aD("Nieuwe Gebeurtenis",null,B.ro,null,null,null,null,null,null,null)
-B.ann=new A.aD("Slaap Details",null,B.cz,null,null,null,null,null,null,null)
-B.ano=new A.aD("Sociale contacten",null,B.rn,null,null,null,null,null,null,null)
-B.anq=new A.aD("Afspraak verwijderen?",null,null,null,null,null,null,null,null,null)
-B.anr=new A.aD("Medicatie",null,B.cW,null,null,null,null,null,null,null)
-B.anu=new A.aD("Samenvatting gekopieerd naar klembord!",null,null,null,null,null,null,null,null,null)
-B.anw=new A.aD("Inzichten & Patronen",null,B.cz,null,null,null,null,null,null,null)
-B.anx=new A.aD("Dit verwijdert ALLE data uit de database.\n\nDit kan niet ongedaan worden gemaakt!\n\nWeet je zeker dat je door wilt gaan?",null,null,null,null,null,null,null,null,null)
-B.any=new A.aD("Alles Wissen",null,null,null,null,null,null,null,null,null)
-B.anz=new A.aD("Stabiliteit Score",null,B.Nv,null,null,null,null,null,null,null)
-B.anA=new A.aD("Ritme Stabiliteit",null,B.cz,null,null,null,null,null,null,null)
-B.anB=new A.aD("Gewicht toevoegen",null,null,null,null,null,null,null,null,null)
+B.ann=new A.aD("Sociale contacten",null,B.rn,null,null,null,null,null,null,null)
+B.anp=new A.aD("Afspraak verwijderen?",null,null,null,null,null,null,null,null,null)
+B.anq=new A.aD("Medicatie",null,B.cW,null,null,null,null,null,null,null)
+B.ant=new A.aD("Samenvatting gekopieerd naar klembord!",null,null,null,null,null,null,null,null,null)
+B.anv=new A.aD("Inzichten & Patronen",null,B.cz,null,null,null,null,null,null,null)
+B.anw=new A.aD("Dit verwijdert ALLE data uit de database.\n\nDit kan niet ongedaan worden gemaakt!\n\nWeet je zeker dat je door wilt gaan?",null,null,null,null,null,null,null,null,null)
+B.anx=new A.aD("Alles Wissen",null,null,null,null,null,null,null,null,null)
+B.any=new A.aD("Stabiliteit Score",null,B.Nv,null,null,null,null,null,null,null)
+B.anz=new A.aD("Ritme Stabiliteit",null,B.cz,null,null,null,null,null,null,null)
+B.anA=new A.aD("Gewicht toevoegen",null,null,null,null,null,null,null,null,null)
 B.Nx=new A.q(!0,B.h,null,null,null,null,18,B.O,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.anD=new A.aD("AI Diepgang",null,B.Nx,null,null,null,null,null,null,null)
+B.anC=new A.aD("AI Diepgang",null,B.Nx,null,null,null,null,null,null,null)
 B.i6=new A.aD("Opnieuw proberen",null,null,null,null,null,null,null,null,null)
-B.anE=new A.aD("App Resetten",null,null,null,null,null,null,null,null,null)
-B.anF=new A.aD("Kon activiteit niet opslaan. Probeer opnieuw.",null,null,null,null,null,null,null,null,null)
-B.anG=new A.aD("Annuleren",null,B.Nu,null,null,null,null,null,null,null)
-B.anH=new A.aD("Activiteit types",null,B.fJ,null,null,null,null,null,null,null)
+B.anD=new A.aD("App Resetten",null,null,null,null,null,null,null,null,null)
+B.anE=new A.aD("Kon activiteit niet opslaan. Probeer opnieuw.",null,null,null,null,null,null,null,null,null)
+B.anF=new A.aD("Annuleren",null,B.Nu,null,null,null,null,null,null,null)
+B.anG=new A.aD("Activiteit types",null,B.fJ,null,null,null,null,null,null,null)
 B.Nz=new A.aD("Opslaan",null,B.i3,null,null,null,null,null,null,null)
 B.rr=new A.aD("",null,null,null,null,null,null,null,null,null)
-B.anI=new A.aD("Per dag",null,B.fJ,null,null,null,null,null,null,null)
-B.anJ=new A.aD("Dit markeert alle dubbele logs per dag als leeg.\n\nAlleen de meest recente log per dag blijft behouden.\n\nWeet je zeker dat je door wilt gaan?",null,null,null,null,null,null,null,null,null)
-B.anK=new A.aD("Nieuwe Gebeurtenis",null,B.cz,null,null,null,null,null,null,null)
-B.anL=new A.aD("Medicatie verwijderen?",null,null,null,null,null,null,null,null,null)
-B.anM=new A.aD("Gewicht",null,B.cz,null,null,null,null,null,null,null)
-B.anN=new A.aD("Life Events",null,B.cW,null,null,null,null,null,null,null)
-B.anO=new A.aD("Slaap per dag (laatste 7 dagen)",null,B.fJ,null,null,null,null,null,null,null)
-B.anP=new A.aD("Ja, reset alles",null,B.i3,null,null,null,null,null,null,null)
-B.anQ=new A.aD("Gewicht bewerken",null,null,null,null,null,null,null,null,null)
-B.anR=new A.aD("Stemming - Fout",null,null,null,null,null,null,null,null,null)
-B.anT=new A.aD("Deze actie kan niet ongedaan worden.",null,null,null,null,null,null,null,null,null)
-B.anU=new A.aD("Slaap logboek",null,B.fJ,null,null,null,null,null,null,null)
-B.anV=new A.aD("Herinnering",null,null,null,null,null,null,null,null,null)
-B.anX=new A.aD("Nieuwe afspraak",null,B.i3,null,null,null,null,null,null,null)
-B.anY=new A.aD("Kon medicatie niet verwijderen. Probeer opnieuw.",null,null,null,null,null,null,null,null,null)
+B.anH=new A.aD("Per dag",null,B.fJ,null,null,null,null,null,null,null)
+B.anI=new A.aD("Dit markeert alle dubbele logs per dag als leeg.\n\nAlleen de meest recente log per dag blijft behouden.\n\nWeet je zeker dat je door wilt gaan?",null,null,null,null,null,null,null,null,null)
+B.anJ=new A.aD("Nieuwe Gebeurtenis",null,B.cz,null,null,null,null,null,null,null)
+B.anK=new A.aD("Medicatie verwijderen?",null,null,null,null,null,null,null,null,null)
+B.anL=new A.aD("Gewicht",null,B.cz,null,null,null,null,null,null,null)
+B.anM=new A.aD("Life Events",null,B.cW,null,null,null,null,null,null,null)
+B.anN=new A.aD("Slaap per dag (laatste 7 dagen)",null,B.fJ,null,null,null,null,null,null,null)
+B.anO=new A.aD("Ja, reset alles",null,B.i3,null,null,null,null,null,null,null)
+B.anP=new A.aD("Gewicht bewerken",null,null,null,null,null,null,null,null,null)
+B.anQ=new A.aD("Stemming - Fout",null,null,null,null,null,null,null,null,null)
+B.anS=new A.aD("Deze actie kan niet ongedaan worden.",null,null,null,null,null,null,null,null,null)
+B.anT=new A.aD("Slaap logboek",null,B.fJ,null,null,null,null,null,null,null)
+B.anU=new A.aD("Herinnering",null,null,null,null,null,null,null,null,null)
+B.anW=new A.aD("Nieuwe afspraak",null,B.i3,null,null,null,null,null,null,null)
+B.anX=new A.aD("Kon medicatie niet verwijderen. Probeer opnieuw.",null,null,null,null,null,null,null,null,null)
 B.ajD=new A.q(!0,B.ar,null,null,null,null,16,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.anZ=new A.aD("\ud83d\uddd1\ufe0f Verwijderen",null,B.ajD,null,null,null,null,null,null,null)
+B.anY=new A.aD("\ud83d\uddd1\ufe0f Verwijderen",null,B.ajD,null,null,null,null,null,null,null)
 B.eK=new A.aD("Annuleren",null,null,null,null,null,null,null,null,null)
 B.aj6=new A.q(!0,B.h,null,null,null,null,32,B.O,null,2,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.ao1=new A.aD("Ritme",null,B.aj6,null,null,null,null,null,null,null)
-B.ao2=new A.aD("Kopieer Rapport",null,null,null,null,null,null,null,null,null)
+B.ao0=new A.aD("Ritme",null,B.aj6,null,null,null,null,null,null,null)
+B.ao1=new A.aD("Kopieer Rapport",null,null,null,null,null,null,null,null,null)
 B.alE=new A.q(!0,B.bk,null,null,null,null,10,B.O,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.ao3=new A.aD("SLAAP",null,B.alE,null,null,null,null,null,null,null)
-B.ao4=new A.aD("\u26a0\ufe0f Laatste Waarschuwing",null,null,null,null,null,null,null,null,null)
-B.ao5=new A.aD("Kon inname niet bijwerken. Probeer opnieuw.",null,null,null,null,null,null,null,null,null)
-B.ao6=new A.aD("Dit wist ALLE data inclusief medicatie, stemmingen, en instellingen. Dit kan niet ongedaan worden gemaakt.",null,null,null,null,null,null,null,null,null)
-B.ao7=new A.aD("Klaar",null,B.rp,null,null,null,null,null,null,null)
-B.ao8=new A.aD("Statistieken",null,B.Nx,null,null,null,null,null,null,null)
+B.ao2=new A.aD("SLAAP",null,B.alE,null,null,null,null,null,null,null)
+B.ao3=new A.aD("\u26a0\ufe0f Laatste Waarschuwing",null,null,null,null,null,null,null,null,null)
+B.ao4=new A.aD("Kon inname niet bijwerken. Probeer opnieuw.",null,null,null,null,null,null,null,null,null)
+B.ao5=new A.aD("Dit wist ALLE data inclusief medicatie, stemmingen, en instellingen. Dit kan niet ongedaan worden gemaakt.",null,null,null,null,null,null,null,null,null)
+B.ao6=new A.aD("Klaar",null,B.rp,null,null,null,null,null,null,null)
+B.ao7=new A.aD("Statistieken",null,B.Nx,null,null,null,null,null,null,null)
 B.alM=new A.q(!0,B.h,null,null,null,null,16,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.ao9=new A.aD("Annuleer",null,B.alM,null,null,null,null,null,null,null)
+B.ao8=new A.aD("Annuleer",null,B.alM,null,null,null,null,null,null,null)
 B.amr=new A.q(!0,null,null,null,null,null,10,B.O,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.aoa=new A.aD("0",null,B.amr,null,null,null,null,null,null,null)
-B.aob=new A.aD("Database gereset. Herstart de app.",null,null,null,null,null,null,null,null,null)
-B.aoc=new A.aD("Medicatie Schema",null,B.cW,null,null,null,null,null,null,null)
-B.aod=new A.aD("Opgeslagen!",null,null,null,null,null,null,null,null,null)
+B.ao9=new A.aD("0",null,B.amr,null,null,null,null,null,null,null)
+B.aoa=new A.aD("Database gereset. Herstart de app.",null,null,null,null,null,null,null,null,null)
+B.aob=new A.aD("Medicatie Schema",null,B.cW,null,null,null,null,null,null,null)
+B.aoc=new A.aD("Opgeslagen!",null,null,null,null,null,null,null,null,null)
+B.aod=new A.aD("Slaap Details (Netto)",null,B.cz,null,null,null,null,null,null,null)
 B.aoe=new A.aD("Database Opruimen",null,null,null,null,null,null,null,null,null)
 B.aof=new A.aD("Verwijderen",null,B.i3,null,null,null,null,null,null,null)
 B.aog=new A.aD("Database Debug",null,B.i3,null,null,null,null,null,null,null)
