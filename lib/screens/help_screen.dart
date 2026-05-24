@@ -26,57 +26,7 @@ class HelpScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSection(
-                icon: Icons.mood,
-                title: 'Stemming bijhouden',
-                description:
-                    'Tik op het smiley-icoon om je stemming te registreren. '
-                    'Gebruik de schuifbalk om aan te geven hoe je je voelt (-5 tot +5). '
-                    'Je kunt ook aangeven hoeveel uur je hebt geslapen.',
-              ),
-              const SizedBox(height: 20),
-              _buildSection(
-                icon: Icons.bedtime,
-                title: 'Slaap registreren',
-                description:
-                    'In het slaap-scherm kun je je bedtijd, wakkerwordtijd en '
-                    'eventuele wakker-momenten invullen. Dit helpt om je slaappatroon '
-                    'te analyseren en je slaapkwaliteit te verbeteren.',
-              ),
-              const SizedBox(height: 20),
-              _buildSection(
-                icon: Icons.local_activity,
-                title: 'Activiteiten plannen',
-                description:
-                    'Voeg sociale en fysieke activiteiten toe aan je dag. '
-                    'Dit helpt om een regelmatig ritme op te bouwen.',
-              ),
-              const SizedBox(height: 20),
-              _buildSection(
-                icon: Icons.schedule,
-                title: 'SRT Score',
-                description:
-                    'De Social Rhythm Metric (SRT) meet hoe regelmatig je '
-                    'activiteiten uitvoert. Een hogere score betekent een '
-                    'stabieler dagelijks ritme.',
-              ),
-              const SizedBox(height: 20),
-              _buildSection(
-                icon: Icons.bar_chart,
-                title: 'Statistieken bekijken',
-                description:
-                    'Tik op het grafiek-icoon om je voortgang te zien. '
-                    'Je kunt hier trends in stemming, slaap en activiteiten volgen.',
-              ),
-              const SizedBox(height: 20),
-              _buildSection(
-                icon: Icons.settings,
-                title: 'Instellingen',
-                description:
-                    'Pas je gebruikersnaam, notificaties en andere '
-                    'voorkeuren aan in het instellingen-scherm.',
-              ),
-              const SizedBox(height: 30),
+              // Intro
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -96,9 +46,10 @@ class HelpScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Ritme helpt je om je dagelijks ritme bij te houden. '
-                      'Regelmatigheid in slaap, activiteiten en sociale contacten '
-                      'draagt bij aan een beter welbevinden.',
+                      'Ritme is gebaseerd op Social Rhythm Therapy (SRT), '
+                      'een bewezen methode om je dagelijks ritme te verbeteren. '
+                      'Door regelmatigheid in slaap, activiteiten en sociale contacten '
+                      'kun je je stemming en welbevinden positief beïnvloeden.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppTheme.textCharcoal,
@@ -109,6 +60,91 @@ class HelpScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 24),
+
+              _buildSection(
+                icon: Icons.mood,
+                title: 'Stemming bijhouden',
+                description:
+                    'Tik op het smiley-icoon om je stemming te registreren.\n\n'
+                    '• Gebruik de schuifbalk om aan te geven hoe je je voelt\n'
+                    '• Schaal loopt van -5 (heel slecht) tot +5 (heel goed)\n'
+                    '• 0 is neutraal - geen bijzondere stemming\n'
+                    '• Je kunt ook aangeven hoeveel uur je hebt geslapen\n'
+                    '• Probeer dit dagelijks te doen voor het beste overzicht',
+              ),
+              const SizedBox(height: 20),
+              _buildSection(
+                icon: Icons.bedtime,
+                title: 'Slaap registreren',
+                description:
+                    'In het slaap-scherm kun je je slaapgegevens invoeren.\n\n'
+                    '• Vul je bedtijd in (wanneer ging je naar bed?)\n'
+                    '• Vul je wakkerwordtijd in (wanneer stond je op?)\n'
+                    '• Geef aan hoeveel minuten je wakker lag\n'
+                    '• De app berekent automatisch je slaapduur\n'
+                    '• Je slaapkwaliteit wordt bijgehouden in de statistieken',
+              ),
+              const SizedBox(height: 20),
+              _buildSection(
+                icon: Icons.local_activity,
+                title: 'Activiteiten plannen',
+                description:
+                    'Voeg sociale en fysieke activiteiten toe aan je dag.\n\n'
+                    '• Kies een activiteit (bijv. wandelen, koffie met vrienden)\n'
+                    '• Stel een tijd in wanneer je dit wilt doen\n'
+                    '• Geef aan of het een sociale of fysieke activiteit is\n'
+                    '• Activiteiten helpen om structuur in je dag te brengen\n'
+                    '• Je kunt activiteiten later als "voltooid" markeren',
+              ),
+              const SizedBox(height: 20),
+              _buildSection(
+                icon: Icons.schedule,
+                title: 'SRT Score begrijpen',
+                description:
+                    'De Social Rhythm Metric (SRT) meet je dagelijkse regelmaat.\n\n'
+                    '• Score wordt berekend uit je activiteiten en slaap\n'
+                    '• Hogere score = stabieler dagelijks ritme\n'
+                    '• Doel: een consistent patroon van slapen en activiteiten\n'
+                    '• Regelmatigheid helpt je biologische klok stabiliseren\n'
+                    '• Dit kan bijdragen aan een betere stemming',
+              ),
+              const SizedBox(height: 20),
+              _buildSection(
+                icon: Icons.bar_chart,
+                title: 'Statistieken bekijken',
+                description:
+                    'Tik op het grafiek-icoon om je voortgang te zien.\n\n'
+                    '• Stemming trend: zie hoe je je de afgelopen week voelde\n'
+                    '• Slaap overzicht: gemiddelde slaapduur en kwaliteit\n'
+                    '• Activiteiten: hoeveel heb je deze week gedaan?\n'
+                    '• SRT Score: je regelmaat over tijd\n'
+                    '• Gebruik deze inzichten om je ritme te verbeteren',
+              ),
+              const SizedBox(height: 20),
+              _buildSection(
+                icon: Icons.settings,
+                title: 'Instellingen',
+                description:
+                    'Pas je voorkeuren aan in het instellingen-scherm.\n\n'
+                    '• Wijzig je gebruikersnaam\n'
+                    '• Stel notificaties in voor dagelijkse herinneringen\n'
+                    '• Kies tussen licht en donker thema\n'
+                    '• Beheer je accountgegevens',
+              ),
+              const SizedBox(height: 20),
+              _buildSection(
+                icon: Icons.lightbulb_outline,
+                title: 'Tips voor succes',
+                description:
+                    'Maximaliseer het effect van Ritme met deze tips.\n\n'
+                    '• Vul je stemming dagelijks in, liefst op hetzelfde tijdstip\n'
+                    '• Houd je slaaptijden consistent, ook in het weekend\n'
+                    '• Plan minimaal één sociale activiteit per dag\n'
+                    '• Bekijk je statistieken wekelijks om patronen te herkennen\n'
+                    '• Wees geduldig - verandering in ritme kost tijd',
+              ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -162,13 +198,13 @@ class HelpScreen extends StatelessWidget {
                     color: AppTheme.textCharcoal,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   description,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
-                    height: 1.4,
+                    height: 1.5,
                   ),
                 ),
               ],
