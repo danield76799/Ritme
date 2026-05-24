@@ -383,10 +383,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
       
       await db.insertSleepLog(_formattedDate, _bedTime!, _wakeTime!, _awakeMinutes);
       
-      // Also update daily log with calculated sleep hours
+      // Also update daily log with calculated sleep hours and awake minutes
       await db.upsertDailyLog({
         'date': _formattedDate,
         'uren_slaap': sleepHours,
+        'awake_minutes': _awakeMinutes,
       });
       
       // Also save "Opstaan" activity with wake_time (auto-completed)
