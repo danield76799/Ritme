@@ -145,12 +145,16 @@ class HiveDatabaseHelper implements DatabaseRepository {
       return cleanMap;
     }).toList();
     
-    // Group by date and keep only the latest entry per date
+    // Group by date and keep only the latest entry per date (by id/timestamp)
     Map<String, Map<String, dynamic>> latestLogsByDate = {};
     for (var log in logs) {
       final date = log['date']?.toString();
-      if (date != null && !latestLogsByDate.containsKey(date)) {
-        latestLogsByDate[date] = log;
+      if (date != null) {
+        // Keep the entry with the highest id (most recent)
+        if (!latestLogsByDate.containsKey(date) || 
+            (log['id'] is num && latestLogsByDate[date]!['id'] is num && (log['id'] as num) > (latestLogsByDate[date]!['id'] as num))) {
+          latestLogsByDate[date] = log;
+        }
       }
     }
     
