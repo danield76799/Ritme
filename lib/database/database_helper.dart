@@ -53,7 +53,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       readOnly: false,
@@ -153,6 +153,32 @@ class DatabaseHelper implements DatabaseRepository {
           WHEN stemming_laag IS NOT NULL THEN ((stemming_laag - 50) / 10.0)
           ELSE 0
         END
+      ''');
+    }
+    if (oldVersion < 12) {
+      // Fix duplicate rows and recalculate sleep_hours
+      // Remove duplicate rows keeping the one with highest id (most recent)
+      await db.execute('''
+        DELETE FROM daily_logs 
+        WHERE id NOT IN (
+          SELECT MAX(id) 
+          FROM daily_logs 
+          GROUP BY date
+        )
+      ''');
+      
+      // Recalculate sleep_hours for rows with bed_time and wake_time
+      // This ensures sleep_hours is always netto (total - awake_minutes)
+      await db.execute('''
+        UPDATE daily_logs 
+        SET sleep_hours = (
+          CASE 
+            WHEN bed_time IS NOT NULL AND wake_time IS NOT NULL THEN
+              (strftime('%s', wake_time) - strftime('%s', bed_time)) / 3600.0 - (awake_minutes / 60.0)
+            ELSE sleep_hours
+          END
+        )
+        WHERE bed_time IS NOT NULL AND wake_time IS NOT NULL
       ''');
     }
   }
