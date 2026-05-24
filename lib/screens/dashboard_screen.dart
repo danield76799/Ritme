@@ -241,9 +241,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     final hour = DateTime.now().hour;
     if (hour < 12) {
       return 'Goedemorgen, $name!';
-    } else if (hour < 17) {
+    } else if (hour < 18) {
       return 'Goedemiddag, $name!';
-    } else if (hour < 21) {
+    } else if (hour < 23) {
       return 'Goedenavond, $name!';
     } else {
       return 'Goedenacht, $name!';
