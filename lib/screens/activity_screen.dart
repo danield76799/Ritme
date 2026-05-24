@@ -356,32 +356,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
               ),
               const Divider(height: 1, color: Colors.grey),
               Expanded(
-                child: CupertinoPicker(
-                  itemExtent: 40,
-                  onSelectedItemChanged: (index) {
-                    selectedMinutes = index * 15;
+                child: _AwakeTimePicker(
+                  initialMinutes: _awakeMinutes,
+                  onSelected: (minutes) {
+                    setState(() {
+                      _awakeMinutes = minutes;
+                    });
+                    _saveSleepData();
+                    Navigator.pop(context);
                   },
-                  scrollController: FixedExtentScrollController(initialItem: _awakeMinutes ~/ 15),
-                  backgroundColor: Colors.grey[900],
-                  children: List.generate(49, (index) {
-                    final minutes = index * 15;
-                    final hours = minutes ~/ 60;
-                    final mins = minutes % 60;
-                    String label;
-                    if (hours > 0 && mins > 0) {
-                      label = '${hours}u ${mins}m';
-                    } else if (hours > 0) {
-                      label = '${hours}u';
-                    } else {
-                      label = '${mins}m';
-                    }
-                    return Center(
-                      child: Text(
-                        label,
-                        style: const TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    );
-                  }),
                 ),
               ),
             ],
@@ -817,6 +800,95 @@ class _ActivityScreenState extends State<ActivityScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+
+class _AwakeTimePicker extends StatefulWidget {
+  final int initialMinutes;
+  final Function(int) onSelected;
+
+  const _AwakeTimePicker({
+    required this.initialMinutes,
+    required this.onSelected,
+  });
+
+  @override
+  State<_AwakeTimePicker> createState() => _AwakeTimePickerState();
+}
+
+class _AwakeTimePickerState extends State<_AwakeTimePicker> {
+  late int _selectedMinutes;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedMinutes = widget.initialMinutes;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 300,
+      color: Colors.grey[900],
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: Colors.grey[850],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Annuleer", style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+                const Text(
+                  "Wakker gelegen",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                ),
+                TextButton(
+                  onPressed: () {
+                    widget.onSelected(_selectedMinutes);
+                  },
+                  child: const Text("Klaar", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Colors.grey),
+          Expanded(
+            child: CupertinoPicker(
+              itemExtent: 40,
+              scrollController: FixedExtentScrollController(initialItem: widget.initialMinutes ~/ 15),
+              onSelectedItemChanged: (index) {
+                _selectedMinutes = index * 15;
+              },
+              backgroundColor: Colors.grey[900],
+              children: List.generate(49, (index) {
+                final minutes = index * 15;
+                final hours = minutes ~/ 60;
+                final mins = minutes % 60;
+                String label;
+                if (hours > 0 && mins > 0) {
+                  label = "${hours}u ${mins}m";
+                } else if (hours > 0) {
+                  label = "${hours}u";
+                } else {
+                  label = "${mins}m";
+                }
+                return Center(
+                  child: Text(
+                    label,
+                    style: const TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
     );
   }
