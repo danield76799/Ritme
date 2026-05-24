@@ -5,13 +5,8 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 permissions:
   contents: write
-  actions: read
-  checks: read
 
 jobs:
   build:
@@ -19,140 +14,78 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Flutter
+    - name: Setup Flutter 3.24.5
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.29.0'
+        flutter-version: '3.24.5'
         channel: 'stable'
-        cache: true
     
-    - name: Setup Java
+    - name: Setup Java 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: 'gradle'
     
-    - name: Accept Android licenses
-      run: yes | flutter doctor --android-licenses || true
-    
-    - name: Get dependencies
+    - name: Flutter Info
       run: |
-        flutter pub get
-    
-    - name: Build APK
-      run: |
-        echo "=== Ritme Build Starting ==="
         flutter --version
-        flutter doctor || true
+        flutter doctor -v
+    
+    - name: Get Dependencies
+      run: flutter pub get
+    
+    - name: Build APK (with fallback)
+      run: |
+        # Try build, capture ALL output
+        flutter build apk --release 2>&1 | tee build_output.log || true
         
-        echo "=== Starting Build ==="
-        # Build with error tolerance - don't fail on warnings
-        set +e
-        flutter build apk --release --no-tree-shake-icons 2>&1 | tee build.log
-        BUILD_EXIT_CODE=$?
-        set -e
+        # Check if APK was created despite any errors
+        echo "=== Checking for APK ==="
+        find build -name "*.apk" -type f 2>/dev/null
         
-        # Check if APK was created even if build reported failure
-        if [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
-          echo "✅ APK found! Build successful."
-          ls -la build/app/outputs/apk/release/app-release.apk
-          exit 0
-        fi
-        
-        # Also check flutter-apk directory
+        # If APK exists, we're good
         if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-          echo "✅ APK found in flutter-apk! Build successful."
-          ls -la build/app/outputs/flutter-apk/app-release.apk
+          echo "✅ APK found at flutter-apk/app-release.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk app-release.apk
           exit 0
         fi
         
-        # If no APK found, show error and exit
-        echo "❌ BUILD FAILED - No APK found"
-        echo "Last 200 lines of build log:"
-        tail -200 build.log
+        if [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
+          echo "✅ APK found at apk/release/app-release.apk"
+          cp build/app/outputs/apk/release/app-release.apk app-release.apk
+          exit 0
+        fi
+        
+        # No APK - show error and fail
+        echo "❌ No APK found. Build output:"
+        cat build_output.log
         exit 1
     
-    - name: Sign APK
-      env:
-        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        KEYSTORE_PASSWORD: *** secrets.KEYSTORE_PASSWORD }}
-        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: *** secrets.KEY_PASSWORD }}
-      run: |
-        # Check if keystore secret is available
-        if [ -z "$KEYSTORE_BASE64" ]; then
-          echo "WARNING: KEYSTORE_BASE64 not set, skipping signing"
-          exit 0
-        fi
-        
-        # Decode keystore
-        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
-        
-        # Find zipalign
-        ZIPALIGN=$(find $ANDROID_HOME/build-tools -name zipalign | head -1)
-        echo "Found zipalign at: $ZIPALIGN"
-        
-        # Find and sign APKs
-        APK_FOUND=false
-        for apk in build/app/outputs/apk/release/*.apk build/app/outputs/flutter-apk/*.apk; do
-          if [ -f "$apk" ]; then
-            echo "Signing $apk"
-            jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
-              -keystore /tmp/keystore.jks \
-              -storepass "$KEYSTORE_PASSWORD" \
-              -keypass "$KEY_PASSWORD" \
-              "$apk" "$KEY_ALIAS"
-            
-            # Align APK
-            ALIGNED="${apk%.apk}-aligned.apk"
-            "$ZIPALIGN" -f 4 "$apk" "$ALIGNED"
-            mv "$ALIGNED" "$apk"
-            APK_FOUND=true
-          fi
-        done
-        
-        if [ "$APK_FOUND" = false ]; then
-          echo "WARNING: No APKs found to sign"
-        else
-          echo "All APKs signed and aligned successfully"
-        fi
-      continue-on-error: true
-    
-    - name: Upload APK Artifacts
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: ritme-release-apk
-        path: |
-          build/app/outputs/apk/release/*.apk
-          build/app/outputs/flutter-apk/*.apk
-        if-no-files-found: warn
+        name: ritme-apk
+        path: app-release.apk
+        if-no-files-found: ignore
     
     - name: Create Release
       if: github.ref == 'refs/heads/main' && always()
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          build/app/outputs/apk/release/*.apk
-          build/app/outputs/flutter-apk/*.apk
         tag_name: v1.3.4-build${{ github.run_number }}
         name: Ritme v1.3.4 (Build ${{ github.run_number }})
+        files: app-release.apk
         body: |
-          ## Ritme - SRT Tracker v1.3.4
+          ## Ritme v1.3.4 Build ${{ github.run_number }}
           
-          **Build info:**
-          - Build number: ${{ github.run_number }}
-          - Commit: ${{ github.sha }}
-          - Type: Release build
+          **Build:** ${{ github.run_number }}  
+          **Commit:** ${{ github.sha }}
           
-          **Wijzigingen in deze build:**
+          **Wijzigingen:**
           - Workflow verbeterd voor betrouwbaardere builds
-          - Flutter 3.29.0 gebruikt (compatible met Dart 3.7.0)
-          - APK signing verbeterd
+          - Flutter 3.24.5 gebruikt
           
-          **Let op:** Dit is een automatische build.
-        draft: false
-        prerelease: false
+          **Let op:** Automatische build.
       env:
         GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
