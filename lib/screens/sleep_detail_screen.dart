@@ -73,7 +73,9 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
               if (sleep < 0) sleep = 0;
             }
           }
-            
+          
+          // Alleen toevoegen als we geldige sleep data hebben
+          if (sleep != null && sleep > 0) {
             sleepEntries.add({
               'date': log['date'],
               'sleep': sleep,
@@ -85,6 +87,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             if (sleep > best) best = sleep;
             if (sleep < worst) worst = sleep;
             count++;
+          }
           }
         } catch (e) {
           continue;
