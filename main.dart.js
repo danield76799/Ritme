@@ -110243,10 +110243,9 @@ $S:0}
 A.tG.prototype={
 a8(){return new A.KG(A.C(t.N,t.z),A.b([],t.s))}}
 A.KG.prototype={
-KD(a){var s=B.c.aq(a*60)
-B.e.c_(s,60)
-if(B.e.aI(s,60)===0)return"${uur}u"
-return"${uur}u ${minuten}m"},
+KD(a){var s=B.c.aq(a*60),r=B.e.c_(s,60),q=B.e.aI(s,60)
+if(q===0)return""+r+"u"
+return""+r+"u "+q+"m"},
 ah(){this.aw()
 this.xo()},
 xo(){var s=0,r=A.z(t.H),q,p=2,o=[],n=this,m,l,k,j,i,h,g
@@ -110330,41 +110329,43 @@ a3=(1-B.c.cW(a2/100,0,1))*100}else a3=0
 a6=n.a
 h=k>0?m/k:0
 a4=j>0?l/j:0
-q=A.a8(["aantalDagen",a6,"gemiddeldeStemming",h,"gemiddeldeSlaap",a4,"totaleActiviteiten",a,"stabiliteit",B.c.cW(a3,0,100),"logs",p],o,t.z)
+q=A.a8(["aantalDagen",a6,"sleepDays",j,"gemiddeldeStemming",h,"gemiddeldeSlaap",a4,"totaleActiviteiten",a,"stabiliteit",B.c.cW(a3,0,100),"logs",p],o,t.z)
 s=1
 break
 case 1:return A.x(q,r)}})
 return A.y($async$wL,r)},
-als(a){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e="aantalDagen",d="stemming_hoog",c=A.b([],t.s),b=J.ag(a)
-if(J.c(b.i(a,e),0)){c.push("Nog geen data om te analyseren. Begin met het bijhouden van je stemming en slaap!")
-return c}s=b.i(a,"gemiddeldeSlaap")
-r=b.i(a,e)
+als(a0){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d="aantalDagen",c="stemming_hoog",b=A.b([],t.s),a=J.ag(a0)
+if(J.c(a.i(a0,d),0)){b.push("Nog geen data om te analyseren. Begin met het bijhouden van je stemming en slaap!")
+return b}s=a.i(a0,"gemiddeldeSlaap")
+r=a.i(a0,d)
 if(r==null)r=0
-if(s>0)if(r<=2)c.push("Je hebt "+(r===1?"1 nacht":A.k(r)+" nachten")+" slaap gelogd. Log meer dagen voor betere inzichten.")
-else if(s<6)c.push("Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beinvloeden.")
-else if(s>=7&&s<=9)c.push("Je slaap van gemiddeld "+this.KD(s)+" is prima!")
-else if(s>9)c.push("Je slaapt gemiddeld "+this.KD(s)+" - veel rust is goed!")
-q=b.i(a,"gemiddeldeStemming")
-if(q!==0){p=q>10?B.c.cW(q/100*10-5,-5,5):B.c.cW(q,-5,5)
-o=t.Fe.a(b.i(a,"logs"))
-if(o==null)o=A.b([],t.c)
-for(n=J.cL(o),m=n.gak(o),l=0;m.v();)if(J.L(m.gP(m),d)!=null)++l
-if(l<3)c.push("Je hebt "+(l===1?"1 stemming":""+l+" stemmingen")+" gelogd. Log meer voor betrouwbare inzichten.")
-else if(Math.abs(p)<0.5){for(n=n.gak(o),k=0;n.v();){j=J.L(n.gP(n),d)
-if(j!=null){if(typeof j=="number")i=j
-else if(typeof j=="string"){i=A.dC(j)
-if(i==null)i=0}else i=0
-m=i-q
-k+=m*m}}h=k/l
-if(h>2)c.push("Je stemming fluctueert rond het gemiddelde. Er is variatie in je dagelijkse stemming.")
-else c.push("Je stemming is stabiel/neutraal.")}else if(p<-2)c.push("Je gemiddelde stemming is aan de lage kant. Overweeg extra zelfzorg deze week.")
-else if(p>2)c.push("Je stemming is overwegend positief!")}g=b.i(a,"totaleActiviteiten")
-if(g<7&&r>2)c.push("Probeer meer sociale activiteiten te plannen - die helpen je ritme stabiel te houden.")
-else if(g>=14)c.push("Veel activiteiten deze week! Zorg voor voldoende rustmomenten.")
-f=b.i(a,"stabiliteit")
-if(r>=5)if(f>80)c.push("Je ritme is erg stabiel - uitstekend!")
-else if(f<50)c.push("Je ritme wisselt sterk. Probeer vaste tijden aan te houden voor opstaan en slapen.")
-return c},
+q=a.i(a0,"sleepDays")
+if(q==null)q=0
+if(s>0)if(q<=2)b.push("Je hebt "+(q===1?"1 nacht":A.k(q)+" nachten")+" slaap gelogd. Log meer dagen voor betere inzichten.")
+else if(s<6)b.push("Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beinvloeden.")
+else if(s>=7&&s<=9)b.push("Je slaap van gemiddeld "+this.KD(s)+" is prima!")
+else if(s>9)b.push("Je slaapt gemiddeld "+this.KD(s)+" - veel rust is goed!")
+p=a.i(a0,"gemiddeldeStemming")
+if(p!==0){o=p>10?B.c.cW(p/100*10-5,-5,5):B.c.cW(p,-5,5)
+n=t.Fe.a(a.i(a0,"logs"))
+if(n==null)n=A.b([],t.c)
+for(m=J.cL(n),l=m.gak(n),k=0;l.v();)if(J.L(l.gP(l),c)!=null)++k
+if(k<3)b.push("Je hebt "+(k===1?"1 stemming":""+k+" stemmingen")+" gelogd. Log meer voor betrouwbare inzichten.")
+else if(Math.abs(o)<0.5){for(m=m.gak(n),j=0;m.v();){i=J.L(m.gP(m),c)
+if(i!=null){if(typeof i=="number")h=i
+else if(typeof i=="string"){h=A.dC(i)
+if(h==null)h=0}else h=0
+l=h-p
+j+=l*l}}g=j/k
+if(g>2)b.push("Je stemming fluctueert rond het gemiddelde. Er is variatie in je dagelijkse stemming.")
+else b.push("Je stemming is stabiel/neutraal.")}else if(o<-2)b.push("Je gemiddelde stemming is aan de lage kant. Overweeg extra zelfzorg deze week.")
+else if(o>2)b.push("Je stemming is overwegend positief!")}f=a.i(a0,"totaleActiviteiten")
+if(f<7&&r>2)b.push("Probeer meer sociale activiteiten te plannen - die helpen je ritme stabiel te houden.")
+else if(f>=14)b.push("Veel activiteiten deze week! Zorg voor voldoende rustmomenten.")
+e=a.i(a0,"stabiliteit")
+if(r>=5)if(e>80)b.push("Je ritme is erg stabiel - uitstekend!")
+else if(e<50)b.push("Je ritme wisselt sterk. Probeer vaste tijden aan te houden voor opstaan en slapen.")
+return b},
 alq(){var s,r,q,p,o,n,m,l,k,j,i,h,g,f=this,e="aantalDagen"
 if(J.fj(f.e)||J.c(J.L(f.e,e),0))return"Geen data beschikbaar over de afgelopen 7 dagen."
 s=t.Fe.a(J.L(f.e,"logs"))
