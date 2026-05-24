@@ -144,8 +144,19 @@ class HiveDatabaseHelper implements DatabaseRepository {
       });
       return cleanMap;
     }).toList();
-    logs.sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
-    return logs;
+    
+    // Group by date and keep only the latest entry per date
+    Map<String, Map<String, dynamic>> latestLogsByDate = {};
+    for (var log in logs) {
+      final date = log['date']?.toString();
+      if (date != null && !latestLogsByDate.containsKey(date)) {
+        latestLogsByDate[date] = log;
+      }
+    }
+    
+    final groupedLogs = latestLogsByDate.values.toList();
+    groupedLogs.sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
+    return groupedLogs;
   }
 
   @override
