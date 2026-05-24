@@ -39,7 +39,8 @@ jobs:
     - name: Build unsigned APK
       run: |
         flutter build apk --release --split-per-abi || {
-          echo "Build failed, trying without split-per-abi..."
+          echo "Build failed with split-per-abi, trying without..."
+          flutter clean
           flutter build apk --release
         }
     
@@ -85,12 +86,14 @@ jobs:
     
     - name: Upload APK Artifacts
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: ritme-release-apk
         path: build/app/outputs/flutter-apk/*-release.apk
+        if-no-files-found: warn
     
     - name: Create Release
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && always()
       uses: softprops/action-gh-release@v1
       with:
         files: build/app/outputs/flutter-apk/*-release.apk
@@ -102,7 +105,7 @@ jobs:
           **Build info:**
           - Build number: ${{ github.run_number }}
           - Commit: ${{ github.sha }}
-          - Type: Signed release build
+          - Type: Release build
           
           **Let op:** Dit is een automatische build.
         draft: false
