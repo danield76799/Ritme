@@ -369,11 +369,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 child: _AwakeTimePicker(
                   initialMinutes: _awakeMinutes,
                   onChanged: (minutes) {
+                    // Just update, don't close - user must press Klaar
                     setState(() {
                       _awakeMinutes = minutes;
                     });
-                    _saveSleepData();
-                    Navigator.pop(context);
                   },
                 ),
               ),
