@@ -13,10 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter 3.22.0
+      - name: Setup Flutter 3.27.0
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.27.0'
           channel: 'stable'
 
       - name: Get dependencies
@@ -59,8 +59,8 @@ jobs:
             **Commit:** ${{ github.sha }}
             
             **Wijzigingen:**
-            - Flutter 3.22.0 gebruikt voor betere compatibiliteit
+            - Flutter 3.27.0 gebruikt (Dart 3.7.0 compatible)
             
             **Let op:** Automatische build.
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
