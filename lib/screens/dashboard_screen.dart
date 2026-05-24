@@ -85,7 +85,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             
             // Check for sleep_hours (from sleep tracking) - priority over uren_slaap
             final dynamic rawSleep = log['sleep_hours'];
-            final dynamic rawAwake = log['awake_minutes'];
             if (rawSleep != null) {
               double? sleep;
               if (rawSleep is num) {
@@ -94,16 +93,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 sleep = double.tryParse(rawSleep);
               }
               if (sleep != null && sleep > 0) {
-                // Trek awake_minutes af van slaap
-                int awakeMinutes = 0;
-                if (rawAwake != null) {
-                  if (rawAwake is num) awakeMinutes = rawAwake.toInt();
-                  else if (rawAwake is String) awakeMinutes = int.tryParse(rawAwake) ?? 0;
-                }
-                final awakeHours = awakeMinutes / 60.0;
-                sleep = sleep - awakeHours;
-                if (sleep < 0) sleep = 0;
-                
                 if (!sleepPerDay.containsKey(dateStr)) {
                   sleepPerDay[dateStr] = sleep;
                   loggedDaysCount++;
@@ -155,17 +144,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           } else if (rawSleep is String) {
             sleepHours = double.tryParse(rawSleep) ?? 0;
           }
-          // Trek wakker minuten af van slaapuren
-          final dynamic rawAwake = sleepLog['awake_minutes'];
-          double awakeHours = 0;
-          if (rawAwake is int) {
-            awakeHours = rawAwake / 60.0;
-          } else if (rawAwake is double) {
-            awakeHours = rawAwake / 60.0;
-          } else if (rawAwake is String) {
-            awakeHours = (int.tryParse(rawAwake) ?? 0) / 60.0;
-          }
-          sleepHours -= awakeHours;
           if (sleepHours > 0) {
             totalSleep += sleepHours;
             sleepCount++;
@@ -520,9 +498,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   onTap: () => Navigator.pushNamed(context, '/sleep-detail'),
                   child: _buildOverviewCard(
                     icon: Icons.bedtime,
-                    title: 'Slaapkwaliteit',
+                    title: 'Slaapduur',
                     value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
-                    unit: '/10',
+                    unit: 'u',
                     subtitle: _loggedDaysCount > 0 ? 'Gebaseerd op $_loggedDaysCount nachten' : 'Geen data',
                     color: Colors.blue,
                   ),
