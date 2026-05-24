@@ -266,6 +266,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     }
   }
 
+  // Format hours as "9u 30m" instead of "9.5u"
+  String _formatHours(double hours) {
+    final totalMinutes = (hours * 60).round();
+    final h = totalMinutes ~/ 60;
+    final m = totalMinutes % 60;
+    if (h > 0 && m > 0) return '${h}u ${m}m';
+    if (h > 0) return '${h}u';
+    return '${m}m';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -506,8 +516,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   child: _buildOverviewCard(
                     icon: Icons.bedtime,
                     title: 'Slaapduur',
-                    value: _sleepQuality > 0 ? _sleepQuality.toStringAsFixed(1) : '-',
-                    unit: 'u',
+                    value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : '-',
+                    unit: '',
                     subtitle: _loggedDaysCount > 0 ? 'Gebaseerd op $_loggedDaysCount nachten' : 'Geen data',
                     color: Colors.blue,
                   ),
