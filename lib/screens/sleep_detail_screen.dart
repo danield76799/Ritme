@@ -39,6 +39,9 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
       for (var log in dailyLogs) {
         if (log['date'] == null) continue;
         
+        // DEBUG: Log alle rijen voor debugging
+        print('DEBUG sleep_detail: date=${log['date']}, id=${log['id']}, sleep_hours=${log['sleep_hours']}, uren_slaap=${log['uren_slaap']}, awake_minutes=${log['awake_minutes']}, bed_time=${log['bed_time']}, wake_time=${log['wake_time']}');
+        
         try {
           final logDate = DateTime.parse(log['date'] as String);
           if (logDate.isBefore(weekAgo)) continue;
