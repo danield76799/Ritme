@@ -27,6 +27,16 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   int _aantalActiviteiten = 0;
   int _aantalGebeurtenissen = 0;
 
+  // Format hours as "9u 30m" instead of "9.5u"
+  String _formatHours(double hours) {
+    final totalMinutes = (hours * 60).round();
+    final h = totalMinutes ~/ 60;
+    final m = totalMinutes % 60;
+    if (h > 0 && m > 0) return '${h}u ${m}m';
+    if (h > 0) return '${h}u';
+    return '${m}m';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -227,7 +237,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                       physics: NeverScrollableScrollPhysics(),
                       children: [
                         _bouwKpiKaart(_gemStemming.toStringAsFixed(1), 'Gem. stemming', Colors.orange),
-                        _bouwKpiKaart(_gemSlaap.toStringAsFixed(1), 'Gem. slaap (uren)', Colors.blue),
+                        _bouwKpiKaart(_formatHours(_gemSlaap), 'Gem. slaap', Colors.blue),
                         _bouwKpiKaart('$_aantalActiviteiten', 'Activiteiten gelogd', Colors.green),
                         _bouwKpiKaart('$_aantalGebeurtenissen', 'Gebeurtenissen', Colors.purple),
                       ],
