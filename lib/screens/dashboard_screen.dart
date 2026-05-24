@@ -545,17 +545,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   ),
                 ),
                 const SizedBox(height: 12),
-                // --- DEBUG KNOP ---
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/database-debug'),
-                  child: _buildOverviewCard(
-                    icon: Icons.bug_report,
-                    title: 'Database Debug',
-                    value: 'Bekijk',
-                    unit: '',
-                    color: Colors.purple,
-                  ),
-                ),
                 const SizedBox(height: 24),
                 
                 // --- WEEKLY MOOD CHART ---

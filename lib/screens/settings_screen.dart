@@ -369,6 +369,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader('Backup & Herstel'),
           _buildBackupButtons(),
           const SizedBox(height: 32),
+          _buildSectionHeader('Overige'),
+          _buildActionButton(
+            'Database Debug',
+            Icons.storage,
+            () => Navigator.pushNamed(context, '/database-debug'),
+          ),
+          const SizedBox(height: 32),
         ],
       ),
     );
