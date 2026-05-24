@@ -42,7 +42,7 @@ jobs:
     
     - name: Build APK
       run: |
-        echo "=== Flutter Environment ==="
+        echo "=== Ritme Build Starting ==="
         flutter --version
         flutter doctor
         
