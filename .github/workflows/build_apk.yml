@@ -22,7 +22,7 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.41.9'
+        flutter-version: '3.24.5'
         channel: 'stable'
         cache: true
     
@@ -33,31 +33,43 @@ jobs:
         distribution: 'temurin'
         cache: 'gradle'
     
+    - name: Accept Android licenses
+      run: yes | flutter doctor --android-licenses || true
+    
     - name: Get dependencies
-      run: flutter pub get
-    
-    - name: Build unsigned APK
       run: |
-        echo "=== Starting APK build ==="
-        flutter doctor -v || true
-        echo "=== Building with split-per-abi ==="
-        flutter build apk --release --split-per-abi --verbose || {
-          echo "=== Build failed with split-per-abi ==="
-          echo "=== Cleaning and trying without split-per-abi ==="
-          flutter clean
-          flutter pub get
-          flutter build apk --release --verbose
-        }
+        flutter pub get
+        flutter pub upgrade
     
-    - name: Sign APKs
+    - name: Analyze code
+      run: flutter analyze || true
+      continue-on-error: true
+    
+    - name: Build APK
+      run: |
+        echo "=== Flutter Environment ==="
+        flutter --version
+        flutter doctor
+        
+        echo "=== Starting Build ==="
+        flutter build apk --release --verbose 2>&1 | tee build.log || {
+          echo "=== BUILD FAILED ==="
+          echo "Last 100 lines of build log:"
+          tail -100 build.log
+          exit 1
+        }
+        
+        echo "=== Build Output ==="
+        ls -la build/app/outputs/apk/release/ || true
+        ls -la build/app/outputs/flutter-apk/ || true
+    
+    - name: Sign APK
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        KEYSTORE_PASSWORD: *** secrets.KEYSTORE_PASSWORD }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: *** secrets.KEY_PASSWORD }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: |
-        set -e
-        
         # Check if keystore secret is available
         if [ -z "$KEYSTORE_BASE64" ]; then
           echo "WARNING: KEYSTORE_BASE64 not set, skipping signing"
@@ -71,22 +83,30 @@ jobs:
         ZIPALIGN=$(find $ANDROID_HOME/build-tools -name zipalign | head -1)
         echo "Found zipalign at: $ZIPALIGN"
         
-        # Sign all APKs
-        for apk in build/app/outputs/flutter-apk/*-release.apk; do
-          echo "Signing $apk"
-          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
-            -keystore /tmp/keystore.jks \
-            -storepass "$KEYSTORE_PASSWORD" \
-            -keypass "$KEY_PASSWORD" \
-            "$apk" "$KEY_ALIAS"
-          
-          # Align APK
-          ALIGNED="${apk%.apk}-aligned.apk"
-          "$ZIPALIGN" -f 4 "$apk" "$ALIGNED"
-          mv "$ALIGNED" "$apk"
+        # Find and sign APKs
+        APK_FOUND=false
+        for apk in build/app/outputs/*/release/*.apk build/app/outputs/flutter-apk/*.apk; do
+          if [ -f "$apk" ]; then
+            echo "Signing $apk"
+            jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore /tmp/keystore.jks \
+              -storepass "$KEYSTORE_PASSWORD" \
+              -keypass "$KEY_PASSWORD" \
+              "$apk" "$KEY_ALIAS"
+            
+            # Align APK
+            ALIGNED="${apk%.apk}-aligned.apk"
+            "$ZIPALIGN" -f 4 "$apk" "$ALIGNED"
+            mv "$ALIGNED" "$apk"
+            APK_FOUND=true
+          fi
         done
         
-        echo "All APKs signed and aligned successfully"
+        if [ "$APK_FOUND" = false ]; then
+          echo "WARNING: No APKs found to sign"
+        else
+          echo "All APKs signed and aligned successfully"
+        fi
       continue-on-error: true
     
     - name: Upload APK Artifacts
@@ -95,19 +115,21 @@ jobs:
       with:
         name: ritme-release-apk
         path: |
-          build/app/outputs/flutter-apk/*-release.apk
           build/app/outputs/apk/release/*.apk
+          build/app/outputs/flutter-apk/*.apk
         if-no-files-found: warn
     
     - name: Create Release
       if: github.ref == 'refs/heads/main' && always()
       uses: softprops/action-gh-release@v1
       with:
-        files: build/app/outputs/flutter-apk/*-release.apk
-        tag_name: v1.2.1-build${{ github.run_number }}
-        name: Ritme v1.2.1 (Build ${{ github.run_number }})
+        files: |
+          build/app/outputs/apk/release/*.apk
+          build/app/outputs/flutter-apk/*.apk
+        tag_name: v1.2.2-build${{ github.run_number }}
+        name: Ritme v1.2.2 (Build ${{ github.run_number }})
         body: |
-          ## Ritme - SRT Tracker v1.2.1
+          ## Ritme - SRT Tracker v1.2.2
           
           **Build info:**
           - Build number: ${{ github.run_number }}
@@ -118,4 +140,4 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
