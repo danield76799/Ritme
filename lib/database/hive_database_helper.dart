@@ -137,12 +137,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      // Ensure all values are properly typed
-      final cleanMap = <String, dynamic>{};
-      map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
-      });
-      return cleanMap;
+      return Map<String, dynamic>.from(map);
     }).toList();
     
     // Group by date and keep only the latest entry per date (by id/timestamp)
@@ -151,8 +146,19 @@ class HiveDatabaseHelper implements DatabaseRepository {
       final date = log['date']?.toString();
       if (date != null) {
         // Keep the entry with the highest id (most recent)
-        if (!latestLogsByDate.containsKey(date) || 
-            (log['id'] is num && latestLogsByDate[date]!['id'] is num && (log['id'] as num) > (latestLogsByDate[date]!['id'] as num))) {
+        // Parse ids as numbers for comparison
+        final currentId = latestLogsByDate[date]?['id'];
+        final newId = log['id'];
+        
+        bool shouldReplace = !latestLogsByDate.containsKey(date);
+        if (!shouldReplace && currentId != null && newId != null) {
+          // Parse as numbers if possible, otherwise compare as strings
+          final currentNum = currentId is num ? currentId.toInt() : int.tryParse(currentId.toString()) ?? 0;
+          final newNum = newId is num ? newId.toInt() : int.tryParse(newId.toString()) ?? 0;
+          shouldReplace = newNum > currentNum;
+        }
+        
+        if (shouldReplace) {
           latestLogsByDate[date] = log;
         }
       }
