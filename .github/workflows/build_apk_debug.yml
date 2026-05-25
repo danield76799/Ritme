@@ -1,4 +1,4 @@
-name: Build Ritme - Debug APK Only
+name: Build Ritme - Signed AAB
 
 on:
   push:
@@ -13,48 +13,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: '3.41.9'
         channel: 'stable'
         cache: true
-    
+
     - name: Get dependencies
       run: flutter pub get
-    
-    - name: Build debug APK
+
+    - name: Build release AAB
       run: |
-        flutter build apk --debug
-        echo "Debug APK built successfully"
-    
-    - name: Upload Debug APK Artifact
+        flutter build appbundle --release
+        echo "Release AAB built successfully"
+
+    - name: Sign AAB
+      uses: r0adkll/sign-android-release@v1
+      with:
+        releaseDirectory: build/app/outputs/bundle/release
+        signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+        alias: ${{ secrets.KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+      env:
+        BUILD_TOOLS_VERSION: "34.0.0"
+
+    - name: Upload Signed AAB Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ritme-debug-apk
-        path: build/app/outputs/flutter-apk/*-debug.apk
-    
+        name: ritme-signed-aab
+        path: build/app/outputs/bundle/release/*.aab
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: build/app/outputs/flutter-apk/*-debug.apk
-        tag_name: debug-${{ github.run_number }}
-        name: Ritme Debug Build ${{ github.run_number }}
+        files: build/app/outputs/bundle/release/*.aab
+        tag_name: v${{ github.run_number }}
+        name: Ritme Release ${{ github.run_number }}
         body: |
-          ## Ritme - Debug Build
-          
-          **Let op:** Dit is een debug build voor testen.
-          
-          **Installatie instructies:**
-          - **Deïnstalleer** eerst de oude Ritme app (indien aanwezig)
-          - Installeer dan de nieuwe APK
-          
-          **Beschikbare APKs:**
-          - `app-arm64-v8a-debug.apk` - Voor de meeste moderne Android devices
-          - `app-armeabi-v7a-debug.apk` - Voor oudere Android devices
-          - `app-x86_64-debug.apk` - Voor Android emulators
+          ## Ritme - Release Build
+
+          **Bestanden:**
+          - `*.aab` - Android App Bundle (voor Play Store)
         draft: false
-        prerelease: true
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
