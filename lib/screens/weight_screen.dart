@@ -84,35 +84,6 @@ class _WeightScreenState extends State<WeightScreen> {
                   hintText: 'Bijv. 101.5',
                   prefixIcon: const Icon(Icons.monitor_weight),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-                        onPressed: () {
-                          final currentText = weightController.text;
-                          if (currentText.isNotEmpty) {
-                            final currentWeight = double.tryParse(currentText) ?? 0;
-                            if (currentWeight > 20) {
-                              weightController.text = (currentWeight - 0.1).toStringAsFixed(1);
-                            }
-                          }
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle_outline, color: Colors.green),
-                        onPressed: () {
-                          final currentText = weightController.text;
-                          if (currentText.isNotEmpty) {
-                            final currentWeight = double.tryParse(currentText) ?? 0;
-                            if (currentWeight < 300) {
-                              weightController.text = (currentWeight + 0.1).toStringAsFixed(1);
-                            }
-                          }
-                        },
-                      ),
-                    ],
-                  ),
                 ),
               ),
               const SizedBox(height: 12),
