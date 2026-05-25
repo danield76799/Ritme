@@ -45,10 +45,15 @@ class NotificationHelper {
       }
       
       // Request permissions on Android 13+
-      final permissionsGranted = await requestNotificationPermissions();
-      if (!permissionsGranted) {
-        debugPrint('Notificatie permissies geweigerd');
-        return;
+      try {
+        final permissionsGranted = await requestNotificationPermissions();
+        if (!permissionsGranted) {
+          debugPrint('Notificatie permissies geweigerd');
+          return;
+        }
+      } catch (e) {
+        debugPrint('Permissie aanvraag error (mag overslaan): $e');
+        // Continue anyway - user can enable notifications in settings
       }
       
       // Schedule daily reminder
