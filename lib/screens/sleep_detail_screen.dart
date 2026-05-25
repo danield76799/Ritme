@@ -69,21 +69,25 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             else if (rawAwake is String) awakeMinutes = int.tryParse(rawAwake) ?? 0;
           }
           
-          // EERST kijken naar sleep_hours (van slaap tracking - al correct berekend)
+          // Gebruik sleep_hours als die bestaat (correct berekend in activity_screen)
           if (rawSleep != null) {
             if (rawSleep is num) sleep = rawSleep.toDouble();
             else if (rawSleep is String) sleep = double.tryParse(rawSleep);
           }
-          // Dan kijken naar uren_slaap (van mood tracking - moeten awake_minutes aftrekken)
+          // Als sleep_hours null is, gebruik uren_slaap (kan incorrect zijn als awake_minutes niet is afgetrokken)
           if (sleep == null && rawUren != null) {
             if (rawUren is num) sleep = rawUren.toDouble();
             else if (rawUren is String) sleep = double.tryParse(rawUren);
             
-            // Trek awake_minutes af voor uren_slaap (niet voor sleep_hours)
+            // Trek awake_minutes alleen af als we zeker weten dat het nog niet is gedaan
+            // Dit is een workaround voor oude data zonder sleep_hours
             if (sleep != null && sleep > 0 && awakeMinutes > 0) {
               final awakeHours = awakeMinutes / 60.0;
-              sleep = sleep - awakeHours;
-              if (sleep < 0) sleep = 0;
+              // Controleer of de waarde al lijkt te zijn gecorrigeerd (sleep_hours zou kleiner moeten zijn)
+              final expectedSleep = sleep - awakeHours;
+              if (expectedSleep > 0 && (sleep - expectedSleep).abs() > 0.01) {
+                sleep = expectedSleep;
+              }
             }
           }
           
