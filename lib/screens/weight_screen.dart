@@ -99,6 +99,37 @@ class _WeightScreenState extends State<WeightScreen> {
             ],
           ),
           actions: [
+            if (existingLog.isNotEmpty) ...[
+              TextButton(
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Gewicht verwijderen?'),
+                      content: const Text('Deze actie kan niet ongedaan worden.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Annuleren'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) {
+                    if (existingLog['id'] != null) {
+                      await db.deleteWeightLog(existingLog['id']);
+                    }
+                    Navigator.pop(context, {'_delete': true});
+                  }
+                },
+                child: const Text('Verwijderen', style: TextStyle(color: Colors.red)),
+              ),
+            ],
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Annuleren'),
