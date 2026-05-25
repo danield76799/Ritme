@@ -127,10 +127,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         
         // Reschedule notification
         final reminderDays = result['reminder_days'] ?? 0;
-        await NotificationHelper.instance.cancelAppointmentReminder(appointment['id']);
+        await NotificationHelper.instance.cancelAppointmentReminder(appointmentId);
         if (reminderDays > 0) {
           await NotificationHelper.instance.scheduleAppointmentReminder(
-            appointmentId: appointment['id'],
+            appointmentId: appointmentId,
             title: result['title'] ?? '',
             doctorName: result['doctor_name'] ?? '',
             appointmentDate: result['appointment_date'] ?? '',
