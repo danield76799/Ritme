@@ -25,3 +25,4 @@ De app wordt automatisch gebouwd via GitHub Actions bij elke push naar main.
 - Push notificaties voor medicatie
 - Database reset functie
 - UI verbeteringen
+# Build trigger Mon May 25 07:04:34 UTC 2026
