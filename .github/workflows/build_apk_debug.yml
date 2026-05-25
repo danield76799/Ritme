@@ -1,4 +1,4 @@
-name: Build Android APK Debug (Ritme)
+name: Build Android AAB (Ritme)
 
 on:
   push:
@@ -24,37 +24,31 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
     
-    - name: Build debug APKs (per ABI)
+    - name: Build AAB
       run: |
-        flutter build apk --debug --split-per-abi
-        echo "Debug APKs built with standard Flutter debug signing"
-        echo "Note: You need to uninstall previous debug builds before installing new ones"
+        flutter build appbundle --release
+        echo "AAB built successfully"
     
-    - name: Upload APK Artifacts
+    - name: Upload AAB Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ritme-debug-apk
-        path: build/app/outputs/flutter-apk/*-debug.apk
+        name: ritme-aab
+        path: build/app/outputs/bundle/release/app-release.aab
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: build/app/outputs/flutter-apk/*-debug.apk
-        tag_name: debug-${{ github.run_number }}
-        name: Ritme Debug Build ${{ github.run_number }}
+        files: build/app/outputs/bundle/release/app-release.aab
+        tag_name: aab-${{ github.run_number }}
+        name: Ritme AAB Build ${{ github.run_number }}
         body: |
-          ## Ritme - Debug Build
+          ## Ritme - AAB Build
           
-          **Let op:** Dit is een debug build voor testen.
+          **Installatie:**
+          - Download de AAB
+          - Gebruik [bundletool](https://developer.android.com/studio/command-line/bundletool) of installeer via Google Play Console
           
-          **Installatie instructies:**
-          - **Deïnstalleer** eerst de oude Ritme app (indien aanwezig)
-          - Installeer dan de nieuwe APK
-          
-          **Beschikbare APKs:**
-          - `app-arm64-v8a-debug.apk` - Voor de meeste moderne Android devices
-          - `app-armeabi-v7a-debug.apk` - Voor oudere Android devices
-          - `app-x86_64-debug.apk` - Voor Android emulators
+          **Let op:** Dit is een release AAB voor testen.
         draft: false
         prerelease: true
       env:
