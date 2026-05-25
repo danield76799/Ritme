@@ -1,4 +1,4 @@
-name: Build Android APK Debug (Ritme)
+name: Build Ritme - Debug APK Only
 
 on:
   push:
