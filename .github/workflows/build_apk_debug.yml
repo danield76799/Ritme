@@ -21,8 +21,32 @@ jobs:
         channel: 'stable'
         cache: true
     
-    - name: Get dependencies
-      run: flutter pub get
+    - name: Auto-increment version code
+      run: |
+        # Get current version from pubspec.yaml
+        CURRENT_VERSION=$(grep "^version:" pubspec.yaml | sed 's/version: //' | sed 's/+//g')
+        VERSION_NAME=$(echo $CURRENT_VERSION | cut -d'+' -f1)
+        VERSION_CODE=$(echo $CURRENT_VERSION | cut -d'+' -f2)
+        
+        # Increment version code
+        NEW_VERSION_CODE=$((VERSION_CODE + 1))
+        NEW_VERSION="${VERSION_NAME}+${NEW_VERSION_CODE}"
+        
+        # Update pubspec.yaml
+        sed -i "s/^version: .*/version: ${NEW_VERSION}/" pubspec.yaml
+        
+        echo "Version updated: ${CURRENT_VERSION} -> ${NEW_VERSION}"
+        echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+    
+    - name: Commit version bump
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add pubspec.yaml
+        git commit -m "ci: auto-increment version code to ${{ env.NEW_VERSION }}" || echo "No changes to commit"
+        git push origin ${{ github.ref_name }} || echo "Push failed"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Build AAB
       run: |
