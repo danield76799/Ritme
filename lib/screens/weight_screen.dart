@@ -435,7 +435,31 @@ class _WeightScreenState extends State<WeightScreen> {
                               color: Colors.red,
                               child: const Icon(Icons.delete, color: Colors.white),
                             ),
-                            onDismissed: (_) => _deleteWeightLog(log['id']),
+                            onDismissed: (_) async {
+                              try {
+                                await _deleteWeightLog(log['id']);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Gewicht verwijderd'),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Kon gewicht niet verwijderen: $e'),
+                                    backgroundColor: Colors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                );
+                                // Reload to show the item again
+                                _loadWeightLogs();
+                              }
+                            },
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               padding: const EdgeInsets.all(16),
