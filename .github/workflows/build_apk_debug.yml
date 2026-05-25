@@ -1,6 +1,8 @@
 name: Build Android APK Debug (Ritme)
 
 on:
+  push:
+    branches: [ main, temp-build-5e68ea8 ]
   workflow_dispatch:
 
 permissions:
