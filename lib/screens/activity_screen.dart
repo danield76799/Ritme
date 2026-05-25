@@ -350,9 +350,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                     TextButton(
-                      onPressed: () async {
-                        // Save awake minutes even without bed/wake time
-                        await _saveAwakeMinutesOnly();
+                      onPressed: () {
+                        // _awakeMinutes is already updated by onChanged callbacks
+                        _saveSleepData();
                         Navigator.pop(context);
                       },
                       child: const Text('Klaar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
@@ -376,26 +376,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
         );
       },
     );
-  }
-
-  Future<void> _saveAwakeMinutesOnly() async {
-    // Save awake minutes even without bed/wake time
-    await db.upsertDailyLog({
-      'date': _formattedDate,
-      'awake_minutes': _awakeMinutes,
-    });
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Wakker gelegen: ${_awakeMinutes}m opgeslagen'),
-          backgroundColor: AppTheme.primaryTeal,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   Future<void> _saveSleepData() async {
