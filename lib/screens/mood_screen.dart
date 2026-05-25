@@ -93,7 +93,6 @@ class _MoodScreenState extends State<MoodScreen> {
         _ontstemdeManie = log['ontstemde_manie'] == true || log['ontstemde_manie'] == 1 || log['ontstemde_manie'] == '1';
         _daglicht = log['daglicht'] == 1 || log['daglicht'] == '1' || log['daglicht'] == true;
         _socialeContacten = log['sociale_contacten'] is int ? log['sociale_contacten'] : int.tryParse(log['sociale_contacten']?.toString() ?? '0') ?? 0;
-        _gewicht = log['gewicht'] is num ? log['gewicht'].toDouble() : double.tryParse(log['gewicht']?.toString() ?? '0') ?? 0.0;
         // _urenSlaap removed - now calculated from sleep tracking
       } else {
         _stemmingHoog = 0.0;
@@ -134,7 +133,6 @@ class _MoodScreenState extends State<MoodScreen> {
         'ontstemde_manie': _ontstemdeManie,
         'daglicht': _daglicht ? 1 : 0,
         'sociale_contacten': _socialeContacten,
-        'gewicht': _gewicht,
         // 'uren_slaap' removed - now calculated from sleep tracking
       });
 
@@ -319,7 +317,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                   children: [
                                     Text(
                                       'Ontstemde manie',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                                     ),
                                     Text(
                                       'Manisch maar ongelukkig/irritant',
@@ -412,7 +410,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                   children: [
                                     Text(
                                       'Daglicht',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                                     ),
                                     Text(
                                       'Vandaag buiten geweest',
@@ -425,54 +423,6 @@ class _MoodScreenState extends State<MoodScreen> {
                                 value: _daglicht,
                                 onChanged: (value) => setState(() => _daglicht = value),
                                 activeColor: AppTheme.primaryTeal,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        
-                        // Gewicht
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade100),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.purple.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.monitor_weight, color: Colors.purple, size: 20),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Gewicht',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF000000)),
-                                    ),
-                                    Text(
-                                      'Gewicht in kg',
-                                      style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildCounterBtn(Icons.remove, _gewicht > 0 ? () => setState(() => _gewicht = (_gewicht - 0.1).clamp(0, 300)) : null),
-                                  Container(width: 50, alignment: Alignment.center, child: Text('${_gewicht.toStringAsFixed(1)} kg', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF000000)))),
-                                  _buildCounterBtn(Icons.add, () => setState(() => _gewicht = (_gewicht + 0.1).clamp(0, 300)), isPrimary: true),
-                                ],
                               ),
                             ],
                           ),
