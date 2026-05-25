@@ -317,11 +317,11 @@ class _MoodScreenState extends State<MoodScreen> {
                                   children: [
                                     Text(
                                       'Ontstemde manie',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
                                     ),
                                     Text(
                                       'Manisch maar ongelukkig/irritant',
-                                      style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 12, color: Color(0xFF000000)),
                                     ),
                                   ],
                                 ),
@@ -410,11 +410,11 @@ class _MoodScreenState extends State<MoodScreen> {
                                   children: [
                                     Text(
                                       'Daglicht',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
                                     ),
                                     Text(
                                       'Vandaag buiten geweest',
-                                      style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 12, color: Color(0xFF000000)),
                                     ),
                                   ],
                                 ),
