@@ -269,8 +269,9 @@ class _WeightScreenState extends State<WeightScreen> {
     }
   }
 
-  Future<void> _deleteWeightLog(int id) async {
-    await db.deleteWeightLog(id);
+  Future<void> _deleteWeightLog(dynamic id) async {
+    final intId = id is int ? id : int.tryParse(id.toString()) ?? 0;
+    await db.deleteWeightLog(intId);
     _loadWeightLogs();
   }
 
