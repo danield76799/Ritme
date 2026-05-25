@@ -45,7 +45,7 @@ class NotificationHelper {
       }
       
       // Request permissions on Android 13+
-      final permissionsGranted = await _requestPermissions();
+      final permissionsGranted = await requestNotificationPermissions();
       if (!permissionsGranted) {
         debugPrint('Notificatie permissies geweigerd');
         return;
@@ -58,7 +58,7 @@ class NotificationHelper {
     }
   }
 
-  Future<bool> _requestPermissions() async {
+  Future<bool> requestNotificationPermissions() async {
     if (kIsWeb) return true;
     
     try {
