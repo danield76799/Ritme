@@ -48,32 +48,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Build signed AAB
-      run: |
-        flutter build appbundle --release
-        echo "AAB built successfully"
-    
-    - name: Sign AAB
-      uses: r0adkll/sign-android-release@v1
-      with:
-        releaseDirectory: build/app/outputs/bundle/release
-        signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-        alias: ${{ secrets.KEY_ALIAS }}
-        keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-        keyPassword: ${{ secrets.KEY_PASSWORD }}
-      env:
-        BUILD_TOOLS_VERSION: "34.0.0"
-    
     - name: Build debug APK
       run: |
         flutter build apk --debug
         echo "Debug APK built successfully"
-    
-    - name: Upload Signed AAB Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ritme-signed-aab
-        path: build/app/outputs/bundle/release/*.aab
     
     - name: Upload Debug APK Artifact
       uses: actions/upload-artifact@v4
