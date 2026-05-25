@@ -122,7 +122,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
       if (result != null) {
         debugPrint('Updating appointment: ${appointment['id']} with data: $result');
-        await db.updateMedicalAppointment(appointment['id'], result);
+        final appointmentId = appointment['id'] is int ? appointment['id'] : int.tryParse(appointment['id'].toString()) ?? 0;
+        await db.updateMedicalAppointment(appointmentId, result);
         
         // Reschedule notification
         final reminderDays = result['reminder_days'] ?? 0;
