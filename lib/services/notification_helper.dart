@@ -28,9 +28,9 @@ class NotificationHelper {
 
       const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosSettings = DarwinInitializationSettings(
-        requestAlertPermission: false, // Don't request immediately on iOS
-        requestBadgePermission: false,
-        requestSoundPermission: false,
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
       );
 
       const initSettings = InitializationSettings(
@@ -41,6 +41,13 @@ class NotificationHelper {
       final initialized = await _notifications.initialize(initSettings);
       if (initialized == null || !initialized) {
         debugPrint('Notificatie initialisatie mislukt of geweigerd');
+        return;
+      }
+      
+      // Request permissions on Android 13+
+      final permissionsGranted = await _requestPermissions();
+      if (!permissionsGranted) {
+        debugPrint('Notificatie permissies geweigerd');
         return;
       }
       
