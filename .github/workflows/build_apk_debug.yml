@@ -50,7 +50,7 @@ jobs:
     
     - name: Build AAB
       run: |
-        flutter build appbundle --release
+        flutter build appbundle --debug
         echo "AAB built successfully"
     
     - name: Upload AAB Artifact
