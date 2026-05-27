@@ -631,13 +631,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await Navigator.pushNamed(context, '/event');
-          _loadData();
+          final result = await Navigator.pushNamed(context, '/quick-checkin');
+          if (result == true) _loadData();
         },
         backgroundColor: AppTheme.primaryTeal,
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.bolt, color: Colors.white),
         label: const Text(
-          'Belangrijke Gebeurtenis',
+          'Snelle Check-in',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
