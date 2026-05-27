@@ -374,6 +374,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
           _buildSectionHeader('Notificaties'),
           _buildSunUpToggle(),
+          const SizedBox(height: 24),
+          _buildSectionHeader('Medicatie'),
+          _buildActionButton(
+            'Medicatie beheren',
+            Icons.medication_outlined,
+            () => Navigator.pushNamed(context, '/medication'),
+          ),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
