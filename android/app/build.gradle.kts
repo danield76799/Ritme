@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.ritme.ritme.v2"
+        applicationId = "com.ritme.ritme"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutter.versionCode
