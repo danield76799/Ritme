@@ -128,11 +128,10 @@ class SunUpService {
   }) async {
     // Always schedule local fallback
     await NotificationHelper.instance.scheduleMedicationReminder(
-      medicationId: medicationId,
+      id: medicationId,
       medicationName: medicationName,
-      dosage: dosage,
       time: time,
-      daysOfWeek: daysOfWeek,
+      days: daysOfWeek,
     );
 
     // If SunUP is active, also register with server

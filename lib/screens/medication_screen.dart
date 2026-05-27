@@ -101,11 +101,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
         // Schedule push notification
         try {
           await NotificationHelper.instance.scheduleMedicationReminder(
-            medicationId: id,
+            id: id,
             medicationName: name,
-            dosage: '$dosage $unit',
             time: timeStr,
-            daysOfWeek: [1, 2, 3, 4, 5, 6, 7], // Daily
+            days: [1, 2, 3, 4, 5, 6, 7], // Daily
           );
           
           // Show immediate test notification to confirm it works
@@ -275,11 +274,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
         // Reschedule notification if reminders are enabled
         if (reminderEnabled) {
           await NotificationHelper.instance.scheduleMedicationReminder(
-            medicationId: configId,
+            id: configId,
             medicationName: name,
-            dosage: '',
             time: newTimeStr,
-            daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+            days: [1, 2, 3, 4, 5, 6, 7],
           );
         }
 
