@@ -113044,42 +113044,41 @@ return A.u($async$kb,r)},
 au_(a){this.I(new A.aIh(this,a))
 this.kb()},
 o9(a,b,c,d,e){return this.ahQ(a,b,c,d,e)},
-ahQ(a,a0,a1,a2,a3){var s=0,r=A.v(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e,d,c,b
-var $async$o9=A.w(function(a4,a5){if(a4===1){p.push(a5)
+ahQ(a,b,a0,a1,a2){var s=0,r=A.v(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e,d,c
+var $async$o9=A.w(function(a3,a4){if(a3===1){p.push(a4)
 s=q}for(;;)switch(s){case 0:q=3
-g=A.k(a0)
-A.dH("Adding medication: name="+a+", dosage="+g+", unit="+a1+", reminderEnabled="+a2)
-f=$.b2
-if(f==null)A.J(A.W(u.O))
+A.dH("Adding medication: name="+a+", dosage="+A.k(b)+", unit="+a0+", reminderEnabled="+a1)
+g=$.b2
+if(g==null)A.J(A.W(u.O))
 s=6
-return A.l(f.Gr(a,B.c.j(a0),a1,a2),$async$o9)
-case 6:n=a5
+return A.l(g.Gr(a,B.c.j(b),a0,a1),$async$o9)
+case 6:n=a4
 A.dH("Medication added with id: "+A.k(n))
-s=a3!=null&&a2?7:8
+s=a2!=null&&a1?7:8
 break
-case 7:m=B.d.b8(B.e.j(a3.a),2,"0")+":"+B.d.b8(B.e.j(a3.b),2,"0")
-f=$.b2
-if(f==null)A.J(A.W(u.O))
+case 7:m=B.d.b8(B.e.j(a2.a),2,"0")+":"+B.d.b8(B.e.j(a2.b),2,"0")
+g=$.b2
+if(g==null)A.J(A.W(u.O))
 s=9
-return A.l(f.Gs(n,m,"1,2,3,4,5,6,7"),$async$o9)
+return A.l(g.Gs(n,m,"1,2,3,4,5,6,7"),$async$o9)
 case 9:q=11
-f=$.Ce()
+g=$.Ce()
 s=14
-return A.l(f.Be(A.b([1,2,3,4,5,6,7],t.t),g+" "+a1,n,a,m),$async$o9)
+return A.l(g.Be(A.b([1,2,3,4,5,6,7],t.t),n,a,m),$async$o9)
 case 14:s=15
-return A.l(f.Bx(),$async$o9)
+return A.l(g.Bx(),$async$o9)
 case 15:q=17
 s=20
-return A.l(f.B5(),$async$o9)
-case 20:l=a5
+return A.l(g.B5(),$async$o9)
+case 20:l=a4
 g=o.c
 if(g!=null)g.Z(t.q).f.cu(A.dd(null,null,null,null,null,B.x,null,A.N("Geplande notificaties: "+A.k(l),null,null,null,null,null,null,null),null,B.VS,null,null,null,null,null,null,null,null,null,null))
 q=11
 s=19
 break
 case 17:q=16
-d=p.pop()
-k=A.ag(d)
+e=p.pop()
+k=A.ag(e)
 A.dI().$1("Error checking pending: "+A.k(k))
 s=19
 break
@@ -113091,8 +113090,8 @@ q=3
 s=13
 break
 case 11:q=10
-c=p.pop()
-j=A.ag(c)
+d=p.pop()
+j=A.ag(d)
 A.fB("Notification scheduling failed",j,null)
 g=o.c
 if(g!=null)g.Z(t.q).f.cu(A.dd(null,null,null,B.ff,B.aK,B.x,null,A.N("Medicatie opgeslagen, maar herinnering kon niet worden gezet: "+A.k(j),null,null,null,null,null,null,null),null,B.hj,null,null,null,null,null,null,null,new A.bb(A.V(10),B.t),null,null))
@@ -113105,9 +113104,9 @@ q=1
 s=5
 break
 case 3:q=2
-b=p.pop()
-i=A.ag(b)
-h=A.aX(b)
+c=p.pop()
+i=A.ag(c)
+h=A.aX(c)
 A.fB("Failed to add medication",i,h)
 A.dH("ERROR adding medication: "+A.k(i))
 A.dH("Stack trace: "+A.k(h))
@@ -113209,7 +113208,7 @@ return A.l(j.Id(a,A.a1(["reminder_time",n],t.N,t.z)),$async$tK)
 case 9:s=c?10:11
 break
 case 10:s=12
-return A.l($.Ce().Be(A.b([1,2,3,4,5,6,7],t.t),"",a,b,n),$async$tK)
+return A.l($.Ce().Be(A.b([1,2,3,4,5,6,7],t.t),a,b,n),$async$tK)
 case 12:case 11:o.kb()
 j=o.c
 if(j!=null)j.Z(t.q).f.cu(A.dd(null,null,null,null,null,B.x,null,A.N("Herinnertijd gewijzigd naar $newTimeStr",null,null,null,null,null,null,null),null,B.az,null,null,null,null,null,null,null,null,null,null))
@@ -115400,9 +115399,9 @@ gfI(a){return this.b},
 gvE(a){return this.c},
 gJ1(){return this.d}}
 A.ao3.prototype={
-Be(a,b,c,d,e){return this.aaS(a,b,c,d,e)},
-aaS(a,b,c,d,e){var s=0,r=A.v(t.H),q
-var $async$Be=A.w(function(f,g){if(f===1)return A.r(g,r)
+Be(a,b,c,d){return this.aaS(a,b,c,d)},
+aaS(a,b,c,d){var s=0,r=A.v(t.H),q
+var $async$Be=A.w(function(e,f){if(e===1)return A.r(f,r)
 for(;;)switch(s){case 0:s=1
 break
 case 1:return A.t(q,r)}})
