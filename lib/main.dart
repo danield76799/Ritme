@@ -30,6 +30,7 @@ import 'screens/voortekenen_screen.dart';
 import 'screens/crisisplan_screen.dart';
 import 'screens/episodes_screen.dart';
 import 'screens/rapport_screen.dart';
+import 'screens/quick_checkin_screen.dart';
 import 'service_locator.dart';
 import 'theme/app_theme.dart';
 import 'utils/logger.dart';
@@ -218,6 +219,7 @@ class RitmeApp extends StatelessWidget {
         '/crisisplan': (context) => const CrisisPlanScreen(),
         '/episodes': (context) => const EpisodesScreen(),
         '/rapport': (context) => const RapportScreen(),
+        '/quick-checkin': (context) => const QuickCheckInScreen(),
       },
     );
   }
