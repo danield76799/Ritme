@@ -34,15 +34,4 @@ jobs:
         path: build/app/outputs/flutter-apk/app-release.apk
         retention-days: 7
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: build/app/outputs/flutter-apk/app-release.apk
-        tag_name: single-v${{ github.run_number }}
-        name: Ritme Single APK v${{ github.run_number }}
-        body: |
-          Single APK (not split, no signing)
-          
-          **Note:** Unsigned, for testing only.
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Artifact is already uploaded above - no release needed for debug builds
