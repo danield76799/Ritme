@@ -39,9 +39,6 @@ class AppScaffold extends StatelessWidget {
         Navigator.pushNamed(context, '/activity');
         break;
       case 3:
-        Navigator.pushNamed(context, '/medication');
-        break;
-      case 4:
         Navigator.pushNamed(context, '/statistics');
         break;
     }

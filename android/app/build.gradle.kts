@@ -43,6 +43,11 @@ android {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    
+    // Fix tink duplicate class conflict - exclude the non-Android version
+    configurations.all {
+        exclude(group = "com.google.crypto.tink", module = "tink")
+    }
 }
 
 flutter {

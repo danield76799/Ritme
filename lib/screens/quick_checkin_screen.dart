@@ -293,18 +293,18 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                       child: Row(
                         children: [
                           Container(
-                            width: 48,
-                            height: 48,
+                            width: 56,
+                            height: 56,
                             decoration: BoxDecoration(
                               color: _medicatieGenomen
                                   ? Colors.green.withValues(alpha: 0.2)
                                   : Colors.grey.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Icon(
-                              _medicatieGenomen ? Icons.check_circle : Icons.medication,
+                              _medicatieGenomen ? Icons.check_circle : Icons.medication_outlined,
                               color: _medicatieGenomen ? Colors.green[700] : Colors.grey,
-                              size: 28,
+                              size: 32,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -321,7 +321,9 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                                   ),
                                 ),
                                 Text(
-                                  'Tap om te wisselen',
+                                  _medicatieGenomen 
+                                    ? 'Je medicatie is geregistreerd'
+                                    : 'Vergeet je medicatie niet',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey[500],

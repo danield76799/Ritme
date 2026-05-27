@@ -458,7 +458,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                       title: 'Activiteit + Slaap', 
                       route: '/activity',
                     ),
-                    _buildMedicatieCard(context),
                     _buildActionCard(
                       context, 
                       icon: Icons.monitor_weight, 
