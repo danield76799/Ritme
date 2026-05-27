@@ -8,6 +8,7 @@ import 'pages/splash_screen.dart' show SplashScreenWrapper;
 import 'screens/login_screen.dart';
 import 'services/notification_helper.dart';
 import 'services/sunup_service.dart';
+import 'services/boot_service.dart';
 import 'screens/mood_screen.dart';
 import 'screens/activity_screen.dart';
 import 'screens/medication_screen.dart';
@@ -53,6 +54,8 @@ void main() async {
       // Fallback to pure local
       await NotificationHelper.instance.initialize();
     }
+    // Always initialize boot service for medication reminders
+    await BootService.initialize();
   }
   
   // Set up error handling

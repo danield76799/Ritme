@@ -135,13 +135,13 @@ class NotificationHelper {
         importance: Importance.high,
         priority: Priority.high,
         enableVibration: true,
-        playSound: true, // Sound + vibration
+        playSound: true,
       );
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: true, // Sound + vibration
+        presentSound: true,
       );
 
       const details = NotificationDetails(
@@ -167,60 +167,60 @@ class NotificationHelper {
     }
   }
 
+  /// Schedule a medication reminder at a specific time on specific days.
+  /// 
+  /// [id] - Unique ID for this reminder (used for cancellation)
+  /// [medicationName] - Name of the medication to display
+  /// [time] - Time in "HH:MM" format (24h)
+  /// [days] - List of weekdays (1=Monday, 7=Sunday)
   Future<void> scheduleMedicationReminder({
-    required int medicationId,
+    required int id,
     required String medicationName,
-    required String dosage,
     required String time,
-    required List<int> daysOfWeek,
+    required List<int> days,
   }) async {
     if (kIsWeb) return;
 
-    debugPrint('=== SCHEDULE MEDICATION REMINDER ===');
-    debugPrint('Medication: $medicationName, Time: $time, Days: $daysOfWeek');
-
     try {
-      // Parse time string (HH:MM)
+      // Parse time
       final parts = time.split(':');
-      final hour = int.parse(parts[0]);
-      final minute = int.parse(parts[1]);
-      debugPrint('Parsed time - Hour: $hour, Minute: $minute');
-
-      // Cancel existing notifications for this medication
-      await cancelMedicationReminder(medicationId);
-      
-      // Request permissions first
-      final permissionsGranted = await _requestPermissions();
-      if (!permissionsGranted) {
-        debugPrint('Cannot schedule notification - permissions denied');
-        throw Exception('Notificatie permissies geweigerd');
+      if (parts.length != 2) {
+        debugPrint('Invalid time format: $time');
+        return;
       }
+      final hour = int.tryParse(parts[0]) ?? 8;
+      final minute = int.tryParse(parts[1]) ?? 0;
 
-      // Schedule for each day of the week
-      for (final day in daysOfWeek) {
-        // Use smaller notification ID to prevent overflow
-        final notificationId = (medicationId * 10 + day) % 100000;
-        
-        final scheduledDate = _nextInstanceOfTime(hour, minute, day);
-        
-        const androidDetails = AndroidNotificationDetails(
+      // Cancel existing reminder with this ID
+      await cancelMedicationReminder(id);
+
+      // Schedule for each day
+      for (final day in days) {
+        final now = tz.TZDateTime.now(tz.local);
+        var scheduledDate = _nextInstanceOfDayTime(day, hour, minute);
+
+        // Skip if the calculated date is somehow in the past
+        if (scheduledDate.isBefore(now)) {
+          scheduledDate = scheduledDate.add(const Duration(days: 7));
+        }
+
+        final androidDetails = AndroidNotificationDetails(
           'medication_reminders',
           'Medicatie herinneringen',
           channelDescription: 'Herinneringen voor medicatie inname',
           importance: Importance.high,
           priority: Priority.high,
-          showWhen: true,
-          enableVibration: true,
-          playSound: true, // Sound + vibration
-          actions: [
+          fullScreenIntent: true,
+          category: AndroidNotificationCategory.reminder,
+          actions: const [
             AndroidNotificationAction(
               'taken',
-              '✓ Ingenomen',
-              showsUserInterface: false,
+              '✓ Genomen',
+              showsUserInterface: true,
             ),
             AndroidNotificationAction(
               'skip',
-              '✗ Overslaan',
+              '⏭ Overslaan',
               showsUserInterface: false,
             ),
           ],
@@ -229,66 +229,78 @@ class NotificationHelper {
         const iosDetails = DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
-          presentSound: true, // Sound + vibration
-          categoryIdentifier: 'medication',
+          presentSound: true,
         );
 
-        const details = NotificationDetails(
+        final details = NotificationDetails(
           android: androidDetails,
           iOS: iosDetails,
         );
 
+        // Use unique ID per day: baseId + day offset
+        final notificationId = id * 10 + day;
+
         await _notifications.zonedSchedule(
           notificationId,
-          '💊 Medicatie herinnering',
-          'Neem $medicationName ($dosage)',
+          '💊 $medicationName',
+          'Het is tijd om je medicatie te nemen',
           scheduledDate,
           details,
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-          payload: 'medication:$medicationId',
+          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         );
       }
-      debugPrint('Medicatie herinnering gepland voor $medicationName om $time');
-      
-      // Check pending notifications
-      final pending = await _notifications.pendingNotificationRequests();
-      debugPrint('=== PENDING NOTIFICATIONS: ${pending.length} ===');
-      for (var n in pending) {
-        debugPrint('  - ID: ${n.id}, Title: ${n.title}, Body: ${n.body}');
-      }
+
+      debugPrint('Medicatie herinnering gepland: $medicationName om $time op dagen $days');
     } catch (e) {
       debugPrint('Medicatie herinnering planning error: $e');
-      rethrow;
     }
   }
 
-  Future<void> cancelMedicationReminder(int medicationId) async {
+  /// Cancel a specific medication reminder.
+  Future<void> cancelMedicationReminder(int id) async {
     if (kIsWeb) return;
-    
-    try {
-      // Cancel all notifications for this medication (up to 7 days)
-      // Use modulo to match the smaller IDs
-      final baseId = medicationId % 100000;
-      for (int day = 1; day <= 7; day++) {
-        await _notifications.cancel((baseId * 10 + day) % 100000);
-      }
-      debugPrint('Medicatie herinneringen geannuleerd voor ID: $medicationId');
-    } catch (e) {
-      debugPrint('Medicatie herinnering annulering error: $e');
+
+    // Cancel all day variants for this medication
+    for (int day = 1; day <= 7; day++) {
+      await _notifications.cancel(id * 10 + day);
     }
   }
 
+  /// Cancel all scheduled reminders.
   Future<void> cancelAllReminders() async {
     if (kIsWeb) return;
-    
-    try {
-      await _notifications.cancelAll();
-      debugPrint('Alle notificaties geannuleerd');
-    } catch (e) {
-      debugPrint('Annulering error: $e');
+    await _notifications.cancelAll();
+  }
+
+  /// Find the next occurrence of a specific day and time.
+  tz.TZDateTime _nextInstanceOfDayTime(int day, int hour, int minute) {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+
+    // Adjust to the target day of week
+    final currentDay = scheduledDate.weekday;
+    int daysUntilTarget = day - currentDay;
+    if (daysUntilTarget < 0) {
+      daysUntilTarget += 7;
     }
+    
+    scheduledDate = scheduledDate.add(Duration(days: daysUntilTarget));
+
+    // If the time has already passed today, move to next week
+    if (daysUntilTarget == 0 && scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 7));
+    }
+
+    return scheduledDate;
   }
 
   Future<void> showImmediateNotification({
@@ -334,31 +346,6 @@ class NotificationHelper {
     );
   }
 
-  tz.TZDateTime _nextInstanceOfTime(int hour, int minute, int dayOfWeek) {
-    final now = tz.TZDateTime.now(tz.local);
-    debugPrint('=== _nextInstanceOfTime ===');
-    debugPrint('Input: hour=$hour, minute=$minute, dayOfWeek=$dayOfWeek');
-    debugPrint('Current time: $now');
-    
-    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-    debugPrint('Initial scheduledDate: $scheduledDate, weekday: ${scheduledDate.weekday}');
-
-    // If the time has already passed today, start from tomorrow
-    if (scheduledDate.isBefore(now)) {
-      debugPrint('Time already passed today, moving to tomorrow');
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    // Advance to the correct weekday
-    while (scheduledDate.weekday != dayOfWeek) {
-      debugPrint('Wrong weekday (${scheduledDate.weekday}), advancing to next day');
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    debugPrint('Final scheduledDate: $scheduledDate');
-    return scheduledDate;
-  }
-
   Future<void> scheduleAppointmentReminder({
     required int appointmentId,
     required String title,
@@ -368,10 +355,9 @@ class NotificationHelper {
     required int reminderDays,
   }) async {
     if (kIsWeb) return;
-    if (reminderDays <= 0) return; // No reminder
+    if (reminderDays <= 0) return;
 
     try {
-      // Parse appointment date/time
       final dateParts = appointmentDate.split('-');
       final day = int.parse(dateParts[0]);
       final month = int.parse(dateParts[1]);
@@ -384,7 +370,6 @@ class NotificationHelper {
         minute = int.parse(timeParts[1]);
       }
 
-      // Calculate reminder date/time
       final appointmentDateTime = tz.TZDateTime(
         tz.local,
         year,
@@ -396,14 +381,12 @@ class NotificationHelper {
       
       final reminderDateTime = appointmentDateTime.subtract(Duration(days: reminderDays));
       
-      // Don't schedule if reminder time has passed
       final now = tz.TZDateTime.now(tz.local);
       if (reminderDateTime.isBefore(now)) {
         debugPrint('Appointment reminder time has passed, skipping');
         return;
       }
 
-      // Use smaller notification ID
       final notificationId = (appointmentId * 100) % 100000;
 
       const androidDetails = AndroidNotificationDetails(
@@ -414,7 +397,7 @@ class NotificationHelper {
         priority: Priority.high,
         showWhen: true,
         enableVibration: true,
-        playSound: true, // Sound + vibration
+        playSound: true,
         actions: [
           AndroidNotificationAction(
             'open',
@@ -427,7 +410,7 @@ class NotificationHelper {
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: true, // Sound + vibration
+        presentSound: true,
         categoryIdentifier: 'appointment',
       );
 
@@ -458,20 +441,8 @@ class NotificationHelper {
     
     try {
       final notificationId = (appointmentId * 100) % 100000;
-      debugPrint('=== CANCEL APPOINTMENT REMINDER ===');
-      debugPrint('Appointment ID: $appointmentId');
-      debugPrint('Calculated notificationId: $notificationId');
       await _notifications.cancel(notificationId);
       debugPrint('Afspraak herinnering geannuleerd voor ID: $appointmentId');
-      
-      // Verify cancellation
-      final pending = await _notifications.pendingNotificationRequests();
-      debugPrint('Remaining pending notifications: ${pending.length}');
-      for (var n in pending) {
-        if (n.id == notificationId) {
-          debugPrint('WARNING: Notification $notificationId still pending!');
-        }
-      }
     } catch (e) {
       debugPrint('Afspraak herinnering annulering error: $e');
     }
