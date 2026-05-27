@@ -212,6 +212,13 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
         elevation: 0,
         title: const Text('Crisisplan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add, color: Colors.white),
+            tooltip: 'Snel toevoegen',
+            onPressed: () => _showAddSectionDialog(),
+          ),
+        ],
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -274,5 +281,158 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
 
   String _truncate(String text, int maxLen) {
     return text.length > maxLen ? '${text.substring(0, maxLen)}...' : text;
+  }
+
+  void _showAddSectionDialog() {
+    // Find sections that don't exist yet
+    final existingSections = _sections.map((s) => s['section'] as String).toSet();
+    final availableDefaults = _defaultSections.where((d) => !existingSections.contains(d['section'])).toList();
+
+    if (availableDefaults.isEmpty) {
+      // All default sections exist, allow custom section
+      _showCustomSectionDialog();
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            ),
+            const SizedBox(height: 16),
+            const Text('Snel toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('Kies een sectie om toe te voegen:', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+            const SizedBox(height: 16),
+            ...availableDefaults.map((def) => ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _sectionColor(def['section'] as String).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(_sectionIcon(def['section'] as String), color: _sectionColor(def['section'] as String)),
+              ),
+              title: Text(def['title'] as String, style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text(def['hint'] as String, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+              onTap: () async {
+                Navigator.pop(ctx);
+                await db.insertCrisisPlanSection({
+                  'section': def['section'],
+                  'content': '',
+                  'sort_order': _defaultSections.indexOf(def),
+                });
+                _loadData();
+                // Open edit immediately
+                final newSections = await db.getCrisisPlan();
+                final newSection = newSections.firstWhere((s) => s['section'] == def['section']);
+                if (mounted) _editSection(newSection);
+              },
+            )),
+            if (availableDefaults.length < _defaultSections.length)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Center(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _showCustomSectionDialog();
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Eigen sectie maken'),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCustomSectionDialog() {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            ),
+            const SizedBox(height: 16),
+            const Text('Eigen sectie toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: titleController,
+              decoration: InputDecoration(
+                labelText: 'Titel',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                hintText: 'Bijv: Mijn persoonlijke strategie',
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: TextField(
+                controller: contentController,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                decoration: InputDecoration(
+                  labelText: 'Inhoud',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  hintText: 'Schrijf hier je plan...',
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (titleController.text.trim().isEmpty) return;
+                  final sectionKey = 'custom_${DateTime.now().millisecondsSinceEpoch}';
+                  await db.insertCrisisPlanSection({
+                    'section': sectionKey,
+                    'content': '${titleController.text.trim()}\n\n${contentController.text}',
+                    'sort_order': 999,
+                  });
+                  _loadData();
+                  Navigator.pop(ctx);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryTeal,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text('Toevoegen', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
