@@ -9,6 +9,7 @@ import 'screens/login_screen.dart';
 import 'services/notification_helper.dart';
 import 'services/sunup_service.dart';
 import 'services/boot_service.dart';
+import 'services/widget_service.dart';
 import 'screens/mood_screen.dart';
 import 'screens/activity_screen.dart';
 import 'screens/medication_screen.dart';
@@ -57,6 +58,8 @@ void main() async {
     }
     // Always initialize boot service for medication reminders
     await BootService.initialize();
+    // Initialize widget service for home screen widget
+    await WidgetService.initialize();
   }
   
   // Set up error handling
