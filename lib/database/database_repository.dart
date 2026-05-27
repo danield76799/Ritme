@@ -64,4 +64,38 @@ abstract class DatabaseRepository {
   Future<List<Map<String, dynamic>>> getUpcomingAppointments();
   Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data);
   Future<int> deleteMedicalAppointment(int id);
+
+  // ---- BIPOIRE STOORNIS v3 ----
+
+  // Prodromal Checklist (voortekenen)
+  Future<List<Map<String, dynamic>>> getProdromalChecklist();
+  Future<List<Map<String, dynamic>>> getEnabledProdromalChecklist();
+  Future<int> insertProdromalSign(Map<String, dynamic> data);
+  Future<int> updateProdromalSign(int id, Map<String, dynamic> data);
+  Future<int> deleteProdromalSign(int id);
+
+  // Prodromal Logs
+  Future<int> insertProdromalLog(Map<String, dynamic> data);
+  Future<List<Map<String, dynamic>>> getProdromalLogs(String date);
+  Future<Map<String, dynamic>?> getProdromalSummary(String date);
+  Future<List<Map<String, dynamic>>> getRecentProdromalTrends(int days);
+
+  // Crisis Plan
+  Future<List<Map<String, dynamic>>> getCrisisPlan();
+  Future<int> insertCrisisPlanSection(Map<String, dynamic> data);
+  Future<int> updateCrisisPlanSection(int id, Map<String, dynamic> data);
+  Future<int> deleteCrisisPlanSection(int id);
+
+  // Episode Logs
+  Future<int> insertEpisode(Map<String, dynamic> data);
+  Future<int> updateEpisode(int id, Map<String, dynamic> data);
+  Future<List<Map<String, dynamic>>> getEpisodes({String? type, int limit = 50});
+  Future<Map<String, dynamic>?> getActiveEpisode();
+  Future<int> endEpisode(int id, String endDate);
+  Future<int> deleteEpisode(int id);
+
+  // Medication Levels
+  Future<int> insertMedicationLevel(Map<String, dynamic> data);
+  Future<List<Map<String, dynamic>>> getMedicationLevels(int medicationId);
+  Future<Map<String, dynamic>?> getLatestMedicationLevel(int medicationId);
 }

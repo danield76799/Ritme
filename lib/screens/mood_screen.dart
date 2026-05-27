@@ -23,6 +23,9 @@ class _MoodScreenState extends State<MoodScreen> {
   double _gewicht = 0.0;
   bool _daglicht = false; // Buiten geweest vandaag
   int _socialeContacten = 0; // Aantal sociale contacten
+  int _alcoholMiddelen = 0;  // 0=nee, 1=ja
+  bool _menstruatie = false;
+  bool _showMenstruatie = true;  // Uit settings
   bool _isLoading = true;
 
   String get _formattedDate {
@@ -44,6 +47,11 @@ class _MoodScreenState extends State<MoodScreen> {
         debugPrint('MoodScreen: db not initialized, initializing...');
         await initDatabase();
       }
+      // Load display preferences
+      final settings = await db.getSettings();
+      final showMenstruatie = settings?['show_menstruatie'] == null ? true : 
+        settings!['show_menstruatie'] == '1' || settings['show_menstruatie'] == 1 || settings['show_menstruatie'] == 'true';
+
       final log = await db.getDailyLog(_formattedDate);
       if (!mounted) return;
       if (log != null) {
@@ -93,6 +101,9 @@ class _MoodScreenState extends State<MoodScreen> {
         _ontstemdeManie = log['ontstemde_manie'] == true || log['ontstemde_manie'] == 1 || log['ontstemde_manie'] == '1';
         _daglicht = log['daglicht'] == 1 || log['daglicht'] == '1' || log['daglicht'] == true;
         _socialeContacten = log['sociale_contacten'] is int ? log['sociale_contacten'] : int.tryParse(log['sociale_contacten']?.toString() ?? '0') ?? 0;
+        _alcoholMiddelen = log['alcohol_middelen'] is int ? log['alcohol_middelen'] : int.tryParse(log['alcohol_middelen']?.toString() ?? '0') ?? 0;
+        _menstruatie = log['menstruatie'] == 1 || log['menstruatie'] == '1' || log['menstruatie'] == true;
+        _showMenstruatie = showMenstruatie;
         // _urenSlaap removed - now calculated from sleep tracking
       } else {
         _stemmingHoog = 0.0;
@@ -102,6 +113,9 @@ class _MoodScreenState extends State<MoodScreen> {
         _ontstemdeManie = false;
         _daglicht = false;
         _socialeContacten = 0;
+        _alcoholMiddelen = 0;
+        _menstruatie = false;
+        _showMenstruatie = showMenstruatie;
         // _urenSlaap removed - now calculated from sleep tracking
       }
     } catch (e, stack) {
@@ -133,6 +147,8 @@ class _MoodScreenState extends State<MoodScreen> {
         'ontstemde_manie': _ontstemdeManie,
         'daglicht': _daglicht ? 1 : 0,
         'sociale_contacten': _socialeContacten,
+        'alcohol_middelen': _alcoholMiddelen,
+        'menstruatie': _menstruatie ? 1 : 0,
         // 'uren_slaap' removed - now calculated from sleep tracking
       });
 
@@ -471,6 +487,77 @@ class _MoodScreenState extends State<MoodScreen> {
                                   Container(width: 36, alignment: Alignment.center, child: Text('$_socialeContacten', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF000000)))),
                                   _buildCounterBtn(Icons.add, () => setState(() => _socialeContacten++), isPrimary: true),
                                 ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Alcohol / middelen
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _alcoholMiddelen == 1 ? Colors.red.shade50 : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: _alcoholMiddelen == 1 ? Colors.red.shade300 : Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.wine_bar, color: Colors.red, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Alcohol / middelen',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
+                                ),
+                              ),
+                              Switch(
+                                value: _alcoholMiddelen == 1,
+                                onChanged: (value) => setState(() => _alcoholMiddelen = value ? 1 : 0),
+                                activeColor: Colors.red,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Menstruatie
+                        if (_showMenstruatie)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _menstruatie ? Colors.pink.shade50 : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: _menstruatie ? Colors.pink.shade300 : Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.pink.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.bloodtype_outlined, color: Colors.pink, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Menstruatie',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
+                                ),
+                              ),
+                              Switch(
+                                value: _menstruatie,
+                                onChanged: (value) => setState(() => _menstruatie = value),
+                                activeColor: Colors.pink,
                               ),
                             ],
                           ),
