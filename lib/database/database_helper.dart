@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -105,6 +105,75 @@ class DatabaseHelper implements DatabaseRepository {
       )
     ''');
 
+    // ---- BIPOIRE STOORNIS FEATURES (v3) ----
+    await db.execute('''
+      CREATE TABLE prodromal_checklist (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT NOT NULL,
+        sign TEXT NOT NULL,
+        enabled INTEGER DEFAULT 1,
+        sort_order INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE prodromal_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        checklist_id INTEGER NOT NULL,
+        present INTEGER DEFAULT 0,
+        severity INTEGER DEFAULT 1,
+        notes TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE crisis_plan (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        section TEXT NOT NULL,
+        content TEXT NOT NULL,
+        sort_order INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE episode_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        start_date TEXT NOT NULL,
+        end_date TEXT,
+        episode_type TEXT NOT NULL,
+        severity INTEGER DEFAULT 3,
+        notes TEXT,
+        trigger TEXT,
+        medication_changes TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE medication_levels (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        medication_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        bloedspiegel REAL,
+        eenheid TEXT DEFAULT 'mmol/L',
+        dosering_mg INTEGER,
+        notes TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
+    // Nieuwe kolommen in medication_config
+    await db.execute('ALTER TABLE medication_config ADD COLUMN bloedspiegel_bijhouden INTEGER DEFAULT 0');
+    await db.execute('ALTER TABLE medication_config ADD COLUMN target_min REAL');
+    await db.execute('ALTER TABLE medication_config ADD COLUMN target_max REAL');
+
+    // Voortekenen standaard items seeden
+    await _seedProdromalChecklist(db);
+
     await db.execute('''
       CREATE TABLE settings (
         username TEXT PRIMARY KEY,
@@ -114,6 +183,7 @@ class DatabaseHelper implements DatabaseRepository {
         target_contact TEXT,
         target_werk TEXT,
         target_eten TEXT,
+        show_menstruatie TEXT DEFAULT '1',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -129,6 +199,113 @@ class DatabaseHelper implements DatabaseRepository {
       } catch (e) {
         // Columns may already exist
       }
+    }
+    if (oldVersion < 3) {
+      await _migrateToV3(db);
+    }
+  }
+
+  Future _migrateToV3(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS prodromal_checklist (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category TEXT NOT NULL,
+          sign TEXT NOT NULL,
+          enabled INTEGER DEFAULT 1,
+          sort_order INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS prodromal_logs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL,
+          checklist_id INTEGER NOT NULL,
+          present INTEGER DEFAULT 0,
+          severity INTEGER DEFAULT 1,
+          notes TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS crisis_plan (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          section TEXT NOT NULL,
+          content TEXT NOT NULL,
+          sort_order INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS episode_logs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          start_date TEXT NOT NULL,
+          end_date TEXT,
+          episode_type TEXT NOT NULL,
+          severity INTEGER DEFAULT 3,
+          notes TEXT,
+          trigger TEXT,
+          medication_changes TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS medication_levels (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          medication_id INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          bloedspiegel REAL,
+          eenheid TEXT DEFAULT 'mmol/L',
+          dosering_mg INTEGER,
+          notes TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+      await db.execute('ALTER TABLE medication_config ADD COLUMN bloedspiegel_bijhouden INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE medication_config ADD COLUMN target_min REAL');
+      await db.execute('ALTER TABLE medication_config ADD COLUMN target_max REAL');
+      try {
+        await db.execute('ALTER TABLE settings ADD COLUMN show_menstruatie TEXT DEFAULT ''1''');
+      } catch (_) {}
+      await _seedProdromalChecklist(db);
+    } catch (e) {
+      // Tables/columns may already exist
+    }
+  }
+
+  Future _seedProdromalChecklist(Database db) async {
+    final existing = await db.query('prodromal_checklist', limit: 1);
+    if (existing.isNotEmpty) return;
+
+    final defaults = [
+      // Manie/hypomanie voortekenen
+      {'category': 'manie', 'sign': 'Minder slaap nodig dan normaal', 'sort_order': 1},
+      {'category': 'manie', 'sign': 'Racing thoughts / gedachten die racen', 'sort_order': 2},
+      {'category': 'manie', 'sign': 'Meer energie dan normaal', 'sort_order': 3},
+      {'category': 'manie', 'sign': 'Sneller praten dan normaal', 'sort_order': 4},
+      {'category': 'manie', 'sign': 'Verhoogde prikkelbaarheid', 'sort_order': 5},
+      {'category': 'manie', 'sign': 'Meer uitgeven / risicogedrag', 'sort_order': 6},
+      {'category': 'manie', 'sign': 'Grotere plannen / grandioos denken', 'sort_order': 7},
+      {'category': 'manie', 'sign': 'Afleidbaar / slechte concentratie', 'sort_order': 8},
+      // Depressie voortekenen
+      {'category': 'depressie', 'sign': 'Minder interesse in activiteiten', 'sort_order': 9},
+      {'category': 'depressie', 'sign': 'Vermoeidheid / weinig energie', 'sort_order': 10},
+      {'category': 'depressie', 'sign': 'Somberheid / verdriet', 'sort_order': 11},
+      {'category': 'depressie', 'sign': 'Meer slapen dan normaal', 'sort_order': 12},
+      {'category': 'depressie', 'sign': 'Eetlust verandering', 'sort_order': 13},
+      {'category': 'depressie', 'sign': 'Concentratieproblemen', 'sort_order': 14},
+      {'category': 'depressie', 'sign': 'Terugtrekken uit sociale contacten', 'sort_order': 15},
+      {'category': 'depressie', 'sign': 'Gevoelens van waardeloosheid', 'sort_order': 16},
+      // Gemengd/stress voortekenen
+      {'category': 'gemengd', 'sign': 'Verhoogde stress / spanning', 'sort_order': 17},
+      {'category': 'gemengd', 'sign': 'Piekeren / malen', 'sort_order': 18},
+      {'category': 'gemengd', 'sign': 'Lichamelijke onrust', 'sort_order': 19},
+      {'category': 'gemengd', 'sign': 'Conflicten met anderen', 'sort_order': 20},
+    ];
+
+    for (final item in defaults) {
+      await db.insert('prodromal_checklist', item);
     }
   }
 
@@ -501,6 +678,159 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   // ===================
+  // PRODROMAL CHECKLIST
+  // ===================
+
+  Future<List<Map<String, dynamic>>> getProdromalChecklist() async {
+    final db = await database;
+    return await db.query('prodromal_checklist', orderBy: 'sort_order ASC');
+  }
+
+  Future<List<Map<String, dynamic>>> getEnabledProdromalChecklist() async {
+    final db = await database;
+    return await db.query('prodromal_checklist', where: 'enabled = 1', orderBy: 'sort_order ASC');
+  }
+
+  Future<int> insertProdromalSign(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('prodromal_checklist', data);
+  }
+
+  Future<int> updateProdromalSign(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('prodromal_checklist', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteProdromalSign(int id) async {
+    final db = await database;
+    return await db.delete('prodromal_checklist', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ===================
+  // PRODROMAL LOGS
+  // ===================
+
+  Future<int> insertProdromalLog(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('prodromal_logs', data);
+  }
+
+  Future<List<Map<String, dynamic>>> getProdromalLogs(String date) async {
+    final db = await database;
+    return await db.query('prodromal_logs', where: 'date = ?', whereArgs: [date]);
+  }
+
+  Future<Map<String, dynamic>?> getProdromalSummary(String date) async {
+    final db = await database;
+    final results = await db.rawQuery('''
+      SELECT 
+        SUM(CASE WHEN present = 1 THEN 1 ELSE 0 END) as total_present,
+        SUM(CASE WHEN p.category = 'manie' AND present = 1 THEN 1 ELSE 0 END) as manie_count,
+        SUM(CASE WHEN p.category = 'depressie' AND present = 1 THEN 1 ELSE 0 END) as depressie_count,
+        SUM(CASE WHEN p.category = 'gemengd' AND present = 1 THEN 1 ELSE 0 END) as gemengd_count
+      FROM prodromal_logs pl
+      JOIN prodromal_checklist p ON pl.checklist_id = p.id
+      WHERE pl.date = ?
+    ''', [date]);
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  Future<List<Map<String, dynamic>>> getRecentProdromalTrends(int days) async {
+    final db = await database;
+    final startDate = DateTime.now().subtract(Duration(days: days));
+    final dateStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+    return await db.rawQuery('''
+      SELECT pl.date, COUNT(*) as warning_count
+      FROM prodromal_logs pl
+      WHERE pl.date >= ? AND pl.present = 1
+      GROUP BY pl.date
+      ORDER BY pl.date DESC
+    ''', [dateStr]);
+  }
+
+  // ===================
+  // CRISIS PLAN
+  // ===================
+
+  Future<List<Map<String, dynamic>>> getCrisisPlan() async {
+    final db = await database;
+    return await db.query('crisis_plan', orderBy: 'sort_order ASC');
+  }
+
+  Future<int> insertCrisisPlanSection(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('crisis_plan', data);
+  }
+
+  Future<int> updateCrisisPlanSection(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('crisis_plan', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteCrisisPlanSection(int id) async {
+    final db = await database;
+    return await db.delete('crisis_plan', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ===================
+  // EPISODE LOGS
+  // ===================
+
+  Future<int> insertEpisode(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('episode_logs', data);
+  }
+
+  Future<int> updateEpisode(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('episode_logs', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Map<String, dynamic>>> getEpisodes({String? type, int limit = 50}) async {
+    final db = await database;
+    if (type != null) {
+      return await db.query('episode_logs', where: 'episode_type = ?', whereArgs: [type], orderBy: 'start_date DESC', limit: limit);
+    }
+    return await db.query('episode_logs', orderBy: 'start_date DESC', limit: limit);
+  }
+
+  Future<Map<String, dynamic>?> getActiveEpisode() async {
+    final db = await database;
+    final results = await db.query('episode_logs', where: 'end_date IS NULL', orderBy: 'start_date DESC', limit: 1);
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  Future<int> endEpisode(int id, String endDate) async {
+    final db = await database;
+    return await db.update('episode_logs', {'end_date': endDate}, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteEpisode(int id) async {
+    final db = await database;
+    return await db.delete('episode_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ===================
+  // MEDICATION LEVELS
+  // ===================
+
+  Future<int> insertMedicationLevel(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('medication_levels', data);
+  }
+
+  Future<List<Map<String, dynamic>>> getMedicationLevels(int medicationId) async {
+    final db = await database;
+    return await db.query('medication_levels', where: 'medication_id = ?', whereArgs: [medicationId], orderBy: 'date DESC');
+  }
+
+  Future<Map<String, dynamic>?> getLatestMedicationLevel(int medicationId) async {
+    final db = await database;
+    final results = await db.query('medication_levels', where: 'medication_id = ?', whereArgs: [medicationId], orderBy: 'date DESC', limit: 1);
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  // ===================
   // IMPORT / EXPORT
   // ===================
   
@@ -512,6 +842,11 @@ class DatabaseHelper implements DatabaseRepository {
     await db.delete('medication_config');
     await db.delete('medication_schedule');
     await db.delete('medication_intake');
+    await db.delete('prodromal_checklist');
+    await db.delete('prodromal_logs');
+    await db.delete('crisis_plan');
+    await db.delete('episode_logs');
+    await db.delete('medication_levels');
     await db.delete('settings');
   }
 
@@ -524,6 +859,11 @@ class DatabaseHelper implements DatabaseRepository {
       'medication_config': await db.query('medication_config'),
       'medication_schedule': await db.query('medication_schedule'),
       'medication_intake': await db.query('medication_intake'),
+      'prodromal_checklist': await db.query('prodromal_checklist'),
+      'prodromal_logs': await db.query('prodromal_logs'),
+      'crisis_plan': await db.query('crisis_plan'),
+      'episode_logs': await db.query('episode_logs'),
+      'medication_levels': await db.query('medication_levels'),
       'settings': await db.query('settings'),
     };
     return jsonEncode(data);
@@ -533,9 +873,9 @@ class DatabaseHelper implements DatabaseRepository {
   Future<void> importDatabaseFromJson(String jsonString) async {
     final db = await database;
     final data = jsonDecode(jsonString) as Map<String, dynamic>;
-    
+
     await clearAllData();
-    
+
     for (final log in (data['daily_logs'] as List? ?? [])) {
       await db.insert('daily_logs', log as Map<String, dynamic>);
     }
@@ -550,6 +890,21 @@ class DatabaseHelper implements DatabaseRepository {
     }
     for (final intake in (data['medication_intake'] as List? ?? [])) {
       await db.insert('medication_intake', intake as Map<String, dynamic>);
+    }
+    for (final item in (data['prodromal_checklist'] as List? ?? [])) {
+      await db.insert('prodromal_checklist', item as Map<String, dynamic>);
+    }
+    for (final item in (data['prodromal_logs'] as List? ?? [])) {
+      await db.insert('prodromal_logs', item as Map<String, dynamic>);
+    }
+    for (final item in (data['crisis_plan'] as List? ?? [])) {
+      await db.insert('crisis_plan', item as Map<String, dynamic>);
+    }
+    for (final item in (data['episode_logs'] as List? ?? [])) {
+      await db.insert('episode_logs', item as Map<String, dynamic>);
+    }
+    for (final item in (data['medication_levels'] as List? ?? [])) {
+      await db.insert('medication_levels', item as Map<String, dynamic>);
     }
     for (final setting in (data['settings'] as List? ?? [])) {
       await db.insert('settings', setting as Map<String, dynamic>);

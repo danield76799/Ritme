@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
+import '../services/bipolar_alert_service.dart';
 import '../widgets/weekly_mood_chart.dart';
 import 'login_screen.dart';
 
@@ -24,6 +25,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   int _loggedDaysCount = 0;  // Aantal gelogde dagen binnen periode
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
+  List<Alert> _alerts = [];
 
   @override
   void initState() {
@@ -211,10 +213,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         _sleepQuality = sleepScore.toDouble();
         _rhythmStability = stability.toDouble();
         _weeklyActivities = totalWeeklyActivities;
-        _loggedDaysCount = loggedDaysCount;  // Unieke dagen met slaapdata
+        _loggedDaysCount = loggedDaysCount;
         _weeklyLogs = weeklyLogs;
         _lastUpdated = DateTime.now();
         _isLoading = false;
+      });
+
+      // Run alert checks asynchronously (don't block UI)
+      BipolarAlertService.instance.runAllChecks().then((alerts) {
+        if (mounted) setState(() => _alerts = alerts);
       });
     } catch (e) {
       setState(() {
@@ -397,7 +404,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 ),
                 
                 const SizedBox(height: 28),
-                
+
+                // --- BIPOLE ALERTS ---
+                if (_alerts.isNotEmpty) ...[
+                  ..._alerts.map((alert) => _buildAlertCard(alert)),
+                  const SizedBox(height: 16),
+                ],
+
                 // --- VANDAAG SECTIE ---
                 Row(
                   children: [
@@ -461,11 +474,32 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                       route: '/appointments',
                     ),
                     _buildActionCard(
-                      context, 
-                      icon: Icons.schedule, 
-                      iconColor: Colors.teal, 
-                      title: 'Sociaal Ritme', 
+                      context,
+                      icon: Icons.schedule,
+                      iconColor: Colors.teal,
+                      title: 'Sociaal Ritme',
                       route: '/sociaal-ritme',
+                    ),
+                    _buildActionCard(
+                      context,
+                      icon: Icons.warning_amber,
+                      iconColor: Colors.orange,
+                      title: 'Voortekenen',
+                      route: '/voortekenen',
+                    ),
+                    _buildActionCard(
+                      context,
+                      icon: Icons.assignment,
+                      iconColor: Colors.redAccent,
+                      title: 'Crisisplan',
+                      route: '/crisisplan',
+                    ),
+                    _buildActionCard(
+                      context,
+                      icon: Icons.description,
+                      iconColor: AppTheme.primaryTeal,
+                      title: 'Rapport',
+                      route: '/rapport',
                     ),
                   ],
                 ),
@@ -830,6 +864,58 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             child: Text('OK', style: TextStyle(color: AppTheme.primaryTeal)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAlertCard(Alert alert) {
+    Color color;
+    IconData icon;
+    switch (alert.severity) {
+      case 'high':
+        color = Colors.red;
+        icon = Icons.warning_rounded;
+        break;
+      case 'medium':
+        color = Colors.orange;
+        icon = Icons.info_outline;
+        break;
+      default:
+        color = Colors.blue;
+        icon = Icons.info_outline;
+    }
+
+    return GestureDetector(
+      onTap: alert.type.startsWith('slaap')
+          ? () => Navigator.pushNamed(context, '/sleep-detail')
+          : alert.type.startsWith('voortekenen')
+              ? () => Navigator.pushNamed(context, '/voortekenen')
+              : () => Navigator.pushNamed(context, '/sociaal-ritme'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(alert.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color)),
+                  const SizedBox(height: 2),
+                  Text(alert.message, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, size: 14, color: color.withValues(alpha: 0.5)),
+          ],
+        ),
       ),
     );
   }

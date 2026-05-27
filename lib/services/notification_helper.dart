@@ -291,43 +291,47 @@ class NotificationHelper {
     }
   }
 
-  Future<void> showTestNotification() async {
+  Future<void> showImmediateNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
     if (kIsWeb) return;
-    
     try {
       const androidDetails = AndroidNotificationDetails(
-        'test_channel',
-        'Test Notificaties',
-        channelDescription: 'Test kanaal voor notificaties',
+        'immediate_channel',
+        'Directe notificaties',
+        channelDescription: 'Directe notificaties van SunUP of app',
         importance: Importance.high,
         priority: Priority.high,
         showWhen: true,
         enableVibration: true,
-        playSound: true, // Sound + vibration
+        playSound: true,
         enableLights: true,
       );
-
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: true, // Sound + vibration
+        presentSound: true,
       );
-
-      const details = NotificationDetails(
-        android: androidDetails,
-        iOS: iosDetails,
-      );
-
+      const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
       await _notifications.show(
-        99999,
-        '🧪 Test Notificatie',
-        'Als je dit ziet, werken notificaties!',
+        DateTime.now().millisecondsSinceEpoch % 100000,
+        title,
+        body,
         details,
+        payload: payload,
       );
-      debugPrint('Test notificatie verzonden (alleen tril)');
     } catch (e) {
-      debugPrint('Test notificatie error: $e');
+      debugPrint('Immediate notification error: $e');
     }
+  }
+
+  Future<void> showTestNotification() async {
+    await showImmediateNotification(
+      title: '🧪 Test Notificatie',
+      body: 'Als je dit ziet, werken notificaties!',
+    );
   }
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute, int dayOfWeek) {

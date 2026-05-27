@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'pages/splash_screen.dart' show SplashScreenWrapper;
 import 'screens/login_screen.dart';
 import 'services/notification_helper.dart';
+import 'services/sunup_service.dart';
 import 'screens/mood_screen.dart';
 import 'screens/activity_screen.dart';
 import 'screens/medication_screen.dart';
@@ -24,6 +25,10 @@ import 'screens/life_events_screen.dart';
 import 'screens/activities_detail_screen.dart';
 import 'screens/database_debug_screen.dart';
 import 'screens/help_screen.dart';
+import 'screens/voortekenen_screen.dart';
+import 'screens/crisisplan_screen.dart';
+import 'screens/episodes_screen.dart';
+import 'screens/rapport_screen.dart';
 import 'service_locator.dart';
 import 'theme/app_theme.dart';
 import 'utils/logger.dart';
@@ -39,10 +44,14 @@ void main() async {
   
   // Initialize notifications for mobile only
   if (!kIsWeb) {
+    // Initialize notifications (SunUP primary, local fallback)
     try {
+      await SunUpService.instance.initialize();
+      debugPrint('SunUP mode: ${SunUpService.instance.mode}');
+    } catch (e) {
+      debugPrint('SunUP init error: $e');
+      // Fallback to pure local
       await NotificationHelper.instance.initialize();
-    } catch (e, stackTrace) {
-      AppLogger.error('Notification initialization error', error: e, stackTrace: stackTrace);
     }
   }
   
@@ -202,6 +211,10 @@ class RitmeApp extends StatelessWidget {
         '/activities-detail': (context) => const ActivitiesDetailScreen(),
         '/life-events': (context) => const LifeEventsScreen(),
         '/help': (context) => const HelpScreen(),
+        '/voortekenen': (context) => const VoortekenenScreen(),
+        '/crisisplan': (context) => const CrisisPlanScreen(),
+        '/episodes': (context) => const EpisodesScreen(),
+        '/rapport': (context) => const RapportScreen(),
       },
     );
   }

@@ -982,4 +982,88 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await _medicalAppointments.delete(id);
     return 1;
   }
+
+  // ===================
+  // BIPOIRE STOORNIS v3 (Hive stubs — web fallback)
+  // ===================
+
+  @override
+  Future<List<Map<String, dynamic>>> getProdromalChecklist() async {
+    return [];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getEnabledProdromalChecklist() async {
+    return [];
+  }
+
+  @override
+  Future<int> insertProdromalSign(Map<String, dynamic> data) async => 0;
+
+  @override
+  Future<int> updateProdromalSign(int id, Map<String, dynamic> data) async => 0;
+
+  @override
+  Future<int> deleteProdromalSign(int id) async => 0;
+
+  @override
+  Future<int> insertProdromalLog(Map<String, dynamic> data) async => 0;
+
+  @override
+  Future<List<Map<String, dynamic>>> getProdromalLogs(String date) async {
+    return [];
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getProdromalSummary(String date) async => null;
+
+  @override
+  Future<List<Map<String, dynamic>>> getRecentProdromalTrends(int days) async {
+    return [];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getCrisisPlan() async {
+    return [];
+  }
+
+  @override
+  Future<int> insertCrisisPlanSection(Map<String, dynamic> data) async => 0;
+
+  @override
+  Future<int> updateCrisisPlanSection(int id, Map<String, dynamic> data) async => 0;
+
+  @override
+  Future<int> deleteCrisisPlanSection(int id) async => 0;
+
+  @override
+  Future<int> insertEpisode(Map<String, dynamic> data) async => 0;
+
+  @override
+  Future<int> updateEpisode(int id, Map<String, dynamic> data) async => 0;
+
+  @override
+  Future<List<Map<String, dynamic>>> getEpisodes({String? type, int limit = 50}) async {
+    return [];
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getActiveEpisode() async => null;
+
+  @override
+  Future<int> endEpisode(int id, String endDate) async => 0;
+
+  @override
+  Future<int> deleteEpisode(int id) async => 0;
+
+  @override
+  Future<int> insertMedicationLevel(Map<String, dynamic> data) async => 0;
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationLevels(int medicationId) async {
+    return [];
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getLatestMedicationLevel(int medicationId) async => null;
 }

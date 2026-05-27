@@ -6,6 +6,7 @@ import '../service_locator.dart';
 import '../utils/logger.dart';
 import '../services/backup_service.dart';
 import '../services/notification_helper.dart';
+import '../services/sunup_service.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 
@@ -175,6 +176,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   Map<String, dynamic>? _settings;
+  bool _showMenstruatie = true;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -203,6 +205,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final settings = await db.getSettings();
       setState(() {
         _settings = settings;
+        _showMenstruatie = settings?['show_menstruatie'] == '1' || settings?['show_menstruatie'] == 1 || settings?['show_menstruatie'] == 'true' || settings?['show_menstruatie'] == null;
         _isLoading = false;
         // Update controllers with loaded values
         _usernameController.text = settings?['username']?.toString() ?? '';
@@ -351,6 +354,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildTimeField('Eerste contact', 'target_contact'),
           _buildTimeField('Werk / Hobby', 'target_werk'),
           _buildTimeField('Avondeten', 'target_eten'),
+          const SizedBox(height: 24),
+          _buildSectionHeader('Weergave'),
+          SwitchListTile(
+            title: const Text('Toon menstruatie tracking',
+              style: TextStyle(fontSize: 14, color: Color(0xFF333333))),
+            subtitle: const Text('Zet uit als je dit niet wilt bijhouden',
+              style: TextStyle(fontSize: 12, color: Colors.grey)),
+            value: _showMenstruatie,
+            onChanged: (value) {
+              setState(() {
+                _showMenstruatie = value;
+                _settings ??= {};
+                _settings!['show_menstruatie'] = value ? '1' : '0';
+              });
+            },
+            activeColor: AppTheme.primaryTeal,
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader('Notificaties'),
+          _buildSunUpToggle(),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
@@ -558,6 +581,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
         ),
+      ),
+    );
+  }
+
+  Widget _buildSunUpToggle() {
+    final isSunUp = SunUpService.instance.mode == PushMode.sunup;
+    final isLocal = SunUpService.instance.mode == PushMode.local;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isSunUp ? Colors.green.shade50 : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isSunUp ? Colors.green.shade300 : Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isSunUp ? Icons.cloud_done : Icons.cloud_off,
+                color: isSunUp ? Colors.green : Colors.grey,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isSunUp ? 'SunUP actief' : 'Lokale notificaties',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isSunUp ? Colors.green.shade800 : Colors.grey.shade700,
+                      ),
+                    ),
+                    Text(
+                      isSunUp
+                          ? 'Push via je eigen server'
+                          : isLocal
+                              ? 'Push via app (batterij-afhankelijk)'
+                              : 'Notificaties uitgeschakeld',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: isSunUp,
+                onChanged: (value) async {
+                  if (value) {
+                    await SunUpService.instance.enableSunUp();
+                  } else {
+                    await SunUpService.instance.disableSunUp();
+                  }
+                  setState(() {});
+                },
+                activeColor: Colors.green,
+              ),
+            ],
+          ),
+          if (isSunUp && SunUpService.instance.pushEndpoint != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Endpoint: ${SunUpService.instance.pushEndpoint!.substring(0, SunUpService.instance.pushEndpoint!.length > 40 ? 40 : SunUpService.instance.pushEndpoint!.length)}...',
+              style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+            ),
+          ],
+        ],
       ),
     );
   }
