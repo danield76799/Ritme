@@ -102,15 +102,22 @@ jobs:
         # Decode keystore
         echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
         
-        # Sign AAB with jarsigner
-        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-          -keystore /tmp/keystore.jks \
-          -storepass "$KEYSTORE_PASSWORD" \
-          -keypass "$KEY_PASSWORD" \
-          build/app/outputs/bundle/release/app-release.aab "$KEY_ALIAS"
+        # Get build tools
+        BUILD_TOOLS_VERSION=$(ls $ANDROID_SDK_ROOT/build-tools/ | sort -V | tail -n 1)
+        BUILD_TOOLS="$ANDROID_SDK_ROOT/build-tools/$BUILD_TOOLS_VERSION"
+        
+        # Sign with apksigner (modern, supports v2/v3 signing)
+        $BUILD_TOOLS/apksigner sign \
+          --ks /tmp/keystore.jks \
+          --ks-pass pass:"$KEYSTORE_PASSWORD" \
+          --key-pass pass:"$KEY_PASSWORD" \
+          --ks-key-alias "$KEY_ALIAS" \
+          --v2-signing-enabled true \
+          --v3-signing-enabled true \
+          build/app/outputs/bundle/release/app-release.aab
         
         # Verify
-        jarsigner -verify build/app/outputs/bundle/release/app-release.aab
+        $BUILD_TOOLS/apksigner verify build/app/outputs/bundle/release/app-release.aab
 
     - name: Upload AAB
       uses: actions/upload-artifact@v4
