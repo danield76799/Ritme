@@ -50,11 +50,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
     try {
       final settings = await db.getSettings();
       if (settings != null) {
-        _activiteiten[0]['richttijd'] = _parseTimeOfDay(settings['target_wake_time']);
-        _activiteiten[1]['richttijd'] = _parseTimeOfDay(settings['target_first_contact']);
-        _activiteiten[2]['richttijd'] = _parseTimeOfDay(settings['target_work']);
-        _activiteiten[3]['richttijd'] = _parseTimeOfDay(settings['target_dinner']);
-        _activiteiten[4]['richttijd'] = _parseTimeOfDay(settings['target_sleep_time']);
+        _activiteiten[0]['richttijd'] = _parseTimeOfDay(settings['target_opstaan']);
+        _activiteiten[1]['richttijd'] = _parseTimeOfDay(settings['target_contact']);
+        _activiteiten[2]['richttijd'] = _parseTimeOfDay(settings['target_werk']);
+        _activiteiten[3]['richttijd'] = _parseTimeOfDay(settings['target_eten']);
+        _activiteiten[4]['richttijd'] = _parseTimeOfDay(settings['target_slapen']);
       }
 
       final activities = await db.getSrmActivities(_formattedDate);
