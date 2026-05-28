@@ -41,7 +41,12 @@ class _MoodScreenState extends State<MoodScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Reload settings when returning from settings screen
+  }
+
+  @override
+  void didUpdateWidget(covariant MoodScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload settings when widget is updated
     _loadSettings();
   }
 
@@ -52,7 +57,7 @@ class _MoodScreenState extends State<MoodScreen> {
       }
       final settings = await db.getSettings();
       final showMenstruatie = settings?['show_menstruatie'] == null ? true : 
-        settings!['show_menstruatie'] == '1' || settings['show_menstruatie'] == 1 || settings['show_menstruatie'] == 'true';
+        settings!['show_menstruatie'] == '1' || settings['show_menstruatie'] == 1 || settings['show_menstruatie'] == 'true' || settings['show_menstruatie'] == true;
       
       if (mounted) {
         setState(() {
