@@ -2,6 +2,11 @@ name: Build Single APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -14,6 +19,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'zulu'
+        cache: 'gradle'
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
@@ -24,14 +30,45 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
 
-    - name: Build Debug APK (auto-signed with debug keystore)
-      run: flutter build apk --debug
+    - name: Build APK (single, not split)
+      run: flutter build apk --release
+
+    - name: Sign APK
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      run: |
+        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.p12
+        # Convert PKCS12 to JKS format for compatibility
+        keytool -importkeystore \
+          -srckeystore /tmp/keystore.p12 -srcstoretype PKCS12 -srcstorepass "$KEYSTORE_PASSWORD" \
+          -destkeystore /tmp/keystore.jks -deststoretype JKS -deststorepass "$KEYSTORE_PASSWORD" \
+          -noprompt
+        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+          -keystore /tmp/keystore.jks \
+          -storepass "$KEYSTORE_PASSWORD" \
+          -keypass "$KEY_PASSWORD" \
+          build/app/outputs/flutter-apk/app-release.apk "$KEY_ALIAS"
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: ritme-single-apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
-        retention-days: 7
+        path: build/app/outputs/flutter-apk/app-release.apk
+        retention-days: 30
 
-    # Artifact is already uploaded above - no release needed for debug builds
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: build/app/outputs/flutter-apk/app-release.apk
+        tag_name: single-apk-v${{ github.run_number }}
+        name: Ritme Single APK v${{ github.run_number }}
+        body: |
+          Ritme Android APK (single, universal)
+          
+          - `app-release.apk` - Works on all Android devices
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
