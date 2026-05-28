@@ -187,6 +187,29 @@ class DatabaseHelper implements DatabaseRepository {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
+
+    // Indexen voor betere performance
+    await _createIndexes(db);
+  }
+
+  Future<void> _createIndexes(Database db) async {
+    // Daily logs - meest opgevraagd per datum
+    await db.execute('CREATE INDEX idx_daily_logs_date ON daily_logs(date)');
+    
+    // SRM activities - per datum
+    await db.execute('CREATE INDEX idx_srm_activities_date ON srm_activities(date)');
+    
+    // Medication intake - per medicatie en datum
+    await db.execute('CREATE INDEX idx_medication_intake_med_date ON medication_intake(medication_id, date)');
+    
+    // Prodromal logs - per datum
+    await db.execute('CREATE INDEX idx_prodromal_logs_date ON prodromal_logs(date)');
+    
+    // Episode logs - per start datum
+    await db.execute('CREATE INDEX idx_episode_logs_start ON episode_logs(start_date)');
+    
+    // Medication levels - per medicatie en datum
+    await db.execute('CREATE INDEX idx_medication_levels_med_date ON medication_levels(medication_id, date)');
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {

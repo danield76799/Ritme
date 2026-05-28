@@ -1,37 +1,41 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'pages/splash_screen.dart' show SplashScreenWrapper;
-import 'screens/login_screen.dart';
+
+// Services
+import 'services/boot_service.dart';
 import 'services/notification_helper.dart';
 import 'services/sunup_service.dart';
-import 'services/boot_service.dart';
 import 'services/widget_service.dart';
-import 'screens/mood_screen.dart';
-import 'screens/activity_screen.dart';
-import 'screens/medication_screen.dart';
-import 'screens/event_screen.dart';
-import 'screens/statistics_screen.dart' show StatistiekenScherm;
-import 'screens/insights_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/medication_schedule_screen.dart';
-import 'screens/weight_screen.dart';
-import 'screens/sociaal_ritme_meter_screen.dart';
-import 'screens/appointments_screen.dart';
-import 'screens/sleep_detail_screen.dart';
-import 'screens/rhythm_detail_screen.dart';
-import 'screens/life_events_screen.dart';
+
+// Screens
 import 'screens/activities_detail_screen.dart';
-import 'screens/database_debug_screen.dart';
-import 'screens/help_screen.dart';
-import 'screens/voortekenen_screen.dart';
+import 'screens/activity_screen.dart';
+import 'screens/appointments_screen.dart';
 import 'screens/crisisplan_screen.dart';
+import 'screens/database_debug_screen.dart';
 import 'screens/episodes_screen.dart';
-import 'screens/rapport_screen.dart';
+import 'screens/event_screen.dart';
+import 'screens/help_screen.dart';
+import 'screens/insights_screen.dart';
+import 'screens/life_events_screen.dart';
+import 'screens/medication_schedule_screen.dart';
+import 'screens/medication_screen.dart';
+import 'screens/mood_screen.dart';
 import 'screens/quick_checkin_screen.dart';
+import 'screens/rapport_screen.dart';
+import 'screens/rhythm_detail_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/sleep_detail_screen.dart';
+import 'screens/sociaal_ritme_meter_screen.dart';
+import 'screens/statistics_screen.dart' show StatistiekenScherm;
+import 'screens/voortekenen_screen.dart';
+import 'screens/weight_screen.dart';
+
+// Pages & Utils
+import 'pages/splash_screen.dart' show SplashScreenWrapper;
 import 'service_locator.dart';
 import 'theme/app_theme.dart';
 import 'utils/logger.dart';
@@ -60,6 +64,8 @@ void main() async {
     await BootService.initialize();
     // Initialize widget service for home screen widget
     await WidgetService.initialize();
+    // Set up notification action handler
+    await _setupNotificationActionHandler();
   }
   
   // Set up error handling
@@ -71,12 +77,7 @@ void main() async {
     );
     FlutterError.presentError(details);
   };
-  
-  // Set up notification action handler
-  if (!kIsWeb) {
-    await _setupNotificationActionHandler();
-  }
-  
+
   runApp(
     ErrorBoundary(
       child: const RitmeApp(),
@@ -204,7 +205,6 @@ class RitmeApp extends StatelessWidget {
         '/activity': (context) => const ActivityScreen(),
         '/medication': (context) => const MedicationScreen(),
         '/event': (context) => const EventScreen(),
-        '/database-debug': (context) => const DatabaseDebugScreen(),
         '/database-debug': (context) => const DatabaseDebugScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/medication-schedule': (context) => const MedicationScheduleScreen(),

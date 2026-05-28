@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
+import '../utils/bool_helper.dart';
 import '../widgets/datum_navigator.dart';
 
 class MoodScreen extends StatefulWidget {
@@ -56,8 +57,7 @@ class _MoodScreenState extends State<MoodScreen> {
         await initDatabase();
       }
       final settings = await db.getSettings();
-      final showMenstruatie = settings?['show_menstruatie'] == null ? true : 
-        settings!['show_menstruatie'] == '1' || settings['show_menstruatie'] == 1 || settings['show_menstruatie'] == 'true' || settings['show_menstruatie'] == true;
+      final showMenstruatie = BoolHelper.parse(settings?['show_menstruatie'], defaultValue: true);
       
       if (mounted) {
         setState(() {
@@ -80,8 +80,7 @@ class _MoodScreenState extends State<MoodScreen> {
       }
       // Load display preferences
       final settings = await db.getSettings();
-      final showMenstruatie = settings?['show_menstruatie'] == null ? true : 
-        settings!['show_menstruatie'] == '1' || settings['show_menstruatie'] == 1 || settings['show_menstruatie'] == 'true';
+      final showMenstruatie = BoolHelper.parse(settings?['show_menstruatie'], defaultValue: true);
 
       final log = await db.getDailyLog(_formattedDate);
       if (!mounted) return;
