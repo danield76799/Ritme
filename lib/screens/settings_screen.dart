@@ -221,12 +221,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveSettings() async {
     try {
-      if (_settings != null) {
-        // Update username from controller
-        _settings!['username'] = _usernameController.text;
-        await db.updateSettingsMap(_settings!);
-        _showSuccess('Instellingen opgeslagen!');
-      }
+      // Laad eerst bestaande settings om te voorkomen dat we velden overschrijven
+      final existing = await db.getSettings();
+      final merged = Map<String, dynamic>.from(existing ?? {});
+      merged.addAll(_settings ?? {});
+      merged['username'] = _usernameController.text;
+      await db.updateSettingsMap(merged);
+      _showSuccess('Instellingen opgeslagen!');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save settings', error: e, stackTrace: stackTrace);
       _showError('Kon instellingen niet opslaan.');
