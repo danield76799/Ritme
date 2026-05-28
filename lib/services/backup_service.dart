@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../database/database_helper.dart';
 
 class BackupService {
@@ -98,24 +97,28 @@ class BackupService {
     return export;
   }
 
-  /// Save backup to external files dir (accessible via Files app)
+  /// Save backup to Downloads folder (direct, no share sheet)
   static Future<String> saveLocalBackup() async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
     
-    // Save to external files directory (accessible via Files app)
-    final extDir = await getExternalStorageDirectory();
-    final dir = extDir ?? await getApplicationDocumentsDirectory();
+    // Try to save directly to Downloads
+    Directory? downloadsDir;
+    try {
+      if (Platform.isAndroid) {
+        downloadsDir = Directory('/storage/emulated/0/Download');
+        if (!downloadsDir.existsSync()) {
+          downloadsDir = Directory('/sdcard/Download');
+        }
+      }
+    } catch (e) {
+      debugPrint('BackupService: Could not access Downloads, falling back');
+    }
+    
+    final dir = downloadsDir ?? await getApplicationDocumentsDirectory();
     final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
     final file = File('${dir.path}/ritme_backup_$timestamp.json');
     await file.writeAsString(jsonString);
-    
-    // Share the file so user can save to Downloads
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      subject: 'Ritme Backup ${DateTime.now().toString().split(' ')[0]}',
-      text: 'Ritme backup - sla op in Downloads of deel via email',
-    );
     
     return file.path;
   }
