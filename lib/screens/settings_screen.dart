@@ -368,6 +368,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _settings ??= {};
                 _settings!['show_menstruatie'] = value ? '1' : '0';
               });
+              // Sla direct op zodat het meteen effect heeft
+              _saveSettings();
             },
             activeColor: AppTheme.primaryTeal,
           ),
