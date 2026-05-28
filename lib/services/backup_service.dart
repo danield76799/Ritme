@@ -48,6 +48,17 @@ class BackupService {
       debugPrint('BackupService: error exporting SQLite SRM activities - $e');
     }
 
+    // Export SQLite settings (username, sleep times, etc.)
+    try {
+      final settings = await _db.getSettings();
+      if (settings != null && settings.isNotEmpty) {
+        export['data']['sqlite_settings'] = settings;
+        debugPrint('BackupService: exported settings from SQLite: $settings');
+      }
+    } catch (e) {
+      debugPrint('BackupService: error exporting SQLite settings - $e');
+    }
+
     // Export Hive boxes
     final boxNames = [
       'settings',
@@ -148,8 +159,60 @@ class BackupService {
     final boxesData = data['data'] as Map<String, dynamic>?;
     if (boxesData == null) throw Exception('Invalid backup format');
 
+    // Restore SQLite settings first (username, sleep times, etc.)
+    if (boxesData.containsKey('sqlite_settings')) {
+      try {
+        final settingsData = boxesData['sqlite_settings'] as Map<String, dynamic>;
+        await _db.updateSettingsMap(settingsData);
+        debugPrint('BackupService: restored SQLite settings: $settingsData');
+      } catch (e) {
+        debugPrint('BackupService: error restoring SQLite settings - $e');
+      }
+    }
+
+    // Restore SQLite tables
+    if (boxesData.containsKey('sqlite_daily_logs')) {
+      try {
+        final logs = boxesData['sqlite_daily_logs'] as List<dynamic>;
+        for (final log in logs) {
+          await _db.upsertDailyLog(log as Map<String, dynamic>);
+        }
+        debugPrint('BackupService: restored ${logs.length} daily logs');
+      } catch (e) {
+        debugPrint('BackupService: error restoring daily logs - $e');
+      }
+    }
+
+    if (boxesData.containsKey('sqlite_appointments')) {
+      try {
+        final appointments = boxesData['sqlite_appointments'] as List<dynamic>;
+        for (final appt in appointments) {
+          await _db.insertMedicalAppointment(appt as Map<String, dynamic>);
+        }
+        debugPrint('BackupService: restored ${appointments.length} appointments');
+      } catch (e) {
+        debugPrint('BackupService: error restoring appointments - $e');
+      }
+    }
+
+    if (boxesData.containsKey('sqlite_srm_activities')) {
+      try {
+        final activities = boxesData['sqlite_srm_activities'] as List<dynamic>;
+        for (final activity in activities) {
+          await _db.insertSrmActivityMap(activity as Map<String, dynamic>);
+        }
+        debugPrint('BackupService: restored ${activities.length} SRM activities');
+      } catch (e) {
+        debugPrint('BackupService: error restoring SRM activities - $e');
+      }
+    }
+
+    // Restore Hive boxes
     for (final entry in boxesData.entries) {
       final boxName = entry.key;
+      // Skip SQLite entries already handled above
+      if (boxName.startsWith('sqlite_')) continue;
+      
       final boxData = entry.value as Map<String, dynamic>;
       
       try {
