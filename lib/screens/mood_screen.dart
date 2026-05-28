@@ -38,6 +38,32 @@ class _MoodScreenState extends State<MoodScreen> {
     _loadData();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload settings when returning from settings screen
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      if (!isDbInitialized) {
+        await initDatabase();
+      }
+      final settings = await db.getSettings();
+      final showMenstruatie = settings?['show_menstruatie'] == null ? true : 
+        settings!['show_menstruatie'] == '1' || settings['show_menstruatie'] == 1 || settings['show_menstruatie'] == 'true';
+      
+      if (mounted) {
+        setState(() {
+          _showMenstruatie = showMenstruatie;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading settings: $e');
+    }
+  }
+
   Future<void> _loadData() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
