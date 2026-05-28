@@ -80,7 +80,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     ];
 
     for (final item in defaults) {
-      final id = DateTime.now().millisecondsSinceEpoch % 1000000 + item['sort_order'] as int;
+      final sortOrder = item['sort_order'] is int ? item['sort_order'] as int : int.tryParse(item['sort_order'].toString()) ?? 0;
+      final id = DateTime.now().millisecondsSinceEpoch % 1000000 + sortOrder;
       final data = Map<String, dynamic>.from(item);
       data['id'] = id;
       await _prodromalChecklist.put(id, data);
