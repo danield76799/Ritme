@@ -74,17 +74,11 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             if (rawSleep is num) sleep = rawSleep.toDouble();
             else if (rawSleep is String) sleep = double.tryParse(rawSleep);
           }
-          // Dan kijken naar uren_slaap (van mood tracking - moeten awake_minutes aftrekken)
+          // Dan kijken naar uren_slaap (van mood/quick check-in - GEEN awake_minutes aftrekken)
+          // uren_slaap is altijd de netto slaapduur zoals de user deze heeft ingevoerd
           if (sleep == null && rawUren != null) {
             if (rawUren is num) sleep = rawUren.toDouble();
             else if (rawUren is String) sleep = double.tryParse(rawUren);
-            
-            // Trek awake_minutes af voor uren_slaap (niet voor sleep_hours)
-            if (sleep != null && sleep > 0 && awakeMinutes > 0) {
-              final awakeHours = awakeMinutes / 60.0;
-              sleep = sleep - awakeHours;
-              if (sleep < 0) sleep = 0;
-            }
           }
           
           // Alleen toevoegen als we geldige sleep data hebben

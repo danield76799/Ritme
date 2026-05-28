@@ -14,6 +14,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
   static const String _lifeEventsBox = 'life_events';
   static const String _weightLogsBox = 'weight_logs';
   static const String _medicalAppointmentsBox = 'medical_appointments';
+  static const String _crisisPlanBox = 'crisis_plan';
+  static const String _prodromalChecklistBox = 'prodromal_checklist';
+  static const String _prodromalLogsBox = 'prodromal_logs';
 
   HiveDatabaseHelper._init();
 
@@ -27,6 +30,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_lifeEventsBox);
     await Hive.openBox(_weightLogsBox);
     await Hive.openBox(_medicalAppointmentsBox);
+    await Hive.openBox(_crisisPlanBox);
+    await Hive.openBox(_prodromalChecklistBox);
+    await Hive.openBox(_prodromalLogsBox);
   }
 
   Box get _settings => Hive.box(_settingsBox);
@@ -38,6 +44,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Box get _lifeEvents => Hive.box(_lifeEventsBox);
   Box get _weightLogs => Hive.box(_weightLogsBox);
   Box get _medicalAppointments => Hive.box(_medicalAppointmentsBox);
+  Box get _crisisPlan => Hive.box(_crisisPlanBox);
+  Box get _prodromalChecklist => Hive.box(_prodromalChecklistBox);
+  Box get _prodromalLogs => Hive.box(_prodromalLogsBox);
 
   // ===================
   // SETTINGS
@@ -415,6 +424,30 @@ class HiveDatabaseHelper implements DatabaseRepository {
       });
       return cleanMap;
     }).toList();
+    (result['tables'] as Map<String, dynamic>)['crisis_plan'] = _crisisPlan.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
+    (result['tables'] as Map<String, dynamic>)['prodromal_checklist'] = _prodromalChecklist.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
+    (result['tables'] as Map<String, dynamic>)['prodromal_logs'] = _prodromalLogs.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
     
     return jsonEncode(result);
   }
@@ -510,6 +543,48 @@ class HiveDatabaseHelper implements DatabaseRepository {
         await _lifeEvents.put(map['id'], cleanMap);
       }
     }
+    if (tables['crisis_plan'] != null) {
+      for (var row in tables['crisis_plan'] as List) {
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = DateTime.now().millisecondsSinceEpoch % 1000000;
+        }
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _crisisPlan.put(map['id'], cleanMap);
+      }
+    }
+    if (tables['prodromal_checklist'] != null) {
+      for (var row in tables['prodromal_checklist'] as List) {
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = DateTime.now().millisecondsSinceEpoch % 1000000;
+        }
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _prodromalChecklist.put(map['id'], cleanMap);
+      }
+    }
+    if (tables['prodromal_logs'] != null) {
+      for (var row in tables['prodromal_logs'] as List) {
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = DateTime.now().millisecondsSinceEpoch % 1000000;
+        }
+        // Ensure all values are strings for Hive compatibility
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _prodromalLogs.put(map['id'], cleanMap);
+      }
+    }
   }
 
   @override
@@ -520,6 +595,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await _medicationConfig.clear();
     await _lifeEvents.clear();
     await _settings.clear();
+    await _crisisPlan.clear();
+    await _prodromalChecklist.clear();
+    await _prodromalLogs.clear();
   }
 
   @override
@@ -989,52 +1067,230 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<List<Map<String, dynamic>>> getProdromalChecklist() async {
-    return [];
+    return _prodromalChecklist.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList()
+      ..sort((a, b) {
+        final aOrder = int.tryParse(a['sort_order']?.toString() ?? '0') ?? 0;
+        final bOrder = int.tryParse(b['sort_order']?.toString() ?? '0') ?? 0;
+        return aOrder.compareTo(bOrder);
+      });
   }
 
   @override
   Future<List<Map<String, dynamic>>> getEnabledProdromalChecklist() async {
-    return [];
+    return _prodromalChecklist.toMap().entries.where((entry) {
+      return entry.value['enabled'] != '0' && entry.value['enabled'] != 0 && entry.value['enabled'] != false;
+    }).map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList()
+      ..sort((a, b) {
+        final aOrder = int.tryParse(a['sort_order']?.toString() ?? '0') ?? 0;
+        final bOrder = int.tryParse(b['sort_order']?.toString() ?? '0') ?? 0;
+        return aOrder.compareTo(bOrder);
+      });
   }
 
   @override
-  Future<int> insertProdromalSign(Map<String, dynamic> data) async => 0;
+  Future<int> insertProdromalSign(Map<String, dynamic> data) async {
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final cleanData = <String, dynamic>{};
+    data.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = id;
+    cleanData['enabled'] = cleanData['enabled'] ?? '1';
+    await _prodromalChecklist.put(id, cleanData);
+    return id;
+  }
 
   @override
-  Future<int> updateProdromalSign(int id, Map<String, dynamic> data) async => 0;
+  Future<int> updateProdromalSign(int id, Map<String, dynamic> data) async {
+    final cleanData = <String, dynamic>{};
+    data.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = id;
+    await _prodromalChecklist.put(id, cleanData);
+    return 1;
+  }
 
   @override
-  Future<int> deleteProdromalSign(int id) async => 0;
+  Future<int> deleteProdromalSign(int id) async {
+    await _prodromalChecklist.delete(id);
+    return 1;
+  }
 
   @override
-  Future<int> insertProdromalLog(Map<String, dynamic> data) async => 0;
+  Future<int> insertProdromalLog(Map<String, dynamic> data) async {
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final cleanData = <String, dynamic>{};
+    data.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = id;
+    await _prodromalLogs.put(id, cleanData);
+    return id;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> getProdromalLogs(String date) async {
-    return [];
+    return _prodromalLogs.toMap().entries.where((entry) {
+      return entry.value['date'] == date;
+    }).map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        if (key == 'present' || key == 'severity' || key == 'checklist_id') {
+          if (value is int) {
+            cleanMap[key] = value;
+          } else if (value is String) {
+            cleanMap[key] = int.tryParse(value) ?? 0;
+          } else {
+            cleanMap[key] = 0;
+          }
+        } else {
+          cleanMap[key] = value?.toString() ?? value;
+        }
+      });
+      return cleanMap;
+    }).toList();
   }
 
   @override
-  Future<Map<String, dynamic>?> getProdromalSummary(String date) async => null;
+  Future<Map<String, dynamic>?> getProdromalSummary(String date) async {
+    final logs = await getProdromalLogs(date);
+    final checklist = await getProdromalChecklist();
+    
+    int manieCount = 0;
+    int depressieCount = 0;
+    int gemengdCount = 0;
+    
+    for (var log in logs) {
+      if ((log['present'] ?? 0) == 1) {
+        final cid = log['checklist_id'];
+        final item = checklist.firstWhere(
+          (c) => c['id'].toString() == cid.toString(),
+          orElse: () => <String, dynamic>{},
+        );
+        final category = item['category']?.toString() ?? '';
+        if (category == 'manie') manieCount++;
+        else if (category == 'depressie') depressieCount++;
+        else if (category == 'gemengd') gemengdCount++;
+      }
+    }
+    
+    return {
+      'date': date,
+      'manie_count': manieCount,
+      'depressie_count': depressieCount,
+      'gemengd_count': gemengdCount,
+      'total': manieCount + depressieCount + gemengdCount,
+    };
+  }
 
   @override
   Future<List<Map<String, dynamic>>> getRecentProdromalTrends(int days) async {
-    return [];
+    final now = DateTime.now();
+    final cutoff = now.subtract(Duration(days: days));
+    
+    // Group logs by date and count warnings per day
+    final Map<String, int> countsByDate = {};
+    
+    for (var entry in _prodromalLogs.toMap().entries) {
+      final log = Map<String, dynamic>.from(entry.value);
+      final dateStr = log['date']?.toString() ?? '';
+      if (dateStr.isEmpty) continue;
+      
+      try {
+        final logDate = DateTime.parse(dateStr);
+        if (logDate.isBefore(cutoff)) continue;
+        
+        final present = log['present'] is int ? log['present'] : int.tryParse(log['present']?.toString() ?? '0') ?? 0;
+        if (present == 1) {
+          countsByDate[dateStr] = (countsByDate[dateStr] ?? 0) + 1;
+        }
+      } catch (_) {}
+    }
+    
+    final result = countsByDate.entries.map((e) {
+      return <String, dynamic>{
+        'date': e.key,
+        'warning_count': e.value,
+      };
+    }).toList();
+    
+    result.sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
+    return result;
   }
 
   @override
   Future<List<Map<String, dynamic>>> getCrisisPlan() async {
-    return [];
+    return _crisisPlan.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) {
+        map['id'] = entry.key;
+      }
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList()
+      ..sort((a, b) {
+        final aOrder = int.tryParse(a['sort_order']?.toString() ?? '0') ?? 0;
+        final bOrder = int.tryParse(b['sort_order']?.toString() ?? '0') ?? 0;
+        return aOrder.compareTo(bOrder);
+      });
   }
 
   @override
-  Future<int> insertCrisisPlanSection(Map<String, dynamic> data) async => 0;
+  Future<int> insertCrisisPlanSection(Map<String, dynamic> data) async {
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final cleanData = <String, dynamic>{};
+    data.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = id;
+    await _crisisPlan.put(id, cleanData);
+    return id;
+  }
 
   @override
-  Future<int> updateCrisisPlanSection(int id, Map<String, dynamic> data) async => 0;
+  Future<int> updateCrisisPlanSection(int id, Map<String, dynamic> data) async {
+    final cleanData = <String, dynamic>{};
+    data.forEach((key, value) {
+      cleanData[key] = value?.toString() ?? value;
+    });
+    cleanData['id'] = id;
+    await _crisisPlan.put(id, cleanData);
+    return 1;
+  }
 
   @override
-  Future<int> deleteCrisisPlanSection(int id) async => 0;
+  Future<int> deleteCrisisPlanSection(int id) async {
+    await _crisisPlan.delete(id);
+    return 1;
+  }
 
   @override
   Future<int> insertEpisode(Map<String, dynamic> data) async => 0;
