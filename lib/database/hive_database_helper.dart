@@ -1247,14 +1247,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<List<Map<String, dynamic>>> getCrisisPlan() async {
     return _crisisPlan.toMap().entries.map((entry) {
       final map = Map<String, dynamic>.from(entry.value);
-      if (!map.containsKey('id')) {
-        map['id'] = entry.key;
-      }
-      final cleanMap = <String, dynamic>{};
-      map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
-      });
-      return cleanMap;
+      // Ensure id is always present and is an int
+      map['id'] = entry.key;
+      return map;
     }).toList()
       ..sort((a, b) {
         final aOrder = int.tryParse(a['sort_order']?.toString() ?? '0') ?? 0;
