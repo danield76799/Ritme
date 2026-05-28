@@ -33,6 +33,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_crisisPlanBox);
     await Hive.openBox(_prodromalChecklistBox);
     await Hive.openBox(_prodromalLogsBox);
+    // Seed default prodromal checklist if empty
+    await instance._seedProdromalChecklistIfEmpty();
   }
 
   Box get _settings => Hive.box(_settingsBox);
@@ -47,6 +49,43 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Box get _crisisPlan => Hive.box(_crisisPlanBox);
   Box get _prodromalChecklist => Hive.box(_prodromalChecklistBox);
   Box get _prodromalLogs => Hive.box(_prodromalLogsBox);
+
+  Future<void> _seedProdromalChecklistIfEmpty() async {
+    if (_prodromalChecklist.isNotEmpty) return;
+
+    final defaults = [
+      // Manie/hypomanie voortekenen
+      {'category': 'manie', 'sign': 'Minder slaap nodig dan normaal', 'sort_order': 1, 'enabled': 1},
+      {'category': 'manie', 'sign': 'Racing thoughts / gedachten die racen', 'sort_order': 2, 'enabled': 1},
+      {'category': 'manie', 'sign': 'Meer energie dan normaal', 'sort_order': 3, 'enabled': 1},
+      {'category': 'manie', 'sign': 'Sneller praten dan normaal', 'sort_order': 4, 'enabled': 1},
+      {'category': 'manie', 'sign': 'Verhoogde prikkelbaarheid', 'sort_order': 5, 'enabled': 1},
+      {'category': 'manie', 'sign': 'Meer uitgeven / risicogedrag', 'sort_order': 6, 'enabled': 1},
+      {'category': 'manie', 'sign': 'Grotere plannen / grandioos denken', 'sort_order': 7, 'enabled': 1},
+      {'category': 'manie', 'sign': 'Afleidbaar / slechte concentratie', 'sort_order': 8, 'enabled': 1},
+      // Depressie voortekenen
+      {'category': 'depressie', 'sign': 'Minder interesse in activiteiten', 'sort_order': 9, 'enabled': 1},
+      {'category': 'depressie', 'sign': 'Vermoeidheid / weinig energie', 'sort_order': 10, 'enabled': 1},
+      {'category': 'depressie', 'sign': 'Somberheid / verdriet', 'sort_order': 11, 'enabled': 1},
+      {'category': 'depressie', 'sign': 'Meer slapen dan normaal', 'sort_order': 12, 'enabled': 1},
+      {'category': 'depressie', 'sign': 'Eetlust verandering', 'sort_order': 13, 'enabled': 1},
+      {'category': 'depressie', 'sign': 'Concentratieproblemen', 'sort_order': 14, 'enabled': 1},
+      {'category': 'depressie', 'sign': 'Terugtrekken uit sociale contacten', 'sort_order': 15, 'enabled': 1},
+      {'category': 'depressie', 'sign': 'Gevoelens van waardeloosheid', 'sort_order': 16, 'enabled': 1},
+      // Gemengd/stress voortekenen
+      {'category': 'gemengd', 'sign': 'Verhoogde stress / spanning', 'sort_order': 17, 'enabled': 1},
+      {'category': 'gemengd', 'sign': 'Piekeren / malen', 'sort_order': 18, 'enabled': 1},
+      {'category': 'gemengd', 'sign': 'Lichamelijke onrust', 'sort_order': 19, 'enabled': 1},
+      {'category': 'gemengd', 'sign': 'Conflicten met anderen', 'sort_order': 20, 'enabled': 1},
+    ];
+
+    for (final item in defaults) {
+      final id = DateTime.now().millisecondsSinceEpoch % 1000000 + item['sort_order'] as int;
+      final data = Map<String, dynamic>.from(item);
+      data['id'] = id;
+      await _prodromalChecklist.put(id, data);
+    }
+  }
 
   // ===================
   // SETTINGS
@@ -1072,39 +1111,33 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
+      // Preserve id and sort_order as int, keep others as-is
       final cleanMap = <String, dynamic>{};
       map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
+        if (key == 'id' || key == 'sort_order') {
+          cleanMap[key] = value is int ? value : int.tryParse(value.toString()) ?? 0;
+        } else if (key == 'enabled') {
+          cleanMap[key] = value == 1 || value == '1' || value == true;
+        } else {
+          cleanMap[key] = value?.toString() ?? value;
+        }
       });
       return cleanMap;
     }).toList()
       ..sort((a, b) {
-        final aOrder = int.tryParse(a['sort_order']?.toString() ?? '0') ?? 0;
-        final bOrder = int.tryParse(b['sort_order']?.toString() ?? '0') ?? 0;
+        final aOrder = a['sort_order'] is int ? a['sort_order'] : int.tryParse(a['sort_order']?.toString() ?? '0') ?? 0;
+        final bOrder = b['sort_order'] is int ? b['sort_order'] : int.tryParse(b['sort_order']?.toString() ?? '0') ?? 0;
         return aOrder.compareTo(bOrder);
       });
   }
 
   @override
   Future<List<Map<String, dynamic>>> getEnabledProdromalChecklist() async {
-    return _prodromalChecklist.toMap().entries.where((entry) {
-      return entry.value['enabled'] != '0' && entry.value['enabled'] != 0 && entry.value['enabled'] != false;
-    }).map((entry) {
-      final map = Map<String, dynamic>.from(entry.value);
-      if (!map.containsKey('id')) {
-        map['id'] = entry.key;
-      }
-      final cleanMap = <String, dynamic>{};
-      map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
-      });
-      return cleanMap;
-    }).toList()
-      ..sort((a, b) {
-        final aOrder = int.tryParse(a['sort_order']?.toString() ?? '0') ?? 0;
-        final bOrder = int.tryParse(b['sort_order']?.toString() ?? '0') ?? 0;
-        return aOrder.compareTo(bOrder);
-      });
+    final all = await getProdromalChecklist();
+    return all.where((item) {
+      final enabled = item['enabled'];
+      return enabled == true || enabled == 1 || enabled == '1';
+    }).toList();
   }
 
   @override
@@ -1112,10 +1145,16 @@ class HiveDatabaseHelper implements DatabaseRepository {
     final id = DateTime.now().millisecondsSinceEpoch % 1000000;
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {
-      cleanData[key] = value?.toString() ?? value;
+      if (key == 'id' || key == 'sort_order') {
+        cleanData[key] = value is int ? value : int.tryParse(value.toString()) ?? 0;
+      } else if (key == 'enabled') {
+        cleanData[key] = value == true || value == 1 || value == '1' ? 1 : 0;
+      } else {
+        cleanData[key] = value?.toString() ?? value;
+      }
     });
     cleanData['id'] = id;
-    cleanData['enabled'] = cleanData['enabled'] ?? '1';
+    cleanData['enabled'] = cleanData['enabled'] ?? 1;
     await _prodromalChecklist.put(id, cleanData);
     return id;
   }
@@ -1124,7 +1163,13 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<int> updateProdromalSign(int id, Map<String, dynamic> data) async {
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {
-      cleanData[key] = value?.toString() ?? value;
+      if (key == 'id' || key == 'sort_order') {
+        cleanData[key] = value is int ? value : int.tryParse(value.toString()) ?? 0;
+      } else if (key == 'enabled') {
+        cleanData[key] = value == true || value == 1 || value == '1' ? 1 : 0;
+      } else {
+        cleanData[key] = value?.toString() ?? value;
+      }
     });
     cleanData['id'] = id;
     await _prodromalChecklist.put(id, cleanData);
