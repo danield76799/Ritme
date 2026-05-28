@@ -41,29 +41,30 @@ jobs:
         echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
         # Verify keystore
         keytool -list -keystore /tmp/keystore.jks -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS"
-        # Sign APKs with apksigner (Android's official signing tool)
+        
+        # Find Android SDK build tools
+        BUILD_TOOLS_DIR=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 1 -type d | sort -V | tail -1)
+        echo "Build tools: $BUILD_TOOLS_DIR"
+        
         for apk in build/app/outputs/flutter-apk/*-release.apk; do
-          echo "Signing $apk"
-          # Find apksigner in Android SDK
-          APK_SIGNER=$(find $ANDROID_SDK_ROOT/build-tools -name apksigner | sort -V | tail -1)
-          if [ -z "$APK_SIGNER" ]; then
-            echo "apksigner not found, falling back to jarsigner"
-            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-              -keystore /tmp/keystore.jks \
-              -storepass "$KEYSTORE_PASSWORD" \
-              -keypass "$KEY_PASSWORD" \
-              "$apk" "$KEY_ALIAS"
-            jarsigner -verify -verbose "$apk"
-          else
-            echo "Using apksigner: $APK_SIGNER"
-            $APK_SIGNER sign --ks /tmp/keystore.jks \
-              --ks-pass pass:"$KEYSTORE_PASSWORD" \
-              --key-pass pass:"$KEY_PASSWORD" \
-              --ks-key-alias "$KEY_ALIAS" \
-              "$apk"
-            # Verify signature with apksigner
-            $APK_SIGNER verify -v "$apk"
-          fi
+          echo "Processing $apk"
+          
+          # Step 1: Zipalign the APK (REQUIRED for Android R+)
+          ALIGNED_APK="${apk%.apk}-aligned.apk"
+          $BUILD_TOOLS_DIR/zipalign -v -p 4 "$apk" "$ALIGNED_APK"
+          mv "$ALIGNED_APK" "$apk"
+          echo "Zipalign complete"
+          
+          # Step 2: Sign with apksigner (includes zipalign verification)
+          $BUILD_TOOLS_DIR/apksigner sign --ks /tmp/keystore.jks \
+            --ks-pass pass:"$KEYSTORE_PASSWORD" \
+            --key-pass pass:"$KEY_PASSWORD" \
+            --ks-key-alias "$KEY_ALIAS" \
+            "$apk"
+          
+          # Step 3: Verify signature
+          $BUILD_TOOLS_DIR/apksigner verify -v "$apk"
+          echo "Sign and verify complete for $apk"
         done
 
     - name: Upload APKs
