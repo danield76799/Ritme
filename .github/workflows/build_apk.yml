@@ -40,7 +40,12 @@ jobs:
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: |
-        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
+        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.p12
+        # Convert PKCS12 to JKS format for compatibility
+        keytool -importkeystore \
+          -srckeystore /tmp/keystore.p12 -srcstoretype PKCS12 -srcstorepass "$KEYSTORE_PASSWORD" \
+          -destkeystore /tmp/keystore.jks -deststoretype JKS -deststorepass "$KEYSTORE_PASSWORD" \
+          -noprompt
         for apk in build/app/outputs/flutter-apk/*-release.apk; do
           jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
             -keystore /tmp/keystore.jks \
