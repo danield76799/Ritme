@@ -485,6 +485,9 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> deleteMedicationConfig(int id) async {
     final db = await database;
+    // Cascade delete: remove schedules and intakes first
+    await db.delete('medication_schedule', where: 'medication_id = ?', whereArgs: [id]);
+    await db.delete('medication_intake', where: 'medication_id = ?', whereArgs: [id]);
     return await db.delete('medication_config', where: 'id = ?', whereArgs: [id]);
   }
 

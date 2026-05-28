@@ -662,6 +662,15 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> deleteMedicationConfig(int id) async {
+    // Cascade delete: remove schedules and intakes first
+    final schedules = _medicationSchedule.toMap().entries.where((e) => e.value['medication_id'] == id || e.value['medication_id'] == id.toString());
+    for (final s in schedules) {
+      await _medicationSchedule.delete(s.key);
+    }
+    final intakes = _medicationIntake.toMap().entries.where((e) => e.value['medication_id'] == id || e.value['medication_id'] == id.toString());
+    for (final i in intakes) {
+      await _medicationIntake.delete(i.key);
+    }
     await _medicationConfig.delete(id);
     return 1;
   }

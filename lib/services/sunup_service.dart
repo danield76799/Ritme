@@ -115,6 +115,7 @@ class SunUpService {
   /// Re-enable SunUP
   Future<void> enableSunUp() async {
     _mode = PushMode.none;
+    _initialized = false; // Reset so initialize() actually runs
     await initialize();
   }
 
