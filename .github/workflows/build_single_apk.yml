@@ -30,10 +30,10 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
 
-    - name: Build APK (single, not split)
-      run: flutter build apk --release
+    - name: Build APK (split per ABI)
+      run: flutter build apk --release --split-per-abi
 
-    - name: Sign APK
+    - name: Sign and zipalign APKs
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -46,34 +46,40 @@ jobs:
           -srckeystore /tmp/keystore.p12 -srcstoretype PKCS12 -srcstorepass "$KEYSTORE_PASSWORD" \
           -destkeystore /tmp/keystore.jks -deststoretype JKS -deststorepass "$KEYSTORE_PASSWORD" \
           -noprompt
-        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-          -keystore /tmp/keystore.jks \
-          -storepass "$KEYSTORE_PASSWORD" \
-          -keypass "$KEY_PASSWORD" \
-          build/app/outputs/flutter-apk/app-release.apk "$KEY_ALIAS"
-        # Zip-align the APK (required for Android)
-        $ANDROID_HOME/build-tools/34.0.0/zipalign -v 4 \
-          build/app/outputs/flutter-apk/app-release.apk \
-          build/app/outputs/flutter-apk/app-release-aligned.apk
-        mv build/app/outputs/flutter-apk/app-release-aligned.apk build/app/outputs/flutter-apk/app-release.apk
+        # Find zipalign path
+        ZIPALIGN=$(find $ANDROID_HOME/build-tools -name zipalign | sort -V | tail -1)
+        echo "Using zipalign: $ZIPALIGN"
+        for apk in build/app/outputs/flutter-apk/*-release.apk; do
+          echo "Signing $apk"
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore /tmp/keystore.jks \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            "$apk" "$KEY_ALIAS"
+          echo "Zipaligning $apk"
+          "$ZIPALIGN" -v 4 "$apk" "$apk.aligned"
+          mv "$apk.aligned" "$apk"
+        done
 
-    - name: Upload APK
+    - name: Upload APKs
       uses: actions/upload-artifact@v4
       with:
-        name: ritme-single-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: ritme-apks
+        path: build/app/outputs/flutter-apk/*-release.apk
         retention-days: 30
 
     - name: Create Release
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v2
       with:
-        files: build/app/outputs/flutter-apk/app-release.apk
-        tag_name: single-apk-v${{ github.run_number }}
-        name: Ritme Single APK v${{ github.run_number }}
+        files: build/app/outputs/flutter-apk/*-release.apk
+        tag_name: apk-v${{ github.run_number }}
+        name: Ritme APK v${{ github.run_number }}
         body: |
-          Ritme Android APK (single, universal)
+          Ritme Android APKs
           
-          - `app-release.apk` - Works on all Android devices
+          - `app-arm64-v8a-release.apk` - Modern phones (recommended)
+          - `app-armeabi-v7a-release.apk` - Older phones
+          - `app-x86_64-release.apk` - Emulators/x86 devices
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
