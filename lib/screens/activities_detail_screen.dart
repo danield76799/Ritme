@@ -322,7 +322,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
   }
 
   Widget _buildDayCard(Map<String, dynamic> day) {
-    final activities = day['activities'] as List<Map<String, dynamic>>;
+    final activities = (day['activities'] as List<dynamic>).cast<Map<String, dynamic>>();
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -393,7 +393,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
   }
 
   Widget _buildActivityRow(Map<String, dynamic> activity) {
-    final pScore = activity['p_score'] as int;
+    final pScore = _parseInt(activity['p_score']);
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
