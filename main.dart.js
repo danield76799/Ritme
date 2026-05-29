@@ -111087,7 +111087,7 @@ g=b==null?null:J.aq(b)
 if(g!=null&&g.length!==0){J.cD(o.z[0],"werkelijke_tijd",o.n2(g))
 f=J.x(o.z[0],"richttijd")
 if(f!=null&&!J.c(f,"--:--")){e=o.Kc(f,g)
-J.cD(o.z[0],"p_score",o.Kb(e))}else J.cD(o.z[0],"p_score",1)}}q=1
+J.cD(o.z[0],"p_score",o.Kb(e))}else J.cD(o.z[0],"p_score",3)}}q=1
 s=5
 break
 case 3:q=2
@@ -111173,7 +111173,7 @@ break}k=B.d.aZ(B.e.k(g.a),2,"0")+":"+B.d.aZ(B.e.k(g.b),2,"0")
 f=J.x(m,"richttijd")
 e=null
 if(f!=null&&!J.c(f,"--:--")){d=n.Kc(f,k)
-e=n.Kb(d)}else e=J.c(j,0)?1:0
+e=n.Kb(d)}else e=J.c(j,0)?3:0
 a0=$.aY
 if(a0==null)A.I(A.W(u.O))
 s=11
