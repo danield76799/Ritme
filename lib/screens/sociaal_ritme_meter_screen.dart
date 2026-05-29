@@ -163,7 +163,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
           const SizedBox(height: 12),
-          Text(_errorMessage!, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+          Text(_errorMessage!, style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadData,
@@ -291,7 +291,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isGedaan ? AppTheme.textCharcoal : Colors.grey[600],
+                      color: isGedaan ? AppTheme.textCharcoal : Colors.grey.shade600,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -304,7 +304,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                         'Doel: $targetTijd',
                         style: TextStyle(
                           fontSize: 13, 
-                          color: targetTijd == '--:--' ? Colors.grey[400] : Colors.grey[600],
+                          color: targetTijd == '--:--' ? Colors.grey[400] : Colors.grey.shade600,
                           fontWeight: targetTijd == '--:--' ? FontWeight.normal : FontWeight.w500,
                         ),
                       ),

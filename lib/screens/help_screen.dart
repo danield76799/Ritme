@@ -86,7 +86,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 title: _isDutch ? 'Stemmingsschaal (-5 tot +5)' : 'Mood Scale (-5 to +5)',
                 children: [
                   _buildScaleItem(color: Colors.grey[800]!, label: _isDutch ? '-5: Uiterst depressief' : '-5: Extremely depressed'),
-                  _buildScaleItem(color: Colors.grey[600]!, label: _isDutch ? '-3: Matig depressief' : '-3: Moderately depressed'),
+                  _buildScaleItem(color: Colors.grey.shade600!, label: _isDutch ? '-3: Matig depressief' : '-3: Moderately depressed'),
                   _buildScaleItem(color: AppTheme.primaryTeal, label: '0: ${_isDutch ? 'Neutraal' : 'Neutral'}'),
                   _buildScaleItem(color: Colors.orange, label: _isDutch ? '+3: Matig manisch' : '+3: Moderately manic'),
                   _buildScaleItem(color: Colors.red, label: _isDutch ? '+5: Uiterst manisch' : '+5: Extremely manic'),
@@ -339,7 +339,7 @@ class _HelpScreenState extends State<HelpScreen> {
                           '• Export your data as JSON for backup',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        color: Colors.grey.shade600,
                         height: 1.5,
                       ),
                     ),
@@ -446,7 +446,7 @@ class _HelpScreenState extends State<HelpScreen> {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: Colors.grey.shade600,
                     height: 1.5,
                   ),
                 ),
@@ -604,7 +604,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     action,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: Colors.grey.shade600,
                     ),
                   ),
                 ],

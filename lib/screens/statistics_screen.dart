@@ -433,7 +433,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         children: [
           Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textCharcoal)),
           SizedBox(height: 24),
-          Center(child: Text('Nog geen data beschikbaar', style: TextStyle(color: Colors.grey[600]))),
+          Center(child: Text('Nog geen data beschikbaar', style: TextStyle(color: Colors.grey.shade600))),
           SizedBox(height: 16),
         ],
       ),
@@ -452,7 +452,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         children: [
           Text(waarde, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: accentKleur)),
           SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600]), textAlign: TextAlign.center),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600), textAlign: TextAlign.center),
         ],
       ),
     );

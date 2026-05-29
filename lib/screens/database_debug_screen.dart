@@ -306,7 +306,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
           Text(
             label,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: Colors.grey.shade600,
               fontSize: 14,
             ),
           ),

@@ -461,7 +461,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                       child: Text('$count', style: TextStyle(color: count > 5 ? Colors.red : Colors.orange.shade800, fontWeight: FontWeight.bold)),
                     ),
                     title: Text(item['date'] as String),
-                    subtitle: Text('$count voortekenen', style: TextStyle(color: Colors.grey[600])),
+                    subtitle: Text('$count voortekenen', style: TextStyle(color: Colors.grey.shade600)),
                   );
                 },
               );

@@ -124,7 +124,7 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
       },
       selectedColor: AppTheme.primaryTeal,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.grey[600],
+        color: isSelected ? Colors.white : Colors.grey.shade600,
         fontWeight: FontWeight.w600,
       ),
     );
