@@ -96,7 +96,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             final diff = _berekenTijdVerschil(targetTijd, wakeTimeStr);
             _activiteiten[0]['p_score'] = _berekenPScore(diff);
           } else {
-            _activiteiten[0]['p_score'] = 1; // Geen target, markeer als gedaan
+            _activiteiten[0]['p_score'] = 3; // Geen target, markeer als OK
           }
         }
       }
@@ -245,7 +245,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         final diff = _berekenTijdVerschil(targetTijd, timeStr);
         newScore = _berekenPScore(diff);
       } else {
-        newScore = currentScore == 0 ? 1 : 0; // Toggle als er geen target is
+        newScore = currentScore == 0 ? 3 : 0; // Toggle als er geen target is (3=OK)
       }
 
       await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null, targetTime: targetTijd);
