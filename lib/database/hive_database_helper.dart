@@ -405,6 +405,27 @@ class HiveDatabaseHelper implements DatabaseRepository {
     }).toList();
   }
 
+  /// Migreer bestaande activiteiten: p_score=1 zonder target_time -> p_score=3
+  Future<void> migrateOldPScores() async {
+    int migrated = 0;
+    for (var entry in _srmActivities.toMap().entries) {
+      final data = entry.value;
+      final pScore = data['p_score'];
+      final targetTime = data['target_time'];
+      
+      // Als p_score=1 en er is geen target_time, upgrade naar 3
+      if (pScore == 1 && (targetTime == null || targetTime.toString().isEmpty || targetTime == '--:--')) {
+        final updated = Map<String, dynamic>.from(data);
+        updated['p_score'] = 3;
+        await _srmActivities.put(entry.key, updated);
+        migrated++;
+      }
+    }
+    if (migrated > 0) {
+      AppLogger.debug('SRT migratie: $migrated activiteiten opgewaardeerd van p_score 1 naar 3');
+    }
+  }
+
   // ===================
   // MEDICATION CONFIG
   // ===================
