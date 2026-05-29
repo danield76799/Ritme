@@ -89,9 +89,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
   Future<void> _addMedication(String name, double dosage, String unit, {bool reminderEnabled = true, TimeOfDay? reminderTime}) async {
     try {
-      print('Adding medication: name=$name, dosage=$dosage, unit=$unit, reminderEnabled=$reminderEnabled');
+      AppLogger.debug('Adding medication: name=$name, dosage=$dosage, unit=$unit, reminderEnabled=$reminderEnabled');
       final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled);
-      print('Medication added with id: $id');
+      AppLogger.debug('Medication added with id: $id');
       
       // If reminder time is set, also create a schedule and notification
       if (reminderTime != null && reminderEnabled) {
@@ -155,8 +155,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
       _loadData();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add medication', error: e, stackTrace: stackTrace);
-      print('ERROR adding medication: $e');
-      print('Stack trace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -629,7 +627,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       configId = int.tryParse(rawId);
     }
     if (configId == null) {
-      print('Skipping invalid medication entry - id: $rawId, type: ${rawId.runtimeType}');
+      AppLogger.warning('Skipping invalid medication entry - id: $rawId, type: ${rawId.runtimeType}');
       return const SizedBox.shrink(); // Skip invalid entries
     }
     int count = _intakesForDay[configId] ?? 0;

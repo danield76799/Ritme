@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:hive/hive.dart';
+import '../utils/logger.dart';
 import 'database_repository.dart';
 
 class HiveDatabaseHelper implements DatabaseRepository {
+  static int _nextId = 1;
   static final HiveDatabaseHelper instance = HiveDatabaseHelper._init();
   
   static const String _settingsBox = 'settings';
@@ -268,8 +270,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // ===================
   
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
-    // Use a smaller ID to avoid 32-bit integer overflow
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    // Use incremental counter for unique IDs
+    final id = _nextId++;
     await _dailyLogs.put(id, {
       'id': id,
       'date': date.toString(),
@@ -363,8 +365,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertSrmActivityMap(Map<String, dynamic> data) async {
-    // Use a smaller ID to avoid 32-bit integer overflow
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    // Use incremental counter for unique IDs
+    final id = _nextId++;
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {
       cleanData[key] = value?.toString() ?? value;
@@ -656,7 +658,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       await _medicationConfig.put(id, data);
       return id;
     } catch (e) {
-      print('ERROR in insertMedicationConfig: $e');
+      AppLogger.error('ERROR in insertMedicationConfig', error: e);
       rethrow;
     }
   }
@@ -712,7 +714,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
         return cleanMap;
       }).toList();
     } catch (e) {
-      print('Error loading medication configs: $e');
+      AppLogger.error('Error loading medication configs', error: e);
       return [];
     }
   }
@@ -897,7 +899,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
         return cleanMap;
       }).toList();
     } catch (e) {
-      print('Error loading medication intake: $e');
+      AppLogger.error('Error loading medication intake', error: e);
       return [];
     }
   }
@@ -1042,13 +1044,12 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'created_at': data['created_at']?.toString() ?? DateTime.now().toIso8601String(),
       };
       
-      print('Hive: Inserting medical appointment with id: $id, data: $cleanData');
+      AppLogger.debug('Hive: Inserting medical appointment with id: $id');
       await _medicalAppointments.put(id, cleanData);
-      print('Hive: Successfully inserted medical appointment');
+      AppLogger.debug('Hive: Successfully inserted medical appointment');
       return id;
     } catch (e, stackTrace) {
-      print('Hive: Error inserting medical appointment: $e');
-      print('Hive: Stack trace: $stackTrace');
+      AppLogger.error('Hive: Error inserting medical appointment', error: e, stackTrace: stackTrace);
       rethrow;
     }
   }

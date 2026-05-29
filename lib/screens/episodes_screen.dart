@@ -106,7 +106,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 title: const Text('Nog bezig'),
                 value: isActive,
                 onChanged: (val) => setModalState(() => isActive = val),
-                activeColor: AppTheme.primaryTeal,
+                activeThumbColor: AppTheme.primaryTeal,
               ),
               const SizedBox(height: 16),
 

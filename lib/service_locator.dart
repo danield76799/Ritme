@@ -7,6 +7,7 @@ import 'database/database_repository.dart';
 import 'database/database_helper.dart';
 import 'database/hive_database_helper.dart';
 import 'utils/database_cleanup.dart';
+import 'utils/logger.dart';
 
 // Service locator - exports the db instance for use across the app
 export 'database/database_repository.dart';
@@ -32,32 +33,31 @@ Future<void> ensureInitialized() async {
 Future<void> initDatabase() async {
   if (_db != null) return; // Already initialized
   
-  print('initDatabase: starting...');
-  print('initDatabase: kIsWeb=$kIsWeb, Platform.isAndroid=${Platform.isAndroid}, Platform.isIOS=${Platform.isIOS}');
+  AppLogger.debug('initDatabase: starting...');
+  AppLogger.debug('initDatabase: kIsWeb=$kIsWeb, Platform.isAndroid=${Platform.isAndroid}, Platform.isIOS=${Platform.isIOS}');
   
   try {
     if (kIsWeb) {
-      print('initDatabase: using Hive for web');
+      AppLogger.debug('initDatabase: using Hive for web');
       await Hive.initFlutter();
       await HiveDatabaseHelper.init();
       _db = HiveDatabaseHelper.instance;
     } else if (Platform.isAndroid) {
-      print('initDatabase: using Hive for Android');
+      AppLogger.debug('initDatabase: using Hive for Android');
       await Hive.initFlutter();
       await HiveDatabaseHelper.init();
       _db = HiveDatabaseHelper.instance;
     } else {
-      print('initDatabase: using SQLite for iOS');
+      AppLogger.debug('initDatabase: using SQLite for iOS');
       _db = DatabaseHelper.instance;
       await _db!.getSettings();
     }
-    print('initDatabase: completed successfully');
+    AppLogger.debug('initDatabase: completed successfully');
     
     // Run one-time database cleanup for duplicate logs (v9 -> v10 migration)
     await _runDatabaseCleanupIfNeeded();
   } catch (e, stack) {
-    print('Database initialization failed: $e');
-    print('Stack: $stack');
+    AppLogger.error('Database initialization failed', error: e, stackTrace: stack);
     rethrow;
   }
 }
@@ -70,7 +70,7 @@ Future<void> _runDatabaseCleanupIfNeeded() async {
       await DatabaseCleanup.cleanupDuplicateLogs();
     }
   } catch (e) {
-    print('Database cleanup failed: $e');
+    AppLogger.warning('Database cleanup failed', error: e);
     // Don't rethrow - app should still work even if cleanup fails
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../utils/logger.dart';
 
 class SleepDetailScreen extends StatefulWidget {
   const SleepDetailScreen({super.key});
@@ -50,7 +51,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
         if (log['date'] == null) continue;
         
         // DEBUG: Log alle rijen voor debugging
-        print('DEBUG sleep_detail: date=${log['date']}, id=${log['id']}, sleep_hours=${log['sleep_hours']}, uren_slaap=${log['uren_slaap']}, awake_minutes=${log['awake_minutes']}, bed_time=${log['bed_time']}, wake_time=${log['wake_time']}');
+        AppLogger.debug('DEBUG sleep_detail: date=${log['date']}, id=${log['id']}, sleep_hours=${log['sleep_hours']}, uren_slaap=${log['uren_slaap']}, awake_minutes=${log['awake_minutes']}, bed_time=${log['bed_time']}, wake_time=${log['wake_time']}');
         
         try {
           final logDate = DateTime.parse(log['date'] as String);

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import '../utils/logger.dart';
 
 /// Database cleanup utility to fix duplicate daily_logs entries
 class DatabaseCleanup {
@@ -11,7 +12,7 @@ class DatabaseCleanup {
     final dbPath = p.join(dbDir.path, 'ritme_app_v9.db');
     
     if (!await File(dbPath).exists()) {
-      print('Database not found at $dbPath');
+      AppLogger.warning('Database not found at $dbPath');
       return;
     }
     
@@ -28,13 +29,13 @@ class DatabaseCleanup {
           HAVING count > 1
         ''');
         
-        print('Found ${duplicateDates.length} dates with duplicate entries');
+        AppLogger.debug('Found ${duplicateDates.length} dates with duplicate entries');
         
         for (var dup in duplicateDates) {
           final date = dup['date'] as String;
           final count = dup['count'] as int;
           
-          print('Processing date $date with $count entries');
+          AppLogger.debug('Processing date $date with $count entries');
           
           // Get all entries for this date
           final entries = await txn.query(
@@ -82,7 +83,7 @@ class DatabaseCleanup {
             );
           }
           
-          print('Merged $count entries into one for date $date');
+          AppLogger.debug('Merged $count entries into one for date $date');
         }
         
         // Also fix entries where id is a date string instead of integer
@@ -91,7 +92,7 @@ class DatabaseCleanup {
           WHERE id LIKE '2026-%' OR id LIKE '2025-%'
         ''');
         
-        print('Found ${dateStringIds.length} entries with date string IDs');
+        AppLogger.debug('Found ${dateStringIds.length} entries with date string IDs');
         
         for (var entry in dateStringIds) {
           final date = entry['date'] as String;
@@ -133,7 +134,7 @@ class DatabaseCleanup {
               whereArgs: [entry['id']],
             );
             
-            print('Merged date-string ID entry for $date into existing entry');
+            AppLogger.debug('Merged date-string ID entry for $date into existing entry');
           } else {
             // No existing entry, just update the ID to be an integer
             // We need to delete and re-insert
@@ -148,14 +149,14 @@ class DatabaseCleanup {
             
             await txn.insert('daily_logs', data);
             
-            print('Re-inserted entry for $date with auto-increment ID');
+            AppLogger.debug('Re-inserted entry for $date with auto-increment ID');
           }
         }
       });
       
-      print('Database cleanup completed successfully!');
+      AppLogger.info('Database cleanup completed successfully!');
     } catch (e) {
-      print('Error during cleanup: $e');
+      AppLogger.error('Error during cleanup', error: e);
       rethrow;
     } finally {
       await db.close();

@@ -3,7 +3,7 @@ import '../theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../service_locator.dart';
-import '../theme/app_theme.dart';
+import '../utils/logger.dart';
 
 class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
@@ -370,10 +370,10 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
   Future<void> _kopieerNaarKlembord() async {
     try {
       final samenvatting = _genereerAiSamenvatting();
-      print('Kopieer rapport: samenvatting lengte = ${samenvatting.length}');
-      
+      AppLogger.debug('Kopieer rapport: samenvatting lengte = ${samenvatting.length}');
+      AppLogger.debug('Kopieer rapport: samenvatting lengte = ${samenvatting.length}');
       await Clipboard.setData(ClipboardData(text: samenvatting));
-      print('Kopieer rapport: clipboard setData succesvol');
+      AppLogger.debug('Kopieer rapport: clipboard setData succesvol');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -386,8 +386,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
         );
       }
     } catch (e, stackTrace) {
-      print('ERROR kopieer rapport: $e');
-      print('Stack trace: $stackTrace');
+      AppLogger.error('ERROR kopieer rapport', error: e, stackTrace: stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

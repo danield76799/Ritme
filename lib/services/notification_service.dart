@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
+import '../utils/logger.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -41,7 +42,7 @@ class NotificationService {
 
   void _onNotificationTap(NotificationResponse response) {
     // Handle notification tap - could navigate to medication screen
-    print('Notification tapped: ${response.payload}');
+    AppLogger.debug('Notification tapped: ${response.payload}');
   }
 
   Future<bool> requestPermissions() async {

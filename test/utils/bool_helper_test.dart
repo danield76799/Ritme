@@ -65,13 +65,13 @@ void main() {
     });
   });
 
-  group('BoolHelper.toString', () {
+  group('BoolHelper.toStringValue', () {
     test('should return "true" for true', () {
-      expect(BoolHelper.toString(true), equals('true'));
+      expect(BoolHelper.toStringValue(true), equals('true'));
     });
 
     test('should return "false" for false', () {
-      expect(BoolHelper.toString(false), equals('false'));
+      expect(BoolHelper.toStringValue(false), equals('false'));
     });
   });
 }
