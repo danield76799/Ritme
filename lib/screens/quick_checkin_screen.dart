@@ -42,6 +42,13 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
     return 'Uiterst manisch';
   }
 
+  String _formatDatum() {
+    final now = DateTime.now();
+    final dagen = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
+    final maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+    return '${dagen[now.weekday % 7]} ${now.day} ${maanden[now.month - 1]}';
+  }
+
   Color _getStemmingKleur(double waarde) {
     if (waarde <= -3) return Colors.blue[600]!;
     if (waarde <= -1) return Colors.blue[300]!;
@@ -125,7 +132,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                 children: [
                   // Datum
                   Text(
-                    DateFormat('EEEE d MMMM', 'nl_NL').format(DateTime.now()),
+                    _formatDatum(),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
