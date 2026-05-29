@@ -473,7 +473,7 @@ class DatabaseHelper implements DatabaseRepository {
       'activity_type': activityType,
       'actual_time': actualTime,
       'target_time': targetTime,
-      'p_score': pScore ?? 1,
+      'p_score': pScore ?? 3,
       'srt_point': srtPoint,
     });
   }
