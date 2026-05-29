@@ -79,6 +79,8 @@ abstract class DatabaseRepository {
   Future<List<Map<String, dynamic>>> getProdromalLogs(String date);
   Future<Map<String, dynamic>?> getProdromalSummary(String date);
   Future<List<Map<String, dynamic>>> getRecentProdromalTrends(int days);
+  Future<String?> getLastProdromalDate();
+  Future<void> copyProdromalLogs(String fromDate, String toDate);
 
   // Crisis Plan
   Future<List<Map<String, dynamic>>> getCrisisPlan();
