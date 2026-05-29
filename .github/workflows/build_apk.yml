@@ -30,41 +30,30 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
 
-    - name: Build APK (split per ABI)
-      run: flutter build apk --release --split-per-abi
-
-    - name: Sign APKs
+    - name: Setup signing config
       env:
         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: |
-        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
-        
-        # Find Android SDK build tools
+        echo "$KEYSTORE_BASE64" | base64 -d > android/app/release-keystore.jks
+        cat > android/key.properties << EOF
+        storePassword=$KEYSTORE_PASSWORD
+        keyPassword=$KEY_PASSWORD
+        keyAlias=$KEY_ALIAS
+        storeFile=app/release-keystore.jks
+        EOF
+
+    - name: Build APK (split per ABI)
+      run: flutter build apk --release --split-per-abi
+
+    - name: Verify APK signatures
+      run: |
         BUILD_TOOLS_DIR=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 1 -type d | sort -V | tail -1)
-        echo "Build tools: $BUILD_TOOLS_DIR"
-        
         for apk in build/app/outputs/flutter-apk/*-release.apk; do
-          echo "Processing $apk"
-          
-          # Step 1: Zipalign (REQUIRED for Android R+)
-          ALIGNED_APK="${apk%.apk}-aligned.apk"
-          $BUILD_TOOLS_DIR/zipalign -v -p 4 "$apk" "$ALIGNED_APK"
-          mv "$ALIGNED_APK" "$apk"
-          echo "Zipalign complete"
-          
-          # Step 2: Sign with apksigner (modern Android signing)
-          $BUILD_TOOLS_DIR/apksigner sign --ks /tmp/keystore.jks \
-            --ks-pass pass:"$KEYSTORE_PASSWORD" \
-            --key-pass pass:"$KEY_PASSWORD" \
-            --ks-key-alias "$KEY_ALIAS" \
-            "$apk"
-          
-          # Step 3: Verify signature
+          echo "Verifying $apk"
           $BUILD_TOOLS_DIR/apksigner verify -v "$apk"
-          echo "Sign and verify complete for $apk"
         done
 
     - name: Upload APKs
