@@ -350,7 +350,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                 child: const Icon(Icons.warning_amber, color: Colors.blue, size: 20),
                               ),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -443,7 +443,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                 child: const Icon(Icons.wb_sunny, color: Colors.amber, size: 20),
                               ),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
