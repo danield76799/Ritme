@@ -461,7 +461,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                                 '${_weeklyStats['aantalDagen'] ?? 0} dagen geanalyseerd',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.grey.shade600,
+                                  color: Colors.black,
                                 ),
                               ),
                             ],
@@ -520,7 +520,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                         child: Text(
                           'Nog niet genoeg data voor inzichten.\nBlijf bijhouden!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey.shade600),
+                          style: TextStyle(color: Colors.black),
                         ),
                       ),
                     )
@@ -649,14 +649,14 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.lock_outline, color: Colors.grey.shade600, size: 20),
+                        Icon(Icons.lock_outline, color: Colors.black, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Ritme deelt nooit data met derden. AI-analyse doe je bewust en persoonlijk.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade600,
+                              color: Colors.black,
                             ),
                           ),
                         ),
@@ -728,7 +728,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
             subtitle,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade600,
+              color: Colors.black,
             ),
           ),
         ],

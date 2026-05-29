@@ -344,7 +344,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                   '${activity['day']} • Daadwerkelijk: ${activity['actual_time']}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade600,
+                    color: Colors.black,
                   ),
                 ),
                 if (activity['target_time'] != '-') ...[
@@ -396,7 +396,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 8),

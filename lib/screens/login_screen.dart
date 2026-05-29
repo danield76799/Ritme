@@ -348,7 +348,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             : 'Voer je PIN in',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey.shade600,
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -467,7 +467,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: Text(
                                     'PIN Vergeten?',
                                     style: TextStyle(
-                                      color: Colors.grey.shade600,
+                                      color: Colors.black,
                                       fontSize: 14,
                                     ),
                                   ),

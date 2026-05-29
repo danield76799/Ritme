@@ -284,7 +284,7 @@ class _EventScreenState extends State<EventScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey.shade600,
+                  color: isSelected ? Colors.white : Colors.black,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
