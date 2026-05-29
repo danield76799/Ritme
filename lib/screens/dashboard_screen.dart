@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
-import '../database/hive_database_helper.dart';
 import '../services/notification_helper.dart';
 import '../services/bipolar_alert_service.dart';
 import '../utils/logger.dart';
@@ -19,7 +18,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObserver {
   Map<String, dynamic>? _settings;
   bool _isLoading = true;
-  bool _migrationDone = false;
   
   // Dynamische data voor overview
   double _sleepQuality = 0.0;
@@ -62,12 +60,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Future<void> _loadData() async {
     try {
       final settings = await db.getSettings();
-      
-      // Eenmalige migratie: upgrade oude p_scores
-      if (!_migrationDone && db is HiveDatabaseHelper) {
-        await (db as HiveDatabaseHelper).migrateOldPScores();
-        _migrationDone = true;
-      }
       
       // Haal echte data op uit de database
       final now = DateTime.now();
