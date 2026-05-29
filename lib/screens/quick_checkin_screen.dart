@@ -67,7 +67,8 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
       if (_medicatieGenomen) {
         final configs = await db.getMedicationConfigs();
         for (final config in configs) {
-          final id = config['id'] as int?;
+          final rawId = config['id'];
+          final id = rawId is int ? rawId : int.tryParse(rawId.toString());
           if (id != null) {
             await db.confirmMedicationIntake(_today, id, 1);
           }
