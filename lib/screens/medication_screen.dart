@@ -467,7 +467,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       decoration: InputDecoration(
                         labelText: 'Tijdstip herinnering',
                         filled: true,
-                        fillColor: Colors.grey[200],
+                        fillColor: Colors.grey.shade200,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                           borderSide: BorderSide(color: Colors.grey.shade400),
@@ -592,7 +592,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.medication_outlined, size: 48, color: Colors.grey[400]),
+          Icon(Icons.medication_outlined, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 12),
           Text(
             'Geen medicatie',
@@ -674,7 +674,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   const SizedBox(height: 2),
                   Text(
                     dosage,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   ),
                   if (reminderTime != null)
                     Padding(
@@ -685,10 +685,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey[100],
+                            color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey[300]!,
+                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade300!,
                             ),
                           ),
                           child: Row(
@@ -697,7 +697,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               Icon(
                                 reminderEnabled ? Icons.notifications_active : Icons.notifications_off,
                                 size: 14,
-                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[400],
+                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -705,14 +705,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey[500],
+                                  color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500,
                                 ),
                               ),
                               const SizedBox(width: 4),
                               Icon(
                                 Icons.edit,
                                 size: 12,
-                                color: Colors.grey[400],
+                                color: Colors.grey.shade400,
                               ),
                             ],
                           ),

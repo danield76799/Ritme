@@ -133,12 +133,12 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
             ),
             const SizedBox(height: 16),
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
             const SizedBox(height: 8),
-            Text(hint, style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+            Text(hint, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
             const SizedBox(height: 16),
             Expanded(
               child: TextField(
@@ -261,14 +261,14 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                           const SizedBox(height: 4),
                           Text(
                             hasContent ? _truncate(content, 80) : 'Nog niet ingevuld — tik om te bewerken',
-                            style: TextStyle(fontSize: 13, color: hasContent ? Colors.grey[700] : Colors.grey[400], fontStyle: hasContent ? FontStyle.normal : FontStyle.italic),
+                            style: TextStyle(fontSize: 13, color: hasContent ? Colors.grey.shade700 : Colors.grey.shade400, fontStyle: hasContent ? FontStyle.normal : FontStyle.italic),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
-                    Icon(Icons.edit, color: Colors.grey[400], size: 20),
+                    Icon(Icons.edit, color: Colors.grey.shade400, size: 20),
                   ],
                 ),
               ),
@@ -308,7 +308,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
             ),
             const SizedBox(height: 16),
             const Text('Snel toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -325,7 +325,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 child: Icon(_sectionIcon(def['section'] as String), color: _sectionColor(def['section'] as String)),
               ),
               title: Text(def['title'] as String, style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: Text(def['hint'] as String, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+              subtitle: Text(def['hint'] as String, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
               onTap: () async {
                 Navigator.pop(ctx);
                 await db.insertCrisisPlanSection({
@@ -379,7 +379,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
             ),
             const SizedBox(height: 16),
             const Text('Eigen sectie toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

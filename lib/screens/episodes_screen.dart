@@ -65,7 +65,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 20),
               const Text('Nieuwe episode', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
@@ -213,11 +213,11 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.timeline, size: 64, color: Colors.grey[300]),
+                  Icon(Icons.timeline, size: 64, color: Colors.grey.shade300),
                   const SizedBox(height: 16),
-                  Text('Nog geen episodes', style: TextStyle(color: Colors.grey[500], fontSize: 16)),
+                  Text('Nog geen episodes', style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
                   const SizedBox(height: 8),
-                  Text('Tik + om je eerste episode bij te houden', style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+                  Text('Tik + om je eerste episode bij te houden', style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
                 ],
               ),
             )

@@ -216,7 +216,7 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Color _getStemmingKleur(double waarde) {
-    if (waarde <= -4) return Colors.grey[800]!;     // Uiterst depressief
+    if (waarde <= -4) return Colors.grey.shade800!;     // Uiterst depressief
     if (waarde <= -3) return Colors.grey.shade600!;      // Ernstig depressief
     if (waarde <= -2) return Colors.blue[400]!;      // Matig depressief
     if (waarde <= -1) return Colors.blue[200]!;      // Licht depressief
@@ -645,7 +645,7 @@ class _MoodScreenState extends State<MoodScreen> {
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: color,
-              inactiveTrackColor: Colors.grey[200],
+              inactiveTrackColor: Colors.grey.shade200,
               thumbColor: color,
               overlayColor: color.withValues(alpha: 0.2),
               trackHeight: 6,

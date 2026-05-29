@@ -270,7 +270,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.calendar_today_outlined, size: 48, color: Colors.grey[400]),
+          Icon(Icons.calendar_today_outlined, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 12),
           Text(
             'Geen afspraken',
@@ -353,7 +353,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           ),
           // Right side - action buttons (in their own mini-column)
           Container(
-            color: Colors.grey[50],
+            color: Colors.grey.shade50,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -631,7 +631,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: field.errorText != null ? Colors.red : Colors.grey[400]!),
+            border: Border.all(color: field.errorText != null ? Colors.red : Colors.grey.shade400!),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
@@ -643,7 +643,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                   Text(
                     'Datum (DD-MM-YYYY) *',
                     style: TextStyle(
-                      color: field.errorText != null ? Colors.red : Colors.grey[700],
+                      color: field.errorText != null ? Colors.red : Colors.grey.shade700,
                       fontSize: 14,
                     ),
                   ),
@@ -651,7 +651,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                   Text(
                     _dateController.text.isEmpty ? 'Selecteer datum' : _dateController.text,
                     style: TextStyle(
-                      color: _dateController.text.isEmpty ? Colors.grey[400] : Colors.black,
+                      color: _dateController.text.isEmpty ? Colors.grey.shade400 : Colors.black,
                       fontSize: 16,
                     ),
                   ),
@@ -698,7 +698,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[400]!),
+          border: Border.all(color: Colors.grey.shade400!),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
@@ -709,13 +709,13 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               children: [
                 Text(
                   'Tijd',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _timeController.text.isEmpty ? 'Selecteer tijd' : _timeController.text,
                   style: TextStyle(
-                    color: _timeController.text.isEmpty ? Colors.grey[400] : Colors.black,
+                    color: _timeController.text.isEmpty ? Colors.grey.shade400 : Colors.black,
                     fontSize: 16,
                   ),
                 ),
@@ -744,7 +744,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
             children: [
               Text(
                 'Herinnering',
-                style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
               ),
               const SizedBox(height: 4),
               Text(
@@ -753,7 +753,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 _reminderDays == 3 ? '3 dagen van tevoren' :
                 '7 dagen van tevoren',
                 style: TextStyle(
-                  color: _reminderDays == 0 ? Colors.grey[400] : Colors.black,
+                  color: _reminderDays == 0 ? Colors.grey.shade400 : Colors.black,
                   fontSize: 16,
                 ),
               ),

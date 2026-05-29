@@ -188,7 +188,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor: _getStemmingKleur(_stemming),
-                            inactiveTrackColor: Colors.grey[200],
+                            inactiveTrackColor: Colors.grey.shade200,
                             thumbColor: _getStemmingKleur(_stemming),
                             overlayColor: _getStemmingKleur(_stemming).withValues(alpha: 0.2),
                             trackHeight: 8,
@@ -255,7 +255,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor: AppTheme.primaryTeal,
-                            inactiveTrackColor: Colors.grey[200],
+                            inactiveTrackColor: Colors.grey.shade200,
                             thumbColor: AppTheme.primaryTeal,
                             overlayColor: AppTheme.primaryTeal.withValues(alpha: 0.2),
                             trackHeight: 8,
@@ -327,7 +327,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: _medicatieGenomen ? Colors.green[800] : Colors.grey[800],
+                                    color: _medicatieGenomen ? Colors.green[800] : Colors.grey.shade800,
                                   ),
                                 ),
                                 Text(
@@ -336,7 +336,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                                     : 'Vergeet je medicatie niet',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey[500],
+                                    color: Colors.grey.shade500,
                                   ),
                                 ),
                               ],

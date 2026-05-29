@@ -293,7 +293,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                 getTitlesWidget: (value, meta) {
                   return Text(
                     value.toInt().toString(),
-                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
                   );
                 },
               ),
@@ -384,7 +384,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                 getTitlesWidget: (value, meta) {
                   return Text(
                     value.toInt().toString(),
-                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
                   );
                 },
               ),

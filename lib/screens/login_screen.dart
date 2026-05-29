@@ -377,7 +377,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 24),
                             Text(
                               'of',
-                              style: TextStyle(color: Colors.grey[500]),
+                              style: TextStyle(color: Colors.grey.shade500),
                             ),
                             const SizedBox(height: 24),
                           ],
