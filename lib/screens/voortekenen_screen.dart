@@ -127,7 +127,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
       for (var item in _checklist) {
         final cid = item['id'] as int;
         final log = _todaysLogs[cid];
-        await db.insertProdromalLog({
+        await db.upsertProdromalLog({
           'date': _todayDate,
           'checklist_id': cid,
           'present': log?['present'] ?? 0,
