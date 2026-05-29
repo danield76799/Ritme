@@ -94,12 +94,16 @@ jobs:
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: |
         echo "$KEYSTORE_BASE64" | base64 -d > android/app/release-keystore.jks
-        cat > android/key.properties << EOF
-        storePassword=$KEYSTORE_PASSWORD
-        keyPassword=$KEY_PASSWORD
-        keyAlias=$KEY_ALIAS
-        storeFile=release-keystore.jks
-        EOF
+        echo "storePassword=$KEYSTORE_PASSWORD" > android/key.properties
+        echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+        echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+        echo "storeFile=release-keystore.jks" >> android/key.properties
+        echo "=== key.properties ==="
+        cat android/key.properties
+        echo "=== Keystore SHA1 ==="
+        keytool -list -v -keystore android/app/release-keystore.jks -storepass "$KEYSTORE_PASSWORD" 2>&1 | grep -E "SHA1|Alias|Owner"
+        echo "=== key.properties exists check ==="
+        ls -la android/key.properties android/app/release-keystore.jks
 
     - name: Build App Bundle
       run: |
