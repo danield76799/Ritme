@@ -314,7 +314,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: Colors.grey.shade600,
             ),
           ),
         ],
@@ -410,7 +410,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: Colors.grey.shade600,
             ),
           ),
           const SizedBox(height: 8),

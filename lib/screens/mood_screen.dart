@@ -217,7 +217,7 @@ class _MoodScreenState extends State<MoodScreen> {
 
   Color _getStemmingKleur(double waarde) {
     if (waarde <= -4) return Colors.grey[800]!;     // Uiterst depressief
-    if (waarde <= -3) return Colors.grey[600]!;      // Ernstig depressief
+    if (waarde <= -3) return Colors.grey.shade600!;      // Ernstig depressief
     if (waarde <= -2) return Colors.blue[400]!;      // Matig depressief
     if (waarde <= -1) return Colors.blue[200]!;      // Licht depressief
     if (waarde == 0) return Colors.green[400]!;       // Neutraal
@@ -360,7 +360,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                     ),
                                     Text(
                                       'Manisch maar ongelukkig/irritant',
-                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                     ),
                                   ],
                                 ),
@@ -453,7 +453,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                     ),
                                     Text(
                                       'Vandaag buiten geweest',
-                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                     ),
                                   ],
                                 ),

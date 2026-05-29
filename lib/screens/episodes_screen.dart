@@ -259,7 +259,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     ),
                     subtitle: Text(
                       '${_formatDate(ep['start_date'] as String)} — ${isActive ? "loopt nog" : _formatDate(ep['end_date'] as String)}\n${_durationText(ep['start_date'] as String, ep['end_date'] as String?)}',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                     ),
                     isThreeLine: true,
                     trailing: isActive

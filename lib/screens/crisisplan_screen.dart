@@ -313,7 +313,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             const SizedBox(height: 16),
             const Text('Snel toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text('Kies een sectie om toe te voegen:', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+            Text('Kies een sectie om toe te voegen:', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
             const SizedBox(height: 16),
             ...availableDefaults.map((def) => ListTile(
               leading: Container(

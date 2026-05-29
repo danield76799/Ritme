@@ -448,7 +448,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                             log['notes'],
                                             style: TextStyle(
                                               fontSize: 13,
-                                              color: Colors.grey[600],
+                                              color: Colors.grey.shade600,
                                             ),
                                           ),
                                       ],

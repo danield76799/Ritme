@@ -137,7 +137,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                     _formatDatum(),
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: Colors.grey.shade600,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -246,7 +246,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                               'uur',
                               style: TextStyle(
                                 fontSize: 20,
-                                color: Colors.grey[600],
+                                color: Colors.grey.shade600,
                               ),
                             ),
                           ],
@@ -383,7 +383,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                       child: Text(
                         'Uitgebreide invoer →',
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: Colors.grey.shade600,
                           fontSize: 14,
                         ),
                       ),

@@ -198,7 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -302,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.access_time, color: Colors.grey[600]),
+                  Icon(Icons.access_time, color: Colors.grey.shade600),
                 ],
               ),
             ],

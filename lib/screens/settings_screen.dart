@@ -530,7 +530,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.grey[600]),
+          labelStyle: TextStyle(color: Colors.grey.shade600),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -563,7 +563,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: ListTile(
         title: Text(
           label,
-          style: TextStyle(color: Colors.grey[600], fontSize: 14),
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
         ),
         subtitle: Text(
           timeValue,
