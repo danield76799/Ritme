@@ -112,6 +112,31 @@ jobs:
         path: build/app/outputs/bundle/release/app-release.aab
         retention-days: 7
 
+    # === PLAY STORE DEPLOY (optional — only if key exists) ===
+    - name: Setup Play Store key
+      id: playstore
+      env:
+        PLAYSTORE_DEPLOY_KEY: ${{ secrets.PLAYSTORE_DEPLOY_KEY }}
+      run: |
+        if [ -n "$PLAYSTORE_DEPLOY_KEY" ]; then
+          echo "$PLAYSTORE_DEPLOY_KEY" | base64 -d > android/keys.json
+          echo "has_key=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_key=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Setup Ruby & Fastlane
+      if: steps.playstore.outputs.has_key == 'true'
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+        bundler-cache: true
+
+    - name: Deploy to Play Store
+      if: steps.playstore.outputs.has_key == 'true'
+      working-directory: android
+      run: bundle exec fastlane deploy_internal_test
+
     - name: Create Release
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v2
