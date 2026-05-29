@@ -317,7 +317,7 @@ class _MoodScreenState extends State<MoodScreen> {
                               const Expanded(
                                 child: Text(
                                   'Stemming veranderde vandaag',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textCharcoal),
                                 ),
                               ),
                               Switch(
@@ -401,11 +401,11 @@ class _MoodScreenState extends State<MoodScreen> {
                                   children: [
                                     const Text(
                                       'Stemmingsomslagen',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textCharcoal),
                                     ),
                                     Text(
                                       'Aantal plotselinge grote veranderingen (30+ punten)',
-                                      style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 12, color: AppTheme.textCharcoal),
                                     ),
                                   ],
                                 ),
@@ -414,7 +414,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildCounterBtn(Icons.remove, _stemmingsOmslagen > 0 ? () => _veranderOmslagen(-1) : null),
-                                  Container(width: 36, alignment: Alignment.center, child: Text('$_stemmingsOmslagen', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF000000)))),
+                                  Container(width: 36, alignment: Alignment.center, child: Text('$_stemmingsOmslagen', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal))),
                                   _buildCounterBtn(Icons.add, () => _veranderOmslagen(1), isPrimary: true),
                                 ],
                               ),
@@ -494,11 +494,11 @@ class _MoodScreenState extends State<MoodScreen> {
                                   children: [
                                     const Text(
                                       'Sociale contacten',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textCharcoal),
                                     ),
                                     Text(
                                       'Aantal sociale interacties vandaag',
-                                      style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 12, color: AppTheme.textCharcoal),
                                     ),
                                   ],
                                 ),
@@ -507,7 +507,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildCounterBtn(Icons.remove, _socialeContacten > 0 ? () => setState(() => _socialeContacten--) : null),
-                                  Container(width: 36, alignment: Alignment.center, child: Text('$_socialeContacten', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF000000)))),
+                                  Container(width: 36, alignment: Alignment.center, child: Text('$_socialeContacten', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal))),
                                   _buildCounterBtn(Icons.add, () => setState(() => _socialeContacten++), isPrimary: true),
                                 ],
                               ),
@@ -538,7 +538,7 @@ class _MoodScreenState extends State<MoodScreen> {
                               const Expanded(
                                 child: Text(
                                   'Alcohol / middelen',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textCharcoal),
                                 ),
                               ),
                               Switch(
@@ -574,7 +574,7 @@ class _MoodScreenState extends State<MoodScreen> {
                               const Expanded(
                                 child: Text(
                                   'Menstruatie',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textCharcoal),
                                 ),
                               ),
                               Switch(
@@ -611,7 +611,7 @@ class _MoodScreenState extends State<MoodScreen> {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 13, color: const Color(0xFF000000)),
+            style: TextStyle(fontSize: 13, color: AppTheme.textCharcoal),
           ),
           const SizedBox(height: 16),
           Container(
@@ -664,9 +664,9 @@ class _MoodScreenState extends State<MoodScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('-5 😞', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
-                Text('0', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
-                Text('+5 😄', style: TextStyle(fontSize: 12, color: const Color(0xFF000000))),
+                Text('-5 😞', style: TextStyle(fontSize: 12, color: AppTheme.textCharcoal)),
+                Text('0', style: TextStyle(fontSize: 12, color: AppTheme.textCharcoal)),
+                Text('+5 😄', style: TextStyle(fontSize: 12, color: AppTheme.textCharcoal)),
               ],
             ),
           ),
@@ -714,7 +714,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textCharcoal),
                 ),
               ],
             ),
@@ -739,7 +739,7 @@ class _MoodScreenState extends State<MoodScreen> {
             },
             child: Text(
               '${value.floor()}:${((value - value.floor()) * 60).round().toString().padLeft(2, '0')}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF000000)),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal),
             ),
           ),
         ],
@@ -760,7 +760,7 @@ class _MoodScreenState extends State<MoodScreen> {
             color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 18, color: isPrimary ? Colors.white : const Color(0xFF333333)),
+          child: Icon(icon, size: 18, color: isPrimary ? Colors.white : AppTheme.textCharcoal),
         ),
       ),
     );
