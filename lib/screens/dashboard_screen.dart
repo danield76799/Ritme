@@ -163,6 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       // p-score schaal: 5=perfect (±15min), 4=goed (±30min), 3=ok (±45min), 2=matig (±60min), 1=slecht (>60min), 0=geen activiteit
       double totalPScore = 0;
       int totalActivities = 0;
+      List<String> debugScores = [];
       
       for (int i = 0; i < 7; i++) {
         final checkDate = now.subtract(Duration(days: i));
@@ -178,6 +179,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             } else if (rawPScore is String) {
               pScore = int.tryParse(rawPScore) ?? 0;
             }
+            final type = activity['activity_type']?.toString() ?? '?';
+            debugScores.add('$type:$pScore');
             // Tel alleen VOLTOOID activiteiten (pScore > 0)
             if (pScore > 0) {
               totalPScore += pScore;
@@ -186,6 +189,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           }
         }
       }
+      
+      AppLogger.debug('SRT DEBUG: scores=$debugScores, totalPScore=$totalPScore, totalActivities=$totalActivities');
       
       // SRT Score = (gemiddelde p-score / 5) * 100 = percentage
       final stability = totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0;
@@ -565,7 +570,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     title: 'SRT Score',
                     value: _rhythmStability > 0 ? _rhythmStability.round().toString() : '-',
                     unit: '%',
-                    color: Colors.green,
+                    subtitle: _getSrtLabel(_rhythmStability),
+                    color: _getSrtColor(_rhythmStability),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -854,5 +860,22 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         ),
       ),
     );
+  }
+
+  // SRT score kleur op basis van percentage
+  Color _getSrtColor(double score) {
+    if (score >= 80) return Colors.green;
+    if (score >= 60) return Colors.orange;
+    if (score > 0) return Colors.red;
+    return Colors.grey;
+  }
+
+  // SRT score label op basis van percentage
+  String _getSrtLabel(double score) {
+    if (score >= 80) return 'Perfect';
+    if (score >= 60) return 'Stabiel';
+    if (score >= 40) return 'Matig';
+    if (score > 0) return 'Instabiel';
+    return 'Geen data';
   }
 }
