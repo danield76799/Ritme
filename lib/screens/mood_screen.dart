@@ -453,7 +453,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                     ),
                                     Text(
                                       'Vandaag buiten geweest',
-                                      style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                     ),
                                   ],
                                 ),
