@@ -319,16 +319,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
   Future<void> _setAwakeTime() async {
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.grey.shade900,
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.grey[900],
+          color: Colors.grey.shade900,
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Colors.grey[850],
+                color: Colors.grey.shade850,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -605,10 +605,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.05) : Colors.grey[50],
+          color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.05) : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey[300]!,
+            color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade300!,
             width: 1.5,
           ),
         ),
@@ -617,7 +617,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: hasValue ? AppTheme.primaryTeal : Colors.grey[400],
+                color: hasValue ? AppTheme.primaryTeal : Colors.grey.shade400,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, size: 18, color: Colors.white),
@@ -641,7 +641,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: hasValue ? FontWeight.w600 : FontWeight.normal,
-                      color: hasValue ? Colors.black : Colors.grey[400],
+                      color: hasValue ? Colors.black : Colors.grey.shade400,
                     ),
                   ),
                 ],
@@ -649,7 +649,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             ),
             Icon(
               Icons.chevron_right,
-              color: Colors.grey[400],
+              color: Colors.grey.shade400,
             ),
           ],
         ),
@@ -728,7 +728,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   child: Icon(
                     icoon,
                     size: 20,
-                    color: isDone ? Colors.white : Colors.grey[500],
+                    color: isDone ? Colors.white : Colors.grey.shade500,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -748,11 +748,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       Row(
                         children: [
                           if (richtTijd != null) ...[
-                            Icon(Icons.schedule, size: 12, color: Colors.grey[400]),
+                            Icon(Icons.schedule, size: 12, color: Colors.grey.shade400),
                             const SizedBox(width: 4),
                             Text(
                               _formatTijd(richtTijd),
-                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                             ),
                           ],
                           if (werkTijd != null) ...[
@@ -819,7 +819,7 @@ class _AwakeTimePicker extends StatelessWidget {
       onSelectedItemChanged: (index) {
         onChanged(index * 15);
       },
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.grey.shade900,
       children: List.generate(49, (index) {
         final minutes = index * 15;
         final hours = minutes ~/ 60;

@@ -265,7 +265,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                             ),
                             label: Text('${entry.key}: ${entry.value}'),
                             backgroundColor: Colors.white,
-                            side: BorderSide(color: Colors.grey[300]!),
+                            side: BorderSide(color: Colors.grey.shade300!),
                           );
                         }).toList(),
                       ),
@@ -353,7 +353,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                     'Target: ${activity['target_time']}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[400],
+                      color: Colors.grey.shade400,
                     ),
                   ),
                 ],
@@ -389,7 +389,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
       ),
       child: Column(
         children: [
-          Icon(Icons.schedule_outlined, size: 48, color: Colors.grey[400]),
+          Icon(Icons.schedule_outlined, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             title,
@@ -404,7 +404,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
             subtitle,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: Colors.grey.shade500,
             ),
             textAlign: TextAlign.center,
           ),

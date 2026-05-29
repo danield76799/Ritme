@@ -230,7 +230,7 @@ class _EventScreenState extends State<EventScreen> {
                                       Text(
                                         _formatDate(date),
                                         style: TextStyle(
-                                          color: Colors.grey[500],
+                                          color: Colors.grey.shade500,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -271,7 +271,7 @@ class _EventScreenState extends State<EventScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.primaryTeal : Colors.grey[200],
+            color: isSelected ? AppTheme.primaryTeal : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -301,13 +301,13 @@ class _EventScreenState extends State<EventScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_note, size: 64, color: Colors.grey[300]),
+          Icon(Icons.event_note, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
             'Geen gebeurtenissen gevonden',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[500],
+              color: Colors.grey.shade500,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -316,7 +316,7 @@ class _EventScreenState extends State<EventScreen> {
             'Voeg je eerste gebeurtenis toe met de knop onderaan',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[400],
+              color: Colors.grey.shade400,
             ),
           ),
         ],
@@ -369,9 +369,9 @@ class _EventScreenState extends State<EventScreen> {
                 style: const TextStyle(fontSize: 16, color: Colors.black),
                 decoration: InputDecoration(
                   hintText: 'Bijv. Goed gesprek gehad met...',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
                   filled: true,
-                  fillColor: Colors.grey[50],
+                  fillColor: Colors.grey.shade50,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,

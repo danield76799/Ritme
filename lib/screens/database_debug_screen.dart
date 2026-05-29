@@ -316,7 +316,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
-              color: isSleep && hasData ? Colors.blue : (hasData ? Colors.black : Colors.grey[400]),
+              color: isSleep && hasData ? Colors.blue : (hasData ? Colors.black : Colors.grey.shade400),
             ),
           ),
           if (isSleep && hasData)

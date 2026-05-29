@@ -535,7 +535,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                             Text(
                               _formatLastUpdated(),
                               style: TextStyle(
-                                color: Colors.grey[500],
+                                color: Colors.grey.shade500,
                                 fontSize: 12,
                               ),
                             ),
@@ -790,14 +790,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: Colors.grey[500],
+                      color: Colors.grey.shade500,
                       fontSize: 12,
                     ),
                   ),
               ],
             ),
           ),
-          Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 18),
+          Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 18),
         ],
       ),
     );
@@ -845,7 +845,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 children: [
                   Text(alert.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color)),
                   const SizedBox(height: 2),
-                  Text(alert.message, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                  Text(alert.message, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
                 ],
               ),
             ),
