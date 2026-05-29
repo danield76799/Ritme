@@ -37,6 +37,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_prodromalLogsBox);
     // Seed default prodromal checklist if empty
     await instance._seedProdromalChecklistIfEmpty();
+    // Migreer oude p_scores (eenmalig)
+    await instance.migrateOldPScores();
   }
 
   Box get _settings => Hive.box(_settingsBox);
