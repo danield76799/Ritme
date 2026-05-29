@@ -5,7 +5,6 @@ import '../service_locator.dart';
 import '../services/notification_helper.dart';
 import '../services/bipolar_alert_service.dart';
 import '../widgets/weekly_mood_chart.dart';
-import '../widgets/notification_permission_banner.dart';
 import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -405,10 +404,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 ),
                 
                 const SizedBox(height: 28),
-
-                // --- NOTIFICATION PERMISSION BANNER ---
-                if (!kIsWeb) const NotificationPermissionBanner(),
-                if (!kIsWeb) const SizedBox(height: 16),
 
                 // --- BIPOLE ALERTS ---
                 if (_alerts.isNotEmpty) ...[
