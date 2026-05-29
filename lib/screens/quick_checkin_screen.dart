@@ -62,10 +62,13 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
 
     try {
       // 1. Sla stemming + slaap op in daily_logs
+      // Split mood: positief = stemming_hoog, negatief = stemming_laag
+      final isPositief = _stemming > 0;
+      final isNegatief = _stemming < 0;
       await db.upsertDailyLog({
         'date': _today,
-        'stemming_hoog': _stemming,
-        'stemming_laag': _stemming,
+        'stemming_hoog': isPositief ? _stemming.abs() : 0.0,
+        'stemming_laag': isNegatief ? _stemming.abs() : 0.0,
         'gesplitste_stemming': false,
         'uren_slaap': _slaapUren,
       });
