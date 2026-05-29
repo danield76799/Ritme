@@ -1206,6 +1206,31 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<void> upsertProdromalLog(Map<String, dynamic> data) async {
+    final date = data['date']?.toString();
+    final checklistId = data['checklist_id'];
+    if (date == null || checklistId == null) return;
+    
+    // Find existing log for this date + checklist_id
+    final existing = _prodromalLogs.toMap().entries.where((entry) {
+      return entry.value['date'] == date && entry.value['checklist_id'].toString() == checklistId.toString();
+    }).toList();
+    
+    if (existing.isNotEmpty) {
+      // Update existing
+      final id = existing.first.key;
+      final updated = Map<String, dynamic>.from(existing.first.value);
+      data.forEach((key, value) {
+        updated[key] = value?.toString() ?? value;
+      });
+      await _prodromalLogs.put(id, updated);
+    } else {
+      // Insert new
+      await insertProdromalLog(data);
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getProdromalLogs(String date) async {
     return _prodromalLogs.toMap().entries.where((entry) {
       return entry.value['date'] == date;

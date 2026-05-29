@@ -741,6 +741,33 @@ class DatabaseHelper implements DatabaseRepository {
     return await db.insert('prodromal_logs', data);
   }
 
+  Future<void> upsertProdromalLog(Map<String, dynamic> data) async {
+    final db = await database;
+    final date = data['date']?.toString();
+    final checklistId = data['checklist_id'];
+    if (date == null || checklistId == null) return;
+    
+    // Check if entry exists for this date + checklist_id
+    final existing = await db.query(
+      'prodromal_logs',
+      where: 'date = ? AND checklist_id = ?',
+      whereArgs: [date, checklistId],
+    );
+    
+    if (existing.isNotEmpty) {
+      // Update existing
+      await db.update(
+        'prodromal_logs',
+        data,
+        where: 'date = ? AND checklist_id = ?',
+        whereArgs: [date, checklistId],
+      );
+    } else {
+      // Insert new
+      await db.insert('prodromal_logs', data);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getProdromalLogs(String date) async {
     final db = await database;
     return await db.query('prodromal_logs', where: 'date = ?', whereArgs: [date]);

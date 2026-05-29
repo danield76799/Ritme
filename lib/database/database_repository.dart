@@ -76,6 +76,7 @@ abstract class DatabaseRepository {
 
   // Prodromal Logs
   Future<int> insertProdromalLog(Map<String, dynamic> data);
+  Future<void> upsertProdromalLog(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getProdromalLogs(String date);
   Future<Map<String, dynamic>?> getProdromalSummary(String date);
   Future<List<Map<String, dynamic>>> getRecentProdromalTrends(int days);
