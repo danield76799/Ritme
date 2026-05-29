@@ -98,7 +98,7 @@ jobs:
         storePassword=$KEYSTORE_PASSWORD
         keyPassword=$KEY_PASSWORD
         keyAlias=$KEY_ALIAS
-        storeFile=app/release-keystore.jks
+        storeFile=release-keystore.jks
         EOF
 
     - name: Build App Bundle
