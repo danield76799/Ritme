@@ -15,6 +15,8 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
   Map<int, String> _todaysNotes = {}; // checklist_id -> notes
   bool _isLoading = true;
   bool _isSaving = false;
+  String? _lastDate;
+  bool _showCopyButton = false;
 
   String get _todayDate {
     final now = DateTime.now();
@@ -32,6 +34,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     try {
       final checklist = await db.getEnabledProdromalChecklist();
       final todaysLogs = await db.getProdromalLogs(_todayDate);
+      final lastDate = await db.getLastProdromalDate();
 
       final logsMap = <int, Map<String, int>>{};
       final notesMap = <int, String>{};
@@ -46,16 +49,49 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         }
       }
 
+      // Show copy button if no logs today but there are previous logs
+      final hasLogsToday = todaysLogs.isNotEmpty;
+      final hasPreviousLogs = lastDate != null && lastDate != _todayDate;
+
       if (mounted) {
         setState(() {
           _checklist = checklist;
           _todaysLogs = logsMap;
           _todaysNotes = notesMap;
+          _lastDate = lastDate;
+          _showCopyButton = !hasLogsToday && hasPreviousLogs;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _copyFromLastDate() async {
+    if (_lastDate == null) return;
+    
+    setState(() => _isLoading = true);
+    try {
+      await db.copyProdromalLogs(_lastDate!, _todayDate);
+      await _loadData(); // Reload to show copied data
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Voortekenen van $_lastDate gekopieerd. Pas aan en sla op.'),
+            backgroundColor: AppTheme.primaryTeal,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fout bij kopiëren'), backgroundColor: Colors.red),
+        );
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -188,6 +224,54 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
               ),
             ),
             const SizedBox(height: 20),
+
+            // Copy from yesterday button
+            if (_showCopyButton) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.content_copy, color: Colors.blue.shade700, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Snel starten',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade900, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Je hebt nog geen voortekenen ingevuld voor vandaag. Wil je de gegevens van $_lastDate kopiëren als startpunt?',
+                      style: TextStyle(color: Colors.blue.shade800, fontSize: 13),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _copyFromLastDate,
+                        icon: Icon(Icons.copy, size: 18, color: Colors.blue.shade700),
+                        label: Text('Kopieer van $_lastDate', style: TextStyle(color: Colors.blue.shade700)),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.blue.shade300),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
             // Checklist items grouped by category
             ..._checklist.map((item) {

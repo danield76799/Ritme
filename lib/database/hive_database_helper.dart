@@ -1300,6 +1300,41 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<String?> getLastProdromalDate() async {
+    String? lastDate;
+    for (var entry in _prodromalLogs.toMap().entries) {
+      final log = Map<String, dynamic>.from(entry.value);
+      final dateStr = log['date']?.toString() ?? '';
+      if (dateStr.isEmpty) continue;
+      if (lastDate == null || dateStr.compareTo(lastDate) > 0) {
+        lastDate = dateStr;
+      }
+    }
+    return lastDate;
+  }
+
+  @override
+  Future<void> copyProdromalLogs(String fromDate, String toDate) async {
+    // Delete existing logs for target date first
+    final existingKeys = _prodromalLogs.toMap().entries
+        .where((e) => e.value['date'] == toDate)
+        .map((e) => e.key)
+        .toList();
+    for (var key in existingKeys) {
+      await _prodromalLogs.delete(key);
+    }
+
+    // Copy logs from source date
+    final sourceLogs = await getProdromalLogs(fromDate);
+    for (var log in sourceLogs) {
+      final newLog = Map<String, dynamic>.from(log);
+      newLog['date'] = toDate;
+      newLog.remove('id');
+      await insertProdromalLog(newLog);
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getCrisisPlan() async {
     return _crisisPlan.toMap().entries.map((entry) {
       final map = Map<String, dynamic>.from(entry.value);

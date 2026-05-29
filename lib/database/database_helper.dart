@@ -774,6 +774,33 @@ class DatabaseHelper implements DatabaseRepository {
     ''', [dateStr]);
   }
 
+  Future<String?> getLastProdromalDate() async {
+    final db = await database;
+    final result = await db.rawQuery('''
+      SELECT date FROM prodromal_logs
+      WHERE present = 1
+      GROUP BY date
+      ORDER BY date DESC
+      LIMIT 1
+    ''');
+    if (result.isEmpty) return null;
+    return result.first['date']?.toString();
+  }
+
+  Future<void> copyProdromalLogs(String fromDate, String toDate) async {
+    final db = await database;
+    // Delete existing logs for target date
+    await db.delete('prodromal_logs', where: 'date = ?', whereArgs: [toDate]);
+    // Copy from source date using rawInsert instead of rawQuery
+    final sourceLogs = await db.query('prodromal_logs', where: 'date = ?', whereArgs: [fromDate]);
+    for (var log in sourceLogs) {
+      final newLog = Map<String, dynamic>.from(log);
+      newLog['date'] = toDate;
+      newLog.remove('id');
+      await db.insert('prodromal_logs', newLog);
+    }
+  }
+
   // ===================
   // CRISIS PLAN
   // ===================
