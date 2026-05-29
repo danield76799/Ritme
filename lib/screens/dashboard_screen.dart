@@ -178,9 +178,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             } else if (rawPScore is String) {
               pScore = int.tryParse(rawPScore) ?? 0;
             }
-            // Tel ALLE activiteiten, ook met pScore = 0 (niet gedaan)
-            totalPScore += pScore;
-            totalActivities++;
+            // Tel alleen VOLTOOID activiteiten (pScore > 0)
+            if (pScore > 0) {
+              totalPScore += pScore;
+              totalActivities++;
+            }
           }
         }
       }
