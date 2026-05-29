@@ -25,7 +25,7 @@ class WeeklyMoodChart extends StatelessWidget {
               Icon(
                 Icons.show_chart,
                 size: 48,
-                color: Colors.grey[400],
+                color: Colors.grey.shade400,
               ),
               const SizedBox(height: 12),
               Text(
@@ -285,7 +285,7 @@ class WeeklyMoodChart extends StatelessWidget {
   }
 
   Color _getStemmingKleur(double waarde) {
-    if (waarde <= -4) return Colors.grey[800]!;     // Uiterst depressief
+    if (waarde <= -4) return Colors.grey.shade800!;     // Uiterst depressief
     if (waarde <= -3) return Colors.grey.shade600!;      // Ernstig depressief
     if (waarde <= -2) return Colors.blue[400]!;      // Matig depressief
     if (waarde <= -1) return Colors.blue[200]!;      // Licht depressief

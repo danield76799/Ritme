@@ -275,7 +275,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               ),
               child: Icon(
                 icoon,
-                color: isGedaan ? AppTheme.primaryTeal : Colors.grey[400],
+                color: isGedaan ? AppTheme.primaryTeal : Colors.grey.shade400,
                 size: 24,
               ),
             ),
@@ -298,13 +298,13 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                   Row(
                     children: [
                       // Target tijd
-                      Icon(Icons.schedule_outlined, size: 14, color: Colors.grey[400]),
+                      Icon(Icons.schedule_outlined, size: 14, color: Colors.grey.shade400),
                       const SizedBox(width: 4),
                       Text(
                         'Doel: $targetTijd',
                         style: TextStyle(
                           fontSize: 13, 
-                          color: targetTijd == '--:--' ? Colors.grey[400] : Colors.grey.shade600,
+                          color: targetTijd == '--:--' ? Colors.grey.shade400 : Colors.grey.shade600,
                           fontWeight: targetTijd == '--:--' ? FontWeight.normal : FontWeight.w500,
                         ),
                       ),

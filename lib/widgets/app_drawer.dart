@@ -138,7 +138,7 @@ class AppDrawer extends StatelessWidget {
                     icon: Icons.settings_outlined,
                     title: 'Instellingen',
                     route: '/settings',
-                    color: Colors.grey[700]!,
+                    color: Colors.grey.shade700!,
                   ),
                 ],
               ),
@@ -150,7 +150,7 @@ class AppDrawer extends StatelessWidget {
               child: Text(
                 'Ritme v1.2.0',
                 style: TextStyle(
-                  color: Colors.grey[500],
+                  color: Colors.grey.shade500,
                   fontSize: 12,
                 ),
               ),
@@ -169,7 +169,7 @@ class AppDrawer extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.grey[500],
+          color: Colors.grey.shade500,
           letterSpacing: 1.2,
         ),
       ),
@@ -202,7 +202,7 @@ class AppDrawer extends StatelessWidget {
         title,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? AppTheme.textCharcoal : Colors.grey[700],
+          color: isSelected ? AppTheme.textCharcoal : Colors.grey.shade700,
         ),
       ),
       trailing: isSelected

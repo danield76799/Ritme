@@ -85,7 +85,7 @@ class _HelpScreenState extends State<HelpScreen> {
               _buildDetailCard(
                 title: _isDutch ? 'Stemmingsschaal (-5 tot +5)' : 'Mood Scale (-5 to +5)',
                 children: [
-                  _buildScaleItem(color: Colors.grey[800]!, label: _isDutch ? '-5: Uiterst depressief' : '-5: Extremely depressed'),
+                  _buildScaleItem(color: Colors.grey.shade800!, label: _isDutch ? '-5: Uiterst depressief' : '-5: Extremely depressed'),
                   _buildScaleItem(color: Colors.grey.shade600!, label: _isDutch ? '-3: Matig depressief' : '-3: Moderately depressed'),
                   _buildScaleItem(color: AppTheme.primaryTeal, label: '0: ${_isDutch ? 'Neutraal' : 'Neutral'}'),
                   _buildScaleItem(color: Colors.orange, label: _isDutch ? '+3: Matig manisch' : '+3: Moderately manic'),
@@ -204,7 +204,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -511,7 +511,7 @@ class _HelpScreenState extends State<HelpScreen> {
             label,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[700],
+              color: Colors.grey.shade700,
             ),
           ),
         ],
@@ -536,7 +536,7 @@ class _HelpScreenState extends State<HelpScreen> {
               label,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[700],
+                color: Colors.grey.shade700,
               ),
             ),
           ),
@@ -544,7 +544,7 @@ class _HelpScreenState extends State<HelpScreen> {
             points,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[500],
+              color: Colors.grey.shade500,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -597,7 +597,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[800],
+                      color: Colors.grey.shade800,
                     ),
                   ),
                   Text(
