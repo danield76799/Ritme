@@ -384,9 +384,54 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                     PopupMenuItem(value: 3, child: Text('Ernstig', style: TextStyle(color: Colors.red.shade700))),
                   ],
                 ),
+              // Notes icon
+              if (isPresent)
+                IconButton(
+                  icon: Icon(
+                    (_todaysNotes[cid] ?? '').isNotEmpty ? Icons.edit_note : Icons.add_comment_outlined,
+                    size: 20,
+                    color: (_todaysNotes[cid] ?? '').isNotEmpty ? Colors.orange.shade600 : Colors.grey.shade400,
+                  ),
+                  onPressed: () => _showNoteDialog(cid, item['sign'] as String),
+                  tooltip: 'Opmerking toevoegen',
+                ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showNoteDialog(int cid, String signName) {
+    final controller = TextEditingController(text: _todaysNotes[cid] ?? '');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Opmerking: $signName', style: const TextStyle(fontSize: 16)),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: 'Beschrijf hoe dit voorteken zich vandaag manifesteert...',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annuleren'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _todaysNotes[cid] = controller.text;
+              });
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
+            child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
