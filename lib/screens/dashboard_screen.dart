@@ -719,55 +719,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     );
   }
 
-  Widget _buildMedicatieCard(BuildContext context) {
-    return GestureDetector(
-      onTap: () async {
-        await Navigator.pushNamed(context, '/medication');
-        _loadData();
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.redAccent.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.medication_outlined, color: Colors.redAccent, size: 36),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Medicatie',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: AppTheme.textCharcoal,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildOverviewCard({
     required IconData icon,
@@ -850,22 +801,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     );
   }
 
-  void _showNotImplemented(String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Binnenkort beschikbaar'),
-        content: Text('$feature wordt in een volgende update toegevoegd.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: AppTheme.primaryTeal)),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildAlertCard(Alert alert) {
     Color color;

@@ -52,9 +52,9 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       );
 
       if (result != null) {
-        print('Adding appointment: $result');
+        AppLogger.debug('Adding appointment: $result');
         final id = await db.insertMedicalAppointment(result);
-        print('Appointment added with id: $id');
+        AppLogger.debug('Appointment added with id: $id');
         
         // Schedule notification if reminder is set
         final reminderDays = result['reminder_days'] ?? 0;

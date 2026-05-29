@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
+import '../utils/logger.dart';
 
 class WeightScreen extends StatefulWidget {
   const WeightScreen({super.key});
@@ -39,7 +40,7 @@ class _WeightScreenState extends State<WeightScreen> {
         });
       }
     } catch (e) {
-      print('ERROR loading weight logs: $e');
+      AppLogger.error('ERROR loading weight logs', error: e);
       if (mounted) {
         setState(() {
           _weightLogs = [];

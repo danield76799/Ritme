@@ -275,15 +275,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return '${m}m slaap';
   }
 
-  // Format hours as "9u 30m" instead of "9.5u"
-  String _formatHours(double hours) {
-    final totalMinutes = (hours * 60).round();
-    final h = totalMinutes ~/ 60;
-    final m = totalMinutes % 60;
-    if (h > 0 && m > 0) return '${h}u ${m}m';
-    if (h > 0) return '${h}u';
-    return '${m}m';
-  }
 
   Future<void> _setBedTime() async {
     final picked = await showTimePicker(

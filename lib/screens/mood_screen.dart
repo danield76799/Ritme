@@ -53,9 +53,7 @@ class _MoodScreenState extends State<MoodScreen> {
 
   Future<void> _loadSettings() async {
     try {
-      if (!isDbInitialized) {
-        await initDatabase();
-      }
+      await ensureInitialized();
       final settings = await db.getSettings();
       final showMenstruatie = BoolHelper.parse(settings?['show_menstruatie'], defaultValue: true);
       
@@ -74,10 +72,7 @@ class _MoodScreenState extends State<MoodScreen> {
     setState(() => _isLoading = true);
 
     try {
-      if (!isDbInitialized) {
-        debugPrint('MoodScreen: db not initialized, initializing...');
-        await initDatabase();
-      }
+      await ensureInitialized();
       // Load display preferences
       final settings = await db.getSettings();
       final showMenstruatie = BoolHelper.parse(settings?['show_menstruatie'], defaultValue: true);
@@ -164,9 +159,7 @@ class _MoodScreenState extends State<MoodScreen> {
 
   Future<void> _opslaan() async {
     try {
-      if (!isDbInitialized) {
-        await initDatabase();
-      }
+      await ensureInitialized();
       
       await db.upsertDailyLog({
         'date': _formattedDate,
@@ -682,70 +675,6 @@ class _MoodScreenState extends State<MoodScreen> {
     );
   }
 
-  Widget _buildNumberCard({
-    required String title,
-    required String subtitle,
-    required double value,
-    required ValueChanged<double> onChanged,
-    required double min,
-    required double max,
-    required double step,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
-                ),
-              ],
-            ),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildCounterBtn(Icons.remove, value > min ? () => onChanged((value - step).clamp(min, max)) : null),
-              Container(
-                width: 50,
-                alignment: Alignment.center,
-                child: Text(
-                  value.toStringAsFixed(step < 1 ? 1 : 0),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF000000)),
-                ),
-              ),
-              _buildCounterBtn(Icons.add, value < max ? () => onChanged((value + step).clamp(min, max)) : null, isPrimary: true),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   // Time picker for sleep time
   Widget _buildTimePickerCard({

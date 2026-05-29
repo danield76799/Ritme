@@ -18,5 +18,5 @@ class BoolHelper {
   static int toInt(bool value) => value ? 1 : 0;
 
   /// Converteer boolean naar String ('true'/'false') voor database opslag
-  static String toString(bool value) => value ? 'true' : 'false';
+  static String toStringValue(bool value) => value ? 'true' : 'false';
 }

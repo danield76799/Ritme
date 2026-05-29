@@ -6,7 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 // import 'package:printing/printing.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../service_locator.dart';
-import '../theme/app_theme.dart';
+import '../utils/logger.dart';
 
 class StatistiekenScherm extends StatefulWidget {
   @override
@@ -126,7 +126,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         });
       }
     } catch (e) {
-      print('ERROR loading statistics: $e');
+      AppLogger.error('ERROR loading statistics', error: e);
       if (mounted) {
         setState(() {
           _isLoading = false;

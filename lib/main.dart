@@ -104,6 +104,9 @@ Future<void> _setupNotificationActionHandler() async {
           if (medicationId != null) {
             final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
             
+            // Ensure database is initialized before use
+            await ensureInitialized();
+            
             if (actionId == 'taken') {
               // Mark medication as taken
               await db.insertMedicationIntakeMap({
