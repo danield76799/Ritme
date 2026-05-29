@@ -1,0 +1,17 @@
+default_platform(:android)
+
+platform :android do
+  desc "Deploy to Play Store Internal Testing"
+  lane :deploy_internal_test do
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      json_key: "keys.json",
+      package_name: "com.ritme.ritme",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false,
+    )
+  end
+end
