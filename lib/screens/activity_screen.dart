@@ -328,7 +328,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Colors.grey.shade850,
+                color: Colors.grey.shade800,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
