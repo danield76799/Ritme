@@ -122,7 +122,7 @@ class DatumNavigator extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.chevron_right, size: 28),
             onPressed: _kanVooruit() ? _gaDagVooruit : null,
-            color: _kanVooruit() ? const Color(0xFF4FB2C1) : Colors.grey.shade400,
+            color: _kanVooruit() ? const Color(0xFF4FB2C1) : const Color(0xFFBDBDBD),
           ),
         ],
       ),
