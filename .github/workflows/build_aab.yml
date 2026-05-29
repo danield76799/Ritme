@@ -90,44 +90,6 @@ jobs:
       run: |
         flutter build appbundle --release
 
-    - name: Sign AAB with zipalign + apksigner
-      env:
-        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      run: |
-        # Decode keystore
-        echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
-        
-        # Find Android SDK build tools
-        BUILD_TOOLS_DIR=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 1 -type d | sort -V | tail -1)
-        echo "Build tools: $BUILD_TOOLS_DIR"
-        
-        AAB_FILE="build/app/outputs/bundle/release/app-release.aab"
-        
-        # Step 1: ZIPALIGN - 4-byte alignment (REQUIRED for Android R+)
-        echo "Running zipalign..."
-        $BUILD_TOOLS_DIR/zipalign -v -p 4 "$AAB_FILE" "${AAB_FILE}.aligned"
-        mv "${AAB_FILE}.aligned" "$AAB_FILE"
-        echo "Zipalign complete"
-        
-        # Step 2: Sign with apksigner (modern Android signing)
-        echo "Signing AAB with apksigner..."
-        $BUILD_TOOLS_DIR/apksigner sign \
-          --ks /tmp/keystore.jks \
-          --ks-pass pass:"$KEYSTORE_PASSWORD" \
-          --key-pass pass:"$KEY_PASSWORD" \
-          --ks-key-alias "$KEY_ALIAS" \
-          --v2-signing-enabled true \
-          --v3-signing-enabled true \
-          "$AAB_FILE"
-        
-        # Step 3: Verify signature
-        echo "Verifying signature..."
-        $BUILD_TOOLS_DIR/apksigner verify -v "$AAB_FILE"
-        echo "AAB signing complete"
-
     - name: Upload AAB
       uses: actions/upload-artifact@v4
       with:

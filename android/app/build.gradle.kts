@@ -20,6 +20,33 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    signingConfigs {
+        create("release") {
+            // Load from key.properties if available, else use debug
+            val keystoreProperties = Properties()
+            val keystorePropertiesFile = rootProject.file("key.properties")
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+                storeFile = file(keystoreProperties["storeFile"]!!)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            } else {
+                // Fallback to debug signing for local builds
+                storeFile = file("debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.ritme.ritme"
         minSdk = flutter.minSdkVersion
@@ -30,7 +57,7 @@ android {
 
     buildTypes {
         release {
-            // Signing is handled by GitHub Actions workflow after build
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
