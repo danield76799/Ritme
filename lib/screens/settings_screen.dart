@@ -129,7 +129,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
       width: 80,
       height: 180,
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListWheelScrollView.useDelegate(
@@ -301,7 +301,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Very light grey background
+      backgroundColor: Colors.grey.shade50, // Very light grey background
       appBar: AppBar(
         title: const Text('Instellingen', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryTeal,

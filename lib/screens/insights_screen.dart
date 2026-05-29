@@ -644,7 +644,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(

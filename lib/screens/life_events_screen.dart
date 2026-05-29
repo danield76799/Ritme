@@ -173,7 +173,7 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
                   date,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[500],
+                    color: Colors.grey.shade500,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -215,14 +215,14 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_note, size: 64, color: Colors.grey[300]),
+          Icon(Icons.event_note, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
             'Geen life events gevonden',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[500],
+              color: Colors.grey.shade500,
             ),
           ),
           const SizedBox(height: 8),
@@ -230,7 +230,7 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
             'Voeg belangrijke gebeurtenissen toe via het dashboard',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[400],
+              color: Colors.grey.shade400,
             ),
           ),
         ],
