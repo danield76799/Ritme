@@ -666,15 +666,23 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> deleteMedicationConfig(int id) async {
     // Cascade delete: remove schedules and intakes first
-    final schedules = _medicationSchedule.toMap().entries.where((e) => e.value['medication_id'] == id || e.value['medication_id'] == id.toString());
+    final schedules = _medicationSchedule.toMap().entries.where((e) {
+      final medId = e.value['medication_id'];
+      return medId == id || medId == id.toString();
+    });
     for (final s in schedules) {
       await _medicationSchedule.delete(s.key);
     }
-    final intakes = _medicationIntake.toMap().entries.where((e) => e.value['medication_id'] == id || e.value['medication_id'] == id.toString());
+    final intakes = _medicationIntake.toMap().entries.where((e) {
+      final medId = e.value['medication_id'];
+      return medId == id || medId == id.toString();
+    });
     for (final i in intakes) {
       await _medicationIntake.delete(i.key);
     }
+    // Try deleting with both int and string key
     await _medicationConfig.delete(id);
+    await _medicationConfig.delete(id.toString());
     return 1;
   }
 
@@ -702,14 +710,14 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (!map.containsKey('reminder_enabled')) {
           map['reminder_enabled'] = '1';
         }
-        // Convert id to int if it's a string
-        if (map['id'] is String) {
-          map['id'] = int.tryParse(map['id']) ?? entry.key;
-        }
-        // Ensure all values are properly typed
+        // Keep id as int, convert other values to strings
         final cleanMap = <String, dynamic>{};
         map.forEach((key, value) {
-          cleanMap[key] = value?.toString() ?? value;
+          if (key == 'id') {
+            cleanMap[key] = value is int ? value : int.tryParse(value.toString()) ?? entry.key;
+          } else {
+            cleanMap[key] = value?.toString() ?? value;
+          }
         });
         return cleanMap;
       }).toList();
