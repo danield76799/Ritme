@@ -761,7 +761,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 Text(
                   title,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
+                    color: Colors.black,
                     fontSize: 14,
                   ),
                 ),

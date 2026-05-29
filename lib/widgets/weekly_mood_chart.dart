@@ -286,7 +286,7 @@ class WeeklyMoodChart extends StatelessWidget {
 
   Color _getStemmingKleur(double waarde) {
     if (waarde <= -4) return Colors.grey.shade800!;     // Uiterst depressief
-    if (waarde <= -3) return Colors.grey.shade600!;      // Ernstig depressief
+    if (waarde <= -3) return Colors.black!;      // Ernstig depressief
     if (waarde <= -2) return Colors.blue[400]!;      // Matig depressief
     if (waarde <= -1) return Colors.blue[200]!;      // Licht depressief
     if (waarde == 0) return Colors.green[400]!;       // Neutraal

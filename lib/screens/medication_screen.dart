@@ -482,7 +482,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           ? 'Selecteer tijd' 
                           : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
                         style: TextStyle(
-                          color: reminderTime == null ? Colors.grey.shade600 : Colors.black,
+                          color: reminderTime == null ? Colors.black : Colors.black,
                           fontSize: 16,
                         ),
                       ),
@@ -780,7 +780,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           child: Icon(
             icon,
             size: 18,
-            color: isPrimary ? Colors.white : Colors.grey.shade600,
+            color: isPrimary ? Colors.white : Colors.black,
           ),
         ),
       ),

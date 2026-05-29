@@ -362,7 +362,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                   day['dateShort'],
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade600,
+                    color: Colors.black,
                   ),
                 ),
                 const Spacer(),
@@ -427,7 +427,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                     'Om ${activity['actual_time']}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: Colors.black,
                     ),
                   ),
               ],
@@ -462,7 +462,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 8),

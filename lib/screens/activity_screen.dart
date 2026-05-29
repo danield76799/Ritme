@@ -631,7 +631,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     label,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade600,
+                      color: Colors.black,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
