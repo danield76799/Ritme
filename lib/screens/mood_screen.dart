@@ -360,7 +360,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                     ),
                                     Text(
                                       'Manisch maar ongelukkig/irritant',
-                                      style: TextStyle(fontSize: 12, color: const Color(0xFF000000)),
+                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                     ),
                                   ],
                                 ),
