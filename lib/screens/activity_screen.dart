@@ -82,8 +82,28 @@ class _ActivityScreenState extends State<ActivityScreen> {
         setState(() {
           _bedTime = sleepLog['bed_time']?.toString();
           _wakeTime = sleepLog['wake_time']?.toString();
-          _awakeMinutes = sleepLog['awake_minutes'] ?? 0;
-          _calculatedSleepHours = sleepLog['sleep_hours']?.toDouble();
+          
+          // Veilig parsen van awake_minutes (kan int, String, of null zijn)
+          final rawAwake = sleepLog['awake_minutes'];
+          if (rawAwake is int) {
+            _awakeMinutes = rawAwake;
+          } else if (rawAwake is String) {
+            _awakeMinutes = int.tryParse(rawAwake) ?? 0;
+          } else {
+            _awakeMinutes = 0;
+          }
+          
+          // Veilig parsen van sleep_hours (kan double, int, String, of null zijn)
+          final rawSleepHours = sleepLog['sleep_hours'];
+          if (rawSleepHours is double) {
+            _calculatedSleepHours = rawSleepHours;
+          } else if (rawSleepHours is int) {
+            _calculatedSleepHours = rawSleepHours.toDouble();
+          } else if (rawSleepHours is String) {
+            _calculatedSleepHours = double.tryParse(rawSleepHours);
+          } else {
+            _calculatedSleepHours = null;
+          }
         });
         
         // Pre-fill "Opstaan" activity with wake time if sleep log exists
