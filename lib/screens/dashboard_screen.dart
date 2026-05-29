@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
 import '../services/bipolar_alert_service.dart';
+import '../utils/logger.dart';
 import '../widgets/weekly_mood_chart.dart';
 import 'login_screen.dart';
 
