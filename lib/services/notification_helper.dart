@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import '../utils/logger.dart';
 
 class NotificationHelper {
   static final NotificationHelper instance = NotificationHelper._();
@@ -40,14 +42,14 @@ class NotificationHelper {
 
       final initialized = await _notifications.initialize(initSettings);
       if (initialized == null || !initialized) {
-        debugPrint('Notificatie initialisatie mislukt of geweigerd');
+        AppLogger.warning('Notificatie initialisatie mislukt of geweigerd');
         return;
       }
       
-      // Request permissions on Android 13+
+      // Request permissions on Android 13+ using permission_handler
       final permissionsGranted = await _requestPermissions();
       if (!permissionsGranted) {
-        debugPrint('Notificatie permissies geweigerd');
+        AppLogger.warning('Notificatie permissies geweigerd');
         return;
       }
       
@@ -62,12 +64,28 @@ class NotificationHelper {
     if (kIsWeb) return true;
     
     try {
+      // Use permission_handler for explicit permission request on Android 13+
+      if (!kIsWeb) {
+        final status = await Permission.notification.status;
+        if (status.isDenied || status.isRestricted) {
+          final result = await Permission.notification.request();
+          if (!result.isGranted) {
+            AppLogger.warning('Notification permission denied via permission_handler');
+            return false;
+          }
+        } else if (status.isPermanentlyDenied) {
+          AppLogger.warning('Notification permission permanently denied');
+          return false;
+        }
+      }
+
+      // Also request via flutter_local_notifications for older Android versions
       final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
       if (androidPlugin != null) {
         final granted = await androidPlugin.requestNotificationsPermission();
         if (granted == null || !granted) {
-          debugPrint('Android notificatie permissies geweigerd');
+          AppLogger.warning('Android notificatie permissies geweigerd');
           return false;
         }
         
@@ -75,12 +93,12 @@ class NotificationHelper {
         try {
           final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
           if (exactAlarmGranted == null || !exactAlarmGranted) {
-            debugPrint('Exact alarm permission denied - scheduled notifications may not work');
+            AppLogger.info('Exact alarm permission denied - scheduled notifications may not work');
           } else {
-            debugPrint('Exact alarm permission granted');
+            AppLogger.debug('Exact alarm permission granted');
           }
         } catch (e) {
-          debugPrint('Could not request exact alarm permission: $e');
+          AppLogger.warning('Could not request exact alarm permission: $e');
         }
       }
 
@@ -93,16 +111,45 @@ class NotificationHelper {
           sound: true,
         );
         if (granted == null || !granted) {
-          debugPrint('iOS notificatie permissies geweigerd');
+          AppLogger.warning('iOS notificatie permissies geweigerd');
           return false;
         }
       }
       
       return true;
     } catch (e) {
-      debugPrint('Permissie aanvraag error: $e');
+      AppLogger.error('Permissie aanvraag error', error: e);
       return false;
     }
+  }
+
+  /// Check if notification permissions are granted
+  Future<bool> areNotificationsEnabled() async {
+    if (kIsWeb) return true;
+    
+    try {
+      // Check via permission_handler first
+      final status = await Permission.notification.status;
+      if (status.isGranted) return true;
+      
+      // Fallback: check via flutter_local_notifications
+      final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin != null) {
+        final enabled = await androidPlugin.areNotificationsEnabled();
+        return enabled ?? false;
+      }
+      
+      return false;
+    } catch (e) {
+      AppLogger.error('Error checking notification status', error: e);
+      return false;
+    }
+  }
+
+  /// Open app settings to allow user to enable notifications
+  Future<void> openNotificationSettings() async {
+    await openAppSettings();
   }
 
   Future<void> _scheduleDailyReminder() async {
