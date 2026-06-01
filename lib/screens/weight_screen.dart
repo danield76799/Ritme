@@ -51,6 +51,7 @@ class _WeightScreenState extends State<WeightScreen> {
   }
 
   Future<void> _addWeightLog() async {
+    try {
     // Check if weight already logged on selected date
     final selectedDateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
     final existingLog = _weightLogs.firstWhere(
@@ -71,9 +72,9 @@ class _WeightScreenState extends State<WeightScreen> {
 
       final result = await showDialog<Map<String, dynamic>>(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Gewicht bewerken'),
+          title: Text('Gewicht bewerken - ${DateFormat('d MMM yyyy').format(_selectedDate)}'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -101,7 +102,7 @@ class _WeightScreenState extends State<WeightScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Annuleren'),
             ),
             ElevatedButton(
@@ -111,7 +112,7 @@ class _WeightScreenState extends State<WeightScreen> {
                   final weight = double.tryParse(normalizedWeight);
                   
                   if (weight == null || weight < 20 || weight > 300) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(
                       SnackBar(
                         content: const Text('Gewicht moet tussen 20 en 300 kg zijn. Gebruik een punt (.) als decimaal.'),
                         backgroundColor: Colors.red,
@@ -122,7 +123,7 @@ class _WeightScreenState extends State<WeightScreen> {
                     return;
                   }
                   
-                  Navigator.pop(context, {
+                  Navigator.pop(dialogContext, {
                     'weight': weight,
                     'notes': notesController.text,
                   });
@@ -145,10 +146,18 @@ class _WeightScreenState extends State<WeightScreen> {
         }
         await db.insertWeightLog(
           selectedDateStr,
-          result['weight'],
-          result['notes'].isEmpty ? null : result['notes'],
+          (result['weight'] as num).toDouble(),
+          (result['notes']?.toString() ?? '').isEmpty ? null : result['notes']?.toString(),
         );
-        _loadWeightLogs();
+        await _loadWeightLogs();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gewicht opgeslagen voor ${DateFormat('d MMM yyyy').format(_selectedDate)}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
       return;
     }
@@ -159,9 +168,9 @@ class _WeightScreenState extends State<WeightScreen> {
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Gewicht toevoegen'),
+        title: Text('Gewicht toevoegen - ${DateFormat('d MMM yyyy').format(_selectedDate)}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -189,7 +198,7 @@ class _WeightScreenState extends State<WeightScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Annuleren'),
           ),
           ElevatedButton(
@@ -201,7 +210,7 @@ class _WeightScreenState extends State<WeightScreen> {
                 
                 // Validatie: gewicht moet realistisch zijn (20-300 kg)
                 if (weight == null || weight < 20 || weight > 300) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
                     SnackBar(
                       content: const Text('Gewicht moet tussen 20 en 300 kg zijn. Gebruik een punt (.) als decimaal.'),
                       backgroundColor: Colors.red,
@@ -212,7 +221,7 @@ class _WeightScreenState extends State<WeightScreen> {
                   return;
                 }
                 
-                Navigator.pop(context, {
+                Navigator.pop(dialogContext, {
                   'weight': weight,
                   'notes': notesController.text,
                 });
@@ -232,10 +241,29 @@ class _WeightScreenState extends State<WeightScreen> {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
       await db.insertWeightLog(
         dateStr,
-        result['weight'],
-        result['notes'].isEmpty ? null : result['notes'],
+        (result['weight'] as num).toDouble(),
+        (result['notes']?.toString() ?? '').isEmpty ? null : result['notes']?.toString(),
       );
-      _loadWeightLogs();
+      await _loadWeightLogs();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gewicht opgeslagen voor ${DateFormat('d MMM yyyy').format(_selectedDate)}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+    } catch (e) {
+      AppLogger.error('Error adding weight log', error: e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fout bij opslaan: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
