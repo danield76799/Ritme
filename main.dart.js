@@ -32299,7 +32299,7 @@ this.b=b},
 aQB:function aQB(a){this.a=a},
 aQx:function aQx(a,b){this.a=a
 this.b=b},
-aQC:function aQC(){},
+aQC:function aQC(a){this.a=a},
 aQq:function aQq(){},
 aQr:function aQr(){},
 aQs:function aQs(){},
@@ -116173,7 +116173,7 @@ case 1:return A.q(p.at(-1),r)}})
 return A.t($async$qr,r)},
 oh(){var s=0,r=A.u(t.H),q,p=this,o,n,m,l,k,j,i,h,g
 var $async$oh=A.v(function(a,b){if(a===1)return A.q(b,r)
-for(;;)switch(s){case 0:i=A.kJ("yyyy-MM-dd",null).j7(new A.bd(Date.now(),0,!1))
+for(;;)switch(s){case 0:i=A.kJ("yyyy-MM-dd",null).j7(p.f)
 h=J.b8q(p.d,new A.aQm(i),new A.aQn())
 g=J.a8(h)
 s=g.gbw(h)?3:4
@@ -116255,7 +116255,7 @@ r.push(A.aU(A.b([A.a7(l,l,B.i,l,l,new A.ab(B.m,l,l,A.S(2),l,l,B.r),l,24,l,l,l,l,
 r.push(B.a2)
 if(J.eI(m.d))r.push(A.bX(A.an(A.b([A.bb(B.XX,B.bM,l,64),B.a2,A.F("Nog geen gewicht gelogd",l,l,l,A.a2(l,l,B.aU,l,l,l,l,l,l,l,l,16,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l,l)],s),B.o,B.k,B.j,0,B.q),l,l))
 else r.push(A.pQ(new A.aQB(m),J.bs(m.d),l,B.IF,!0))
-s=A.qj(!0,A.fB(A.an(r,B.C,B.k,B.j,0,B.q),B.S,l,l,B.a6),B.aQ,!0)}return A.dL(k,B.aF,s,A.agy(B.m,B.jj,A.F(J.aTr(m.d,new A.aQC())?"Gewicht bewerken":"Gewicht loggen",l,l,l,B.bS,l,l,l),m.gai9()))},
+s=A.qj(!0,A.fB(A.an(r,B.C,B.k,B.j,0,B.q),B.S,l,l,B.a6),B.aQ,!0)}return A.dL(k,B.aF,s,A.agy(B.m,B.jj,A.F(J.aTr(m.d,new A.aQC(m))?"Gewicht bewerken":"Gewicht loggen",l,l,l,B.bS,l,l,l),m.gai9()))},
 aj6(){var s,r,q,p,o,n,m,l,k,j,i,h,g,f=this,e=null,d=J.fY(f.d,new A.aQq(),t.i),c=A.a3(d,d.$ti.i("aV.E")),b=B.b.iG(c,new A.aQr()),a=B.b.iG(c,new A.aQs())
 d=B.b.iG(c,new A.aQt())
 s=c.length
@@ -116358,7 +116358,7 @@ A.aQx.prototype={
 $1(a){return this.a.Cy(J.x(this.b,"id"))},
 $S:258}
 A.aQC.prototype={
-$1(a){return J.c(J.x(a,"date"),A.kJ("yyyy-MM-dd",null).j7(new A.bd(Date.now(),0,!1)))},
+$1(a){return J.c(J.x(a,"date"),A.kJ("yyyy-MM-dd",null).j7(this.a.f))},
 $S:15}
 A.aQq.prototype={
 $1(a){var s,r=J.x(a,"weight")
