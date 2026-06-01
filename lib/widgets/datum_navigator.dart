@@ -85,36 +85,49 @@ class DatumNavigator extends StatelessWidget {
             color: const Color(0xFF4FB2C1),
           ),
           
-          // Datum weergave
+          // Datum weergave (tik om datum te kiezen)
           Expanded(
-            child: Column(
-              children: [
-                Text(
-                  _formatteerDatum(geselecteerdeDatum),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                if (!_isVandaag())
-                  TextButton(
-                    onPressed: _gaNaarVandaag,
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            child: GestureDetector(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: geselecteerdeDatum,
+                  firstDate: DateTime(2020),
+                  lastDate: maximaleDatum ?? DateTime.now(),
+                );
+                if (picked != null) {
+                  onDatumVeranderd(picked);
+                }
+              },
+              child: Column(
+                children: [
+                  Text(
+                    _formatteerDatum(geselecteerdeDatum),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
                     ),
-                    child: const Text(
-                      'Ga naar vandaag',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF4FB2C1),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (!_isVandaag())
+                    TextButton(
+                      onPressed: _gaNaarVandaag,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Ga naar vandaag',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF4FB2C1),
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
           
