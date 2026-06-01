@@ -1006,23 +1006,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertWeightLog(String date, double weight, String? notes) async {
-    // Use a smaller ID to avoid 32-bit integer overflow in Hive (max 0xFFFFFFFF)
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
-    await _weightLogs.put(id, {
-      'id': id,
-      'date': date.toString(),
+    // Use date as key — one entry per date, automatic upsert
+    await _weightLogs.put(date, {
+      'id': date.hashCode,
+      'date': date,
       'weight': weight,
       'notes': notes?.toString(),
     });
-    return id;
+    return date.hashCode;
   }
 
   Future<List<Map<String, dynamic>>> getWeightLogs() async {
     return _weightLogs.toMap().entries.map((entry) {
       final map = Map<String, dynamic>.from(entry.value);
-      if (!map.containsKey('id')) {
-        map['id'] = entry.key;
-      }
+      // Use date-based ID for consistency
+      final dateStr = map['date']?.toString() ?? entry.key.toString();
+      map['id'] = dateStr.hashCode;
       // Ensure weight is a number, not a string
       if (map['weight'] is String) {
         map['weight'] = double.tryParse(map['weight']) ?? 0.0;
@@ -1031,7 +1030,6 @@ class HiveDatabaseHelper implements DatabaseRepository {
       final cleanMap = <String, dynamic>{};
       map.forEach((key, value) {
         if (key == 'weight') {
-          // Keep weight as double
           cleanMap[key] = (value is num) ? value.toDouble() : double.tryParse(value.toString()) ?? 0.0;
         } else {
           cleanMap[key] = value?.toString() ?? value;
@@ -1048,7 +1046,14 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   Future<int> deleteWeightLog(int id) async {
-    await _weightLogs.delete(id);
+    // Find entry by hashCode-based id and delete by key
+    final entry = _weightLogs.toMap().entries.firstWhere(
+      (e) => (e.value['date']?.toString().hashCode ?? e.key.hashCode) == id,
+      orElse: () => MapEntry(null, null),
+    );
+    if (entry.key != null) {
+      await _weightLogs.delete(entry.key);
+    }
     return 1;
   }
 

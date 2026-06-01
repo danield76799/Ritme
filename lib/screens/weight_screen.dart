@@ -140,10 +140,7 @@ class _WeightScreenState extends State<WeightScreen> {
       );
 
       if (result != null) {
-        // Delete old log and insert new one
-        if (existingLog['id'] != null) {
-          await db.deleteWeightLog(existingLog['id']);
-        }
+        // Upsert — date is the key, so this overwrites any existing entry
         await db.insertWeightLog(
           selectedDateStr,
           (result['weight'] as num).toDouble(),
