@@ -1,4 +1,4 @@
-package com.ritme.ritme
+package com.ritme.ritme.v2
 
 import android.content.BroadcastReceiver
 import android.content.Context

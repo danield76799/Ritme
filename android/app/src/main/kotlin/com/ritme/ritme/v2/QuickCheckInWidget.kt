@@ -1,4 +1,4 @@
-package com.ritme.ritme
+package com.ritme.ritme.v2
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
