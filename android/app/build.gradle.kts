@@ -9,7 +9,7 @@ import java.util.Properties
 import java.io.FileInputStream
 
 android {
-    namespace = "com.ritme.ritme"
+    namespace = "com.ritme.ritme.v2"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -51,7 +51,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.ritme.ritme"
+        applicationId = "com.ritme.ritme.v2"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutter.versionCode
