@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _authenticateWithBiometrics() async {
     try {
       final bool didAuthenticate = await _localAuth.authenticate(
-        localizedReason: 'Scan je vingerafdruk of gezicht om Ritme te openen',
+        localizedReason: 'Authenticateer om Ritme te openen',
         options: const AuthenticationOptions(
           useErrorDialogs: true,
           stickyAuth: true,
@@ -359,7 +359,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             ElevatedButton.icon(
                               onPressed: _authenticateWithBiometrics,
-                              icon: const Icon(Icons.fingerprint, size: 28),
+                              icon: const Icon(Icons.lock_outline, size: 28),
                               label: const Text(
                                 'Login met Biometrie',
                                 style: TextStyle(fontSize: 16),

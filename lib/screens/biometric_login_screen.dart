@@ -185,7 +185,7 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen> {
                     if (_biometricAvailable)
                       ElevatedButton.icon(
                         onPressed: _biometricEnabled ? _authenticate : _enableBiometric,
-                        icon: const Icon(Icons.fingerprint, size: 28),
+                        icon: const Icon(Icons.lock_outline, size: 28),
                         label: Text(
                           _biometricEnabled 
                               ? 'Authenticate with Biometrics'
