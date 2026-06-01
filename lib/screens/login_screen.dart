@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
 import 'dashboard_screen.dart';
@@ -124,12 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
         
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
-          );
-        }
+        // Als geen biometrie, vraag om notificaties
+        _showNotificationDialog();
         return;
       }
 
@@ -167,6 +164,39 @@ class _LoginScreenState extends State<LoginScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
+              _showNotificationDialog();
+            },
+            child: const Text('Nee, bedankt'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await _secureStorage.write(key: 'biometric_enabled', value: 'true');
+              if (mounted) {
+                Navigator.pop(context);
+                _showNotificationDialog();
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
+            child: const Text('Ja, inschakelen', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNotificationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Notificaties'),
+        content: const Text(
+          'Wil je notificaties ontvangen voor herinneringen en updates?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -176,7 +206,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              await _secureStorage.write(key: 'biometric_enabled', value: 'true');
+              // Request notification permission
+              final status = await Permission.notification.request();
               if (mounted) {
                 Navigator.pop(context);
                 Navigator.pushReplacement(
