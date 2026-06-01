@@ -51,10 +51,10 @@ class _WeightScreenState extends State<WeightScreen> {
   }
 
   Future<void> _addWeightLog() async {
-    // Check if weight already logged today
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    // Check if weight already logged on selected date
+    final selectedDateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
     final existingLog = _weightLogs.firstWhere(
-      (log) => log['date'] == today,
+      (log) => log['date'] == selectedDateStr,
       orElse: () => {},
     );
     
@@ -144,7 +144,7 @@ class _WeightScreenState extends State<WeightScreen> {
           await db.deleteWeightLog(existingLog['id']);
         }
         await db.insertWeightLog(
-          today,
+          selectedDateStr,
           result['weight'],
           result['notes'].isEmpty ? null : result['notes'],
         );
@@ -476,7 +476,7 @@ class _WeightScreenState extends State<WeightScreen> {
         backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
-          _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(DateTime.now())) 
+          _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(_selectedDate)) 
             ? 'Gewicht bewerken' 
             : 'Gewicht loggen',
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

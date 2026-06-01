@@ -49,7 +49,7 @@ class BiometricAuth {
       if (!isAvailable) return false;
 
       final bool didAuthenticate = await _localAuth.authenticate(
-        localizedReason: 'Scan your fingerprint or face to access Ritme',
+        localizedReason: 'Authenticate to access Ritme',
         authMessages: const [
           const AndroidAuthMessages(
             signInTitle: 'Biometric Authentication',
