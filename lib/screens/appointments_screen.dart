@@ -223,12 +223,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Afspraken', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _appointments.isEmpty
@@ -236,7 +236,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                   : _buildAppointmentsList(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addAppointment,
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Nieuwe afspraak', style: TextStyle(color: Colors.white)),
       ),
@@ -325,10 +325,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                        color: AppTheme.primaryLavender.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(Icons.calendar_today, color: AppTheme.primaryTeal),
+                      child: Icon(Icons.calendar_today, color: AppTheme.primaryLavender),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -445,7 +445,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           data: Theme.of(context).copyWith(
             brightness: Brightness.light,
             colorScheme: ColorScheme.light(
-              primary: AppTheme.primaryTeal,
+              primary: AppTheme.primaryLavender,
               surface: Colors.white,
             ),
           ),
@@ -541,7 +541,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryTeal,
+                      backgroundColor: AppTheme.primaryLavender,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -588,7 +588,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+            borderSide: const BorderSide(color: AppTheme.primaryLavender, width: 2),
           ),
         ),
       ),
@@ -612,7 +612,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               return Theme(
                 data: Theme.of(context).copyWith(
                   colorScheme: ColorScheme.light(
-                    primary: AppTheme.primaryTeal,
+                    primary: AppTheme.primaryLavender,
                     surface: Colors.white,
                   ),
                 ),
@@ -680,7 +680,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: ColorScheme.light(
-                  primary: AppTheme.primaryTeal,
+                  primary: AppTheme.primaryLavender,
                   surface: Colors.white,
                 ),
               ),
