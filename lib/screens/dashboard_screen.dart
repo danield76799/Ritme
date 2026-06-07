@@ -499,13 +499,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Widget _routeBuilder(String route) {
     switch (route) {
       case '/mood': return const MoodScreen();
-      case '/activity': return const ActivityScreen();
-      case '/weight': return const WeightScreen();
-      case '/appointments': return const AppointmentsScreen();
-      case '/sociaal-ritme': return const SociaalRitmeMeterScreen();
-      case '/voortekenen': return const VoortekenenScreen();
-      case '/crisisplan': return const CrisisPlanScreen();
-      case '/rapport': return const RapportScreen();
+      case '/activity': return ActivityScreen();
+      case '/weight': return WeightScreen();
+      case '/appointments': return AppointmentsScreen();
+      case '/sociaal-ritme': return SociaalRitmeMeterScreen();
+      case '/voortekenen': return VoortekenenScreen();
+      case '/crisisplan': return CrisisPlanScreen();
+      case '/rapport': return RapportScreen();
       default: return const SizedBox.shrink();
     }
   }
