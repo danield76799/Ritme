@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/app_theme.dart';
+import '../theme/app_theme.dart';
 
 class AppDrawer extends StatelessWidget {
   final String currentRoute;
