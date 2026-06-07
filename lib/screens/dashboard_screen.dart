@@ -566,7 +566,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       color: color.withOpacity(0.06),
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
-        onTap: route != null ? () => Navigator.pushNamed(context, route) : null,
+        onTap: route != null ? () => Navigator.pushNamed(context, route!) : null,
         borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
