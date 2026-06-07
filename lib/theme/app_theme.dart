@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
@@ -6,6 +7,7 @@ class AppTheme {
 
   // Medical Teal brand palette
   static const Color medicalTeal = Color(0xFF4FB2C1);
+  static Color get primaryTeal => medicalTeal;  // legacy alias
   static const Color medicalTealDark = Color(0xFF3A8A96);
   static const Color medicalTealLight = Color(0xFF7AC8D3);
   static const Color textCharcoal = Color(0xFF333333);
@@ -275,6 +277,9 @@ class AppTheme {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  // Warm gradient alias (alias for brandGradient for legacy code)
+  static LinearGradient get warmGradient => brandGradient;
 
   // Card decoration helper
   static BoxDecoration cardDecoration(BuildContext context) {
