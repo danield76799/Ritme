@@ -384,7 +384,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primaryLavender, width: 2),
+                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
                     ),
                   ),
                   onChanged: (v) => name = v,
@@ -405,7 +405,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primaryLavender, width: 2),
+                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
                     ),
                   ),
                   keyboardType: TextInputType.number,
@@ -427,7 +427,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primaryLavender, width: 2),
+                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
                     ),
                   ),
                   onChanged: (v) => unit = v,
@@ -445,7 +445,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           reminderEnabled = value;
                         });
                       },
-                      activeColor: AppTheme.primaryLavender,
+                      activeColor: AppTheme.primaryTeal,
                     ),
                   ],
                 ),
@@ -516,13 +516,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Medicatie',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -548,7 +548,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
                 : _errorMessage != null
                     ? _buildErrorState()
                     : _configs.isEmpty
@@ -578,7 +578,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             icon: const Icon(Icons.refresh),
             label: const Text('Opnieuw proberen'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryLavender,
+              backgroundColor: AppTheme.primaryTeal,
               foregroundColor: Colors.white,
             ),
           ),
@@ -651,10 +651,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
             height: 48,
             margin: const EdgeInsets.only(left: 12),
             decoration: BoxDecoration(
-              color: AppTheme.primaryLavender.withValues(alpha: 0.1),
+              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.medication, color: AppTheme.primaryLavender, size: 24),
+            child: Icon(Icons.medication, color: AppTheme.primaryTeal, size: 24),
           ),
           // Name & dosage
           Expanded(
@@ -668,7 +668,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textDark,
+                      color: AppTheme.textCharcoal,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -685,10 +685,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: reminderEnabled ? AppTheme.primaryLavender.withValues(alpha: 0.1) : Colors.grey.shade100,
+                            color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: reminderEnabled ? AppTheme.primaryLavender.withValues(alpha: 0.3) : Colors.grey.shade300!,
+                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade300!,
                             ),
                           ),
                           child: Row(
@@ -697,7 +697,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               Icon(
                                 reminderEnabled ? Icons.notifications_active : Icons.notifications_off,
                                 size: 14,
-                                color: reminderEnabled ? AppTheme.primaryLavender : Colors.grey.shade400,
+                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -705,7 +705,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: reminderEnabled ? AppTheme.primaryLavender : Colors.grey.shade500,
+                                  color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500,
                                 ),
                               ),
                               const SizedBox(width: 4),
@@ -739,7 +739,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textDark,
+                    color: AppTheme.textCharcoal,
                   ),
                 ),
               ),
@@ -774,7 +774,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: isPrimary ? AppTheme.primaryLavender : Colors.grey.shade100,
+            color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

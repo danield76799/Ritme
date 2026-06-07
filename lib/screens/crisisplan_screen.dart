@@ -164,7 +164,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryLavender,
+                  backgroundColor: AppTheme.primaryTeal,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -200,16 +200,16 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundWarm,
-        appBar: AppBar(backgroundColor: AppTheme.primaryLavender, title: const Text('Crisisplan', style: TextStyle(color: Colors.white))),
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender)),
+        backgroundColor: AppTheme.backgroundColor,
+        appBar: AppBar(backgroundColor: AppTheme.primaryTeal, title: const Text('Crisisplan', style: TextStyle(color: Colors.white))),
+        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text('Crisisplan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
@@ -258,7 +258,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.textDark)),
+                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.textCharcoal)),
                           const SizedBox(height: 4),
                           Text(
                             hasContent ? _truncate(content, 80) : 'Nog niet ingevuld — tik om te bewerken',
@@ -424,7 +424,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryLavender,
+                  backgroundColor: AppTheme.primaryTeal,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),

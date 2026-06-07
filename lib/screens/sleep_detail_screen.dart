@@ -123,9 +123,9 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
           'Slaap Details (Netto)',
@@ -137,10 +137,10 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : RefreshIndicator(
               onRefresh: _loadData,
-              color: AppTheme.primaryLavender,
+              color: AppTheme.primaryTeal,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
@@ -166,7 +166,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
+                          color: AppTheme.textCharcoal,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -245,7 +245,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                                   BarChartRodData(
                                     toY: entry.value['sleep'].toDouble(),
                                     color: entry.value['sleep'] >= 7 
-                                        ? AppTheme.primaryLavender 
+                                        ? AppTheme.primaryTeal 
                                         : entry.value['sleep'] >= 5 
                                             ? Colors.orange 
                                             : Colors.redAccent,
@@ -268,7 +268,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
+                        color: AppTheme.textCharcoal,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -300,14 +300,14 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppTheme.primaryLavender, size: 24),
+          Icon(icon, color: AppTheme.primaryTeal, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
+              color: AppTheme.textCharcoal,
             ),
           ),
           const SizedBox(height: 4),
@@ -327,7 +327,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
     final sleep = entry['sleep'] as double;
     final awakeMinutes = entry['awakeMinutes'] as int? ?? 0;
     final quality = sleep >= 8 ? 'Uitstekend' : sleep >= 6 ? 'Goed' : sleep >= 5 ? 'Matig' : 'Slecht';
-    final qualityColor = sleep >= 8 ? AppTheme.primaryLavender : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
+    final qualityColor = sleep >= 8 ? AppTheme.primaryTeal : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -367,7 +367,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textDark,
+                    color: AppTheme.textCharcoal,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -387,7 +387,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
+              color: AppTheme.textCharcoal,
             ),
           ),
         ],

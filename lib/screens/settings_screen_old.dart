@@ -174,15 +174,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Instellingen', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _buildSettingsForm(),
@@ -234,7 +234,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ElevatedButton(
               onPressed: _saveSettings,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryLavender,
+                backgroundColor: AppTheme.primaryTeal,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -255,7 +255,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: AppTheme.textDark,
+          color: AppTheme.textCharcoal,
         ),
       ),
     );

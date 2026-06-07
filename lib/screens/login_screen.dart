@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 _showNotificationDialog();
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryLavender),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
             child: const Text('Ja, inschakelen', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -217,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryLavender),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
             child: const Text('Ja, inschakelen', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -333,7 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       body: _isLoading
           ? Container(
               color: Colors.white,
@@ -341,9 +341,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.favorite, size: 64, color: AppTheme.primaryLavender),
+                    Icon(Icons.favorite, size: 64, color: AppTheme.primaryTeal),
                     SizedBox(height: 16),
-                    Text('Laden...', style: TextStyle(fontSize: 18, color: AppTheme.primaryLavender)),
+                    Text('Laden...', style: TextStyle(fontSize: 18, color: AppTheme.primaryTeal)),
                   ],
                 ),
               ),
@@ -370,7 +370,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryLavender,
+                          color: AppTheme.primaryTeal,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -398,11 +398,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                foregroundColor: AppTheme.primaryLavender,
+                                foregroundColor: AppTheme.primaryTeal,
                                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: AppTheme.primaryLavender),
+                                  side: BorderSide(color: AppTheme.primaryTeal),
                                 ),
                               ),
                             ),
@@ -436,7 +436,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: AppTheme.primaryLavender,
+                                    color: AppTheme.primaryTeal,
                                     width: 2,
                                   ),
                                 ),
@@ -473,7 +473,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               height: 50,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryLavender,
+                                  backgroundColor: AppTheme.primaryTeal,
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),

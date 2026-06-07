@@ -115,13 +115,13 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Snelle Check-in',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -238,7 +238,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                               style: TextStyle(
                                 fontSize: 48,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryLavender,
+                                color: AppTheme.primaryTeal,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -254,10 +254,10 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                         const SizedBox(height: 16),
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: AppTheme.primaryLavender,
+                            activeTrackColor: AppTheme.primaryTeal,
                             inactiveTrackColor: Colors.grey.shade200,
-                            thumbColor: AppTheme.primaryLavender,
-                            overlayColor: AppTheme.primaryLavender.withValues(alpha: 0.2),
+                            thumbColor: AppTheme.primaryTeal,
+                            overlayColor: AppTheme.primaryTeal.withValues(alpha: 0.2),
                             trackHeight: 8,
                             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
                           ),
@@ -359,7 +359,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                     child: ElevatedButton(
                       onPressed: _opslaan,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryLavender,
+                        backgroundColor: AppTheme.primaryTeal,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

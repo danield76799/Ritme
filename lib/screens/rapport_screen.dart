@@ -22,9 +22,9 @@ class _RapportScreenState extends State<RapportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text('Rapport', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
@@ -38,17 +38,17 @@ class _RapportScreenState extends State<RapportScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryLavender.withValues(alpha: 0.1),
+                color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.description_outlined, color: AppTheme.primaryLavender, size: 32),
+                  Icon(Icons.description_outlined, color: AppTheme.primaryTeal, size: 32),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
                       'Genereer een Life Chart Methode (LCM) rapport voor je behandelaar. Bevat stemming, slaap, medicatie, episodes en voortekenen.',
-                      style: TextStyle(color: AppTheme.textDark, fontSize: 13),
+                      style: TextStyle(color: AppTheme.textCharcoal, fontSize: 13),
                     ),
                   ),
                 ],
@@ -67,7 +67,7 @@ class _RapportScreenState extends State<RapportScreen> {
                 return ChoiceChip(
                   label: Text(label),
                   selected: isSelected,
-                  selectedColor: AppTheme.primaryLavender,
+                  selectedColor: AppTheme.primaryTeal,
                   onSelected: (val) => setState(() => _selectedDays = days),
                 );
               }).toList(),
@@ -88,7 +88,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryLavender,
+                  backgroundColor: AppTheme.primaryTeal,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -100,7 +100,7 @@ class _RapportScreenState extends State<RapportScreen> {
             if (_reportText != null) ...[
               Row(
                 children: [
-                  Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryLavender, borderRadius: BorderRadius.circular(2))),
+                  Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryTeal, borderRadius: BorderRadius.circular(2))),
                   const SizedBox(width: 12),
                   const Text('Voorbeeld', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
                 ],

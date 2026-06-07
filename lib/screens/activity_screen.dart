@@ -421,7 +421,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Slaapduur: ${_formatSleepDuration(sleepHours)}'),
-            backgroundColor: AppTheme.primaryLavender,
+            backgroundColor: AppTheme.primaryTeal,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             duration: const Duration(seconds: 2),
@@ -458,13 +458,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Activiteit & Slaap',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -479,7 +479,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
                 : _errorMessage != null
                     ? _buildErrorState()
                     : ListView(
@@ -515,7 +515,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             width: 4,
             height: 24,
             decoration: BoxDecoration(
-              color: AppTheme.primaryLavender,
+              color: AppTheme.primaryTeal,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -556,20 +556,20 @@ class _ActivityScreenState extends State<ActivityScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.primaryLavender.withValues(alpha: 0.1),
+                color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.nights_stay, color: AppTheme.primaryLavender),
+                  Icon(Icons.nights_stay, color: AppTheme.primaryTeal),
                   const SizedBox(width: 8),
                   Text(
                     _formatSleepDuration(_calculatedSleepHours!),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryLavender,
+                      color: AppTheme.primaryTeal,
                     ),
                   ),
                 ],
@@ -625,10 +625,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: hasValue ? AppTheme.primaryLavender.withValues(alpha: 0.05) : Colors.grey.shade50,
+          color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.05) : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: hasValue ? AppTheme.primaryLavender.withValues(alpha: 0.3) : Colors.grey.shade300!,
+            color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade300!,
             width: 1.5,
           ),
         ),
@@ -637,7 +637,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: hasValue ? AppTheme.primaryLavender : Colors.grey.shade400,
+                color: hasValue ? AppTheme.primaryTeal : Colors.grey.shade400,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, size: 18, color: Colors.white),
@@ -695,7 +695,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             icon: const Icon(Icons.refresh),
             label: const Text('Opnieuw proberen'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryLavender,
+              backgroundColor: AppTheme.primaryTeal,
               foregroundColor: Colors.white,
             ),
           ),
@@ -726,7 +726,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDone ? AppTheme.primaryLavender.withValues(alpha: 0.3) : Colors.grey.shade100,
+          color: isDone ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade100,
         ),
       ),
       child: Material(
@@ -742,7 +742,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isDone ? AppTheme.primaryLavender : Colors.grey.shade100,
+                    color: isDone ? AppTheme.primaryTeal : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -777,11 +777,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           ],
                           if (werkTijd != null) ...[
                             const SizedBox(width: 8),
-                            Icon(Icons.check_circle, size: 12, color: AppTheme.primaryLavender),
+                            Icon(Icons.check_circle, size: 12, color: AppTheme.primaryTeal),
                             const SizedBox(width: 4),
                             Text(
                               _formatTijd(werkTijd),
-                              style: TextStyle(fontSize: 11, color: AppTheme.primaryLavender, fontWeight: FontWeight.w500),
+                              style: TextStyle(fontSize: 11, color: AppTheme.primaryTeal, fontWeight: FontWeight.w500),
                             ),
                           ] else ...[
                             const SizedBox(width: 8),

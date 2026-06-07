@@ -201,9 +201,9 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: Text('Statistieken (Life Chart)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -216,7 +216,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -227,7 +227,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                     SizedBox(height: 16),
                     _bouwSlaapGrafiek(),
                     SizedBox(height: 32),
-                    Text('Samenvatting', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textDark)),
+                    Text('Samenvatting', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal)),
                     SizedBox(height: 16),
                     GridView.count(
                       crossAxisCount: 2,
@@ -415,7 +415,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textDark)),
+          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textCharcoal)),
           SizedBox(height: 16),
           Expanded(child: child),
         ],
@@ -431,7 +431,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textDark)),
+          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textCharcoal)),
           SizedBox(height: 24),
           Center(child: Text('Nog geen data beschikbaar', style: TextStyle(color: Colors.black))),
           SizedBox(height: 16),
