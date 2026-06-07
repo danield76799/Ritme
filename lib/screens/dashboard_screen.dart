@@ -8,6 +8,14 @@ import '../services/bipolar_alert_service.dart';
 import '../utils/logger.dart';
 import '../widgets/weekly_mood_chart.dart';
 import 'login_screen.dart';
+import 'mood_screen.dart';
+import 'activity_screen.dart';
+import 'weight_screen.dart';
+import 'appointments_screen.dart';
+import 'sociaal_ritme_meter_screen.dart';
+import 'voortekenen_screen.dart';
+import 'crisisplan_screen.dart';
+import 'rapport_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
