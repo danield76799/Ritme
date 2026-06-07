@@ -6,7 +6,6 @@ import '../service_locator.dart';
 import '../utils/logger.dart';
 import '../services/backup_service.dart';
 import '../services/notification_helper.dart';
-import '../services/sunup_service.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 
@@ -376,7 +375,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           _buildSectionHeader('Notificaties'),
-          _buildSunUpToggle(),
           const SizedBox(height: 24),
           _buildSectionHeader('Medicatie'),
           _buildActionButton(
@@ -591,76 +589,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
         ),
-      ),
-    );
-  }
-
-  Widget _buildSunUpToggle() {
-    final isSunUp = SunUpService.instance.mode == PushMode.sunup;
-    final isLocal = SunUpService.instance.mode == PushMode.local;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isSunUp ? Colors.green.shade50 : Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isSunUp ? Colors.green.shade300 : Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                isSunUp ? Icons.cloud_done : Icons.cloud_off,
-                color: isSunUp ? Colors.green : Colors.grey,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isSunUp ? 'SunUP actief' : 'Lokale notificaties',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: isSunUp ? Colors.green.shade800 : Colors.grey.shade700,
-                      ),
-                    ),
-                    Text(
-                      isSunUp
-                          ? 'Push via je eigen server'
-                          : isLocal
-                              ? 'Push via app (batterij-afhankelijk)'
-                              : 'Notificaties uitgeschakeld',
-                      style: TextStyle(fontSize: 12, color: Colors.black),
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: isSunUp,
-                onChanged: (value) async {
-                  if (value) {
-                    await SunUpService.instance.enableSunUp();
-                  } else {
-                    await SunUpService.instance.disableSunUp();
-                  }
-                  setState(() {});
-                },
-                activeColor: Colors.green,
-              ),
-            ],
-          ),
-          if (isSunUp && SunUpService.instance.pushEndpoint != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Endpoint: ${SunUpService.instance.pushEndpoint!.substring(0, SunUpService.instance.pushEndpoint!.length > 40 ? 40 : SunUpService.instance.pushEndpoint!.length)}...',
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
-            ),
-          ],
-        ],
       ),
     );
   }

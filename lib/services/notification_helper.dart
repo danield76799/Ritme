@@ -360,7 +360,7 @@ class NotificationHelper {
       const androidDetails = AndroidNotificationDetails(
         'immediate_channel',
         'Directe notificaties',
-        channelDescription: 'Directe notificaties van SunUP of app',
+        channelDescription: 'Herinneringen en notificaties van de app',
         importance: Importance.high,
         priority: Priority.high,
         showWhen: true,

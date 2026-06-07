@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 // Services
 import 'services/boot_service.dart';
 import 'services/notification_helper.dart';
-import 'services/sunup_service.dart';
 import 'services/widget_service.dart';
 
 // Screens
@@ -42,32 +41,21 @@ import 'utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize date formatting for Dutch locale
   await initializeDateFormatting('nl_NL', null);
-  
+
   // Initialize the appropriate database
   await initDatabase();
-  
-  // Initialize notifications for mobile only
+
+  // Initialize notifications (local only, no external push)
   if (!kIsWeb) {
-    // Initialize notifications (SunUP primary, local fallback)
-    try {
-      await SunUpService.instance.initialize();
-      debugPrint('SunUP mode: ${SunUpService.instance.mode}');
-    } catch (e) {
-      debugPrint('SunUP init error: $e');
-      // Fallback to pure local
-      await NotificationHelper.instance.initialize();
-    }
-    // Always initialize boot service for medication reminders
+    await NotificationHelper.instance.initialize();
     await BootService.initialize();
-    // Initialize widget service for home screen widget
     await WidgetService.initialize();
-    // Set up notification action handler
     await _setupNotificationActionHandler();
   }
-  
+
   // Set up error handling
   FlutterError.onError = (FlutterErrorDetails details) {
     AppLogger.error(
@@ -88,8 +76,7 @@ void main() async {
 Future<void> _setupNotificationActionHandler() async {
   try {
     final notifications = FlutterLocalNotificationsPlugin();
-    
-    // Handle notification actions
+
     notifications.initialize(
       const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -98,17 +85,15 @@ Future<void> _setupNotificationActionHandler() async {
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
         final payload = response.payload;
         final actionId = response.actionId;
-        
+
         if (payload != null && payload.startsWith('medication:')) {
           final medicationId = int.tryParse(payload.split(':')[1]);
           if (medicationId != null) {
             final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-            
-            // Ensure database is initialized before use
+
             await ensureInitialized();
-            
+
             if (actionId == 'taken') {
-              // Mark medication as taken
               await db.insertMedicationIntakeMap({
                 'medication_id': medicationId,
                 'date': today,
@@ -116,7 +101,6 @@ Future<void> _setupNotificationActionHandler() async {
               });
               AppLogger.debug('Medication $medicationId marked as taken');
             } else if (actionId == 'skip') {
-              // Mark medication as skipped (0 intake)
               await db.insertMedicationIntakeMap({
                 'medication_id': medicationId,
                 'date': today,
@@ -135,21 +119,21 @@ Future<void> _setupNotificationActionHandler() async {
 
 class ErrorBoundary extends StatefulWidget {
   final Widget child;
-  
+
   const ErrorBoundary({super.key, required this.child});
-  
+
   @override
   State<ErrorBoundary> createState() => _ErrorBoundaryState();
 }
 
 class _ErrorBoundaryState extends State<ErrorBoundary> {
   FlutterErrorDetails? _error;
-  
+
   @override
   void initState() {
     super.initState();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (_error != null) {
@@ -186,7 +170,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
         ),
       );
     }
-    
+
     return widget.child;
   }
 }
