@@ -291,7 +291,7 @@ class _WeightScreenState extends State<WeightScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
@@ -391,7 +391,7 @@ class _WeightScreenState extends State<WeightScreen> {
                         Text(
                           'Geschiedenis',
                           style: TextStyle(
-                            color: AppTheme.textCharcoal,
+                            color: AppTheme.textDark,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -466,7 +466,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                           style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: AppTheme.textCharcoal,
+                                            color: AppTheme.textDark,
                                           ),
                                         ),
                                         if (log['notes'] != null && log['notes'].toString().isNotEmpty)

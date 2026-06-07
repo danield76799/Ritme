@@ -333,7 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       body: _isLoading
           ? Container(
               color: Colors.white,

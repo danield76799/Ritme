@@ -50,7 +50,7 @@ class BottomNavBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: isSelected
             ? BoxDecoration(
-                color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                color: AppTheme.primaryLavender.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               )
             : null,
@@ -59,14 +59,14 @@ class BottomNavBar extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppTheme.primaryTeal : Colors.grey.shade400,
+              color: isSelected ? AppTheme.primaryLavender : Colors.grey.shade400,
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.primaryTeal : Colors.grey.shade400,
+                color: isSelected ? AppTheme.primaryLavender : Colors.grey.shade400,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),

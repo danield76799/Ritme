@@ -12,7 +12,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       child: SafeArea(
         child: Column(
           children: [
@@ -21,7 +21,7 @@ class AppDrawer extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
+                  colors: [AppTheme.primaryLavender, AppTheme.primaryLavender.withValues(alpha: 0.8)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -202,7 +202,7 @@ class AppDrawer extends StatelessWidget {
         title,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? AppTheme.textCharcoal : Colors.grey.shade700,
+          color: isSelected ? AppTheme.textDark : Colors.grey.shade700,
         ),
       ),
       trailing: isSelected
@@ -210,7 +210,7 @@ class AppDrawer extends StatelessWidget {
               width: 4,
               height: 20,
               decoration: BoxDecoration(
-                color: AppTheme.primaryTeal,
+                color: AppTheme.primaryLavender,
                 borderRadius: BorderRadius.circular(2),
               ),
             )

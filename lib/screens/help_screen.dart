@@ -29,9 +29,9 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         title: Text(
           _isDutch ? 'Gebruiksaanwijzing' : 'User Guide',
@@ -87,7 +87,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 children: [
                   _buildScaleItem(color: Colors.grey.shade800!, label: _isDutch ? '-5: Uiterst depressief' : '-5: Extremely depressed'),
                   _buildScaleItem(color: Colors.black!, label: _isDutch ? '-3: Matig depressief' : '-3: Moderately depressed'),
-                  _buildScaleItem(color: AppTheme.primaryTeal, label: '0: ${_isDutch ? 'Neutraal' : 'Neutral'}'),
+                  _buildScaleItem(color: AppTheme.primaryLavender, label: '0: ${_isDutch ? 'Neutraal' : 'Neutral'}'),
                   _buildScaleItem(color: Colors.orange, label: _isDutch ? '+3: Matig manisch' : '+3: Moderately manic'),
                   _buildScaleItem(color: Colors.red, label: _isDutch ? '+5: Uiterst manisch' : '+5: Extremely manic'),
                 ],
@@ -197,7 +197,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: AppTheme.textCharcoal,
+                        color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -212,7 +212,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         style: TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 14,
-                          color: AppTheme.textCharcoal,
+                          color: AppTheme.textDark,
                         ),
                       ),
                     ),
@@ -314,14 +314,14 @@ class _HelpScreenState extends State<HelpScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.security, color: AppTheme.primaryTeal),
+                        Icon(Icons.security, color: AppTheme.primaryLavender),
                         const SizedBox(width: 8),
                         Text(
                           _isDutch ? 'Privacy & Beveiliging' : 'Privacy & Security',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: AppTheme.textCharcoal,
+                            color: AppTheme.textDark,
                           ),
                         ),
                       ],
@@ -359,17 +359,17 @@ class _HelpScreenState extends State<HelpScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+        color: AppTheme.primaryLavender.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primaryTeal.withValues(alpha: 0.3),
+          color: AppTheme.primaryLavender.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
         children: [
           Icon(
             Icons.info_outline,
-            color: AppTheme.primaryTeal,
+            color: AppTheme.primaryLavender,
             size: 32,
           ),
           const SizedBox(height: 12),
@@ -385,7 +385,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 'you can positively influence your mood and well-being.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppTheme.textCharcoal,
+              color: AppTheme.textDark,
               fontSize: 14,
               height: 1.5,
             ),
@@ -419,12 +419,12 @@ class _HelpScreenState extends State<HelpScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+              color: AppTheme.primaryLavender.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
-              color: AppTheme.primaryTeal,
+              color: AppTheme.primaryLavender,
               size: 24,
             ),
           ),
@@ -438,7 +438,7 @@ class _HelpScreenState extends State<HelpScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textCharcoal,
+                    color: AppTheme.textDark,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -483,7 +483,7 @@ class _HelpScreenState extends State<HelpScreen> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: AppTheme.textCharcoal,
+              color: AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 12),

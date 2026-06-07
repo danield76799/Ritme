@@ -220,7 +220,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         title: const Text('Afspraken', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryLavender,

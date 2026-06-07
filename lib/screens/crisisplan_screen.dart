@@ -200,14 +200,14 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
+        backgroundColor: AppTheme.backgroundWarm,
         appBar: AppBar(backgroundColor: AppTheme.primaryLavender, title: const Text('Crisisplan', style: TextStyle(color: Colors.white))),
         body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
@@ -258,7 +258,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.textCharcoal)),
+                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.textDark)),
                           const SizedBox(height: 4),
                           Text(
                             hasContent ? _truncate(content, 80) : 'Nog niet ingevuld — tik om te bewerken',

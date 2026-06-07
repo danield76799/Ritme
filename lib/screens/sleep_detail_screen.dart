@@ -123,7 +123,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
@@ -166,7 +166,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textCharcoal,
+                          color: AppTheme.textDark,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -268,7 +268,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textCharcoal,
+                        color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -307,7 +307,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textCharcoal,
+              color: AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 4),
@@ -367,7 +367,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textCharcoal,
+                    color: AppTheme.textDark,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -387,7 +387,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textCharcoal,
+              color: AppTheme.textDark,
             ),
           ),
         ],

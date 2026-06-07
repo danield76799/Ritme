@@ -135,7 +135,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         title: const Text('Sociaal Ritme', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: AppTheme.primaryLavender,
@@ -292,7 +292,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isGedaan ? AppTheme.textCharcoal : Colors.black,
+                      color: isGedaan ? AppTheme.textDark : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 4),

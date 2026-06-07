@@ -9,7 +9,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryTeal,
+      backgroundColor: AppTheme.primaryLavender,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -31,7 +31,7 @@ class SplashScreen extends StatelessWidget {
               child: Icon(
                 Icons.favorite,
                 size: 80,
-                color: AppTheme.primaryTeal,
+                color: AppTheme.primaryLavender,
               ),
             ),
             const SizedBox(height: 24),

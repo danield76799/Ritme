@@ -411,7 +411,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
@@ -455,7 +455,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: AppTheme.textCharcoal,
+                                  color: AppTheme.textDark,
                                 ),
                               ),
                               Text(
@@ -479,7 +479,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textCharcoal,
+                      color: AppTheme.textDark,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -506,7 +506,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textCharcoal,
+                      color: AppTheme.textDark,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -547,7 +547,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                                   inzicht,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: AppTheme.textCharcoal,
+                                    color: AppTheme.textDark,
                                     height: 1.4,
                                   ),
                                 ),

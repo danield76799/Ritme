@@ -129,7 +129,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
@@ -215,7 +215,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.textCharcoal,
+                              color: AppTheme.textDark,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -252,7 +252,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                                           entry.key,
                                           style: const TextStyle(
                                             fontSize: 14,
-                                            color: AppTheme.textCharcoal,
+                                            color: AppTheme.textDark,
                                           ),
                                         ),
                                       ),
@@ -261,7 +261,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                                         style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
-                                          color: AppTheme.textCharcoal,
+                                          color: AppTheme.textDark,
                                         ),
                                       ),
                                     ],
@@ -279,7 +279,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.textCharcoal,
+                            color: AppTheme.textDark,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -355,7 +355,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textCharcoal,
+                    color: AppTheme.textDark,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -420,7 +420,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
-                    color: AppTheme.textCharcoal,
+                    color: AppTheme.textDark,
                   ),
                 ),
                 if (activity['actual_time'] != '-')
