@@ -131,7 +131,7 @@ class _WeightScreenState extends State<WeightScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryLavender,
+                backgroundColor: AppTheme.primaryTeal,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
@@ -226,7 +226,7 @@ class _WeightScreenState extends State<WeightScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryLavender,
+              backgroundColor: AppTheme.primaryTeal,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
@@ -291,9 +291,9 @@ class _WeightScreenState extends State<WeightScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
           'Gewicht',
@@ -305,7 +305,7 @@ class _WeightScreenState extends State<WeightScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -355,12 +355,12 @@ class _WeightScreenState extends State<WeightScreen> {
                               LineChartBarData(
                                 spots: _getChartData(),
                                 isCurved: true,
-                                color: AppTheme.primaryLavender,
+                                color: AppTheme.primaryTeal,
                                 barWidth: 3,
                                 dotData: FlDotData(show: true),
                                 belowBarData: BarAreaData(
                                   show: true,
-                                  color: AppTheme.primaryLavender.withValues(alpha: 0.1),
+                                  color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                                 ),
                               ),
                             ],
@@ -383,7 +383,7 @@ class _WeightScreenState extends State<WeightScreen> {
                           width: 4,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryLavender,
+                            color: AppTheme.primaryTeal,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -391,7 +391,7 @@ class _WeightScreenState extends State<WeightScreen> {
                         Text(
                           'Geschiedenis',
                           style: TextStyle(
-                            color: AppTheme.textDark,
+                            color: AppTheme.textCharcoal,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -451,10 +451,10 @@ class _WeightScreenState extends State<WeightScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primaryLavender.withValues(alpha: 0.1),
+                                      color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Icon(Icons.monitor_weight, color: AppTheme.primaryLavender),
+                                    child: Icon(Icons.monitor_weight, color: AppTheme.primaryTeal),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -466,7 +466,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                           style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: AppTheme.textDark,
+                                            color: AppTheme.textCharcoal,
                                           ),
                                         ),
                                         if (log['notes'] != null && log['notes'].toString().isNotEmpty)
@@ -499,7 +499,7 @@ class _WeightScreenState extends State<WeightScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addWeightLog,
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(_selectedDate)) 
@@ -535,14 +535,14 @@ class _WeightScreenState extends State<WeightScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryLavender, AppTheme.primaryLavender.withValues(alpha: 0.8)],
+          colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryLavender.withValues(alpha: 0.3),
+            color: AppTheme.primaryTeal.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),

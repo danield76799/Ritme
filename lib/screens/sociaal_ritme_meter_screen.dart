@@ -135,10 +135,10 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Sociaal Ritme', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -150,7 +150,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _buildContent(),
@@ -191,7 +191,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: const BoxDecoration(
-            color: AppTheme.primaryLavender,
+            color: AppTheme.primaryTeal,
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
@@ -270,13 +270,13 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               height: 50,
               decoration: BoxDecoration(
                 color: isGedaan
-                    ? AppTheme.primaryLavender.withValues(alpha: 0.1)
+                    ? AppTheme.primaryTeal.withValues(alpha: 0.1)
                     : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icoon,
-                color: isGedaan ? AppTheme.primaryLavender : Colors.grey.shade400,
+                color: isGedaan ? AppTheme.primaryTeal : Colors.grey.shade400,
                 size: 24,
               ),
             ),
@@ -292,7 +292,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isGedaan ? AppTheme.textDark : Colors.black,
+                      color: isGedaan ? AppTheme.textCharcoal : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -315,11 +315,11 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Icon(Icons.check_circle_outline, size: 14, color: AppTheme.primaryLavender),
+                        Icon(Icons.check_circle_outline, size: 14, color: AppTheme.primaryTeal),
                         const SizedBox(width: 4),
                         Text(
                           'Werkelijk: $werkTijd',
-                          style: TextStyle(fontSize: 13, color: AppTheme.primaryLavender),
+                          style: TextStyle(fontSize: 13, color: AppTheme.primaryTeal),
                         ),
                       ],
                     ),

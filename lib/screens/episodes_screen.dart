@@ -106,7 +106,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 title: const Text('Nog bezig'),
                 value: isActive,
                 onChanged: (val) => setModalState(() => isActive = val),
-                activeThumbColor: AppTheme.primaryLavender,
+                activeThumbColor: AppTheme.primaryTeal,
               ),
               const SizedBox(height: 16),
 
@@ -125,7 +125,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     _loadData();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryLavender,
+                    backgroundColor: AppTheme.primaryTeal,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
@@ -189,23 +189,23 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundWarm,
-        appBar: AppBar(backgroundColor: AppTheme.primaryLavender, title: const Text('Episodes', style: TextStyle(color: Colors.white))),
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender)),
+        backgroundColor: AppTheme.backgroundColor,
+        appBar: AppBar(backgroundColor: AppTheme.primaryTeal, title: const Text('Episodes', style: TextStyle(color: Colors.white))),
+        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text('Episodes', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEpisode,
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: _episodes.isEmpty
@@ -246,7 +246,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     ),
                     title: Row(
                       children: [
-                        Text(typeInfo?['label'] as String? ?? type, style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDark)),
+                        Text(typeInfo?['label'] as String? ?? type, style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textCharcoal)),
                         if (isActive) ...[
                           const SizedBox(width: 8),
                           Container(

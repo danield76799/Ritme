@@ -149,7 +149,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
 
   Color _getPScoreColor(int score) {
     if (score >= 5) return Colors.green;
-    if (score >= 3) return AppTheme.primaryLavender;
+    if (score >= 3) return AppTheme.primaryTeal;
     if (score >= 1) return Colors.orange;
     return Colors.redAccent;
   }
@@ -164,9 +164,9 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text(
           'Ritme Stabiliteit',
@@ -178,10 +178,10 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : RefreshIndicator(
               onRefresh: _loadData,
-              color: AppTheme.primaryLavender,
+              color: AppTheme.primaryTeal,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
@@ -195,8 +195,8 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppTheme.primaryLavender,
-                            AppTheme.primaryLavender.withValues(alpha: 0.8),
+                            AppTheme.primaryTeal,
+                            AppTheme.primaryTeal.withValues(alpha: 0.8),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -204,7 +204,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryLavender.withValues(alpha: 0.3),
+                            color: AppTheme.primaryTeal.withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 6),
                           ),
@@ -250,7 +250,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
+                          color: AppTheme.textCharcoal,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -262,7 +262,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                             avatar: Icon(
                               _getActivityIcon(entry.key),
                               size: 18,
-                              color: AppTheme.primaryLavender,
+                              color: AppTheme.primaryTeal,
                             ),
                             label: Text('${entry.key}: ${entry.value}'),
                             backgroundColor: Colors.white,
@@ -279,7 +279,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
+                        color: AppTheme.textCharcoal,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -337,7 +337,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textDark,
+                    color: AppTheme.textCharcoal,
                   ),
                 ),
                 const SizedBox(height: 4),

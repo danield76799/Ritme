@@ -99,7 +99,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryLavender,
+                    backgroundColor: AppTheme.primaryTeal,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -154,7 +154,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                 style: TextStyle(
                   fontSize: isSelected ? 28 : 20,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? AppTheme.primaryLavender : Colors.black54,
+                  color: isSelected ? AppTheme.primaryTeal : Colors.black54,
                 ),
               ),
             );
@@ -303,12 +303,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: Colors.grey.shade50, // Very light grey background
       appBar: AppBar(
         title: const Text('Instellingen', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _buildSettingsForm(),
@@ -371,7 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Sla direct op zodat het meteen effect heeft
               _saveSettings();
             },
-            activeColor: AppTheme.primaryLavender,
+            activeColor: AppTheme.primaryTeal,
           ),
           const SizedBox(height: 24),
           _buildSectionHeader('Notificaties'),
@@ -388,7 +388,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ElevatedButton(
               onPressed: _saveSettings,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryLavender,
+                backgroundColor: AppTheme.primaryTeal,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -503,7 +503,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: AppTheme.primaryLavender,
+          color: AppTheme.primaryTeal,
           letterSpacing: 0.5,
         ),
       ),
@@ -567,7 +567,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           timeValue,
           style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
         ),
-        trailing: Icon(Icons.access_time, color: AppTheme.primaryLavender),
+        trailing: Icon(Icons.access_time, color: AppTheme.primaryTeal),
         onTap: () => _showTimePicker(label, key),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -583,7 +583,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: Icon(icon, color: Colors.white),
         label: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primaryLavender.withValues(alpha: 0.8),
+          backgroundColor: AppTheme.primaryTeal.withValues(alpha: 0.8),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

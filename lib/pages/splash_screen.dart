@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../utils/app_theme.dart';
 import '../screens/login_screen.dart';
 import '../screens/mood_screen.dart';
 
@@ -9,7 +9,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryLavender,
+      backgroundColor: AppTheme.primaryTeal,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -28,10 +28,24 @@ class SplashScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(
-                Icons.favorite,
-                size: 80,
-                color: AppTheme.primaryLavender,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(
+                    Icons.favorite,
+                    size: 80,
+                    color: AppTheme.primaryTeal,
+                  ),
+                  Positioned(
+                    right: 8,
+                    bottom: 18,
+                    child: Icon(
+                      Icons.monitor_heart,
+                      size: 24,
+                      color: AppTheme.primaryTeal,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),

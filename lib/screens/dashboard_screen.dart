@@ -370,7 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   _buildActionCard(context, icon: Icons.schedule, color: const Color(0xFF9DC09D), title: 'Sociaal Ritme', route: '/sociaal-ritme'),
                   _buildActionCard(context, icon: Icons.warning_amber, color: AppTheme.warning, title: 'Voortekenen', route: '/voortekenen'),
                   _buildActionCard(context, icon: Icons.assignment, color: AppTheme.error, title: 'Crisisplan', route: '/crisisplan'),
-                  _buildActionCard(context, icon: Icons.description, color: AppTheme.primaryLavender, title: 'Rapport', route: '/rapport'),
+                  _buildActionCard(context, icon: Icons.description, color: AppTheme.primaryTeal, title: 'Rapport', route: '/rapport'),
                 ],
               ),
 

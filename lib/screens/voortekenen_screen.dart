@@ -81,7 +81,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Voortekenen van $_lastDate gekopieerd. Pas aan en sla op.'),
-            backgroundColor: AppTheme.primaryLavender,
+            backgroundColor: AppTheme.primaryTeal,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -154,7 +154,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: (manieCount > 3 || depressieCount > 3) ? Colors.orange : AppTheme.primaryLavender,
+            backgroundColor: (manieCount > 3 || depressieCount > 3) ? Colors.orange : AppTheme.primaryTeal,
             duration: const Duration(seconds: 4),
           ),
         );
@@ -175,18 +175,18 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundWarm,
-        appBar: AppBar(backgroundColor: AppTheme.primaryLavender, title: const Text('Voortekenen', style: TextStyle(color: Colors.white))),
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender)),
+        backgroundColor: AppTheme.backgroundColor,
+        appBar: AppBar(backgroundColor: AppTheme.primaryTeal, title: const Text('Voortekenen', style: TextStyle(color: Colors.white))),
+        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
 
     String? lastCategory;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         elevation: 0,
         title: const Text('Voortekenen', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
@@ -306,7 +306,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveAll,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryLavender,
+                  backgroundColor: AppTheme.primaryTeal,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -356,7 +356,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: isPresent ? FontWeight.w600 : FontWeight.normal,
-                    color: AppTheme.textDark,
+                    color: AppTheme.textCharcoal,
                   ),
                 ),
               ),
@@ -429,7 +429,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
               });
               Navigator.pop(ctx);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryLavender),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
             child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
           ),
         ],

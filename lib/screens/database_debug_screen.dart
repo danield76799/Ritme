@@ -196,10 +196,10 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWarm,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Database Debug', style: TextStyle(color: Colors.white)),
-        backgroundColor: AppTheme.primaryLavender,
+        backgroundColor: AppTheme.primaryTeal,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
