@@ -46,15 +46,15 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         title: const Text('Medicatie Schema', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _schedules.isEmpty
@@ -128,10 +128,10 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+            color: AppTheme.primaryLavender.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(Icons.access_time, color: AppTheme.primaryTeal),
+          child: Icon(Icons.access_time, color: AppTheme.primaryLavender),
         ),
         title: Text('Herinnering: $time', style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text('Dagen: $days'),

@@ -79,7 +79,7 @@ class _EventScreenState extends State<EventScreen> {
   Color _getKleur(int invloed) {
     if (invloed > 0) return Colors.green;
     if (invloed < 0) return Colors.orange;
-    return AppTheme.primaryTeal;
+    return AppTheme.primaryLavender;
   }
 
   String _getLabel(int invloed) {
@@ -118,7 +118,7 @@ class _EventScreenState extends State<EventScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Gebeurtenis opgeslagen!'),
-          backgroundColor: AppTheme.primaryTeal,
+          backgroundColor: AppTheme.primaryLavender,
         ),
       );
 
@@ -140,13 +140,13 @@ class _EventScreenState extends State<EventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         title: const Text(
           'Life Events',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -158,7 +158,7 @@ class _EventScreenState extends State<EventScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : Column(
               children: [
                 // Filters
@@ -254,7 +254,7 @@ class _EventScreenState extends State<EventScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddEventDialog(),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'Nieuwe Gebeurtenis',
@@ -271,7 +271,7 @@ class _EventScreenState extends State<EventScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.primaryTeal : Colors.grey.shade200,
+            color: isSelected ? AppTheme.primaryLavender : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -378,7 +378,7 @@ class _EventScreenState extends State<EventScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+                    borderSide: const BorderSide(color: AppTheme.primaryLavender, width: 2),
                   ),
                 ),
               ),
@@ -423,7 +423,7 @@ class _EventScreenState extends State<EventScreen> {
                           if (mounted) Navigator.pop(context);
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryTeal,
+                    backgroundColor: AppTheme.primaryLavender,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

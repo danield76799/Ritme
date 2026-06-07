@@ -164,7 +164,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
@@ -250,7 +250,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textCharcoal,
+                          color: AppTheme.textDark,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -279,7 +279,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textCharcoal,
+                        color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -337,7 +337,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textCharcoal,
+                    color: AppTheme.textDark,
                   ),
                 ),
                 const SizedBox(height: 4),

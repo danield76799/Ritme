@@ -59,9 +59,9 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         title: const Text(
           'Life Events',
@@ -98,7 +98,7 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
           // Events list
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
                 : _filteredEvents.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(
@@ -122,7 +122,7 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
       onSelected: (selected) {
         if (selected) setState(() => _filter = value);
       },
-      selectedColor: AppTheme.primaryTeal,
+      selectedColor: AppTheme.primaryLavender,
       labelStyle: TextStyle(
         color: isSelected ? Colors.white : Colors.black,
         fontWeight: FontWeight.w600,
@@ -183,7 +183,7 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textCharcoal,
+                    color: AppTheme.textDark,
                   ),
                 ),
                 const SizedBox(height: 4),

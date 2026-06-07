@@ -175,7 +175,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
+        backgroundColor: AppTheme.backgroundWarm,
         appBar: AppBar(backgroundColor: AppTheme.primaryLavender, title: const Text('Voortekenen', style: TextStyle(color: Colors.white))),
         body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender)),
       );
@@ -184,7 +184,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     String? lastCategory;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
@@ -356,7 +356,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: isPresent ? FontWeight.w600 : FontWeight.normal,
-                    color: AppTheme.textCharcoal,
+                    color: AppTheme.textDark,
                   ),
                 ),
               ),

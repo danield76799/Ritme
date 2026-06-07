@@ -22,7 +22,7 @@ class _RapportScreenState extends State<RapportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
@@ -48,7 +48,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   Expanded(
                     child: Text(
                       'Genereer een Life Chart Methode (LCM) rapport voor je behandelaar. Bevat stemming, slaap, medicatie, episodes en voortekenen.',
-                      style: TextStyle(color: AppTheme.textCharcoal, fontSize: 13),
+                      style: TextStyle(color: AppTheme.textDark, fontSize: 13),
                     ),
                   ),
                 ],
