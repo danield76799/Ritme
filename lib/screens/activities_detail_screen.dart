@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 
@@ -120,7 +121,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
 
   Color _getPScoreColor(int score) {
     if (score >= 5) return Colors.green;
-    if (score >= 3) return AppTheme.primaryTeal;
+    if (score >= 3) return AppTheme.primaryLavender;
     if (score >= 1) return Colors.orange;
     return Colors.redAccent;
   }
@@ -130,7 +131,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         title: const Text(
           'Activiteiten Deze Week',
@@ -142,12 +143,12 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : _errorMessage != null
               ? _buildErrorState()
               : RefreshIndicator(
                   onRefresh: _loadData,
-                  color: AppTheme.primaryTeal,
+                  color: AppTheme.primaryLavender,
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
@@ -161,8 +162,8 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                AppTheme.primaryTeal,
-                                AppTheme.primaryTeal.withValues(alpha: 0.8),
+                                AppTheme.primaryLavender,
+                                AppTheme.primaryLavender.withValues(alpha: 0.8),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -170,7 +171,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryTeal.withValues(alpha: 0.3),
+                                color: AppTheme.primaryLavender.withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 6),
                               ),
@@ -242,7 +243,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                                     children: [
                                       Icon(
                                         _getActivityIcon(entry.key),
-                                        color: AppTheme.primaryTeal,
+                                        color: AppTheme.primaryLavender,
                                         size: 20,
                                       ),
                                       const SizedBox(width: 12),
@@ -312,7 +313,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
             icon: const Icon(Icons.refresh),
             label: const Text('Opnieuw proberen'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: AppTheme.primaryLavender,
               foregroundColor: Colors.white,
             ),
           ),
@@ -344,7 +345,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+              color: AppTheme.primaryLavender.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
@@ -369,7 +370,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryTeal,
+                    color: AppTheme.primaryLavender,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -130,7 +131,7 @@ class _WeightScreenState extends State<WeightScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: AppTheme.primaryLavender,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
@@ -225,7 +226,7 @@ class _WeightScreenState extends State<WeightScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: AppTheme.primaryLavender,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
@@ -292,7 +293,7 @@ class _WeightScreenState extends State<WeightScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         title: const Text(
           'Gewicht',
@@ -304,7 +305,7 @@ class _WeightScreenState extends State<WeightScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -354,12 +355,12 @@ class _WeightScreenState extends State<WeightScreen> {
                               LineChartBarData(
                                 spots: _getChartData(),
                                 isCurved: true,
-                                color: AppTheme.primaryTeal,
+                                color: AppTheme.primaryLavender,
                                 barWidth: 3,
                                 dotData: FlDotData(show: true),
                                 belowBarData: BarAreaData(
                                   show: true,
-                                  color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                                  color: AppTheme.primaryLavender.withValues(alpha: 0.1),
                                 ),
                               ),
                             ],
@@ -382,7 +383,7 @@ class _WeightScreenState extends State<WeightScreen> {
                           width: 4,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryTeal,
+                            color: AppTheme.primaryLavender,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -450,10 +451,10 @@ class _WeightScreenState extends State<WeightScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                                      color: AppTheme.primaryLavender.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Icon(Icons.monitor_weight, color: AppTheme.primaryTeal),
+                                    child: Icon(Icons.monitor_weight, color: AppTheme.primaryLavender),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -498,7 +499,7 @@ class _WeightScreenState extends State<WeightScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addWeightLog,
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(_selectedDate)) 
@@ -534,14 +535,14 @@ class _WeightScreenState extends State<WeightScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
+          colors: [AppTheme.primaryLavender, AppTheme.primaryLavender.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryTeal.withValues(alpha: 0.3),
+            color: AppTheme.primaryLavender.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -124,7 +125,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         title: const Text(
           'Slaap Details (Netto)',
@@ -136,10 +137,10 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : RefreshIndicator(
               onRefresh: _loadData,
-              color: AppTheme.primaryTeal,
+              color: AppTheme.primaryLavender,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
@@ -244,7 +245,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                                   BarChartRodData(
                                     toY: entry.value['sleep'].toDouble(),
                                     color: entry.value['sleep'] >= 7 
-                                        ? AppTheme.primaryTeal 
+                                        ? AppTheme.primaryLavender 
                                         : entry.value['sleep'] >= 5 
                                             ? Colors.orange 
                                             : Colors.redAccent,
@@ -299,7 +300,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppTheme.primaryTeal, size: 24),
+          Icon(icon, color: AppTheme.primaryLavender, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
@@ -326,7 +327,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
     final sleep = entry['sleep'] as double;
     final awakeMinutes = entry['awakeMinutes'] as int? ?? 0;
     final quality = sleep >= 8 ? 'Uitstekend' : sleep >= 6 ? 'Goed' : sleep >= 5 ? 'Matig' : 'Slecht';
-    final qualityColor = sleep >= 8 ? AppTheme.primaryTeal : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
+    final qualityColor = sleep >= 8 ? AppTheme.primaryLavender : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

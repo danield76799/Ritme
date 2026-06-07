@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../services/rapport_generator.dart';
 import '../service_locator.dart';
@@ -23,7 +24,7 @@ class _RapportScreenState extends State<RapportScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         title: const Text('Rapport', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
@@ -37,12 +38,12 @@ class _RapportScreenState extends State<RapportScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                color: AppTheme.primaryLavender.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.description_outlined, color: AppTheme.primaryTeal, size: 32),
+                  Icon(Icons.description_outlined, color: AppTheme.primaryLavender, size: 32),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
@@ -66,7 +67,7 @@ class _RapportScreenState extends State<RapportScreen> {
                 return ChoiceChip(
                   label: Text(label),
                   selected: isSelected,
-                  selectedColor: AppTheme.primaryTeal,
+                  selectedColor: AppTheme.primaryLavender,
                   onSelected: (val) => setState(() => _selectedDays = days),
                 );
               }).toList(),
@@ -87,7 +88,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryTeal,
+                  backgroundColor: AppTheme.primaryLavender,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -99,7 +100,7 @@ class _RapportScreenState extends State<RapportScreen> {
             if (_reportText != null) ...[
               Row(
                 children: [
-                  Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryTeal, borderRadius: BorderRadius.circular(2))),
+                  Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryLavender, borderRadius: BorderRadius.circular(2))),
                   const SizedBox(width: 12),
                   const Text('Voorbeeld', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
                 ],

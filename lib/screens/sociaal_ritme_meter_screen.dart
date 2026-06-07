@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -137,7 +138,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Sociaal Ritme', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -149,7 +150,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _buildContent(),
@@ -190,7 +191,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: const BoxDecoration(
-            color: AppTheme.primaryTeal,
+            color: AppTheme.primaryLavender,
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
@@ -269,13 +270,13 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               height: 50,
               decoration: BoxDecoration(
                 color: isGedaan
-                    ? AppTheme.primaryTeal.withValues(alpha: 0.1)
+                    ? AppTheme.primaryLavender.withValues(alpha: 0.1)
                     : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icoon,
-                color: isGedaan ? AppTheme.primaryTeal : Colors.grey.shade400,
+                color: isGedaan ? AppTheme.primaryLavender : Colors.grey.shade400,
                 size: 24,
               ),
             ),
@@ -314,11 +315,11 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Icon(Icons.check_circle_outline, size: 14, color: AppTheme.primaryTeal),
+                        Icon(Icons.check_circle_outline, size: 14, color: AppTheme.primaryLavender),
                         const SizedBox(width: 4),
                         Text(
                           'Werkelijk: $werkTijd',
-                          style: TextStyle(fontSize: 13, color: AppTheme.primaryTeal),
+                          style: TextStyle(fontSize: 13, color: AppTheme.primaryLavender),
                         ),
                       ],
                     ),

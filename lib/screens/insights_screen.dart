@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -412,7 +413,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         title: const Text(
           'Inzichten & Patronen',
@@ -428,7 +429,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -438,12 +439,12 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                      color: AppTheme.primaryLavender.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.insights, color: AppTheme.primaryTeal, size: 28),
+                        Icon(Icons.insights, color: AppTheme.primaryLavender, size: 28),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -561,7 +562,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
+                        colors: [AppTheme.primaryLavender, AppTheme.primaryLavender.withValues(alpha: 0.8)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -609,7 +610,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                                 label: const Text('Kopieer Rapport'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
-                                  foregroundColor: AppTheme.primaryTeal,
+                                  foregroundColor: AppTheme.primaryLavender,
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 
@@ -163,7 +164,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryTeal,
+                  backgroundColor: AppTheme.primaryLavender,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -200,15 +201,15 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: AppTheme.backgroundColor,
-        appBar: AppBar(backgroundColor: AppTheme.primaryTeal, title: const Text('Crisisplan', style: TextStyle(color: Colors.white))),
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
+        appBar: AppBar(backgroundColor: AppTheme.primaryLavender, title: const Text('Crisisplan', style: TextStyle(color: Colors.white))),
+        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender)),
       );
     }
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         title: const Text('Crisisplan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
@@ -423,7 +424,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryTeal,
+                  backgroundColor: AppTheme.primaryLavender,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
@@ -179,7 +180,7 @@ class _MoodScreenState extends State<MoodScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Opgeslagen!'),
-            backgroundColor: AppTheme.primaryTeal,
+            backgroundColor: AppTheme.primaryLavender,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             duration: const Duration(seconds: 1),
@@ -265,7 +266,7 @@ class _MoodScreenState extends State<MoodScreen> {
           'Life Chart',
           style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: AppTheme.primaryLavender,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -276,7 +277,7 @@ class _MoodScreenState extends State<MoodScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryLavender))
           : Column(
               children: [
                 Container(color: Colors.white, child: DatumNavigator(geselecteerdeDatum: _geselecteerdeDatum, onDatumVeranderd: _onDatumVeranderd)),
@@ -461,7 +462,7 @@ class _MoodScreenState extends State<MoodScreen> {
                               Switch(
                                 value: _daglicht,
                                 onChanged: (value) => setState(() => _daglicht = value),
-                                activeColor: AppTheme.primaryTeal,
+                                activeColor: AppTheme.primaryLavender,
                               ),
                             ],
                           ),
@@ -757,7 +758,7 @@ class _MoodScreenState extends State<MoodScreen> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100,
+            color: isPrimary ? AppTheme.primaryLavender : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, size: 18, color: isPrimary ? Colors.white : AppTheme.textCharcoal),
