@@ -252,8 +252,11 @@ class NotificationHelper {
       );
       final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
+      // Use unique ID to avoid collisions — add 100_000 offset
+      final notificationId = (id % 90000) + 10000;
+
       await _notifications.zonedSchedule(
-        id,
+        notificationId,
         '💊 $medicationName',
         'Tijd om je medicatie in te nemen! ($daysStr)',
         scheduledDate,
@@ -261,21 +264,22 @@ class NotificationHelper {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'medication:$id',
-        matchDateTimeComponents: DateTimeComponents.time,
+        // NO matchDateTimeComponents — conflicts with exactAllowWhileIdle on Android
       );
-      debugPrint('Medication reminder scheduled: $medicationName at $scheduledDate');
+      AppLogger.info('Medication reminder scheduled: $medicationName at $scheduledDate (id=$notificationId)');
     } catch (e) {
-      debugPrint('Medication scheduling error: $e');
+      AppLogger.error('Medication scheduling error for $medicationName', error: e);
     }
   }
 
   Future<void> cancelMedicationReminder(int id) async {
     if (kIsWeb) return;
     try {
-      await _notifications.cancel(id);
-      debugPrint('Medication reminder cancelled: $id');
+      final notificationId = (id % 90000) + 10000;
+      await _notifications.cancel(notificationId);
+      AppLogger.info('Medication reminder cancelled: $id (notificationId=$notificationId)');
     } catch (e) {
-      debugPrint('Cancel medication error: $e');
+      AppLogger.error('Cancel medication error for id=$id', error: e);
     }
   }
 
