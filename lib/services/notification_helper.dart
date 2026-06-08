@@ -20,8 +20,7 @@ class NotificationHelper {
       tz.initializeTimeZones();
       // Initialize local timezone using flutter_timezone
       try {
-        final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-        final String timeZoneName = timezoneInfo.identifier;
+        final timeZoneName = await FlutterTimezone.getLocalTimezone();
         tz.setLocalLocation(tz.getLocation(timeZoneName));
         debugPrint('Timezone set to: $timeZoneName');
       } catch (e) {
