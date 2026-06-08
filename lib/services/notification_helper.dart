@@ -20,7 +20,8 @@ class NotificationHelper {
       tz.initializeTimeZones();
       // Initialize local timezone using flutter_timezone
       try {
-        final timeZoneName = await FlutterTimezone.getLocalTimezone();
+        final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+        final String timeZoneName = timezoneInfo.identifier;
         tz.setLocalLocation(tz.getLocation(timeZoneName));
         debugPrint('Timezone set to: $timeZoneName');
       } catch (e) {
@@ -325,68 +326,6 @@ class NotificationHelper {
     } catch (e) {
       debugPrint('Error getting pending: $e');
       return 0;
-    }
-  }
-
-  /// Schedule a daily medication reminder notification.
-  Future<void> scheduleMedicationReminder({
-    required int id,
-    required String medicationName,
-    required String time,
-  }) async {
-    if (kIsWeb) return;
-    try {
-      final parts = time.split(':');
-      final hour = int.parse(parts[0]);
-      final minute = int.parse(parts[1]);
-
-      final now = tz.TZDateTime.now(tz.local);
-      var scheduledDate = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, hour, minute,
-      );
-      if (scheduledDate.isBefore(now)) {
-        scheduledDate = scheduledDate.add(const Duration(days: 1));
-      }
-
-      const androidDetails = AndroidNotificationDetails(
-        'medication_reminders',
-        'Medicatie Herinneringen',
-        channelDescription: 'Dagelijkse herinneringen voor medicatie',
-        importance: Importance.high,
-        priority: Priority.high,
-        showWhen: true,
-        enableVibration: true,
-        playSound: true,
-      );
-      const iosDetails = DarwinNotificationDetails(
-        presentAlert: true, presentBadge: true, presentSound: true,
-      );
-      final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
-
-      await _notifications.zonedSchedule(
-        id,
-        '💊 Medicatie herinnering',
-        'Het is tijd om $medicationName te nemen',
-        scheduledDate,
-        details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-        payload: 'medication:$id',
-      );
-      debugPrint('Medication reminder scheduled for $medicationName at $time');
-    } catch (e) {
-      debugPrint('Medication reminder scheduling error: $e');
-    }
-  }
-
-  /// Cancel all scheduled reminders (both medication and appointment).
-  Future<void> cancelAllReminders() async {
-    if (kIsWeb) return;
-    try {
-      await _notifications.cancelAll();
-      debugPrint('All reminders cancelled');
-    } catch (e) {
-      debugPrint('Cancel all reminders error: $e');
     }
   }
 }
