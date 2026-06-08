@@ -375,6 +375,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           _buildSectionHeader('Notificaties'),
+          // ── Test knoppen ──
+          _buildActionButton(
+            '🧪 Test notificatie (nu)',
+            Icons.notification_add,
+            () => _testNotificationNow(),
+          ),
+          _buildActionButton(
+            '🕐 Test notificatie op tijd',
+            Icons.schedule_send,
+            () => _testNotificationAtTime(),
+          ),
           const SizedBox(height: 24),
           _buildSectionHeader('Medicatie'),
           _buildActionButton(
