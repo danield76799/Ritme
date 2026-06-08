@@ -603,4 +603,81 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+
+  /// Direct een test notificatie tonen (binnen enkele seconden)
+  Future<void> _testNotificationNow() async {
+    try {
+      await NotificationHelper.instance.showTestNotification();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('✅ Test notificatie gestuurd!'),
+            backgroundColor: Colors.green[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Notificatie error: $e'),
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Test notificatie plannen op een door de gebruiker gekozen tijdstip
+  Future<void> _testNotificationAtTime() async {
+    final TimeOfDay? picked = await showDialog<TimeOfDay>(
+      context: context,
+      builder: (BuildContext context) {
+        return const _CustomTimePickerDialog(
+          initialTime: TimeOfDay(hour: 15, minute: 45),
+          label: 'Kies tijd voor test notificatie',
+        );
+      },
+    );
+
+    if (picked == null) return;
+
+    try {
+      await NotificationHelper.instance.showTestNotificationAt(
+        hour: picked.hour,
+        minute: picked.minute,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Test notificatie gepland om ${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}',
+            ),
+            backgroundColor: Colors.green[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Notificatie error: $e'),
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
 }
