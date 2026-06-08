@@ -11,7 +11,7 @@ class AppTheme {
   static const Color medicalTealDark = Color(0xFF3A8A96);
   static const Color medicalTealLight = Color(0xFF7AC8D3);
   static const Color textCharcoal = Color(0xFF333333);
-  static const Color textMedium = Color(0xFF6B6B6B);
+  static const Color textMedium = Color(0xFF595959);
   static const Color backgroundColor = Color(0xFFF7F9FA);
   static const Color backgroundColorAlt = Color(0xFFFFFFFF);
   static const Color surfaceColor = Color(0xFFFFFFFF);
@@ -99,7 +99,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        elevation: 1,
+        elevation: 2,
         color: surfaceColor,
         shadowColor: Colors.black.withValues(alpha: 0.04),
         shape: RoundedRectangleBorder(
@@ -166,12 +166,12 @@ class AppTheme {
         titleLarge: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: textCharcoal),
         titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: textCharcoal),
         titleSmall: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: textCharcoal),
-        bodyLarge: GoogleFonts.inter(fontSize: 16, color: textCharcoal, height: 1.4),
-        bodyMedium: GoogleFonts.inter(fontSize: 14, color: textCharcoal, height: 1.4),
-        bodySmall: GoogleFonts.inter(fontSize: 12, color: textMedium),
+        bodyLarge: GoogleFonts.inter(fontSize: 16, color: textCharcoal, height: 1.5),
+        bodyMedium: GoogleFonts.inter(fontSize: 14, color: textCharcoal, height: 1.5),
+        bodySmall: GoogleFonts.inter(fontSize: 13, color: textMedium, height: 1.5),
         labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: textCharcoal),
-        labelMedium: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: textMedium),
-        labelSmall: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: textMedium),
+        labelMedium: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: textMedium),
+        labelSmall: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: textMedium),
       ),
     );
   }
@@ -254,10 +254,12 @@ class AppTheme {
         headlineMedium: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: darkText),
         titleLarge: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: darkText),
         titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: darkText),
-        bodyLarge: GoogleFonts.inter(fontSize: 16, color: darkText),
-        bodyMedium: GoogleFonts.inter(fontSize: 14, color: darkTextSecondary),
-        bodySmall: GoogleFonts.inter(fontSize: 12, color: darkTextSecondary),
+        bodyLarge: GoogleFonts.inter(fontSize: 16, color: darkText, height: 1.5),
+        bodyMedium: GoogleFonts.inter(fontSize: 14, color: darkTextSecondary, height: 1.5),
+        bodySmall: GoogleFonts.inter(fontSize: 13, color: darkTextSecondary, height: 1.5),
         labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: darkText),
+        labelMedium: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: darkTextSecondary),
+        labelSmall: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: darkTextSecondary),
       ),
     );
   }
