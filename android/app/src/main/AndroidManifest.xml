@@ -45,7 +45,7 @@
             android:value="2" />
         
         <!-- Boot receiver to reschedule medication reminders after reboot -->
-        <receiver android:name="com.ritme.ritme.BootReceiver"
+        <receiver android:name="com.ritme.ritme.v2.BootReceiver"
             android:exported="true"
             android:enabled="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
