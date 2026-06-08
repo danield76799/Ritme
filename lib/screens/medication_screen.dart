@@ -104,6 +104,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             id: id,
             medicationName: name,
             time: timeStr,
+            days: [1, 2, 3, 4, 5, 6, 7],
           );
           
           // Show immediate test notification to confirm it works
