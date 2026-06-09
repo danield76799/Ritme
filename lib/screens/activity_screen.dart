@@ -48,6 +48,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     });
 
     try {
+      AppLogger.debug('_loadData: step 1 - getSettings');
       final settings = await db.getSettings();
       if (settings != null) {
         _activiteiten[0]['richttijd'] = _parseTimeOfDay(settings['target_opstaan']);
@@ -57,8 +58,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
         _activiteiten[4]['richttijd'] = _parseTimeOfDay(settings['target_slapen']);
       }
 
+      AppLogger.debug('_loadData: step 2 - getSrmActivities');
       final activities = await db.getSrmActivities(_formattedDate);
-      
+
       for (var activity in activities) {
         final index = _activiteiten.indexWhere((a) => a['naam'] == activity['activity_type']);
         if (index != -1) {
@@ -77,12 +79,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
       }
 
       // Load sleep data
+      AppLogger.debug('_loadData: step 3 - getSleepLog');
       final sleepLog = await db.getSleepLog(_formattedDate);
       if (sleepLog != null) {
         setState(() {
           _bedTime = sleepLog['bed_time']?.toString();
           _wakeTime = sleepLog['wake_time']?.toString();
-          
+
           // Veilig parsen van awake_minutes (kan int, String, of null zijn)
           final rawAwake = sleepLog['awake_minutes'];
           if (rawAwake is int) {
@@ -92,7 +95,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           } else {
             _awakeMinutes = 0;
           }
-          
+
           // Veilig parsen van sleep_hours (kan double, int, String, of null zijn)
           final rawSleepHours = sleepLog['sleep_hours'];
           if (rawSleepHours is double) {
@@ -105,15 +108,18 @@ class _ActivityScreenState extends State<ActivityScreen> {
             _calculatedSleepHours = null;
           }
         });
-        
+
         // Pre-fill "Opstaan" activity with wake time if sleep log exists
         final wakeTimeStr = sleepLog['wake_time']?.toString();
         if (wakeTimeStr != null && wakeTimeStr.isNotEmpty) {
           _activiteiten[0]['werkelijke_tijd'] = _parseTimeOfDay(wakeTimeStr);
           // Bereken p_score op basis van target vs actual time
           final targetTijd = _activiteiten[0]['richttijd'];
-          if (targetTijd != null && targetTijd != '--:--') {
-            final diff = _berekenTijdVerschil(targetTijd, wakeTimeStr);
+          final targetTijdStr = targetTijd is TimeOfDay
+              ? '${targetTijd.hour.toString().padLeft(2, '0')}:${targetTijd.minute.toString().padLeft(2, '0')}'
+              : (targetTijd as String?);
+          if (targetTijdStr != null && targetTijdStr != '--:--') {
+            final diff = _berekenTijdVerschil(targetTijdStr, wakeTimeStr);
             _activiteiten[0]['p_score'] = _berekenPScore(diff);
           } else {
             _activiteiten[0]['p_score'] = 3; // Geen target, markeer als OK
@@ -122,9 +128,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load activity data', error: e, stackTrace: stackTrace);
-      setState(() {
-        _errorMessage = 'Kon activiteitengegevens niet laden. Probeer opnieuw.';
-      });
+      AppLogger.error('Stack line context: date=$_formattedDate, activiteiten[0]=${_activiteiten[0]}');
+      if (mounted) {
+        // Toon de runtime exception in de snackbar zodat we de oorzaak kunnen
+        // zien zonder adb logcat. Na debug kan dit terug naar de generieke melding.
+        final detail = e.toString();
+        final shortDetail = detail.length > 120 ? '${detail.substring(0, 120)}…' : detail;
+        setState(() {
+          _errorMessage = 'Kon activiteitengegevens niet laden: $shortDetail';
+        });
+      }
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -260,15 +273,19 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
       // Bereken p_score op basis van target vs actual time
       final targetTijd = activity['richttijd'];
+      // targetTijd is een TimeOfDay?; converteer naar "HH:MM" string voor de DB
+      final targetTijdStr = targetTijd is TimeOfDay
+          ? '${targetTijd.hour.toString().padLeft(2, '0')}:${targetTijd.minute.toString().padLeft(2, '0')}'
+          : (targetTijd as String?);
       int newScore;
-      if (targetTijd != null && targetTijd != '--:--') {
-        final diff = _berekenTijdVerschil(targetTijd, timeStr);
+      if (targetTijdStr != null && targetTijdStr != '--:--') {
+        final diff = _berekenTijdVerschil(targetTijdStr, timeStr);
         newScore = _berekenPScore(diff);
       } else {
         newScore = currentScore == 0 ? 3 : 0; // Toggle als er geen target is (3=OK)
       }
 
-      await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null, targetTime: targetTijd);
+      await db.insertSrmActivity(_formattedDate, name, timeStr, newScore, null, targetTime: targetTijdStr);
 
       _loadData();
     } catch (e, stackTrace) {
