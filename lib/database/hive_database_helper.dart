@@ -226,15 +226,33 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<List<Map<String, dynamic>>> getDailyLogsForWeek() async {
     final now = DateTime.now();
     final weekAgo = now.subtract(const Duration(days: 7));
+    return getDailyLogsRange(
+      '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}',
+      '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}',
+    );
+  }
+
+  /// Batch query voor Hive: filter op datumrange
+  @override
+  Future<List<Map<String, dynamic>>> getDailyLogsRange(String startDate, String endDate) async {
     final logs = await getDailyLogs();
     return logs.where((log) {
-      if (log['date'] == null) return false;
-      try {
-        final logDate = DateTime.parse(log['date']);
-        return logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo);
-      } catch (e) {
-        return false;
-      }
+      final date = log['date']?.toString() ?? '';
+      return date.compareTo(startDate) >= 0 && date.compareTo(endDate) <= 0;
+    }).toList();
+  }
+
+  /// Batch query voor Hive: filter op datumrange
+  @override
+  Future<List<Map<String, dynamic>>> getSrmActivitiesRange(String startDate, String endDate) async {
+    final allActivities = _srmActivities.toMap().entries.map((entry) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (!map.containsKey('id')) map['id'] = entry.key;
+      return map;
+    }).toList();
+    return allActivities.where((activity) {
+      final date = activity['date']?.toString() ?? '';
+      return date.compareTo(startDate) >= 0 && date.compareTo(endDate) <= 0;
     }).toList();
   }
 

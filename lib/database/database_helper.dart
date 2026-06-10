@@ -403,7 +403,43 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getDailyLogsForWeek() async => getDailyLogs();
+  Future<List<Map<String, dynamic>>> getDailyLogsForWeek() async {
+    final now = DateTime.now();
+    final weekAgo = now.subtract(const Duration(days: 7));
+    return getDailyLogsRange(
+      '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}',
+      '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}',
+    );
+  }
+
+  /// Batch query: laadt alle logs in één keer voor een datumrange, met SQL dedup
+  @override
+  Future<List<Map<String, dynamic>>> getDailyLogsRange(String startDate, String endDate) async {
+    final db = await database;
+    // Eén query: groepeer per datum, pak de laatste entry (hoogste id) per datum
+    final logs = await db.rawQuery('''
+      SELECT dl.* FROM daily_logs dl
+      INNER JOIN (
+        SELECT date, MAX(id) as max_id FROM daily_logs
+        WHERE date BETWEEN ? AND ?
+        GROUP BY date
+      ) grouped ON dl.date = grouped.date AND dl.id = grouped.max_id
+      ORDER BY dl.date DESC
+    ''', [startDate, endDate]);
+    return logs;
+  }
+
+  /// Batch query: laadt alle SRM activiteiten voor een datumrange
+  @override
+  Future<List<Map<String, dynamic>>> getSrmActivitiesRange(String startDate, String endDate) async {
+    final db = await database;
+    return await db.query(
+      'srm_activities',
+      where: 'date BETWEEN ? AND ?',
+      whereArgs: [startDate, endDate],
+      orderBy: 'date DESC, id DESC',
+    );
+  }
 
   @override
   Future<Map<String, dynamic>?> getDailyLog(String date) async {

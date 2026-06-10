@@ -218,7 +218,7 @@ class _MoodScreenState extends State<MoodScreen> {
 
   Color _getStemmingKleur(double waarde) {
     if (waarde <= -4) return Colors.grey.shade800!;     // Uiterst depressief
-    if (waarde <= -3) return Colors.black!;      // Ernstig depressief
+    if (waarde <= -3) return const Color(0xFF333333); // Ernstig depressief
     if (waarde <= -2) return Colors.blue[400]!;      // Matig depressief
     if (waarde <= -1) return Colors.blue[200]!;      // Licht depressief
     if (waarde == 0) return Colors.green[400]!;       // Neutraal
@@ -280,7 +280,7 @@ class _MoodScreenState extends State<MoodScreen> {
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : Column(
               children: [
-                Container(color: Colors.white, child: DatumNavigator(geselecteerdeDatum: _geselecteerdeDatum, onDatumVeranderd: _onDatumVeranderd)),
+                Container(color: Theme.of(context).cardColor, child: DatumNavigator(geselecteerdeDatum: _geselecteerdeDatum, onDatumVeranderd: _onDatumVeranderd)),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(12),
@@ -309,9 +309,9 @@ class _MoodScreenState extends State<MoodScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade100),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
                           child: Row(
                             children: [
@@ -335,9 +335,9 @@ class _MoodScreenState extends State<MoodScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade100),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
                           child: Row(
                             children: [
@@ -361,7 +361,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                     ),
                                     Text(
                                       'Manisch maar ongelukkig/irritant',
-                                      style: TextStyle(fontSize: 12, color: Colors.black),
+                                      style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
                                     ),
                                   ],
                                 ),
@@ -380,9 +380,9 @@ class _MoodScreenState extends State<MoodScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade100),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
                           child: Row(
                             children: [
@@ -428,9 +428,9 @@ class _MoodScreenState extends State<MoodScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade100),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
                           child: Row(
                             children: [
@@ -473,9 +473,9 @@ class _MoodScreenState extends State<MoodScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade100),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
                           child: Row(
                             children: [
@@ -521,9 +521,9 @@ class _MoodScreenState extends State<MoodScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: _alcoholMiddelen == 1 ? Colors.red.shade50 : Colors.white,
+                            color: _alcoholMiddelen == 1 ? Colors.red.shade50 : Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: _alcoholMiddelen == 1 ? Colors.red.shade300 : Colors.grey.shade200),
+                            border: Border.all(color: _alcoholMiddelen == 1 ? Colors.red.shade300 : Theme.of(context).dividerColor),
                           ),
                           child: Row(
                             children: [
@@ -557,7 +557,7 @@ class _MoodScreenState extends State<MoodScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: _menstruatie ? Colors.pink.shade50 : Colors.white,
+                            color: _menstruatie ? Colors.pink.shade50 : Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: _menstruatie ? Colors.pink.shade300 : Colors.grey.shade200),
                           ),
@@ -604,9 +604,9 @@ class _MoodScreenState extends State<MoodScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         children: [
@@ -689,9 +689,9 @@ class _MoodScreenState extends State<MoodScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Row(
         children: [
@@ -711,7 +711,7 @@ class _MoodScreenState extends State<MoodScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color),
                 ),
                 Text(
                   subtitle,
