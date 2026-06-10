@@ -126,7 +126,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.85,
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.onSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
@@ -137,7 +137,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
             ),
             const SizedBox(height: 16),
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
+            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF333333))),
             const SizedBox(height: 8),
             Text(hint, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
             const SizedBox(height: 16),
@@ -164,7 +164,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryTeal,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -200,22 +200,22 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
-        appBar: AppBar(backgroundColor: AppTheme.primaryTeal, title: const Text('Crisisplan', style: TextStyle(color: Colors.white))),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: const Text('Crisisplan', style: TextStyle(color: Colors.white))),
         body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: const Text('Crisisplan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
+            icon: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
             tooltip: 'Snel toevoegen',
             onPressed: () => _showAddSectionDialog(),
           ),
@@ -258,7 +258,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.textCharcoal)),
+                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
                           const SizedBox(height: 4),
                           Text(
                             hasContent ? _truncate(content, 80) : 'Nog niet ingevuld — tik om te bewerken',
@@ -300,7 +300,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.onSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
@@ -372,7 +372,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.85,
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.onSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
@@ -424,7 +424,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryTeal,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
