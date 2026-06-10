@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   AppTheme._();
@@ -10,24 +9,24 @@ class AppTheme {
   static const Color primaryTeal = medicalTeal;  // legacy alias
   static const Color medicalTealDark = Color(0xFF3A8A96);
   static const Color medicalTealLight = Color(0xFF7AC8D3);
-  static const Color textCharcoal = Color(0xFF333333);
-  static const Color textMedium = Color(0xFF595959);
+  static const Color textCharcoal = Color(0xFF222222);
+  static const Color textMedium = Color(0xFF444444);
   static const Color backgroundColor = Color(0xFFF7F9FA);
   static const Color backgroundColorAlt = Color(0xFFFFFFFF);
   static const Color surfaceColor = Color(0xFFFFFFFF);
   static const Color dividerColor = Color(0xFFE8ECEF);
 
-  static const Color darkBackground = Color(0xFF1A2B30);
-  static const Color darkSurface = Color(0xFF223236);
-  static const Color darkCard = Color(0xFF2A3D42);
-  static const Color darkText = Color(0xFFE8F0F2);
-  static const Color darkTextSecondary = Color(0xFFA8B5B8);
+  static const Color darkBackground = Color(0xFF0F1A1D);
+  static const Color darkSurface = Color(0xFF1A2B30);
+  static const Color darkCard = Color(0xFF223236);
+  static const Color darkText = Color(0xFFF0F5F7);
+  static const Color darkTextSecondary = Color(0xFFB8C5C8);
 
-  // Status colors
-  static const Color success = Color(0xFF5BBA6F);
-  static const Color warning = Color(0xFFE8A552);
-  static const Color error = Color(0xFFE57373);
-  static const Color info = Color(0xFF6BA4C7);
+  // Status colors - high contrast versions
+  static const Color success = Color(0xFF2E7D32);
+  static const Color warning = Color(0xFFED6C02);
+  static const Color error = Color(0xFFD32F2F);
+  static const Color info = Color(0xFF0277BD);
 
   static const double borderRadius = 16.0;
   static const double largeRadius = 24.0;
@@ -52,7 +51,7 @@ class AppTheme {
         centerTitle: false,
         backgroundColor: medicalTeal,
         foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: Colors.white,
@@ -156,22 +155,22 @@ class AppTheme {
         backgroundColor: textCharcoal,
         contentTextStyle: const TextStyle(color: Colors.white),
       ),
-      textTheme: GoogleFonts.interTextTheme(base.textTheme).copyWith(
-        displayLarge: GoogleFonts.inter(fontSize: 34, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.5),
-        displayMedium: GoogleFonts.inter(fontSize: 30, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.4),
-        displaySmall: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w700, color: textCharcoal),
-        headlineLarge: GoogleFonts.inter(fontSize: 30, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.3),
-        headlineMedium: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.2),
-        headlineSmall: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w600, color: textCharcoal),
-        titleLarge: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600, color: textCharcoal),
-        titleMedium: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: textCharcoal),
-        titleSmall: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: textCharcoal),
-        bodyLarge: GoogleFonts.inter(fontSize: 18, color: textCharcoal, height: 1.6),
-        bodyMedium: GoogleFonts.inter(fontSize: 16, color: textCharcoal, height: 1.6),
-        bodySmall: GoogleFonts.inter(fontSize: 15, color: textMedium, height: 1.6),
-        labelLarge: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: textCharcoal),
-        labelMedium: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: textMedium),
-        labelSmall: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: textMedium),
+      textTheme: base.textTheme.copyWith(
+        displayLarge: const TextStyle(fontSize: 34, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.5),
+        displayMedium: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.4),
+        displaySmall: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: textCharcoal),
+        headlineLarge: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.3),
+        headlineMedium: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.2),
+        headlineSmall: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: textCharcoal),
+        titleLarge: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: textCharcoal),
+        titleMedium: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: textCharcoal),
+        titleSmall: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textCharcoal),
+        bodyLarge: const TextStyle(fontSize: 18, color: textCharcoal, height: 1.6),
+        bodyMedium: const TextStyle(fontSize: 16, color: textCharcoal, height: 1.6),
+        bodySmall: const TextStyle(fontSize: 15, color: textMedium, height: 1.6),
+        labelLarge: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textCharcoal),
+        labelMedium: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: textMedium),
+        labelSmall: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: textMedium),
       ),
     );
   }
@@ -196,7 +195,7 @@ class AppTheme {
         centerTitle: false,
         backgroundColor: darkSurface,
         foregroundColor: darkText,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: darkText,
@@ -249,17 +248,17 @@ class AppTheme {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      textTheme: GoogleFonts.interTextTheme(base.textTheme).copyWith(
-        headlineLarge: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, color: darkText),
-        headlineMedium: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: darkText),
-        titleLarge: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: darkText),
-        titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: darkText),
-        bodyLarge: GoogleFonts.inter(fontSize: 18, color: darkText, height: 1.6),
-        bodyMedium: GoogleFonts.inter(fontSize: 16, color: darkTextSecondary, height: 1.6),
-        bodySmall: GoogleFonts.inter(fontSize: 15, color: darkTextSecondary, height: 1.6),
-        labelLarge: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: darkText),
-        labelMedium: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: darkTextSecondary),
-        labelSmall: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: darkTextSecondary),
+      textTheme: base.textTheme.copyWith(
+        headlineLarge: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: darkText),
+        headlineMedium: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: darkText),
+        titleLarge: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: darkText),
+        titleMedium: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: darkText),
+        bodyLarge: const TextStyle(fontSize: 18, color: darkText, height: 1.6),
+        bodyMedium: const TextStyle(fontSize: 16, color: darkTextSecondary, height: 1.6),
+        bodySmall: const TextStyle(fontSize: 15, color: darkTextSecondary, height: 1.6),
+        labelLarge: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: darkText),
+        labelMedium: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: darkTextSecondary),
+        labelSmall: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: darkTextSecondary),
       ),
     );
   }
