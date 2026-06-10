@@ -17,6 +17,10 @@ abstract class DatabaseRepository {
   Future<Map<String, dynamic>?> getDailyLog(String date);
   Future<int> upsertDailyLog(Map<String, dynamic> data);
 
+  // Batch queries (efficiënt voor ranges)
+  Future<List<Map<String, dynamic>>> getDailyLogsRange(String startDate, String endDate);
+  Future<List<Map<String, dynamic>>> getSrmActivitiesRange(String startDate, String endDate);
+
   // SRM Activities
   Future<int> insertSrmActivity(String date, String activityType, String? actualTime, int? pScore, int? srtPoint, {String? targetTime});
   Future<int> insertSrmActivityMap(Map<String, dynamic> data);

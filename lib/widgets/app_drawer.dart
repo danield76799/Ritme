@@ -148,7 +148,7 @@ class AppDrawer extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Ritme v1.2.0',
+                'Ritme v1.3.5+221',
                 style: TextStyle(
                   color: Colors.grey.shade500,
                   fontSize: 12,

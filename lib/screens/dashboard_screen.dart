@@ -56,130 +56,90 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadData();
-  }
-
+  /// Geoptimaliseerde data laad: batch queries, parallel, geen dubbele calls
   Future<void> _loadData() async {
     try {
-      final settings = await db.getSettings();
       final now = DateTime.now();
       final weekAgo = now.subtract(const Duration(days: 7));
-      final dailyLogs = await db.getDailyLogs();
+      final startDateStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
+      final endDateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-      Map<String, double> sleepPerDay = {};
-      int activityCount = 0;
-      int loggedDaysCount = 0;
+      // Alle data parallel ophalen in 3 batch queries (was: 14+ queries)
+      final results = await Future.wait([
+        db.getSettings(),
+        db.getDailyLogsRange(startDateStr, endDateStr),
+        db.getSrmActivitiesRange(startDateStr, endDateStr),
+      ]);
 
-      for (var log in dailyLogs) {
-        if (log['date'] == null) continue;
-        try {
-          final logDate = DateTime.parse(log['date'] as String);
-          if (logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo)) {
-            final dateStr = log['date'] as String;
-            final dynamic rawSleep = log['sleep_hours'];
-            if (rawSleep != null) {
-              double? sleep;
-              if (rawSleep is num) { sleep = rawSleep.toDouble(); }
-              else if (rawSleep is String) { sleep = double.tryParse(rawSleep); }
-              if (sleep != null && sleep > 0 && !sleepPerDay.containsKey(dateStr)) {
-                sleepPerDay[dateStr] = sleep;
-                loggedDaysCount++;
-              }
-            }
-            if (!sleepPerDay.containsKey(dateStr)) {
-              final dynamic rawUrenSlaap = log['uren_slaap'];
-              if (rawUrenSlaap != null) {
-                double? urenSlaap;
-                if (rawUrenSlaap is num) { urenSlaap = rawUrenSlaap.toDouble(); }
-                else if (rawUrenSlaap is String) { urenSlaap = double.tryParse(rawUrenSlaap); }
-                if (urenSlaap != null && urenSlaap > 0) {
-                  sleepPerDay[dateStr] = urenSlaap;
-                  loggedDaysCount++;
-                }
-              }
-            }
-            if (log['activity_type'] != null || log['sociale_contacten'] != null) {
-              activityCount++;
-            }
-          }
-        } catch (_) {}
-      }
+      final settings = results[0] as Map<String, dynamic>?;
+      final dailyLogs = results[1] as List<Map<String, dynamic>>;
+      final weeklyActivities = results[2] as List<Map<String, dynamic>>;
 
+      // Sleep score berekenen uit batch logs (geen 7 losse queries)
       double totalSleep = 0;
       int sleepCount = 0;
-      for (int i = 0; i < 7; i++) {
-        final checkDate = now.subtract(Duration(days: i));
-        final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
-        final sleepLog = await db.getSleepLog(checkDateStr);
-        if (sleepLog != null && sleepLog['sleep_hours'] != null) {
-          final dynamic rawSleep = sleepLog['sleep_hours'];
-          double sleepHours = 0;
-          if (rawSleep is double) { sleepHours = rawSleep; }
-          else if (rawSleep is int) { sleepHours = rawSleep.toDouble(); }
-          else if (rawSleep is String) { sleepHours = double.tryParse(rawSleep) ?? 0; }
-          if (sleepHours > 0) { totalSleep += sleepHours; sleepCount++; }
+      int loggedDaysCount = 0;
+      final sleepPerDay = <String, double>{};
+
+      for (final log in dailyLogs) {
+        final dateStr = log['date']?.toString();
+        if (dateStr == null) continue;
+
+        // Slaap uitlezen: eerst sleep_hours, fallback uren_slaap
+        final rawSleep = log['sleep_hours'];
+        final rawUren = log['uren_slaap'];
+        double? sleep;
+        if (rawSleep != null) {
+          sleep = rawSleep is num ? rawSleep.toDouble() : double.tryParse(rawSleep.toString());
+        }
+        if (sleep == null || sleep <= 0) {
+          sleep = rawUren is num ? rawUren.toDouble() : double.tryParse(rawUren?.toString() ?? '');
+        }
+        if (sleep != null && sleep > 0 && !sleepPerDay.containsKey(dateStr)) {
+          sleepPerDay[dateStr] = sleep;
+          loggedDaysCount++;
+          totalSleep += sleep;
+          sleepCount++;
         }
       }
-      final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0;
-      final sleepScore = avgSleep;
+      final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
 
+      // SRT stabiliteit uit batch activiteiten (geen 7 losse queries)
       double totalPScore = 0;
       int totalActivities = 0;
-      for (int i = 0; i < 7; i++) {
-        final checkDate = now.subtract(Duration(days: i));
-        final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
-        final dayActivities = await db.getSrmActivities(checkDateStr);
-        for (var activity in dayActivities) {
-          if (activity['actual_time'] != null && activity['p_score'] != null) {
-            final dynamic rawPScore = activity['p_score'];
-            int pScore = 0;
-            if (rawPScore is int) { pScore = rawPScore; }
-            else if (rawPScore is String) { pScore = int.tryParse(rawPScore) ?? 0; }
-            if (pScore > 0) { totalPScore += pScore; totalActivities++; }
+      for (final activity in weeklyActivities) {
+        final actualTime = activity['actual_time'];
+        final rawPScore = activity['p_score'];
+        if (actualTime != null && rawPScore != null) {
+          final int pScore = rawPScore is int ? rawPScore : int.tryParse(rawPScore.toString()) ?? 0;
+          if (pScore > 0) {
+            totalPScore += pScore;
+            totalActivities++;
           }
         }
       }
-      final stability = totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0;
-
-      final weeklyLogs = dailyLogs.where((log) {
-        if (log['date'] == null) return false;
-        try {
-          final logDate = DateTime.parse(log['date'] as String);
-          return logDate.isAfter(weekAgo) || logDate.isAtSameMomentAs(weekAgo);
-        } catch (_) { return false; }
-      }).toList();
-
-      int totalWeeklyActivities = 0;
-      for (int i = 0; i < 7; i++) {
-        final checkDate = now.subtract(Duration(days: i));
-        final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
-        final dayActivities = await db.getSrmActivities(checkDateStr);
-        totalWeeklyActivities += dayActivities.length;
-      }
+      final stability = totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0.0;
 
       if (mounted) {
         setState(() {
           _settings = settings;
-          _sleepQuality = sleepScore.toDouble();
-          _rhythmStability = stability.toDouble();
-          _weeklyActivities = totalWeeklyActivities;
+          _sleepQuality = avgSleep;
+          _rhythmStability = stability;
+          _weeklyActivities = weeklyActivities.length;
           _loggedDaysCount = loggedDaysCount;
-          _weeklyLogs = weeklyLogs;
+          _weeklyLogs = dailyLogs;
           _lastUpdated = DateTime.now();
           _isLoading = false;
         });
       }
 
+      // Alerts async in de achtergrond
       BipolarAlertService.instance.runAllChecks().then((alerts) {
         if (mounted) setState(() => _alerts = alerts);
       });
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      AppLogger.error('Dashboard _loadData error', error: e);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -288,11 +248,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 decoration: BoxDecoration(
                   gradient: isDark
                       ? const LinearGradient(
-                          colors: [Color(0xFF2A2936), Color(0xFF3D3B4E)],
+                          colors: [Color(0xFF2A3D42), Color(0xFF1A2B30)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         )
-                      : AppTheme.warmGradient,
+                      : AppTheme.brandGradient,
                   borderRadius: BorderRadius.circular(AppTheme.largeRadius),
                   boxShadow: [
                     BoxShadow(
