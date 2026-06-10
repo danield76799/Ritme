@@ -18,11 +18,11 @@ class SplashScreen extends StatelessWidget {
               width: 140,
               height: 140,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimary,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -54,7 +54,7 @@ class SplashScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimary,
                 letterSpacing: 2,
               ),
             ),
@@ -63,7 +63,7 @@ class SplashScreen extends StatelessWidget {
               'SRT Tracker',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white70,
+                color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
                 letterSpacing: 1,
               ),
             ),
@@ -73,7 +73,7 @@ class SplashScreen extends StatelessWidget {
               height: 40,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7)),
               ),
             ),
           ],
