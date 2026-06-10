@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
@@ -179,7 +178,7 @@ class _MoodScreenState extends State<MoodScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Opgeslagen!'),
+            content: Text('Opgeslagen!'),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -243,14 +242,14 @@ class _MoodScreenState extends State<MoodScreen> {
       debugPrint('MoodScreen build error: $e');
       debugPrint('Stack: $stack');
       return Scaffold(
-        appBar: AppBar(title: const Text('Stemming - Fout')),
+        appBar: AppBar(title: Text('Stemming - Fout')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 64),
-              const SizedBox(height: 16),
-              Text('Fout: $e', style: const TextStyle(fontSize: 16)),
+              Icon(Icons.error_outline, color: Colors.red, size: 64),
+              SizedBox(height: 16),
+              Text('Fout: $e', style: TextStyle(fontSize: 16)),
             ],
           ),
         ),
@@ -262,7 +261,7 @@ class _MoodScreenState extends State<MoodScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Life Chart',
           style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimary),
         ),
@@ -272,7 +271,7 @@ class _MoodScreenState extends State<MoodScreen> {
         actions: [
           TextButton(
             onPressed: _opslaan,
-            child: const Text('Opslaan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text('Opslaan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -294,7 +293,7 @@ class _MoodScreenState extends State<MoodScreen> {
                           onChanged: (value) => setState(() => _stemmingHoog = value),
                           color: _getStemmingKleur(_stemmingHoog),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         
                         // Gesplitste stemming toggle
                         if (_gesplitsteStemming)
@@ -307,7 +306,7 @@ class _MoodScreenState extends State<MoodScreen> {
                         
                         // Toggle gesplitste stemming
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
@@ -315,7 +314,7 @@ class _MoodScreenState extends State<MoodScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Expanded(
+                              Expanded(
                                 child: Text(
                                   'Stemming veranderde vandaag',
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
@@ -329,11 +328,11 @@ class _MoodScreenState extends State<MoodScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         
                         // Ontstemde manie
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
@@ -348,9 +347,9 @@ class _MoodScreenState extends State<MoodScreen> {
                                   color: Colors.blue.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.warning_amber, color: Colors.blue, size: 20),
+                                child: Icon(Icons.warning_amber, color: Colors.blue, size: 20),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,11 +373,11 @@ class _MoodScreenState extends State<MoodScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         
                         // Stemmingsomslagen
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
@@ -393,14 +392,14 @@ class _MoodScreenState extends State<MoodScreen> {
                                   color: Colors.blue.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.swap_vert, color: Colors.blue, size: 20),
+                                child: Icon(Icons.swap_vert, color: Colors.blue, size: 20),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Stemmingsomslagen',
                                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
                                     ),
@@ -422,11 +421,11 @@ class _MoodScreenState extends State<MoodScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         
                         // Daglicht
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
@@ -441,9 +440,9 @@ class _MoodScreenState extends State<MoodScreen> {
                                   color: Colors.amber.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.wb_sunny, color: Colors.amber, size: 20),
+                                child: Icon(Icons.wb_sunny, color: Colors.amber, size: 20),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -467,11 +466,11 @@ class _MoodScreenState extends State<MoodScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         
                         // Sociale contacten
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
@@ -486,14 +485,14 @@ class _MoodScreenState extends State<MoodScreen> {
                                   color: Colors.blue.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.people, color: Colors.blue, size: 20),
+                                child: Icon(Icons.people, color: Colors.blue, size: 20),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Sociale contacten',
                                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
                                     ),
@@ -515,11 +514,11 @@ class _MoodScreenState extends State<MoodScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
 
                         // Alcohol / middelen
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: _alcoholMiddelen == 1 ? Colors.red.shade50 : Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
@@ -533,10 +532,10 @@ class _MoodScreenState extends State<MoodScreen> {
                                   color: Colors.red.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.wine_bar, color: Colors.red, size: 20),
+                                child: Icon(Icons.wine_bar, color: Colors.red, size: 20),
                               ),
-                              const SizedBox(width: 12),
-                              const Expanded(
+                              SizedBox(width: 12),
+                              Expanded(
                                 child: Text(
                                   'Alcohol / middelen',
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
@@ -550,12 +549,12 @@ class _MoodScreenState extends State<MoodScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
 
                         // Menstruatie
                         if (_showMenstruatie)
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: _menstruatie ? Colors.pink.shade50 : Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
@@ -569,10 +568,10 @@ class _MoodScreenState extends State<MoodScreen> {
                                   color: Colors.pink.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.bloodtype_outlined, color: Colors.pink, size: 20),
+                                child: Icon(Icons.bloodtype_outlined, color: Colors.pink, size: 20),
                               ),
-                              const SizedBox(width: 12),
-                              const Expanded(
+                              SizedBox(width: 12),
+                              Expanded(
                                 child: Text(
                                   'Menstruatie',
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
@@ -602,7 +601,7 @@ class _MoodScreenState extends State<MoodScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -642,7 +641,7 @@ class _MoodScreenState extends State<MoodScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: color,
@@ -650,7 +649,7 @@ class _MoodScreenState extends State<MoodScreen> {
               thumbColor: color,
               overlayColor: color.withValues(alpha: 0.2),
               trackHeight: 6,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+              thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
             ),
             child: Slider(
               value: value,
@@ -661,7 +660,7 @@ class _MoodScreenState extends State<MoodScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -687,7 +686,7 @@ class _MoodScreenState extends State<MoodScreen> {
     required Color iconColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -704,7 +703,7 @@ class _MoodScreenState extends State<MoodScreen> {
             ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

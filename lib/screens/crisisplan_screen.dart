@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 
@@ -125,19 +124,19 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.85,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.onSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
               child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
             ),
-            const SizedBox(height: 16),
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF333333))),
+            SizedBox(height: 16),
+            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF333333))),
             const SizedBox(height: 8),
             Text(hint, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
             const SizedBox(height: 16),
@@ -153,7 +152,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -201,8 +200,8 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: const Text('Crisisplan', style: TextStyle(color: Colors.white))),
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
+        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text('Crisisplan', style: TextStyle(color: Colors.white))),
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
 
@@ -211,7 +210,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text('Crisisplan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text('Crisisplan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
         actions: [
           IconButton(
@@ -242,18 +241,18 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               borderRadius: BorderRadius.circular(16),
               onTap: () => _editSection(section),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(_sectionIcon(section['section'] as String), color: color),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +298,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.onSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -371,7 +370,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.85,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.onSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -407,7 +406,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               height: 50,

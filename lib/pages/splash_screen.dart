@@ -4,7 +4,7 @@ import '../screens/login_screen.dart';
 import '../screens/mood_screen.dart';
 
 class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
+  SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +48,8 @@ class SplashScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24),
+            Text(
               'Ritme',
               style: TextStyle(
                 fontSize: 32,
@@ -58,8 +58,8 @@ class SplashScreen extends StatelessWidget {
                 letterSpacing: 2,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'SRT Tracker',
               style: TextStyle(
                 fontSize: 16,
@@ -67,8 +67,8 @@ class SplashScreen extends StatelessWidget {
                 letterSpacing: 1,
               ),
             ),
-            const SizedBox(height: 48),
-            const SizedBox(
+            SizedBox(height: 48),
+            SizedBox(
               width: 40,
               height: 40,
               child: CircularProgressIndicator(
@@ -106,6 +106,6 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return const SplashScreen();
+    return SplashScreen();
   }
 }
