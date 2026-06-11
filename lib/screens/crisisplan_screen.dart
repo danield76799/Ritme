@@ -136,7 +136,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
             ),
             SizedBox(height: 16),
-            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF333333))),
+            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? Color(0xFF333333))),
             const SizedBox(height: 8),
             Text(hint, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
             const SizedBox(height: 16),
@@ -200,7 +200,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text('Crisisplan', style: TextStyle(color: Colors.white))),
+        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text('Crisisplan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
         body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
@@ -210,7 +210,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text('Crisisplan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text('Crisisplan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
         actions: [
           IconButton(
@@ -302,7 +302,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
           color: Theme.of(context).colorScheme.onSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,9 +310,9 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             Center(
               child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
             ),
-            const SizedBox(height: 16),
-            const Text('Snel toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
+            SizedBox(height: 16),
+            Text('Snel toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 4),
             Text('Kies een sectie om toe te voegen:', style: TextStyle(fontSize: 14, color: Colors.black)),
             const SizedBox(height: 16),
             ...availableDefaults.map((def) => ListTile(

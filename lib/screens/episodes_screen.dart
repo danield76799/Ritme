@@ -56,9 +56,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          padding: EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -66,9 +66,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
-              const SizedBox(height: 20),
-              const Text('Nieuwe episode', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
+              Text('Nieuwe episode', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(height: 20),
 
               // Type selector
               Wrap(
@@ -125,7 +125,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     _loadData();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryTeal,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
@@ -189,24 +189,24 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
-        appBar: AppBar(backgroundColor: AppTheme.primaryTeal, title: const Text('Episodes', style: TextStyle(color: Colors.white))),
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text('Episodes', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text('Episodes', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        title: Text('Episodes', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEpisode,
-        backgroundColor: AppTheme.primaryTeal,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: Icon(Icons.add, color: Colors.white),
       ),
       body: _episodes.isEmpty
           ? Center(
@@ -232,12 +232,12 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 final color = typeInfo?['color'] as Color? ?? Colors.grey;
 
                 return Card(
-                  margin: const EdgeInsets.only(bottom: 10),
+                  margin: EdgeInsets.only(bottom: 10),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     leading: Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: isActive ? 0.2 : 0.1),
                         shape: BoxShape.circle,
@@ -248,9 +248,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                       children: [
                         Text(typeInfo?['label'] as String? ?? type, style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textCharcoal)),
                         if (isActive) ...[
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
                             child: Text('actief', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold)),
                           ),
@@ -259,7 +259,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     ),
                     subtitle: Text(
                       '${_formatDate(ep['start_date'] as String)} — ${isActive ? "loopt nog" : _formatDate(ep['end_date'] as String)}\n${_durationText(ep['start_date'] as String, ep['end_date'] as String?)}',
-                      style: TextStyle(color: Colors.black, fontSize: 13),
+                      style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 13),
                     ),
                     isThreeLine: true,
                     trailing: isActive

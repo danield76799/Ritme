@@ -4,7 +4,7 @@ import '../theme/app_theme.dart';
 class AppDrawer extends StatelessWidget {
   final String currentRoute;
 
-  const AppDrawer({
+  AppDrawer({
     super.key,
     required this.currentRoute,
   });
@@ -12,13 +12,13 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: Column(
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
@@ -29,33 +29,31 @@ class AppDrawer extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.favorite,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       size: 28,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Ritme',
-                        style: TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         'SRT Tracker',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                           fontSize: 14,
                         ),
                       ),

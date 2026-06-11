@@ -410,15 +410,15 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Inzichten & Patronen',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -444,7 +444,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                     child: Row(
                       children: [
                         Icon(Icons.insights, color: AppTheme.primaryTeal, size: 28),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -454,14 +454,14 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: AppTheme.textCharcoal,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                                 ),
                               ),
                               Text(
                                 '${_weeklyStats['aantalDagen'] ?? 0} dagen geanalyseerd',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.black,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
                                 ),
                               ),
                             ],
@@ -470,7 +470,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // Stats cards
                   Text(
@@ -478,7 +478,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textCharcoal,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -493,11 +493,11 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                   Row(
                     children: [
                       Expanded(child: _bouwStatCard('Ritme', 'Sociaal Ritme', '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(child: _bouwStatCard('Stabiliteit', 'Stabiliteit', '${(_weeklyStats['stabiliteit'] ?? 0).toStringAsFixed(0)}%', Colors.purple)),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32),
 
                   // Inzichten
                   Text(
@@ -505,37 +505,37 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textCharcoal,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   if (_insights.isEmpty)
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
                         child: Text(
                           'Nog niet genoeg data voor inzichten.\nBlijf bijhouden!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
                         ),
                       ),
                     )
                   else
                     ...(_insights.map((inzicht) => Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(16),
+                          margin: EdgeInsets.only(bottom: 8),
+                          padding: EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                offset: Offset(0, 2),
                               ),
                             ],
                           ),
@@ -546,7 +546,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                                   inzicht,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: AppTheme.textCharcoal,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                                     height: 1.4,
                                   ),
                                 ),
@@ -573,56 +573,54 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.psychology, color: Colors.white, size: 24),
+                              child: Icon(Icons.psychology, color: Theme.of(context).colorScheme.surface, size: 24),
                             ),
-                            const SizedBox(width: 12),
-                            const Text(
+                            SizedBox(width: 12),
+                            Text(
                               'AI Diepgang',
-                              style: TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           'Kopieer je anonieme weekrapport en plak het in Google Gemini voor gepersonaliseerde tips.',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20),
                         Row(
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: _kopieerNaarKlembord,
-                                icon: const Icon(Icons.copy, size: 18),
-                                label: const Text('Kopieer Rapport'),
+                                icon: Icon(Icons.copy, size: 18),
+                                label: Text('Kopieer Rapport'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: AppTheme.primaryTeal,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: _openGemini,
-                                icon: const Icon(Icons.open_in_browser, size: 18),
-                                label: const Text('Open Gemini'),
+                                icon: Icon(Icons.open_in_browser, size: 18),
+                                label: Text('Open Gemini'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white.withValues(alpha: 0.2),
                                   foregroundColor: Colors.white,
@@ -638,25 +636,25 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Privacy disclaimer
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.lock_outline, color: Colors.black, size: 20),
-                        const SizedBox(width: 12),
+                        Icon(Icons.lock_outline, color: Theme.of(context).textTheme.bodyMedium?.color, size: 20),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Ritme deelt nooit data met derden. AI-analyse doe je bewust en persoonlijk.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                           ),
                         ),
@@ -691,9 +689,9 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
 
   Widget _bouwStatCard(String label, String subtitle, String waarde, Color kleur) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -714,7 +712,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
               color: kleur,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             waarde,
             style: TextStyle(
@@ -723,12 +721,12 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
               color: kleur,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             subtitle,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ],

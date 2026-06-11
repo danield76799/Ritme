@@ -115,20 +115,20 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Snelle Check-in',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: _isSaving
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -137,19 +137,19 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                     _formatDatum(),
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.black,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // 1. STEMMING
                   _buildSectionTitle('1. Hoe voel je je vandaag?'),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.grey.shade200),
                     ),
@@ -183,7 +183,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20),
                         // Slider
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
@@ -216,15 +216,15 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // 2. SLAAP
                   _buildSectionTitle('2. Hoeveel uur heb je geslapen?'),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.grey.shade200),
                     ),
@@ -241,17 +241,17 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                                 color: AppTheme.primaryTeal,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Text(
                               'uur',
                               style: TextStyle(
                                 fontSize: 20,
-                                color: Colors.black,
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor: AppTheme.primaryTeal,
@@ -283,13 +283,13 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // 3. MEDICATIE
                   _buildSectionTitle('3. Medicatie genomen?'),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: _medicatieGenomen ? Colors.green.shade50 : Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -351,7 +351,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32),
 
                   // OPSLAAN KNOP
                   SizedBox(
@@ -359,7 +359,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                     child: ElevatedButton(
                       onPressed: _opslaan,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryTeal,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -371,7 +371,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
 
                   // Link naar uitgebreide invoer
                   Center(
@@ -383,7 +383,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                       child: Text(
                         'Uitgebreide invoer →',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                           fontSize: 14,
                         ),
                       ),

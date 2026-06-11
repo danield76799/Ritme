@@ -200,17 +200,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Medicatie verwijderen?'),
-          content: const Text('Deze actie kan niet ongedaan worden. Alle innamegegevens voor deze medicatie worden ook verwijderd.'),
+          title: Text('Medicatie verwijderen?'),
+          content: Text('Deze actie kan niet ongedaan worden. Alle innamegegevens voor deze medicatie worden ook verwijderd.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuleren'),
+              child: Text('Annuleren'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
+              child: Text('Verwijderen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
             ),
           ],
         ),
@@ -296,17 +296,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Database resetten?'),
-          content: const Text('Dit wist ALLE data inclusief medicatie, stemmingen, en instellingen. Dit kan niet ongedaan worden gemaakt.'),
+          title: Text('Database resetten?'),
+          content: Text('Dit wist ALLE data inclusief medicatie, stemmingen, en instellingen. Dit kan niet ongedaan worden gemaakt.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuleren'),
+              child: Text('Annuleren'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Resetten', style: TextStyle(color: Colors.white)),
+              child: Text('Resetten', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
             ),
           ],
         ),
@@ -360,10 +360,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
           return Theme(
             data: ThemeData.light().copyWith(
               dialogBackgroundColor: Colors.white,
-              textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.black)),
+              textTheme: TextTheme(bodyLarge: TextStyle(color: Colors.black)),
             ),
             child: AlertDialog(
-              title: const Text('Nieuwe Medicatie', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+              title: Text('Nieuwe Medicatie', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -371,20 +371,20 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   TextField(
                     decoration: InputDecoration(
                       labelText: 'Naam (bijv. Lithium)',
-                      labelStyle: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                      labelStyle: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.black, width: 2),
+                        borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
                       ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+                      borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
                     ),
                   ),
                   onChanged: (v) => name = v,
@@ -392,20 +392,20 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Dosering',
-                    labelStyle: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                    labelStyle: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+                      borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
                     ),
                   ),
                   keyboardType: TextInputType.number,
@@ -414,16 +414,16 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Eenheid (mg, ml, stuks)',
-                    labelStyle: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                    labelStyle: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black, width: 2),
+                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -503,7 +503,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 }
                 Navigator.pop(context);
               },
-              child: const Text('Opslaan'),
+              child: Text('Opslaan'),
             ),
           ],
         ),
@@ -516,22 +516,22 @@ class _MedicationScreenState extends State<MedicationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Medicatie',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add),
             onPressed: _showAddMedicationDialog,
           ),
           IconButton(
-            icon: const Icon(Icons.delete_forever, color: Colors.red),
+            icon: Icon(Icons.delete_forever, color: Colors.red),
             onPressed: _resetDatabase,
             tooltip: 'Reset database',
           ),
@@ -540,7 +540,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             child: DatumNavigator(
               geselecteerdeDatum: _selectedDate,
               onDatumVeranderd: _onDatumVeranderd,
@@ -566,19 +566,19 @@ class _MedicationScreenState extends State<MedicationScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             _errorMessage!,
             style: TextStyle(fontSize: 16, color: Colors.red[600]),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _loadData,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Opnieuw proberen'),
+            icon: Icon(Icons.refresh),
+            label: Text('Opnieuw proberen'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
             ),
           ),
@@ -628,7 +628,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
     if (configId == null) {
       AppLogger.warning('Skipping invalid medication entry - id: $rawId, type: ${rawId.runtimeType}');
-      return const SizedBox.shrink(); // Skip invalid entries
+      return SizedBox.shrink(); // Skip invalid entries
     }
     int count = _intakesForDay[configId] ?? 0;
     String name = config['naam']?.toString() ?? 'Onbekend';
@@ -637,9 +637,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
     String? reminderTime = config['reminder_time']?.toString();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
       ),
@@ -659,16 +659,16 @@ class _MedicationScreenState extends State<MedicationScreen> {
           // Name & dosage
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textCharcoal,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -736,10 +736,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 alignment: Alignment.center,
                 child: Text(
                   '$count',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textCharcoal,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                   ),
                 ),
               ),

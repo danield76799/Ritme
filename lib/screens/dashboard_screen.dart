@@ -244,10 +244,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               // Greeting card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   gradient: isDark
-                      ? const LinearGradient(
+                      ? LinearGradient(
                           colors: [Color(0xFF2A3D42), Color(0xFF1A2B30)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -256,9 +256,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   borderRadius: BorderRadius.circular(AppTheme.largeRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: (isDark ? Colors.black : const Color(0xFFB4A8D4)).withOpacity(0.25),
+                      color: (isDark ? Colors.black : Color(0xFFB4A8D4)).withOpacity(0.25),
                       blurRadius: 16,
-                      offset: const Offset(0, 8),
+                      offset: Offset(0, 8),
                     ),
                   ],
                 ),
@@ -277,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       dateStr,
                       style: TextStyle(
@@ -403,15 +403,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           final result = await Navigator.pushNamed(context, '/quick-checkin');
           if (result == true) _loadData();
         },
-        icon: const Icon(Icons.bolt, color: Colors.white),
-        label: const Text('Snelle Check-in', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        icon: Icon(Icons.bolt, color: Colors.white),
+        label: Text('Snelle Check-in', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
       ),
     );
   }
 
   Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: (isDark ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(14),
@@ -419,9 +419,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 18),
-          const SizedBox(width: 8),
-          Text('$label $time', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+          Icon(icon, color: Theme.of(context).colorScheme.surface, size: 18),
+          SizedBox(width: 8),
+          Text('$label $time', style: TextStyle(color: Theme.of(context).colorScheme.surface, fontSize: 14, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -431,7 +431,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       {required IconData icon, required Color color, required String title, required String route}) {
     return OpenContainer(
       transitionType: ContainerTransitionType.fadeThrough,
-      transitionDuration: const Duration(milliseconds: 400),
+      transitionDuration: Duration(milliseconds: 400),
       closedElevation: 2,
       closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.borderRadius)),
       closedColor: Theme.of(context).cardColor,
@@ -466,7 +466,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   Widget _routeBuilder(String route) {
     switch (route) {
-      case '/mood': return const MoodScreen();
+      case '/mood': return MoodScreen();
       case '/activity': return ActivityScreen();
       case '/weight': return WeightScreen();
       case '/appointments': return AppointmentsScreen();
@@ -474,7 +474,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       case '/voortekenen': return VoortekenenScreen();
       case '/crisisplan': return CrisisPlanScreen();
       case '/rapport': return RapportScreen();
-      default: return const SizedBox.shrink();
+      default: return SizedBox.shrink();
     }
   }
 

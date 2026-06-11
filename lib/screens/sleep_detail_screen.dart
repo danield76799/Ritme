@@ -115,23 +115,23 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
   }
 
   String _dayName(int weekday) {
-    const days = ['', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+    final days = ['', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
     return days[weekday];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Slaap Details (Netto)',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -152,34 +152,34 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                         Expanded(child: _buildStatCard('Gemiddeld', _formatHours(_avgSleep), Icons.trending_flat)),
                         const SizedBox(width: 12),
                         Expanded(child: _buildStatCard('Beste', _formatHours(_bestSleep), Icons.trending_up)),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(child: _buildStatCard('Minste', _formatHours(_worstSleep), Icons.trending_down)),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     
                     // Sleep chart
                     if (_sleepData.isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'Slaap per dag (laatste 7 dagen)',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textCharcoal,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       Container(
                         height: 220,
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              offset: Offset(0, 4),
                             ),
                           ],
                         ),
@@ -193,7 +193,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                                   final data = _sleepData[groupIndex];
                                   return BarTooltipItem(
                                     '${_formatHours(data['sleep'] as double)}\n${data['dateShort']}',
-                                    const TextStyle(color: Colors.white, fontSize: 12),
+                                    TextStyle(color: Theme.of(context).colorScheme.surface, fontSize: 12),
                                   );
                                 },
                               ),
@@ -259,15 +259,15 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                       ),
                     ],
                     
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     
                     // Sleep log list
-                    const Text(
+                    Text(
                       'Slaap logboek',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textCharcoal,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -285,36 +285,36 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
 
   Widget _buildStatCard(String label, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
           Icon(icon, color: AppTheme.primaryTeal, size: 24),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textCharcoal,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ],
@@ -329,10 +329,10 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
     final qualityColor = sleep >= 8 ? AppTheme.primaryTeal : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -356,17 +356,17 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
               size: 24,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '${entry['day']} ${entry['dateShort']}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textCharcoal,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -383,10 +383,10 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
           ),
           Text(
             '${_formatHours(sleep)}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textCharcoal,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
             ),
           ),
         ],
@@ -396,21 +396,21 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
 
   Widget _buildEmptyState(String title, String subtitle) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           Icon(Icons.nightlight_outlined, size: 48, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             title,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
           const SizedBox(height: 8),

@@ -130,10 +130,10 @@ class _WeightScreenState extends State<WeightScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
+              child: Text('Opslaan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
             ),
           ],
         ),
@@ -225,10 +225,10 @@ class _WeightScreenState extends State<WeightScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
+            child: Text('Opslaan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -290,16 +290,16 @@ class _WeightScreenState extends State<WeightScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Gewicht',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -318,15 +318,15 @@ class _WeightScreenState extends State<WeightScreen> {
                         setState(() => _selectedDate = date);
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
 
                     // Grafiek
                     if (_weightLogs.length >= 2)
                       Container(
                         height: 250,
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
@@ -386,11 +386,11 @@ class _WeightScreenState extends State<WeightScreen> {
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Text(
                           'Geschiedenis',
                           style: TextStyle(
-                            color: AppTheme.textCharcoal,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -415,7 +415,7 @@ class _WeightScreenState extends State<WeightScreen> {
                     else
                       ListView.builder(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: NeverScrollableScrollPhysics(),
                         itemCount: _weightLogs.length,
                         itemBuilder: (context, index) {
                           // Show in reverse order (newest first)
@@ -426,16 +426,16 @@ class _WeightScreenState extends State<WeightScreen> {
                             direction: DismissDirection.endToStart,
                             background: Container(
                               alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 20),
+                              padding: EdgeInsets.only(right: 20),
                               color: Colors.red,
-                              child: const Icon(Icons.delete, color: Colors.white),
+                              child: Icon(Icons.delete, color: Colors.white),
                             ),
                             onDismissed: (_) => _deleteWeightLog(log['id']),
                             child: Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.all(16),
+                              margin: EdgeInsets.only(bottom: 8),
+                              padding: EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
@@ -455,7 +455,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                     ),
                                     child: Icon(Icons.monitor_weight, color: AppTheme.primaryTeal),
                                   ),
-                                  const SizedBox(width: 16),
+                                  SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -465,7 +465,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                           style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: AppTheme.textCharcoal,
+                                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                                           ),
                                         ),
                                         if (log['notes'] != null && log['notes'].toString().isNotEmpty)
@@ -473,7 +473,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                             log['notes'],
                                             style: TextStyle(
                                               fontSize: 13,
-                                              color: Colors.black,
+                                              color: Theme.of(context).textTheme.bodyMedium?.color,
                                             ),
                                           ),
                                       ],
@@ -498,13 +498,13 @@ class _WeightScreenState extends State<WeightScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addWeightLog,
-        backgroundColor: AppTheme.primaryTeal,
-        icon: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        icon: Icon(Icons.add, color: Colors.white),
         label: Text(
           _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(_selectedDate)) 
             ? 'Gewicht bewerken' 
             : 'Gewicht loggen',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -543,17 +543,16 @@ class _WeightScreenState extends State<WeightScreen> {
           BoxShadow(
             color: AppTheme.primaryTeal.withValues(alpha: 0.3),
             blurRadius: 12,
-            offset: const Offset(0, 6),
+            offset: Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Statistieken',
-            style: TextStyle(
-              color: Colors.white,
+            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -573,9 +572,9 @@ class _WeightScreenState extends State<WeightScreen> {
             ],
           ),
           if (weightChange != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
@@ -585,14 +584,14 @@ class _WeightScreenState extends State<WeightScreen> {
                 children: [
                   Icon(
                     weightChange <= 0 ? Icons.trending_down : Icons.trending_up,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     'Verandering: ${weightChange > 0 ? '+' : ''}${weightChange.toStringAsFixed(1)} kg',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.surface,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -610,17 +609,16 @@ class _WeightScreenState extends State<WeightScreen> {
       children: [
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.surface,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
             fontSize: 12,
           ),
         ),

@@ -29,25 +29,25 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(
           _isDutch ? 'Gebruiksaanwijzing' : 'User Guide',
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           TextButton.icon(
             onPressed: _toggleLanguage,
-            icon: const Icon(Icons.language, color: Colors.white),
+            icon: Icon(Icons.language, color: Colors.white),
             label: Text(
               _isDutch ? 'EN' : 'NL',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -79,13 +79,13 @@ class _HelpScreenState extends State<HelpScreen> {
                       '• You can also indicate how many hours you slept\n'
                       '• Try to do this daily for the best overview',
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               
               // Mood scale details
               _buildDetailCard(
                 title: _isDutch ? 'Stemmingsschaal (-5 tot +5)' : 'Mood Scale (-5 to +5)',
                 children: [
-                  _buildScaleItem(color: Colors.grey.shade800!, label: _isDutch ? '-5: Uiterst depressief' : '-5: Extremely depressed'),
+                  _buildScaleItem(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black, label: _isDutch ? '-5: Uiterst depressief' : '-5: Extremely depressed'),
                   _buildScaleItem(color: Colors.black!, label: _isDutch ? '-3: Matig depressief' : '-3: Moderately depressed'),
                   _buildScaleItem(color: AppTheme.primaryTeal, label: '0: ${_isDutch ? 'Neutraal' : 'Neutral'}'),
                   _buildScaleItem(color: Colors.orange, label: _isDutch ? '+3: Matig manisch' : '+3: Moderately manic'),
@@ -174,19 +174,19 @@ class _HelpScreenState extends State<HelpScreen> {
                   _buildScoreRange(range: '0-19%', color: Colors.red, label: _isDutch ? 'Zeer instabiel' : 'Very unstable', action: '🚨 ${_isDutch ? 'Hulp zoeken' : 'Seek help'}'),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Calculation
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
@@ -197,12 +197,12 @@ class _HelpScreenState extends State<HelpScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: AppTheme.textCharcoal,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(8),
@@ -212,7 +212,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         style: TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 14,
-                          color: AppTheme.textCharcoal,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                         ),
                       ),
                     ),
@@ -293,13 +293,13 @@ class _HelpScreenState extends State<HelpScreen> {
                       '• Review your statistics weekly to recognize patterns\n'
                       '• Be patient - changing rhythm takes time',
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Privacy
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -315,18 +315,18 @@ class _HelpScreenState extends State<HelpScreen> {
                     Row(
                       children: [
                         Icon(Icons.security, color: AppTheme.primaryTeal),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           _isDutch ? 'Privacy & Beveiliging' : 'Privacy & Security',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: AppTheme.textCharcoal,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Text(
                       _isDutch
                         ? '• Alle gegevens worden lokaal opgeslagen\n'
@@ -339,7 +339,7 @@ class _HelpScreenState extends State<HelpScreen> {
                           '• Export your data as JSON for backup',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.black,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
                         height: 1.5,
                       ),
                     ),
@@ -372,7 +372,7 @@ class _HelpScreenState extends State<HelpScreen> {
             color: AppTheme.primaryTeal,
             size: 32,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             _isDutch
               ? 'Ritme is gebaseerd op Social Rhythm Therapy (SRT), '
@@ -385,7 +385,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 'you can positively influence your mood and well-being.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppTheme.textCharcoal,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
               fontSize: 14,
               height: 1.5,
             ),
@@ -401,9 +401,9 @@ class _HelpScreenState extends State<HelpScreen> {
     required String description,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -428,25 +428,25 @@ class _HelpScreenState extends State<HelpScreen> {
               size: 24,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textCharcoal,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.black,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
                     height: 1.5,
                   ),
                 ),
@@ -463,15 +463,15 @@ class _HelpScreenState extends State<HelpScreen> {
     required List<Widget> children,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -480,10 +480,10 @@ class _HelpScreenState extends State<HelpScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: AppTheme.textCharcoal,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
             ),
           ),
           const SizedBox(height: 12),
@@ -573,21 +573,21 @@ class _HelpScreenState extends State<HelpScreen> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: color,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 range,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.surface,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -597,14 +597,14 @@ class _HelpScreenState extends State<HelpScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade800,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
                     ),
                   ),
                   Text(
                     action,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.black,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
                     ),
                   ),
                 ],

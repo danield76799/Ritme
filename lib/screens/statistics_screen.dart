@@ -173,7 +173,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   
   pw.Widget _buildTableHeader(String text) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
+      padding: pw.EdgeInsets.all(8),
       child: pw.Text(
         text,
         style: pw.TextStyle(
@@ -188,7 +188,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   
   pw.Widget _buildTableCell(String text) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
+      padding: pw.EdgeInsets.all(8),
       child: pw.Text(
         text,
         style: pw.TextStyle(fontSize: 10, color: PdfColors.grey800),
@@ -201,12 +201,12 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text('Statistieken (Life Chart)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text('Statistieken (Life Chart)', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
@@ -219,7 +219,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -408,7 +408,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       height: 250,
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 4))],
       ),
@@ -427,7 +427,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -443,7 +443,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   Widget _bouwKpiKaart(String waarde, String label, Color accentKleur) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 4))],
       ),
@@ -452,7 +452,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         children: [
           Text(waarde, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: accentKleur)),
           SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.black), textAlign: TextAlign.center),
+          Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black), textAlign: TextAlign.center),
         ],
       ),
     );

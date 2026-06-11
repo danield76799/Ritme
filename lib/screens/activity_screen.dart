@@ -364,18 +364,18 @@ class _ActivityScreenState extends State<ActivityScreen> {
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Colors.grey.shade800,
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuleer', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      child: Text('Annuleer', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16)),
                     ),
-                    const Text(
+                    Text(
                       'Wakker gelegen',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                     ),
                     TextButton(
                       onPressed: () {
@@ -383,7 +383,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         _saveSleepData();
                         Navigator.pop(context);
                       },
-                      child: const Text('Klaar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                      child: Text('Klaar', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -438,7 +438,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Slaapduur: ${_formatSleepDuration(sleepHours)}'),
-            backgroundColor: AppTheme.primaryTeal,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             duration: const Duration(seconds: 2),
@@ -475,20 +475,20 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Activiteit & Slaap',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             child: DatumNavigator(
               geselecteerdeDatum: _geselecteerdeDatum,
               onDatumVeranderd: _onDatumVeranderd,
@@ -536,13 +536,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ],
@@ -553,7 +553,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   Widget _buildSleepCard() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -652,14 +652,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: hasValue ? AppTheme.primaryTeal : Colors.grey.shade400,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, size: 18, color: Colors.white),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,11 +668,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     label,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.black,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
                     value,
                     style: TextStyle(
@@ -700,19 +700,19 @@ class _ActivityScreenState extends State<ActivityScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             _errorMessage!,
             style: TextStyle(fontSize: 16, color: Colors.red[600]),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _loadData,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Opnieuw proberen'),
+            icon: Icon(Icons.refresh),
+            label: Text('Opnieuw proberen'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
             ),
           ),
@@ -740,7 +740,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDone ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade100,
@@ -752,7 +752,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           onTap: () => _toggleActivity(index),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
                 Container(
@@ -768,7 +768,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     color: isDone ? Colors.white : Colors.grey.shade500,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -872,7 +872,7 @@ class _AwakeTimePicker extends StatelessWidget {
         return Center(
           child: Text(
             label,
-            style: const TextStyle(color: Colors.white, fontSize: 20),
+            style: TextStyle(color: Theme.of(context).colorScheme.surface, fontSize: 20),
           ),
         );
       }),

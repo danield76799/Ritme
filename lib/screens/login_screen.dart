@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Navigator.pop(context);
               _showNotificationDialog();
             },
-            child: const Text('Nee, bedankt'),
+            child: Text('Nee, bedankt'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
-            child: const Text('Ja, inschakelen', style: TextStyle(color: Colors.white)),
+            child: Text('Ja, inschakelen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -212,12 +212,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 Navigator.pop(context);
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                  MaterialPageRoute(builder: (_) => DashboardScreen()),
                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
-            child: const Text('Ja, inschakelen', style: TextStyle(color: Colors.white)),
+            child: Text('Ja, inschakelen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -276,14 +276,14 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Nee, annuleren'),
+            child: Text('Nee, annuleren'),
           ),
           ElevatedButton(
             onPressed: () async {
               await _resetApp();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Ja, reset alles', style: TextStyle(color: Colors.white)),
+            child: Text('Ja, reset alles', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -332,10 +332,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _isLoading
           ? Container(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -372,17 +372,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: AppTheme.primaryTeal,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
                         _isFirstTime
                             ? 'Stel een PIN in om te beginnen'
                             : 'Voer je PIN in',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.black,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32),
                       
                       // Biometrische login knop (alleen op mobile)
                       if (!kIsWeb && _biometricAvailable && _biometricEnabled && !_isFirstTime)
@@ -390,8 +390,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             ElevatedButton.icon(
                               onPressed: _authenticateWithBiometrics,
-                              icon: const Icon(Icons.lock_outline, size: 28),
-                              label: const Text(
+                              icon: Icon(Icons.lock_outline, size: 28),
+                              label: Text(
                                 'Login met Biometrie',
                                 style: TextStyle(fontSize: 16),
                               ),
@@ -466,13 +466,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ],
                                 ),
                               ),
-                            const SizedBox(height: 24),
+                            SizedBox(height: 24),
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryTeal,
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -492,13 +492,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             // PIN vergeten knop (alleen bij bestaande PIN)
                             if (!_isFirstTime)
                               Padding(
-                                padding: const EdgeInsets.only(top: 16),
+                                padding: EdgeInsets.only(top: 16),
                                 child: TextButton(
                                   onPressed: _showForgotPinDialog,
                                   child: Text(
                                     'PIN Vergeten?',
                                     style: TextStyle(
-                                      color: Colors.black,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color,
                                       fontSize: 14,
                                     ),
                                   ),

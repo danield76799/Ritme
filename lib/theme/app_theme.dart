@@ -23,19 +23,19 @@ class AppTheme {
   static const Color darkTextSecondary = Color(0xFFB8C5C8);
 
   // Status colors - high contrast versions
-  static const Color success = Color(0xFF2E7D32);
-  static const Color warning = Color(0xFFED6C02);
-  static const Color error = Color(0xFFD32F2F);
-  static const Color info = Color(0xFF0277BD);
+  static Color success = Color(0xFF2E7D32);
+  static Color warning = Color(0xFFED6C02);
+  static Color error = Color(0xFFD32F2F);
+  static Color info = Color(0xFF0277BD);
 
-  static const double borderRadius = 16.0;
-  static const double largeRadius = 24.0;
+  static double borderRadius = 16.0;
+  static double largeRadius = 24.0;
 
   static ThemeData get lightTheme {
     final base = ThemeData.light(useMaterial3: true);
     return base.copyWith(
       brightness: Brightness.light,
-      colorScheme: const ColorScheme.light(
+      colorScheme: ColorScheme.light(
         primary: medicalTeal,
         onPrimary: Colors.white,
         secondary: medicalTealDark,
@@ -51,14 +51,14 @@ class AppTheme {
         centerTitle: false,
         backgroundColor: medicalTeal,
         foregroundColor: Colors.white,
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: Colors.white,
           letterSpacing: -0.3,
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        systemOverlayStyle: const SystemUiOverlayStyle(
+        iconTheme: IconThemeData(color: Colors.white),
+        systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
         ),
@@ -89,7 +89,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -106,7 +106,7 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: dividerColor,
         thickness: 1,
         space: 1,
@@ -126,14 +126,14 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: medicalTeal, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        labelStyle: const TextStyle(color: textMedium),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        labelStyle: TextStyle(color: textMedium),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: backgroundColor,
         selectedColor: medicalTeal.withValues(alpha: 0.15),
-        labelStyle: const TextStyle(color: textCharcoal),
-        side: const BorderSide(color: dividerColor),
+        labelStyle: TextStyle(color: textCharcoal),
+        side: BorderSide(color: dividerColor),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -153,7 +153,7 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: textCharcoal,
-        contentTextStyle: const TextStyle(color: Colors.white),
+        contentTextStyle: TextStyle(color: Colors.white),
       ),
       textTheme: base.textTheme.copyWith(
         displayLarge: const TextStyle(fontSize: 34, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.5),
@@ -179,7 +179,7 @@ class AppTheme {
     final base = ThemeData.dark(useMaterial3: true);
     return base.copyWith(
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: ColorScheme.dark(
         primary: medicalTealLight,
         onPrimary: darkBackground,
         secondary: medicalTeal,
@@ -273,7 +273,7 @@ class AppTheme {
   ];
 
   // Brand gradient (teal)
-  static LinearGradient get brandGradient => const LinearGradient(
+  static LinearGradient get brandGradient => LinearGradient(
     colors: [medicalTeal, medicalTealDark],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
