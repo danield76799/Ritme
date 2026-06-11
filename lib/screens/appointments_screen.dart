@@ -157,17 +157,17 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Afspraak verwijderen?'),
-        content: const Text('Deze actie kan niet ongedaan worden.'),
+        title: Text('Afspraak verwijderen?'),
+        content: Text('Deze actie kan niet ongedaan worden.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuleren'),
+            child: Text('Annuleren'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Verwijderen', style: TextStyle(color: Colors.white)),
+            child: Text('Verwijderen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -220,12 +220,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Afspraken', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryTeal,
+        title: Text('Afspraken', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
@@ -236,9 +236,9 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                   : _buildAppointmentsList(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addAppointment,
-        backgroundColor: AppTheme.primaryTeal,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Nieuwe afspraak', style: TextStyle(color: Colors.white)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        icon: Icon(Icons.add, color: Colors.white),
+        label: Text('Nieuwe afspraak', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
       ),
     );
   }
@@ -305,9 +305,9 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final time = appointment['appointment_time'] ?? '';
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Row(
         children: [
           // Left side - tappable info area
@@ -330,19 +330,19 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                       ),
                       child: Icon(Icons.calendar_today, color: AppTheme.primaryTeal),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                           ),
-                          const SizedBox(height: 4),
-                          if (doctor.isNotEmpty) Text('Dokter: $doctor', style: TextStyle(color: Colors.black, fontSize: 13)),
-                          if (location.isNotEmpty) Text('Locatie: $location', style: TextStyle(color: Colors.black, fontSize: 13)),
-                          Text('$date ${time.isNotEmpty ? 'om $time' : ''}', style: TextStyle(color: Colors.black, fontSize: 13)),
+                          SizedBox(height: 4),
+                          if (doctor.isNotEmpty) Text('Dokter: $doctor', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
+                          if (location.isNotEmpty) Text('Locatie: $location', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
+                          Text('$date ${time.isNotEmpty ? 'om $time' : ''}', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
                         ],
                       ),
                     ),
@@ -429,7 +429,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      insetPadding: const EdgeInsets.all(16),
+      insetPadding: EdgeInsets.all(16),
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       child: Container(
@@ -438,7 +438,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Theme(
@@ -450,17 +450,17 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
             ),
           ),
           child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 widget.appointment == null ? 'Nieuwe afspraak' : 'Afspraak bewerken',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
                 ),
               ),
               const SizedBox(height: 20),
@@ -541,7 +541,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryTeal,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -560,18 +560,18 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
 
   Widget _buildTextField(String label, TextEditingController controller, {String? Function(String?)? validator}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: controller,
         validator: validator,
-        style: const TextStyle(
-          color: Colors.black,
+        style: TextStyle(
+          color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(
+          labelStyle: TextStyle(
             color: Colors.black87,
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -580,11 +580,11 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.black, width: 2),
+            borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.black, width: 2),
+            borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -629,7 +629,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
         },
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: field.errorText != null ? Colors.red : Colors.grey.shade400!),
           ),
@@ -647,7 +647,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     _dateController.text.isEmpty ? 'Selecteer datum' : _dateController.text,
                     style: TextStyle(
@@ -657,7 +657,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                   ),
                 ],
               ),
-              Icon(Icons.calendar_today, color: Colors.black),
+              Icon(Icons.calendar_today, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
             ],
           ),
         ),
@@ -675,7 +675,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 hour: int.tryParse(_timeController.text.split(':')[0]) ?? 9,
                 minute: int.tryParse(_timeController.text.split(':')[1]) ?? 0,
               )
-            : const TimeOfDay(hour: 9, minute: 0),
+            : TimeOfDay(hour: 9, minute: 0),
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
@@ -696,7 +696,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey.shade400!),
         ),
@@ -711,7 +711,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                   'Tijd',
                   style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   _timeController.text.isEmpty ? 'Selecteer tijd' : _timeController.text,
                   style: TextStyle(
@@ -721,7 +721,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 ),
               ],
             ),
-            Icon(Icons.access_time, color: Colors.black),
+            Icon(Icons.access_time, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
           ],
         ),
       ),
@@ -746,7 +746,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 'Herinnering',
                 style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 _reminderDays == 0 ? 'Geen herinnering' :
                 _reminderDays == 1 ? '1 dag van tevoren' :

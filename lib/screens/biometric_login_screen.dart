@@ -118,14 +118,14 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF4FB2C1),
+      backgroundColor: Color(0xFF4FB2C1),
       body: Center(
         child: _isLoading
-            ? const CircularProgressIndicator(
+            ? CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               )
             : Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(24.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -134,68 +134,65 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen> {
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.fingerprint,
                         size: 60,
                         color: Color(0xFF4FB2C1),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32),
                     
                     // Title
-                    const Text(
+                    Text(
                       'Ritme',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       'Secure Access',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white70,
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    SizedBox(height: 48),
                     
                     // Error Message
                     if (_errorMessage.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.red.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           _errorMessage,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white),
                           textAlign: TextAlign.center,
                         ),
                       ),
                     if (_errorMessage.isNotEmpty)
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
                     
                     // Biometric Button
                     if (_biometricAvailable)
                       ElevatedButton.icon(
                         onPressed: _biometricEnabled ? _authenticate : _enableBiometric,
-                        icon: const Icon(Icons.lock_outline, size: 28),
+                        icon: Icon(Icons.lock_outline, size: 28),
                         label: Text(
                           _biometricEnabled 
                               ? 'Authenticate with Biometrics'
                               : 'Enable Biometric Login',
-                          style: const TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF4FB2C1),
-                          padding: const EdgeInsets.symmetric(
+                          foregroundColor: Color(0xFF4FB2C1),
+                          padding: EdgeInsets.symmetric(
                             horizontal: 32,
                             vertical: 16,
                           ),
@@ -206,34 +203,34 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen> {
                       )
                     else
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Column(
+                        child: Column(
                           children: [
                             Icon(
                               Icons.info_outline,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               size: 32,
                             ),
                             SizedBox(height: 8),
                             Text(
                               'Biometric authentication is not available on this device.',
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                               textAlign: TextAlign.center,
                             ),
                           ],
                         ),
                       ),
                     
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     
                     // Skip Button
                     TextButton(
                       onPressed: widget.onAuthenticated,
-                      child: const Text(
+                      child: Text(
                         'Skip for now',
                         style: TextStyle(color: Colors.white70),
                       ),

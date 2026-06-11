@@ -271,7 +271,7 @@ class _MoodScreenState extends State<MoodScreen> {
         actions: [
           TextButton(
             onPressed: _opslaan,
-            child: Text('Opslaan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text('Opslaan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

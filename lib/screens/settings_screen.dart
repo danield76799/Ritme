@@ -40,16 +40,16 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: 300,
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               widget.label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
             const SizedBox(height: 20),
@@ -63,11 +63,11 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                   max: 23,
                   onChanged: (value) => setState(() => selectedHour = value),
                 ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     ':',
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black),
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
                   ),
                 ),
                 // Minute picker
@@ -86,7 +86,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Annuleer',
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
@@ -99,7 +99,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryTeal,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -237,11 +237,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          content: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.w600)),
           backgroundColor: Colors.green[700],
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 2),
+          duration: Duration(seconds: 2),
         ),
       );
     }
@@ -251,7 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          content: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.w600)),
           backgroundColor: Colors.red[700],
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -302,10 +302,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50, // Very light grey background
       appBar: AppBar(
-        title: const Text('Instellingen', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryTeal,
+        title: Text('Instellingen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
@@ -321,10 +321,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.black),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -375,21 +375,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           _buildSectionHeader('Notificaties'),
-          const SizedBox(height: 24),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
+          SizedBox(height: 24),
           _buildSectionHeader('Medicatie'),
           _buildActionButton(
             'Medicatie beheren',
             Icons.medication_outlined,
             () => Navigator.pushNamed(context, '/medication'),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _saveSettings,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -513,15 +513,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildTextField(String label, TextEditingController controller) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -529,16 +529,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
-        style: const TextStyle(color: Colors.black87, fontSize: 16),
+        style: TextStyle(color: Colors.black87, fontSize: 16),
       ),
     );
   }
@@ -547,26 +547,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final timeValue = _settings?[key]?.toString() ?? '--:--';
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: ListTile(
         title: Text(
           label,
-          style: TextStyle(color: Colors.black, fontSize: 14),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 14),
         ),
         subtitle: Text(
           timeValue,
-          style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         trailing: Icon(Icons.access_time, color: AppTheme.primaryTeal),
         onTap: () => _showTimePicker(label, key),
@@ -578,11 +578,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildActionButton(String label, IconData icon, VoidCallback onPressed) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: EdgeInsets.only(bottom: 8),
       child: ElevatedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, color: Colors.white),
-        label: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        label: Text(label, style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.w600)),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.primaryTeal.withValues(alpha: 0.8),
           foregroundColor: Colors.white,

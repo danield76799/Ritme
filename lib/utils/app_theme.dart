@@ -22,24 +22,24 @@ class AppTheme {
   static const Color error = Colors.red;
 
   // Text styles
-  static const TextStyle headingStyle = TextStyle(
+  static TextStyle headingStyle = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.bold,
     color: textCharcoal,
   );
 
-  static const TextStyle subheadingStyle = TextStyle(
+  static TextStyle subheadingStyle = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     color: textCharcoal,
   );
 
-  static const TextStyle bodyStyle = TextStyle(
+  static TextStyle bodyStyle = TextStyle(
     fontSize: 14,
     color: textCharcoal,
   );
 
-  static const TextStyle captionStyle = TextStyle(
+  static TextStyle captionStyle = TextStyle(
     fontSize: 12,
     color: Colors.grey,
   );
@@ -54,7 +54,7 @@ class AppTheme {
         surface: backgroundColor,
       ),
       scaffoldBackgroundColor: backgroundColor,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: primaryTeal,
         foregroundColor: white,
         elevation: 0,
@@ -66,7 +66,7 @@ class AppTheme {
         ),
         iconTheme: IconThemeData(color: white),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryTeal,
         foregroundColor: white,
       ),

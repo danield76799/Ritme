@@ -134,12 +134,12 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Sociaal Ritme', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryTeal,
+        title: Text('Sociaal Ritme', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -162,7 +162,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(_errorMessage!, style: TextStyle(fontSize: 16, color: Colors.black)),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -188,8 +188,8 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
         // Header met datum en summary
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
             color: AppTheme.primaryTeal,
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(20),
@@ -200,16 +200,15 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
             children: [
               Text(
                 DateFormat('EEEE d MMMM', 'nl_NL').format(DateTime.now()),
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
+                style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
                   fontSize: 14,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 '$voltooidCount / 5 activiteiten voltooid',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.surface,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -249,7 +248,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -279,7 +278,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                 size: 24,
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
 
             // Info
             Expanded(
@@ -294,12 +293,12 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                       color: isGedaan ? AppTheme.textCharcoal : Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Row(
                     children: [
                       // Target tijd
                       Icon(Icons.schedule_outlined, size: 14, color: Colors.grey.shade400),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text(
                         'Doel: $targetTijd',
                         style: TextStyle(

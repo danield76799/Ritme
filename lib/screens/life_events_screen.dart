@@ -59,21 +59,21 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Life Events',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadData,
           ),
         ],
@@ -82,8 +82,8 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
         children: [
           // Filter chips
           Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
+            padding: EdgeInsets.all(16),
+            color: Theme.of(context).colorScheme.surface,
             child: Row(
               children: [
                 _buildFilterChip('alle', 'Alle'),
@@ -136,10 +136,10 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
     final omschrijving = event['omschrijving'] as String? ?? 'Geen beschrijving';
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -177,13 +177,13 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   omschrijving,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textCharcoal,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                   ),
                 ),
                 const SizedBox(height: 4),

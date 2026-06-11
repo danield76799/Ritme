@@ -107,10 +107,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           minute: int.tryParse(parts[1]) ?? 0,
         );
       } else {
-        currentTime = const TimeOfDay(hour: 8, minute: 0);
+        currentTime = TimeOfDay(hour: 8, minute: 0);
       }
     } else {
-      currentTime = const TimeOfDay(hour: 8, minute: 0);
+      currentTime = TimeOfDay(hour: 8, minute: 0);
     }
 
     final Duration initialDuration = Duration(hours: currentTime.hour, minutes: currentTime.minute);
@@ -121,7 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           child: Column(
             children: [
               Container(
@@ -174,12 +174,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Instellingen', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: AppTheme.primaryTeal,
+        title: Text('Instellingen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
@@ -195,10 +195,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.black),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -223,18 +223,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader('Slaapschema'),
           _buildTimeField('Opstaan', 'target_opstaan'),
           _buildTimeField('Slapen', 'target_slapen'),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _buildSectionHeader('Dagelijkse Doelen'),
           _buildTimeField('Eerste contact', 'target_contact'),
           _buildTimeField('Werk / Hobby', 'target_werk'),
           _buildTimeField('Avondeten', 'target_eten'),
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _saveSettings,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -249,13 +249,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: AppTheme.textCharcoal,
+          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
         ),
       ),
     );
@@ -299,10 +299,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     displayValue,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.access_time, color: Colors.black),
+                  SizedBox(width: 8),
+                  Icon(Icons.access_time, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
                 ],
               ),
             ],

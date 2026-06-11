@@ -163,16 +163,16 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Ritme Stabiliteit',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -205,34 +205,32 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                           BoxShadow(
                             color: AppTheme.primaryTeal.withValues(alpha: 0.3),
                             blurRadius: 12,
-                            offset: const Offset(0, 6),
+                            offset: Offset(0, 6),
                           ),
                         ],
                       ),
                       child: Column(
                         children: [
-                          const Text(
+                          Text(
                             'Stabiliteit Score',
-                            style: TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           Text(
                             '${_stabilityScore.toStringAsFixed(0)}%',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.surface,
                               fontSize: 48,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             '$_onTimeCount van $_totalActivities activiteiten op tijd',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                               fontSize: 14,
                             ),
                           ),
@@ -240,19 +238,19 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                       ),
                     ),
                     
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     
                     // Activity type breakdown
                     if (_activityTypeCounts.isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'Activiteit types',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textCharcoal,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -269,16 +267,16 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                           );
                         }).toList(),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
                     ],
                     
                     // Activities list
-                    const Text(
+                    Text(
                       'Activiteiten deze week',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textCharcoal,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -299,10 +297,10 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
     final isOnTime = activity['on_time'] as bool;
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -326,25 +324,25 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
               size: 24,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   activity['type'],
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textCharcoal,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   '${activity['day']} • Daadwerkelijk: ${activity['actual_time']}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.black,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
                 if (activity['target_time'] != '-') ...[
@@ -382,21 +380,21 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
 
   Widget _buildEmptyState(String title, String subtitle) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           Icon(Icons.schedule_outlined, size: 48, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             title,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
           const SizedBox(height: 8),

@@ -116,9 +116,9 @@ class _EventScreenState extends State<EventScreen> {
       await db.insertLifeEvent(_todayDate, _omschrijvingController.text.trim(), _invloedWaarde.toInt());
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Gebeurtenis opgeslagen!'),
-          backgroundColor: AppTheme.primaryTeal,
+          backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
 
@@ -127,7 +127,7 @@ class _EventScreenState extends State<EventScreen> {
       _loadEvents(); // Herlaad de lijst
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Kon gebeurtenis niet opslaan. Probeer opnieuw.'),
           backgroundColor: Colors.red,
         ),
@@ -140,31 +140,31 @@ class _EventScreenState extends State<EventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Life Events',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadEvents,
             tooltip: 'Verversen',
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
           : Column(
               children: [
                 // Filters
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.white,
+                  padding: EdgeInsets.all(16),
+                  color: Theme.of(context).colorScheme.surface,
                   child: Row(
                     children: [
                       _buildFilterChip('Alle', _filter == 'Alle'),
@@ -182,7 +182,7 @@ class _EventScreenState extends State<EventScreen> {
                   child: _filteredEvents.isEmpty
                       ? _buildEmptyState()
                       : ListView.builder(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16),
                           itemCount: _filteredEvents.length,
                           itemBuilder: (context, index) {
                             final event = _filteredEvents[index];
@@ -193,10 +193,10 @@ class _EventScreenState extends State<EventScreen> {
                             final date = event['date']?.toString() ?? '';
                             
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
+                              margin: EdgeInsets.only(bottom: 12),
+                              padding: EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
@@ -254,11 +254,11 @@ class _EventScreenState extends State<EventScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddEventDialog(),
-        backgroundColor: AppTheme.primaryTeal,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        icon: Icon(Icons.add, color: Colors.white),
+        label: Text(
           'Nieuwe Gebeurtenis',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -269,7 +269,7 @@ class _EventScreenState extends State<EventScreen> {
       child: GestureDetector(
         onTap: () => _setFilter(label),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected ? AppTheme.primaryTeal : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(8),
@@ -278,9 +278,9 @@ class _EventScreenState extends State<EventScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isSelected)
-                const Icon(Icons.check, color: Colors.white, size: 16),
+                Icon(Icons.check, color: Theme.of(context).colorScheme.surface, size: 16),
               if (isSelected)
-                const SizedBox(width: 4),
+                SizedBox(width: 4),
               Text(
                 label,
                 style: TextStyle(
@@ -336,8 +336,8 @@ class _EventScreenState extends State<EventScreen> {
           left: 20,
           right: 20,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: StatefulBuilder(
@@ -355,18 +355,18 @@ class _EventScreenState extends State<EventScreen> {
                       color: Color(0xFF333333),
                     ),
                   ),
-                  const Spacer(),
+                  Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               TextField(
                 controller: _omschrijvingController,
                 maxLines: 3,
-                style: const TextStyle(fontSize: 16, color: Colors.black),
+                style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
                 decoration: InputDecoration(
                   hintText: 'Bijv. Goed gesprek gehad met...',
                   hintStyle: TextStyle(color: Colors.grey.shade400),
@@ -412,7 +412,7 @@ class _EventScreenState extends State<EventScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -423,16 +423,16 @@ class _EventScreenState extends State<EventScreen> {
                           if (mounted) Navigator.pop(context);
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryTeal,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isSaving
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2),
                         )
                       : const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),

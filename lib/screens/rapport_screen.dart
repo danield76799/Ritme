@@ -7,7 +7,7 @@ import '../services/rapport_generator.dart';
 import '../service_locator.dart';
 
 class RapportScreen extends StatefulWidget {
-  const RapportScreen({super.key});
+  RapportScreen({super.key});
 
   @override
   State<RapportScreen> createState() => _RapportScreenState();
@@ -21,12 +21,12 @@ class _RapportScreenState extends State<RapportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text('Rapport', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        title: Text('Rapport', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -35,7 +35,7 @@ class _RapportScreenState extends State<RapportScreen> {
           children: [
             // Info
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppTheme.primaryTeal.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
@@ -43,11 +43,11 @@ class _RapportScreenState extends State<RapportScreen> {
               child: Row(
                 children: [
                   Icon(Icons.description_outlined, color: AppTheme.primaryTeal, size: 32),
-                  const SizedBox(width: 14),
+                  SizedBox(width: 14),
                   Expanded(
                     child: Text(
                       'Genereer een Life Chart Methode (LCM) rapport voor je behandelaar. Bevat stemming, slaap, medicatie, episodes en voortekenen.',
-                      style: TextStyle(color: AppTheme.textCharcoal, fontSize: 13),
+                      style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal, fontSize: 13),
                     ),
                   ),
                 ],
@@ -71,7 +71,7 @@ class _RapportScreenState extends State<RapportScreen> {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Generate button
             SizedBox(
@@ -80,14 +80,14 @@ class _RapportScreenState extends State<RapportScreen> {
               child: ElevatedButton.icon(
                 onPressed: _isGenerating ? null : _generateAndShare,
                 icon: _isGenerating
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Icon(Icons.picture_as_pdf, size: 22),
+                    ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
+                    : Icon(Icons.picture_as_pdf, size: 22),
                 label: Text(
                   _isGenerating ? 'Genereren...' : 'Genereer & Deel Rapport',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryTeal,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -100,16 +100,16 @@ class _RapportScreenState extends State<RapportScreen> {
               Row(
                 children: [
                   Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryTeal, borderRadius: BorderRadius.circular(2))),
-                  const SizedBox(width: 12),
-                  const Text('Voorbeeld', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
+                  SizedBox(width: 12),
+                  Text('Voorbeeld', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.grey.shade200),
                 ),

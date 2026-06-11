@@ -196,44 +196,44 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Database Debug', style: TextStyle(color: Colors.white)),
-        backgroundColor: AppTheme.primaryTeal,
+        title: Text('Database Debug', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadData,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 // Actie knoppen
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.white,
+                  padding: EdgeInsets.all(16),
+                  color: Theme.of(context).colorScheme.surface,
                   child: Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: _cleanupDatabase,
-                          icon: const Icon(Icons.cleaning_services),
-                          label: const Text('Dubbele Opruimen'),
+                          icon: Icon(Icons.cleaning_services),
+                          label: Text('Dubbele Opruimen'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: _resetDatabase,
-                          icon: const Icon(Icons.delete_forever),
-                          label: const Text('Alles Wissen'),
+                          icon: Icon(Icons.delete_forever),
+                          label: Text('Alles Wissen'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
@@ -247,7 +247,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                 // Lijst van logs
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     itemCount: _logs.length,
                     itemBuilder: (context, index) {
                       final log = _logs[index];
@@ -258,10 +258,10 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                       final awakeMinutes = log['awake_minutes']?.toString() ?? '-';
 
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(12),
+                        margin: EdgeInsets.only(bottom: 12),
+                        padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
@@ -300,17 +300,17 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
   Widget _buildDataRow(String label, String value, {bool isSleep = false}) {
     final hasData = value != '-' && value != 'null' && value.isNotEmpty;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           Text(
             label,
             style: TextStyle(
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
               fontSize: 14,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(
             value,
             style: TextStyle(

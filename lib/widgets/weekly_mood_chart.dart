@@ -5,16 +5,16 @@ import '../theme/app_theme.dart';
 class WeeklyMoodChart extends StatelessWidget {
   final List<Map<String, dynamic>> logs;
   
-  const WeeklyMoodChart({super.key, required this.logs});
+  WeeklyMoodChart({super.key, required this.logs});
 
   @override
   Widget build(BuildContext context) {
     if (logs.isEmpty) {
       return Container(
         height: 160,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.grey.shade200),
         ),
@@ -27,7 +27,7 @@ class WeeklyMoodChart extends StatelessWidget {
                 size: 48,
                 color: Colors.grey.shade400,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Text(
                 'Nog geen stemming data',
                 style: TextStyle(
@@ -36,7 +36,7 @@ class WeeklyMoodChart extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 'Voeg minimaal 2 logs toe om een trend te zien',
                 style: TextStyle(
@@ -54,9 +54,9 @@ class WeeklyMoodChart extends StatelessWidget {
     if (logs.length < 2) {
       return Container(
         height: 160,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.grey.shade200),
         ),
@@ -69,7 +69,7 @@ class WeeklyMoodChart extends StatelessWidget {
                 size: 48,
                 color: AppTheme.primaryTeal.withOpacity(0.5),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Text(
                 'Eén log opgeslagen!',
                 style: TextStyle(
@@ -78,7 +78,7 @@ class WeeklyMoodChart extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 'Voeg nog één log toe voor een trendlijn',
                 style: TextStyle(
@@ -151,7 +151,7 @@ class WeeklyMoodChart extends StatelessWidget {
 
     return Container(
       height: 200,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,10 +193,10 @@ class WeeklyMoodChart extends StatelessWidget {
                         // Only show title for exact data point indices, and only if we have that title
                         if (index >= 0 && index < titles.length) {
                           return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
+                            padding: EdgeInsets.only(top: 8.0),
                             child: Text(
                               titles[index],
-                              style: const TextStyle(fontSize: 10, color: Colors.black87),
+                              style: TextStyle(fontSize: 10, color: Colors.black87),
                             ),
                           );
                         }
@@ -264,8 +264,8 @@ class WeeklyMoodChart extends StatelessWidget {
                       return touchedSpots.map((spot) {
                         return LineTooltipItem(
                           '${spot.y.toInt()}/100',
-                          const TextStyle(
-                            color: Colors.white,
+                          TextStyle(
+                            color: Theme.of(context).colorScheme.surface,
                             fontWeight: FontWeight.bold,
                           ),
                         );

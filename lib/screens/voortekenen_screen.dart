@@ -80,7 +80,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Voortekenen van $_lastDate gekopieerd. Pas aan en sla op.'),
-            backgroundColor: AppTheme.primaryTeal,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -162,7 +162,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fout bij opslaan'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Fout bij opslaan'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -174,26 +174,26 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
-        appBar: AppBar(backgroundColor: AppTheme.primaryTeal, title: const Text('Voortekenen', style: TextStyle(color: Colors.white))),
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text('Voortekenen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
 
     String? lastCategory;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text('Voortekenen', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        title: Text('Voortekenen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
         actions: [
           TextButton.icon(
             onPressed: () => _showHistory(context),
-            icon: const Icon(Icons.history, color: Colors.white),
-            label: const Text('Historie', style: TextStyle(color: Colors.white)),
+            icon: Icon(Icons.history, color: Colors.white),
+            label: Text('Historie', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -291,30 +291,30 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                       _categoryLabel(category),
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _categoryColor(category)),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                   ],
                   _buildCheckItem(item, isPresent, cid, log?['severity'] ?? 1),
                 ],
               );
             }),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveAll,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryTeal,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
                 child: _isSaving
-                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
+                    : Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
-            const SizedBox(height: 80),
+            SizedBox(height: 80),
           ],
         ),
       ),
@@ -323,7 +323,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
 
   Widget _buildCheckItem(Map<String, dynamic> item, bool isPresent, int cid, int severity) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: isPresent ? Colors.orange.shade50 : Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -341,21 +341,21 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
           });
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           child: Row(
             children: [
               Icon(
                 isPresent ? Icons.check_box : Icons.check_box_outline_blank,
                 color: isPresent ? Colors.orange : Colors.grey.shade400,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Expanded(
                 child: Text(
                   item['sign'] as String,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: isPresent ? FontWeight.w600 : FontWeight.normal,
-                    color: AppTheme.textCharcoal,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                   ),
                 ),
               ),
@@ -419,7 +419,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annuleren'),
+            child: Text('Annuleren'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -429,7 +429,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
-            child: const Text('Opslaan', style: TextStyle(color: Colors.white)),
+            child: Text('Opslaan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -448,7 +448,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
             future: db.getRecentProdromalTrends(14),
             builder: (context, snapshot) {
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('Nog geen historie'));
+                return Center(child: Text('Nog geen historie'));
               }
               return ListView.builder(
                 itemCount: snapshot.data!.length,

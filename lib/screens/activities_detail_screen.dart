@@ -128,16 +128,16 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Activiteiten Deze Week',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -172,31 +172,30 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                               BoxShadow(
                                 color: AppTheme.primaryTeal.withValues(alpha: 0.3),
                                 blurRadius: 12,
-                                offset: const Offset(0, 6),
+                                offset: Offset(0, 6),
                               ),
                             ],
                           ),
                           child: Column(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.check_circle_outline,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.surface,
                                 size: 32,
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12),
                               Text(
                                 '$_totalCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.surface,
                                   fontSize: 48,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              const Text(
+                              SizedBox(height: 8),
+                              Text(
                                 'totale activiteiten deze week',
-                                style: TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -205,23 +204,23 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                           ),
                         ),
                         
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
                         
                         // Type breakdown
                         if (_typeBreakdown.isNotEmpty) ...[
-                          const Text(
+                          Text(
                             'Verdeling per type',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.textCharcoal,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
@@ -237,7 +236,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                                     ? (entry.value / _totalCount * 100).toStringAsFixed(0)
                                     : '0';
                                 return Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
+                                  padding: EdgeInsets.only(bottom: 12),
                                   child: Row(
                                     children: [
                                       Icon(
@@ -245,22 +244,22 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                                         color: AppTheme.primaryTeal,
                                         size: 20,
                                       ),
-                                      const SizedBox(width: 12),
+                                      SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
                                           entry.key,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14,
-                                            color: AppTheme.textCharcoal,
+                                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                                           ),
                                         ),
                                       ),
                                       Text(
                                         '${entry.value}x ($percentage%)',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
-                                          color: AppTheme.textCharcoal,
+                                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                                         ),
                                       ),
                                     ],
@@ -269,16 +268,16 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                               }).toList(),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                         ],
                         
                         // Daily breakdown
-                        const Text(
+                        Text(
                           'Per dag',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.textCharcoal,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -300,19 +299,19 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             _errorMessage!,
             style: TextStyle(fontSize: 16, color: Colors.red[600]),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _loadData,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Opnieuw proberen'),
+            icon: Icon(Icons.refresh),
+            label: Text('Opnieuw proberen'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
             ),
           ),
@@ -325,9 +324,9 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
     final activities = (day['activities'] as List<dynamic>).cast<Map<String, dynamic>>();
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -342,40 +341,40 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
         children: [
           // Day header
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
                 Text(
                   day['dayFull'],
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.textCharcoal,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
                   day['dateShort'],
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.black,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
-                const Spacer(),
+                Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryTeal,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '${day['count']} activiteiten',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.surface,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -409,17 +408,17 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
             color: _getPScoreColor(pScore),
             size: 22,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   activity['type'],
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
-                    color: AppTheme.textCharcoal,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                   ),
                 ),
                 if (activity['actual_time'] != '-')
@@ -427,7 +426,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                     'Om ${activity['actual_time']}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.black,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
               ],
@@ -448,21 +447,21 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
 
   Widget _buildEmptyState(String title, String subtitle) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           Icon(Icons.event_busy_outlined, size: 48, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             title,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
           const SizedBox(height: 8),

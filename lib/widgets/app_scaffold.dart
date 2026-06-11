@@ -47,14 +47,14 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryTeal,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         leading: showDrawer
             ? Builder(
                 builder: (context) => IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white),
+                  icon: Icon(Icons.menu, color: Colors.white),
                   onPressed: () => Scaffold.of(context).openDrawer(),
                   tooltip: 'Menu',
                 ),
@@ -62,10 +62,10 @@ class AppScaffold extends StatelessWidget {
             : null,
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 22,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
           ),
         ),
         actions: actions,
