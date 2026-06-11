@@ -185,7 +185,7 @@ class RitmeApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       home: SplashScreenWrapper(),
       routes: {
         '/mood': (context) => MoodScreen(),
