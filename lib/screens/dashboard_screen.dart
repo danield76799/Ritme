@@ -413,15 +413,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: (isDark ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.3)),
+        color: (isDark ? Colors.white.withOpacity(0.20) : Colors.white.withOpacity(0.35)),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.surface, size: 18),
+          Icon(icon, color: Colors.white, size: 18),
           SizedBox(width: 8),
-          Text('$label $time', style: TextStyle(color: Theme.of(context).colorScheme.surface, fontSize: 14, fontWeight: FontWeight.w600)),
+          Text('$label $time', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
         ],
       ),
     );
