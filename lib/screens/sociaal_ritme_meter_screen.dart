@@ -208,7 +208,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               Text(
                 '$voltooidCount / 5 activiteiten voltooid',
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -237,6 +237,8 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     final naam = activiteit['naam'] as String;
     final icoon = activiteit['icoon'] as IconData;
     final targetKey = activiteit['targetKey'] as String;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     final targetTijd = _getTargetTime(targetKey);
     final dbActiviteit = _getActivityForType(naam);
@@ -248,7 +250,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -269,7 +271,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
               decoration: BoxDecoration(
                 color: isGedaan
                     ? AppTheme.primaryTeal.withValues(alpha: 0.1)
-                    : Colors.grey.shade100,
+                    : (isDark ? Colors.grey.shade800 : Colors.grey.shade100),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -290,7 +292,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isGedaan ? AppTheme.textCharcoal : Colors.black,
+                      color: theme.textTheme.bodyMedium?.color,
                     ),
                   ),
                   SizedBox(height: 4),
@@ -303,7 +305,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                         'Doel: $targetTijd',
                         style: TextStyle(
                           fontSize: 13, 
-                          color: targetTijd == '--:--' ? Colors.grey.shade400 : Colors.black,
+                          color: targetTijd == '--:--' ? Colors.grey.shade400 : theme.textTheme.bodyMedium?.color,
                           fontWeight: targetTijd == '--:--' ? FontWeight.normal : FontWeight.w500,
                         ),
                       ),
