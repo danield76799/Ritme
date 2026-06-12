@@ -203,6 +203,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
         title: Text(
           'Ritme',
           style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
