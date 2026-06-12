@@ -4,6 +4,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:intl/intl.dart';
+import '../service_locator.dart';
 import '../utils/logger.dart';
 
 class NotificationHelper {
@@ -38,7 +40,10 @@ class NotificationHelper {
         iOS: iosSettings,
       );
 
-      final initialized = await _notifications.initialize(initSettings);
+      final initialized = await _notifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: _onNotificationResponse,
+      );
       if (initialized == null || !initialized) {
         AppLogger.warning('Notificatie initialisatie mislukt of geweigerd');
         return;
@@ -55,8 +60,21 @@ class NotificationHelper {
 
   Future<bool> _requestPermissions() async {
     try {
-      final status = await Permission.notification.request();
-      return status.isGranted;
+      // Standard notification permission
+      final notifStatus = await Permission.notification.request();
+      if (!notifStatus.isGranted) return false;
+
+      // Exact alarm permission (Android 12+ — required for exactAllowWhileIdle)
+      try {
+        final alarmStatus = await Permission.scheduleExactAlarm.request();
+        if (!alarmStatus.isGranted) {
+          AppLogger.warning('Exact alarm permission denied — notifications may be delayed');
+        }
+      } catch (_) {
+        // scheduleExactAlarm only exists on Android 12+
+      }
+
+      return true;
     } catch (e) {
       AppLogger.error('Permission request error', error: e);
       return false;
@@ -264,7 +282,7 @@ class NotificationHelper {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'medication:$id',
-        // NO matchDateTimeComponents — conflicts with exactAllowWhileIdle on Android
+        matchDateTimeComponents: DateTimeComponents.time,
       );
       AppLogger.info('Medication reminder scheduled: $medicationName at $scheduledDate (id=$notificationId)');
     } catch (e) {
@@ -400,6 +418,36 @@ class NotificationHelper {
     } catch (e) {
       debugPrint('Error getting pending: $e');
       return 0;
+    }
+  }
+
+  void _onNotificationResponse(NotificationResponse response) async {
+    final payload = response.payload;
+    final actionId = response.actionId;
+
+    if (payload != null && payload.startsWith('medication:')) {
+      final medicationId = int.tryParse(payload.split(':')[1]);
+      if (medicationId != null) {
+        final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+        await ensureInitialized();
+
+        if (actionId == 'taken') {
+          await db.insertMedicationIntakeMap({
+            'medication_id': medicationId,
+            'date': today,
+            'aantal_ingenomen': 1,
+          });
+          AppLogger.debug('Medication $medicationId marked as taken');
+        } else if (actionId == 'skip') {
+          await db.insertMedicationIntakeMap({
+            'medication_id': medicationId,
+            'date': today,
+            'aantal_ingenomen': 0,
+          });
+          AppLogger.debug('Medication $medicationId marked as skipped');
+        }
+      }
     }
   }
 }
