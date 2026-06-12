@@ -210,17 +210,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.help_outline),
+            icon: Icon(Icons.help_outline, color: Colors.black87),
             onPressed: () => Navigator.pushNamed(context, '/help'),
             tooltip: 'Gebruiksaanwijzing',
           ),
           IconButton(
-            icon: const Icon(Icons.bar_chart),
+            icon: Icon(Icons.bar_chart, color: Colors.black87),
             onPressed: () => Navigator.pushNamed(context, '/statistics'),
             tooltip: 'Statistieken',
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: Icon(Icons.settings, color: Colors.black87),
             onPressed: () async {
               await Navigator.pushNamed(context, '/settings');
               _loadData();
@@ -228,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             tooltip: 'Instellingen',
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: Icon(Icons.logout, color: Colors.black87),
             onPressed: _logout,
             tooltip: 'Uitloggen',
           ),
