@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
 
 // Services
 import 'services/boot_service.dart';
@@ -53,7 +51,6 @@ void main() async {
     await NotificationHelper.instance.initialize();
     await BootService.initialize();
     await WidgetService.initialize();
-    await _setupNotificationActionHandler();
   }
 
   // Set up error handling
@@ -71,50 +68,6 @@ void main() async {
       child: const RitmeApp(),
     ),
   );
-}
-
-Future<void> _setupNotificationActionHandler() async {
-  try {
-    final notifications = FlutterLocalNotificationsPlugin();
-
-    notifications.initialize(
-      const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-        iOS: DarwinInitializationSettings(),
-      ),
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        final payload = response.payload;
-        final actionId = response.actionId;
-
-        if (payload != null && payload.startsWith('medication:')) {
-          final medicationId = int.tryParse(payload.split(':')[1]);
-          if (medicationId != null) {
-            final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-            await ensureInitialized();
-
-            if (actionId == 'taken') {
-              await db.insertMedicationIntakeMap({
-                'medication_id': medicationId,
-                'date': today,
-                'aantal_ingenomen': 1,
-              });
-              AppLogger.debug('Medication $medicationId marked as taken');
-            } else if (actionId == 'skip') {
-              await db.insertMedicationIntakeMap({
-                'medication_id': medicationId,
-                'date': today,
-                'aantal_ingenomen': 0,
-              });
-              AppLogger.debug('Medication $medicationId marked as skipped');
-            }
-          }
-        }
-      },
-    );
-  } catch (e) {
-    AppLogger.error('Failed to setup notification action handler', error: e);
-  }
 }
 
 class ErrorBoundary extends StatefulWidget {
