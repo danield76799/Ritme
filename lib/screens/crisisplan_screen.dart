@@ -69,7 +69,6 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   }
 
   void _editSection(Map<String, dynamic> section) {
-    final id = section['id'] as int;
     final sectionKey = section['section'] as String;
     final controller = TextEditingController(text: section['content'] as String? ?? '');
     final info = _getDisplayInfo(section);

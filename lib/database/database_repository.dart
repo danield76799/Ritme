@@ -91,6 +91,7 @@ abstract class DatabaseRepository {
   Future<List<Map<String, dynamic>>> getCrisisPlan();
   Future<int> insertCrisisPlanSection(Map<String, dynamic> data);
   Future<int> updateCrisisPlanSection(int id, Map<String, dynamic> data);
+  Future<int> updateCrisisPlanSectionBySection(String section, Map<String, dynamic> data);
   Future<int> deleteCrisisPlanSection(int id);
 
   // Episode Logs
