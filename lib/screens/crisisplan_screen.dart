@@ -80,6 +80,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
         final reloaded = await db.getCrisisPlan();
         if (mounted) setState(() { _sections = reloaded; _isLoading = false; });
       } else {
+        // Ensure all default sections exist
         for (final def in _defaultSections) {
           final exists = sections.any((s) => s['section'] == def['section']);
           if (!exists) {
@@ -98,27 +99,52 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     }
   }
 
-  String _getTitle(String? section) {
-    if (section == null) return 'Onbekende sectie';
+  // Returns [DisplayTitle, DisplaySubtitle, isCustom]
+  List<dynamic> _getDisplayInfo(Map<String, dynamic> section) {
+    final key = section['section'] as String? ?? '';
+    final content = section['content'] as String? ?? '';
+    
+    // Check default list
     for (final def in _defaultSections) {
-      if (def['section'] == section) return def['title'] ?? section;
+      if (def['section'] == key) {
+        return [
+          def['title'] ?? key,
+          content.isNotEmpty ? content : 'Nog niet ingevuld — tik om te bewerken',
+          false
+        ];
+      }
     }
-    return section;
-  }
-
-  String _getHint(String? section) {
-    if (section == null) return '';
-    for (final def in _defaultSections) {
-      if (def['section'] == section) return def['hint'] ?? '';
+    
+    // Custom section: first line is title, rest is content
+    if (content.isEmpty) return ['Eigen sectie', 'Tik om te bewerken', true];
+    
+    final lines = content.split('\n');
+    final title = lines[0].trim();
+    if (lines.length > 1) {
+      // Find the first non-empty line after the title
+      String subtitle = '';
+      for (int i = 1; i < lines.length; i++) {
+        if (lines[i].trim().isNotEmpty) {
+          subtitle = lines[i].trim();
+          break;
+        }
+      }
+      return [title, subtitle.isNotEmpty ? subtitle : 'Tik om te bewerken', true];
     }
-    return '';
+    return [title, 'Tik om te bewerken', true];
   }
 
   void _editSection(Map<String, dynamic> section) {
-    final sectionKey = section['section'] as String?;
-    final controller = TextEditingController(text: section['content'] as String? ?? '');
-    final title = _getTitle(sectionKey);
-    final hint = _getHint(sectionKey);
+    final key = section['section'] as String? ?? '';
+    final fullContent = section['content'] as String? ?? '';
+    
+    // For custom sections, we want to edit the whole thing including title
+    final controller = TextEditingController(text: fullContent);
+    
+    // Determine title for the header
+    final info = _getDisplayInfo(section);
+    final displayTitle = info[0] as String;
+    final isCustom = info[2] as bool;
 
     showModalBottomSheet(
       context: context,
@@ -148,21 +174,18 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                title,
+                isCustom ? 'Bewerk eigen sectie' : displayTitle,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                hint,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              if (isCustom)
+                const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: Text('Tip: de eerste regel wordt de titel in het overzicht.', style: TextStyle(fontSize: 12, color: Colors.grey)),
                 ),
-              ),
               const SizedBox(height: 16),
               Expanded(
                 child: TextField(
@@ -196,7 +219,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                         width: 2,
                       ),
                     ),
-                    hintText: 'Schrijf hier je plan...',
+                    hintText: isCustom ? 'Titel\n\nBeschrijving...' : 'Schrijf hier je plan...',
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.all(16),
                   ),
@@ -238,7 +261,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     if (section == 'contacten') return Colors.green;
     if (section == 'medicatie_nood') return Colors.red;
     if (section == 'wat_helpt') return Colors.teal;
-    return Colors.grey;
+    return Colors.blueGrey;
   }
 
   IconData _sectionIcon(String? section) {
@@ -256,9 +279,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          title: const Text('Crisisplan'),
-        ),
+        appBar: AppBar(title: const Text('Crisisplan')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -287,10 +308,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 children: [
                   Icon(Icons.assignment, size: 64, color: Colors.grey.withOpacity(0.5)),
                   const SizedBox(height: 16),
-                  Text(
-                    'Nog geen crisisplan',
-                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                  ),
+                  const Text('Nog geen crisisplan', style: TextStyle(fontSize: 18, color: Colors.grey)),
                 ],
               ),
             )
@@ -299,10 +317,13 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               itemCount: _sections.length,
               itemBuilder: (context, i) {
                 final section = _sections[i];
+                final info = _getDisplayInfo(section);
+                final title = info[0] as String;
+                final subtitle = info[1] as String;
+                final isCustom = info[2] as bool;
+                
                 final sectionKey = section['section'] as String?;
-                final title = _getTitle(sectionKey);
-                final content = section['content'] as String? ?? '';
-                final hasContent = content.isNotEmpty;
+                final hasContent = (section['content'] as String? ?? '').isNotEmpty;
                 final color = _sectionColor(sectionKey);
 
                 return Card(
@@ -344,7 +365,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  hasContent ? _truncate(content, 100) : 'Nog niet ingevuld — tik om te bewerken',
+                                  _truncate(subtitle, 80),
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: hasContent ? Colors.grey.shade700 : Colors.grey.shade400,
@@ -356,7 +377,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                               ],
                             ),
                           ),
-                          const Icon(Icons.chevron_right, color: Colors.grey),
+                          const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                         ],
                       ),
                     ),
@@ -401,15 +422,17 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             const SizedBox(height: 16),
             const Text('Sectie toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            if (availableDefaults.isEmpty)
-              const Text('Alle standaard secties zijn al toegevoegd.')
-            else
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  children: availableDefaults.map((def) => ListTile(
-                    leading: Icon(_sectionIcon(def['section'] as String?), color: _sectionColor(def['section'] as String?)),
-                    title: Text(def['title'] as String),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  ...availableDefaults.map((def) => ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: _sectionColor(def['section'] as String).withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                      child: Icon(_sectionIcon(def['section'] as String), color: _sectionColor(def['section'] as String), size: 20),
+                    ),
+                    title: Text(def['title'] as String, style: const TextStyle(fontWeight: FontWeight.w500)),
                     onTap: () async {
                       Navigator.pop(ctx);
                       await db.insertCrisisPlanSection({
@@ -419,10 +442,99 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                       });
                       _loadData();
                     },
-                  )).toList(),
+                  )),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.blueGrey.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                      child: const Icon(Icons.add, color: Colors.blueGrey, size: 20),
+                    ),
+                    title: const Text('Eigen sectie maken', style: TextStyle(fontWeight: FontWeight.w500)),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showCustomSectionDialog();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCustomSectionDialog() {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: Container(
+          height: MediaQuery.of(ctx).size.height * 0.7,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
+              ),
+              const SizedBox(height: 16),
+              const Text('Eigen sectie maken', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: 'Titel',
+                  filled: true,
+                  fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2C) : Colors.grey.shade100,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
               ),
-          ],
+              const SizedBox(height: 16),
+              Expanded(
+                child: TextField(
+                  controller: contentController,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: InputDecoration(
+                    hintText: 'Beschrijving...',
+                    filled: true,
+                    fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2C) : Colors.grey.shade100,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (titleController.text.trim().isEmpty) return;
+                    final sectionKey = 'custom_${DateTime.now().millisecondsSinceEpoch}';
+                    await db.insertCrisisPlanSection({
+                      'section': sectionKey,
+                      'content': '${titleController.text.trim()}\n\n${contentController.text.trim()}',
+                      'sort_order': 999,
+                    });
+                    _loadData();
+                    if (mounted) Navigator.pop(ctx);
+                  },
+                  child: const Text('Toevoegen', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
