@@ -402,33 +402,33 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.pushNamed(context, '/quick-checkin');
-          if (result == true) _loadData();
-        },
-        icon: Icon(Icons.bolt, color: Colors.white),
-        label: Text('Snelle Check-in', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
-      ),
-    );
-  }
+          ),
+          ],
+          ),
+          ),
+          ),
+          );
+          }
 
-  Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
-    Container(
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.20),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+          Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
+          return Container(
+          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+          color: Theme.of(context).cardColor.withOpacity(0.20),
+          borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
           Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
           SizedBox(width: 8),
           Text('$label $time', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    ),
-  }
+          ],
+          ),
+          );
+          }
 
-  Widget _buildActionCard(BuildContext context,
+          Widget _buildActionCard(BuildContext context,
       {required IconData icon, required Color color, required String title, required String route}) {
     return OpenContainer(
       transitionType: ContainerTransitionType.fadeThrough,
