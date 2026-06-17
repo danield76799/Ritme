@@ -125,7 +125,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.85,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSurface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.all(24),
@@ -247,7 +247,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                     Container(
                       padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
+                        color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(_sectionIcon(section['section'] as String), color: color),
@@ -299,7 +299,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSurface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.all(24),
@@ -319,7 +319,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: _sectionColor(def['section'] as String).withValues(alpha: 0.1),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(_sectionIcon(def['section'] as String), color: _sectionColor(def['section'] as String)),
@@ -371,7 +371,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.85,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSurface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
