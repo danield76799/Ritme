@@ -231,20 +231,50 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final id = section['id'];
+                    // Debug: print de ID en het type
+                    final idRaw = section['id'];
+                    print('DEBUG: section ID = $idRaw (type: ${idRaw.runtimeType})');
+                    print('DEBUG: section key = ${section['section']}');
+                    
+                    int? id;
+                    if (idRaw is int) {
+                      id = idRaw;
+                    } else if (idRaw is String) {
+                      id = int.tryParse(idRaw);
+                    }
+                    
                     if (id == null) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(ctx).showSnackBar(
-                          const SnackBar(content: Text('Fout: geen ID gevonden voor deze sectie')),
+                      // Fallback: update op basis van section key
+                      final sectionKey = section['section'];
+                      if (sectionKey != null) {
+                        print('DEBUG: Fallback - update op section key: $sectionKey');
+                        final dbInstance = await db.database;
+                        await dbInstance.update(
+                          'crisis_plan',
+                          {'content': controller.text},
+                          where: 'section = ?',
+                          whereArgs: [sectionKey],
                         );
+                        _loadData();
+                        if (mounted) Navigator.pop(ctx);
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            const SnackBar(content: Text('Fout: geen ID of section key gevonden')),
+                          );
+                        }
                       }
                       return;
                     }
+                    
+                    print('DEBUG: Update met ID = $id');
                     try {
-                      await db.updateCrisisPlanSection(id as int, {'content': controller.text});
+                      await db.updateCrisisPlanSection(id, {'content': controller.text});
+                      print('DEBUG: Update succesvol');
                       _loadData();
                       if (mounted) Navigator.pop(ctx);
                     } catch (e) {
+                      print('DEBUG: Update faalde: $e');
                       if (mounted) {
                         ScaffoldMessenger.of(ctx).showSnackBar(
                           SnackBar(content: Text('Fout bij opslaan: $e')),
