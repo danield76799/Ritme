@@ -232,11 +232,25 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     final id = section['id'];
-                    if (id != null) {
+                    if (id == null) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(ctx).showSnackBar(
+                          const SnackBar(content: Text('Fout: geen ID gevonden voor deze sectie')),
+                        );
+                      }
+                      return;
+                    }
+                    try {
                       await db.updateCrisisPlanSection(id as int, {'content': controller.text});
                       _loadData();
+                      if (mounted) Navigator.pop(ctx);
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(ctx).showSnackBar(
+                          SnackBar(content: Text('Fout bij opslaan: $e')),
+                        );
+                      }
                     }
-                    if (mounted) Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
