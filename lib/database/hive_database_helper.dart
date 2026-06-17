@@ -1452,6 +1452,26 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<int> updateCrisisPlanSectionBySection(String section, Map<String, dynamic> data) async {
+    // Find the entry with matching section key
+    final entries = _crisisPlan.toMap().entries.toList();
+    for (final entry in entries) {
+      final map = Map<String, dynamic>.from(entry.value);
+      if (map['section'] == section) {
+        final cleanData = <String, dynamic>{};
+        data.forEach((key, value) {
+          cleanData[key] = value?.toString() ?? value;
+        });
+        cleanData['id'] = entry.key;
+        cleanData['section'] = section; // Keep the section key
+        await _crisisPlan.put(entry.key, cleanData);
+        return 1;
+      }
+    }
+    return 0; // No matching section found
+  }
+
+  @override
   Future<int> deleteCrisisPlanSection(int id) async {
     await _crisisPlan.delete(id);
     return 1;
