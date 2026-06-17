@@ -273,61 +273,66 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _sections.length,
-        itemBuilder: (context, i) {
-          final section = _sections[i];
-          final title = _getTitle(section['section'] as String);
-          final content = section['content'] as String? ?? '';
-          final hasContent = content.isNotEmpty;
-          final color = _sectionColor(section['section'] as String);
+      body: Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: _sections.length,
+          itemBuilder: (context, i) {
+            final section = _sections[i];
+            final title = _getTitle(section['section'] as String);
+            final content = section['content'] as String? ?? '';
+            final hasContent = content.isNotEmpty;
+            final color = _sectionColor(section['section'] as String);
+            final isDark = Theme.of(context).brightness == Brightness.dark;
 
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            elevation: hasContent ? 2 : 1,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: hasContent ? color.withOpacity(0.3) : Colors.grey.shade200),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => _editSection(section),
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              elevation: isDark ? 0 : (hasContent ? 2 : 1),
+              color: isDark ? Color(0xFF223236) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: hasContent ? color.withOpacity(0.3) : (isDark ? Color(0xFF2A3C41) : Colors.grey.shade300)),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => _editSection(section),
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(_sectionIcon(section['section'] as String), color: color),
                       ),
-                      child: Icon(_sectionIcon(section['section'] as String), color: color),
-                    ),
-                    SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black)),
-                          const SizedBox(height: 4),
-                          Text(
-                            hasContent ? _truncate(content, 80) : 'Nog niet ingevuld — tik om te bewerken',
-                            style: TextStyle(fontSize: 13, color: hasContent ? Colors.grey.shade700 : Colors.grey.shade400, fontStyle: hasContent ? FontStyle.normal : FontStyle.italic),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                      SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).colorScheme.onSurface)),
+                            const SizedBox(height: 4),
+                            Text(
+                              hasContent ? _truncate(content, 80) : 'Nog niet ingevuld — tik om te bewerken',
+                              style: TextStyle(fontSize: 13, color: hasContent ? Theme.of(context).colorScheme.onSurface.withOpacity(0.7) : Colors.grey.shade400, fontStyle: hasContent ? FontStyle.normal : FontStyle.italic),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Icon(Icons.edit, color: Colors.grey.shade400, size: 20),
-                  ],
+                      Icon(Icons.edit, color: Colors.grey.shade400, size: 20),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
