@@ -269,23 +269,23 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-       _getGreeting(username),
-       style: TextStyle(
-         color: Theme.of(context).colorScheme.onSurface,
-         fontSize: 28,
-         fontWeight: FontWeight.w800,
-         letterSpacing: -0.5,
-       ),
-     ),
+                        _getGreeting(username),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
                     ),
                     SizedBox(height: 4),
                     Text(
-                          dateStr,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85),
-                            fontSize: 15,
-                          ),
-                        ),
+                      dateStr,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85),
+                        fontSize: 15,
+                      ),
+                    ),
                     const SizedBox(height: 18),
                     Row(
                       children: [
@@ -407,26 +407,28 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         icon: Icon(Icons.bolt, color: Theme.of(context).colorScheme.onPrimary),
         label: Text('Snelle Check-in', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
       ),
+    );
+  }
 
-          Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
-          return Container(
-          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withOpacity(0.20),
-          borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+  Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor.withOpacity(0.20),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
           SizedBox(width: 8),
           Text('$label $time', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w600)),
-          ],
-          ),
-          );
-          }
+        ],
+      ),
+    );
+  }
 
-          Widget _buildActionCard(BuildContext context,
+  Widget _buildActionCard(BuildContext context,
       {required IconData icon, required Color color, required String title, required String route}) {
     return OpenContainer(
       transitionType: ContainerTransitionType.fadeThrough,
@@ -500,15 +502,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color)),
-                    const SizedBox(height: 3),
-                    Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
-                    if (subtitle != null)
-                      Text(subtitle, style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color)),
+                    Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(subtitle, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color)),
+                    ],
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16, color: theme.textTheme.bodyMedium?.color),
             ],
           ),
         ),
@@ -517,56 +520,56 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildAlertCard(Alert alert, ThemeData theme) {
-    Color color;
-    IconData icon;
-    switch (alert.severity) {
-      case 'high': color = AppTheme.error; icon = Icons.warning_rounded; break;
-      case 'medium': color = AppTheme.warning; icon = Icons.info_outline; break;
-      default: color = const Color(0xFF88B0C7); icon = Icons.info_outline;
-    }
-    String? route;
-    if (alert.type.startsWith('slaap')) { route = '/sleep-detail'; }
-    else if (alert.type.startsWith('voortekenen')) { route = '/voortekenen'; }
-    else if (alert.type.startsWith('srt')) { route = '/sociaal-ritme'; }
-
-    return Material(
-      color: color.withOpacity(0.06),
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        onTap: route != null ? () => Navigator.pushNamed(context, route!) : null,
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(width: 12),
-            Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(alert.title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: color)),
-                const SizedBox(height: 2),
-                Text(alert.message, style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
-              ],
-            )),
-            if (route != null) Icon(Icons.arrow_forward_ios, size: 14, color: color.withOpacity(0.5)),
-          ]),
-        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: alert.severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                alert.severity == AlertSeverity.high ? Icons.warning_amber : Icons.warning,
+                color: alert.severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  alert.title,
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(alert.message, style: TextStyle(fontSize: 14)),
+          const SizedBox(height: 8),
+          Text(
+            'Geregistreerd op: ${alert.timestamp.toLocal().toString().split(' ')[0]}',
+            style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+          ),
+        ],
       ),
     );
   }
 
   Color _getSrtColor(double score) {
-    if (score >= 80) return AppTheme.success;
-    if (score >= 60) return AppTheme.warning;
-    if (score > 0) return AppTheme.error;
-    return Colors.grey;
+    if (score <= 20) return AppTheme.error;
+    if (score <= 40) return AppTheme.warning;
+    if (score <= 60) return AppTheme.success;
+    return AppTheme.primaryTeal;
   }
 
   String _getSrtLabel(double score) {
-    if (score >= 80) return 'Uitstekend';
-    if (score >= 60) return 'Stabiel';
-    if (score >= 40) return 'Matig';
-    if (score > 0) return 'Instabiel';
-    return 'Nog geen data';
+    if (score <= 20) return 'Laag';
+    if (score <= 40) return 'Matig';
+    if (score <= 60) return 'Goed';
+    return 'Uitstekend';
   }
 }
