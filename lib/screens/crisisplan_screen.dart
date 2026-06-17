@@ -34,7 +34,9 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     setState(() => _isLoading = true);
     try {
       final sections = await db.getCrisisPlan();
+      print('DB DEBUG: getCrisisPlan returned ${sections.length} sections');
       if (sections.isEmpty) {
+        print('DB DEBUG: Creating default sections');
         for (var i = 0; i < _defaultSections.length; i++) {
           await db.insertCrisisPlanSection({'section': _defaultSections[i]['section'], 'content': '', 'sort_order': i});
         }
@@ -43,6 +45,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       } else {
         for (final def in _defaultSections) {
           if (!sections.any((s) => s['section'] == def['section'])) {
+            print('DB DEBUG: Adding missing default: ${def['section']}');
             await db.insertCrisisPlanSection({'section': def['section'], 'content': '', 'sort_order': _defaultSections.indexOf(def)});
           }
         }
@@ -50,6 +53,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
         if (mounted) setState(() { _sections = reloaded; _isLoading = false; });
       }
     } catch (e) {
+      print('DB DEBUG: Error in _loadData: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }

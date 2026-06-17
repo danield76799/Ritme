@@ -880,7 +880,9 @@ class DatabaseHelper implements DatabaseRepository {
 
   Future<int> updateCrisisPlanSection(int id, Map<String, dynamic> data) async {
     final db = await database;
-    return await db.update('crisis_plan', data, where: 'id = ?', whereArgs: [id]);
+    final result = await db.update('crisis_plan', data, where: 'id = ?', whereArgs: [id]);
+    print('DB DEBUG: updateCrisisPlanSection id=$id, rowsAffected=$result');
+    return result;
   }
 
   Future<int> deleteCrisisPlanSection(int id) async {
