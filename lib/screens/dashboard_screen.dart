@@ -17,6 +17,9 @@ import 'voortekenen_screen.dart';
 import 'crisisplan_screen.dart';
 import 'rapport_screen.dart';
 
+// Add enum for AlertSeverity
+enum AlertSeverity { high, medium }
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -520,13 +523,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildAlertCard(Alert alert, ThemeData theme) {
+    AlertSeverity severity = alert.severity == 'high' ? AlertSeverity.high : AlertSeverity.medium;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: alert.severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning.withOpacity(0.5)),
+        border: Border.all(color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning.withOpacity(0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -534,8 +538,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           Row(
             children: [
               Icon(
-                alert.severity == AlertSeverity.high ? Icons.warning_amber : Icons.warning,
-                color: alert.severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning,
+                severity == AlertSeverity.high ? Icons.warning_amber : Icons.warning,
+                color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -551,7 +555,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           Text(alert.message, style: TextStyle(fontSize: 14)),
           const SizedBox(height: 8),
           Text(
-            'Geregistreerd op: ${alert.timestamp.toLocal().toString().split(' ')[0]}',
+            'Geregistreerd op: ${DateTime.now().toLocal().toString().split(' ')[0]}',
             style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
           ),
         ],
@@ -572,4 +576,3 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     if (score <= 60) return 'Goed';
     return 'Uitstekend';
   }
-}
