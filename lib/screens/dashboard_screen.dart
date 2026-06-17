@@ -210,17 +210,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.help_outline, color: Colors.black87),
+            icon: Icon(Icons.help_outline, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () => Navigator.pushNamed(context, '/help'),
             tooltip: 'Gebruiksaanwijzing',
           ),
           IconButton(
-            icon: Icon(Icons.bar_chart, color: Colors.black87),
+            icon: Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () => Navigator.pushNamed(context, '/statistics'),
             tooltip: 'Statistieken',
           ),
           IconButton(
-            icon: Icon(Icons.settings, color: Colors.black87),
+            icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () async {
               await Navigator.pushNamed(context, '/settings');
               _loadData();
@@ -228,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             tooltip: 'Instellingen',
           ),
           IconButton(
-            icon: Icon(Icons.logout, color: Colors.black87),
+            icon: Icon(Icons.logout, color: Theme.of(context).colorScheme.onSurface),
             onPressed: _logout,
             tooltip: 'Uitloggen',
           ),
@@ -269,23 +269,23 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        _getGreeting(username),
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
+       _getGreeting(username),
+       style: TextStyle(
+         color: Theme.of(context).colorScheme.onSurface,
+         fontSize: 28,
+         fontWeight: FontWeight.w800,
+         letterSpacing: -0.5,
+       ),
+     ),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      dateStr,
-                      style: TextStyle(
-                        color: isDark ? Colors.white70 : Colors.white.withOpacity(0.85),
-                        fontSize: 15,
-                      ),
-                    ),
+                          dateStr,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85),
+                            fontSize: 15,
+                          ),
+                        ),
                     const SizedBox(height: 18),
                     Row(
                       children: [
@@ -411,21 +411,21 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
-    return Container(
+    Container(
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: (isDark ? Colors.white.withOpacity(0.20) : Colors.white.withOpacity(0.35)),
+        color: Theme.of(context).cardColor.withOpacity(0.20),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 18),
+          Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
           SizedBox(width: 8),
-          Text('$label $time', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+          Text('$label $time', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w600)),
         ],
       ),
-    );
+    ),
   }
 
   Widget _buildActionCard(BuildContext context,
