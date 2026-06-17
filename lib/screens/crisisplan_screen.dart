@@ -136,19 +136,29 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
             ),
             SizedBox(height: 16),
-            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? Color(0xFF333333))),
+            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black)),
             const SizedBox(height: 8),
             Text(hint, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
             const SizedBox(height: 16),
             Expanded(
-              child: TextField(
-                controller: controller,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  hintText: 'Schrijf hier je plan...',
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: TextField(
+                    controller: controller,
+                    maxLines: null,
+                    expands: true,
+                    textAlignVertical: TextAlignVertical.top,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Schrijf hier je plan...',
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -205,6 +215,36 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       );
     }
 
+    if (_sections.isEmpty) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          elevation: 0,
+          title: Text('Crisisplan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+          leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.assignment, size: 60, color: Colors.grey.shade400),
+              SizedBox(height: 16),
+              Text(
+                'Nog geen crisisplan',
+                style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Tik op de "+"-knop om een plan toe te voegen',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -235,7 +275,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             elevation: hasContent ? 2 : 1,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: hasContent ? color.withValues(alpha: 0.3) : Colors.grey.shade200),
+              side: BorderSide(color: hasContent ? color.withOpacity(0.3) : Colors.grey.shade200),
             ),
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
@@ -257,7 +297,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+                          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black)),
                           const SizedBox(height: 4),
                           Text(
                             hasContent ? _truncate(content, 80) : 'Nog niet ingevuld — tik om te bewerken',
@@ -284,12 +324,10 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   }
 
   void _showAddSectionDialog() {
-    // Find sections that don't exist yet
     final existingSections = _sections.map((s) => s['section'] as String).toSet();
     final availableDefaults = _defaultSections.where((d) => !existingSections.contains(d['section'])).toList();
 
     if (availableDefaults.isEmpty) {
-      // All default sections exist, allow custom section
       _showCustomSectionDialog();
       return;
     }
@@ -334,7 +372,6 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   'sort_order': _defaultSections.indexOf(def),
                 });
                 _loadData();
-                // Open edit immediately
                 final newSections = await db.getCrisisPlan();
                 final newSection = newSections.firstWhere((s) => s['section'] == def['section']);
                 if (mounted) _editSection(newSection);
@@ -394,15 +431,24 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: TextField(
-                controller: contentController,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                decoration: InputDecoration(
-                  labelText: 'Inhoud',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  hintText: 'Schrijf hier je plan...',
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: TextField(
+                    controller: contentController,
+                    maxLines: null,
+                    expands: true,
+                    textAlignVertical: TextAlignVertical.top,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Schrijf hier je plan...',
+                    ),
+                  ),
                 ),
               ),
             ),
