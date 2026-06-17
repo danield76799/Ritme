@@ -319,7 +319,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: _sectionColor(def['section'] as String).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(_sectionIcon(def['section'] as String), color: _sectionColor(def['section'] as String)),
