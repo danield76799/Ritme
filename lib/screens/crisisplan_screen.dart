@@ -63,11 +63,11 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final sections = await db.getCrisisPlan();
 
-      // If empty, seed with defaults (empty content)
       if (sections.isEmpty) {
         for (var i = 0; i < _defaultSections.length; i++) {
           final def = _defaultSections[i];
@@ -80,7 +80,6 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
         final reloaded = await db.getCrisisPlan();
         if (mounted) setState(() { _sections = reloaded; _isLoading = false; });
       } else {
-        // Ensure all default sections exist
         for (final def in _defaultSections) {
           final exists = sections.any((s) => s['section'] == def['section']);
           if (!exists) {
@@ -122,27 +121,45 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (_, scrollController) => Container(
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: Container(
+          height: MediaQuery.of(ctx).size.height * 0.7,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-              SizedBox(height: 16),
-              Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
               const SizedBox(height: 8),
-              Text(hint, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+              Text(
+                hint,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
               const SizedBox(height: 16),
               Expanded(
                 child: TextField(
@@ -153,43 +170,54 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Theme.of(context).brightness == Brightness.dark ? Color(0xFF2C2C2C) : Colors.grey.shade100,
+                    fillColor: Theme.of(context).brightness == Brightness.dark 
+                        ? const Color(0xFF2C2C2C) 
+                        : Colors.grey.shade100,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade700 : Colors.grey.shade300, width: 1),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? Colors.grey.shade700 
+                            : Colors.grey.shade300,
+                        width: 1,
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2,
+                      ),
                     ),
                     hintText: 'Schrijf hier je plan...',
-                    hintStyle: TextStyle(color: Colors.grey.shade500),
-                    contentPadding: EdgeInsets.all(16),
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    contentPadding: const EdgeInsets.all(16),
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              SafeArea(
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await db.updateCrisisPlanSection(section['id'] as int, {'content': controller.text});
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final id = section['id'];
+                    if (id != null) {
+                      await db.updateCrisisPlanSection(id as int, {'content': controller.text});
                       _loadData();
-                      Navigator.pop(ctx);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    }
+                    if (mounted) Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
+                  child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -223,117 +251,113 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text('Crisisplan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
-        body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
-      );
-    }
-
-    if (_sections.isEmpty) {
-      return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          elevation: 0,
-          title: Text('Crisisplan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-          leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
+          title: const Text('Crisisplan'),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.assignment, size: 60, color: Colors.grey.shade400),
-              SizedBox(height: 16),
-              Text(
-                'Nog geen crisisplan',
-                style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Tik op de "+"-knop om een plan toe te voegen',
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-              ),
-            ],
-          ),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text('Crisisplan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
+        title: const Text('Crisisplan'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
+            icon: const Icon(Icons.add),
             tooltip: 'Snel toevoegen',
             onPressed: () => _showAddSectionDialog(),
           ),
         ],
       ),
-      body: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _sections.length,
-          itemBuilder: (context, i) {
-            final section = _sections[i];
-            final title = _getTitle(section['section'] as String);
-            final content = section['content'] as String? ?? '';
-            final hasContent = content.isNotEmpty;
-            final color = _sectionColor(section['section'] as String);
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              elevation: isDark ? 0 : (hasContent ? 2 : 1),
-              color: isDark ? Color(0xFF223236) : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: hasContent ? color.withOpacity(0.3) : (isDark ? Color(0xFF2A3C41) : Colors.grey.shade300)),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => _editSection(section),
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(_sectionIcon(section['section'] as String), color: color),
-                      ),
-                      SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).colorScheme.onSurface)),
-                            const SizedBox(height: 4),
-                            Text(
-                              hasContent ? _truncate(content, 80) : 'Nog niet ingevuld — tik om te bewerken',
-                              style: TextStyle(fontSize: 13, color: hasContent ? Theme.of(context).colorScheme.onSurface.withOpacity(0.7) : Colors.grey.shade400, fontStyle: hasContent ? FontStyle.normal : FontStyle.italic),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(Icons.edit, color: Colors.grey.shade400, size: 20),
-                    ],
+      body: _sections.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.assignment, size: 64, color: Colors.grey.withOpacity(0.5)),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Nog geen crisisplan',
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
                   ),
-                ),
+                ],
               ),
-            );
-          },
-        ),
-      ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _sections.length,
+              itemBuilder: (context, i) {
+                final section = _sections[i];
+                final title = _getTitle(section['section'] as String);
+                final content = section['content'] as String? ?? '';
+                final hasContent = content.isNotEmpty;
+                final color = _sectionColor(section['section'] as String);
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: hasContent ? color.withOpacity(0.5) : Colors.grey.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => _editSection(section),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(_sectionIcon(section['section'] as String), color: color),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  hasContent ? _truncate(content, 100) : 'Nog niet ingevuld — tik om te bewerken',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: hasContent ? Colors.grey.shade700 : Colors.grey.shade400,
+                                    fontStyle: hasContent ? FontStyle.normal : FontStyle.italic,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, color: Colors.grey),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -345,186 +369,54 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     final existingSections = _sections.map((s) => s['section'] as String).toSet();
     final availableDefaults = _defaultSections.where((d) => !existingSections.contains(d['section'])).toList();
 
-    if (availableDefaults.isEmpty) {
-      _showCustomSectionDialog();
-      return;
-    }
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-            ),
-            SizedBox(height: 16),
-            Text('Snel toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text('Kies een sectie om toe te voegen:', style: TextStyle(fontSize: 14, color: Colors.black)),
-            const SizedBox(height: 16),
-            ...availableDefaults.map((def) => ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
+              child: Container(
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
-                  color: _sectionColor(def['section'] as String).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                child: Icon(_sectionIcon(def['section'] as String), color: _sectionColor(def['section'] as String)),
               ),
-              title: Text(def['title'] as String, style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: Text(def['hint'] as String, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-              onTap: () async {
-                Navigator.pop(ctx);
-                await db.insertCrisisPlanSection({
-                  'section': def['section'],
-                  'content': '',
-                  'sort_order': _defaultSections.indexOf(def),
-                });
-                _loadData();
-                final newSections = await db.getCrisisPlan();
-                final newSection = newSections.firstWhere((s) => s['section'] == def['section']);
-                if (mounted) _editSection(newSection);
-              },
-            )),
-            if (availableDefaults.length < _defaultSections.length)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Center(
-                  child: TextButton.icon(
-                    onPressed: () {
+            ),
+            const SizedBox(height: 16),
+            const Text('Sectie toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            if (availableDefaults.isEmpty)
+              const Text('Alle standaard secties zijn al toegevoegd.')
+            else
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: availableDefaults.map((def) => ListTile(
+                    leading: Icon(_sectionIcon(def['section'] as String), color: _sectionColor(def['section'] as String)),
+                    title: Text(def['title'] as String),
+                    onTap: () async {
                       Navigator.pop(ctx);
-                      _showCustomSectionDialog();
+                      await db.insertCrisisPlanSection({
+                        'section': def['section'],
+                        'content': '',
+                        'sort_order': _sections.length,
+                      });
+                      _loadData();
                     },
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Eigen sectie maken'),
-                  ),
+                  )).toList(),
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _showCustomSectionDialog() {
-    final titleController = TextEditingController();
-    final contentController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (_, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-              ),
-              const SizedBox(height: 16),
-              Text('Eigen sectie toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
-              const SizedBox(height: 16),
-              TextField(
-                controller: titleController,
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Theme.of(context).brightness == Brightness.dark ? Color(0xFF2C2C2C) : Colors.grey.shade100,
-                  labelText: 'Titel',
-                  labelStyle: TextStyle(color: Colors.grey.shade600),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade700 : Colors.grey.shade300, width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-                  ),
-                  hintText: 'Bijv: Mijn persoonlijke strategie',
-                  hintStyle: TextStyle(color: Colors.grey.shade500),
-                  contentPadding: EdgeInsets.all(16),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: TextField(
-                  controller: contentController,
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Theme.of(context).brightness == Brightness.dark ? Color(0xFF2C2C2C) : Colors.grey.shade100,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade700 : Colors.grey.shade300, width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-                    ),
-                    hintText: 'Schrijf hier je plan...',
-                    hintStyle: TextStyle(color: Colors.grey.shade500),
-                    contentPadding: EdgeInsets.all(16),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-              SafeArea(
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (titleController.text.trim().isEmpty) return;
-                      final sectionKey = 'custom_${DateTime.now().millisecondsSinceEpoch}';
-                      await db.insertCrisisPlanSection({
-                        'section': sectionKey,
-                        'content': '${titleController.text.trim()}\n\n${contentController.text}',
-                        'sort_order': 999,
-                      });
-                      _loadData();
-                      Navigator.pop(ctx);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: const Text('Toevoegen', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
