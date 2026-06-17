@@ -576,3 +576,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     if (score <= 60) return 'Goed';
     return 'Uitstekend';
   }
+
+}
+
+class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObserver {
+  // This line is redundant and causes the error
+}
