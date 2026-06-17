@@ -236,9 +236,9 @@ class WeeklyMoodChart extends StatelessWidget {
                       getDotPainter: (spot, percent, barData, index) {
                         return FlDotCirclePainter(
                           radius: 5,
-                          color: _getStemmingKleur(spot.y),
+                          color: _getStemmingKleur(spot.y, context),
                           strokeWidth: 2,
-                          strokeColor: Colors.white,
+                          strokeColor: Theme.of(context).colorScheme.onPrimary,
                         );
                       },
                     ),
@@ -281,16 +281,17 @@ class WeeklyMoodChart extends StatelessWidget {
     );
   }
 
-  Color _getStemmingKleur(double waarde) {
-    if (waarde <= -4) return Colors.grey.shade800!;     // Uiterst depressief
-    if (waarde <= -3) return Colors.black!;      // Ernstig depressief
-    if (waarde <= -2) return Colors.blue[400]!;      // Matig depressief
-    if (waarde <= -1) return Colors.blue[200]!;      // Licht depressief
-    if (waarde == 0) return Colors.green[400]!;       // Neutraal
-    if (waarde <= 1) return Colors.yellow[600]!;     // Licht manisch
-    if (waarde <= 2) return Colors.orange[500]!;     // Matig manisch
-    if (waarde <= 3) return Colors.orange[700]!;     // Druk / Actief
-    if (waarde <= 4) return Colors.red[400]!;        // Ernstig manisch
-    return Colors.red[600]!;                          // Uiterst manisch
+  Color _getStemmingKleur(double waarde, BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  if (waarde <= -4) return Colors.grey.shade800;     // Uiterst depressief
+  if (waarde <= -3) return Colors.grey[800]!;      // Ernstig depressief
+  if (waarde <= -2) return Colors.blue[400] ?? Colors.blueGrey[400]!;      // Matig depressief
+  if (waarde <= -1) return Colors.blue[200] ?? Colors.blueGrey[200]!;      // Licht depressief
+  if (waarde == 0) return Colors.green[400] ?? Colors.green[700]!;       // Neutraal
+  if (waarde <= 1) return Colors.yellow[600] ?? Colors.amber[600]!;     // Licht manisch
+  if (waarde <= 2) return Colors.orange[500] ?? Colors.orange[700]!;     // Matig manisch
+  if (waarde <= 3) return Colors.orange[700] ?? Colors.red[300]!;     // Druk / Actief
+  if (waarde <= 4) return Colors.red[400] ?? Colors.red[600]!;        // Ernstig manisch
+  return Colors.red[600]!;                          // Uiterst manisch
   }
 }
