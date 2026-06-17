@@ -34,26 +34,20 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     setState(() => _isLoading = true);
     try {
       final sections = await db.getCrisisPlan();
-      print('DB DEBUG: getCrisisPlan returned ${sections.length} sections');
       if (sections.isEmpty) {
-        print('DB DEBUG: Creating default sections');
         for (var i = 0; i < _defaultSections.length; i++) {
           await db.insertCrisisPlanSection({'section': _defaultSections[i]['section'], 'content': '', 'sort_order': i});
         }
-        final reloaded = await db.getCrisisPlan();
-        if (mounted) setState(() { _sections = reloaded; _isLoading = false; });
       } else {
         for (final def in _defaultSections) {
           if (!sections.any((s) => s['section'] == def['section'])) {
-            print('DB DEBUG: Adding missing default: ${def['section']}');
             await db.insertCrisisPlanSection({'section': def['section'], 'content': '', 'sort_order': _defaultSections.indexOf(def)});
           }
         }
-        final reloaded = await db.getCrisisPlan();
-        if (mounted) setState(() { _sections = reloaded; _isLoading = false; });
       }
+      final reloaded = await db.getCrisisPlan();
+      if (mounted) setState(() { _sections = reloaded; _isLoading = false; });
     } catch (e) {
-      print('DB DEBUG: Error in _loadData: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -75,6 +69,8 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   }
 
   void _editSection(Map<String, dynamic> section) {
+    final id = section['id'] as int;
+    final sectionKey = section['section'] as String;
     final controller = TextEditingController(text: section['content'] as String? ?? '');
     final info = _getDisplayInfo(section);
     final displayTitle = info[0] as String;
@@ -123,23 +119,10 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final idRaw = section['id'];
-                    print('DEBUG: section ID = $idRaw (type: ${idRaw.runtimeType})');
-                    int? id = idRaw is int ? idRaw : (idRaw is String ? int.tryParse(idRaw) : null);
-                    if (id == null) {
-                      if (mounted) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Fout: kan sectie niet updaten - probeer opnieuw')));
-                      return;
-                    }
-                    try {
-                      print('DEBUG: Update met ID = $id');
-                      await db.updateCrisisPlanSection(id, {'content': controller.text});
-                      print('DEBUG: Update succesvol');
-                      _loadData();
-                      if (mounted) Navigator.pop(ctx);
-                    } catch (e) {
-                      print('DEBUG: Update faalde: $e');
-                      if (mounted) ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('Fout bij opslaan: $e')));
-                    }
+                    // Update op basis van section key - dit werkt altijd
+                    await db.updateCrisisPlanSectionBySection(sectionKey, {'content': controller.text});
+                    _loadData();
+                    if (mounted) Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Theme.of(context).colorScheme.onPrimary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
                   child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
