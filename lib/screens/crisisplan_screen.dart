@@ -98,14 +98,16 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     }
   }
 
-  String _getTitle(String section) {
+  String _getTitle(String? section) {
+    if (section == null) return 'Onbekende sectie';
     for (final def in _defaultSections) {
       if (def['section'] == section) return def['title'] ?? section;
     }
     return section;
   }
 
-  String _getHint(String section) {
+  String _getHint(String? section) {
+    if (section == null) return '';
     for (final def in _defaultSections) {
       if (def['section'] == section) return def['hint'] ?? '';
     }
@@ -113,9 +115,10 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   }
 
   void _editSection(Map<String, dynamic> section) {
+    final sectionKey = section['section'] as String?;
     final controller = TextEditingController(text: section['content'] as String? ?? '');
-    final title = _getTitle(section['section'] as String);
-    final hint = _getHint(section['section'] as String);
+    final title = _getTitle(sectionKey);
+    final hint = _getHint(sectionKey);
 
     showModalBottomSheet(
       context: context,
@@ -227,7 +230,8 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     );
   }
 
-  Color _sectionColor(String section) {
+  Color _sectionColor(String? section) {
+    if (section == null) return Colors.grey;
     if (section.startsWith('manie')) return Colors.orange;
     if (section.startsWith('depressie')) return Colors.blue;
     if (section == 'gemengd') return Colors.amber.shade700;
@@ -237,7 +241,8 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     return Colors.grey;
   }
 
-  IconData _sectionIcon(String section) {
+  IconData _sectionIcon(String? section) {
+    if (section == null) return Icons.assignment;
     if (section.contains('vroeg')) return Icons.warning_amber;
     if (section.contains('ernstig')) return Icons.emergency;
     if (section == 'contacten') return Icons.contacts;
@@ -294,10 +299,11 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
               itemCount: _sections.length,
               itemBuilder: (context, i) {
                 final section = _sections[i];
-                final title = _getTitle(section['section'] as String);
+                final sectionKey = section['section'] as String?;
+                final title = _getTitle(sectionKey);
                 final content = section['content'] as String? ?? '';
                 final hasContent = content.isNotEmpty;
-                final color = _sectionColor(section['section'] as String);
+                final color = _sectionColor(sectionKey);
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -322,7 +328,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                               color: color.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(_sectionIcon(section['section'] as String), color: color),
+                            child: Icon(_sectionIcon(sectionKey), color: color),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -402,7 +408,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 child: ListView(
                   shrinkWrap: true,
                   children: availableDefaults.map((def) => ListTile(
-                    leading: Icon(_sectionIcon(def['section'] as String), color: _sectionColor(def['section'] as String)),
+                    leading: Icon(_sectionIcon(def['section'] as String?), color: _sectionColor(def['section'] as String?)),
                     title: Text(def['title'] as String),
                     onTap: () async {
                       Navigator.pop(ctx);
