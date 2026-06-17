@@ -141,24 +141,25 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             Text(hint, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
             const SizedBox(height: 16),
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: TextField(
-                    controller: controller,
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Schrijf hier je plan...',
-                    ),
+              child: TextField(
+                controller: controller,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                  ),
+                  hintText: 'Schrijf hier je plan...',
+                  hintStyle: TextStyle(color: Colors.grey.shade500),
                 ),
               ),
             ),
@@ -431,24 +432,25 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: TextField(
-                    controller: contentController,
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Schrijf hier je plan...',
-                    ),
+              child: TextField(
+                controller: contentController,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                  ),
+                  hintText: 'Schrijf hier je plan...',
+                  hintStyle: TextStyle(color: Colors.grey.shade500),
                 ),
               ),
             ),
