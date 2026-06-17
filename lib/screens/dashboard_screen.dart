@@ -402,13 +402,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.pushNamed(context, '/quick-checkin');
-          ),
-          ],
-          ),
-          ),
-          ),
-          );
-          }
+          if (result == true) _loadData();
+        },
+        icon: Icon(Icons.bolt, color: Theme.of(context).colorScheme.onPrimary),
+        label: Text('Snelle Check-in', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
+      ),
 
           Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
           return Container(
