@@ -112805,7 +112805,7 @@ r=p.YR(A.b4(o.i(a,"section")))
 q=p.anQ(A.b4(o.i(a,"section")))
 o=p.c
 o.toString
-A.PJ(B.z,new A.aC7(p,r,q,new A.eq(new A.cs(n,B.bs,B.at),s),a),o,!0,t.z)},
+A.PJ(A.f(o).ax.k2,new A.aC7(p,r,q,new A.eq(new A.cs(n,B.bs,B.at),s),a),o,!0,t.z)},
 Nu(a){if(B.d.cw(a,"manie"))return B.b4
 if(B.d.cw(a,"depressie"))return B.bk
 if(a==="gemengd")return B.o3
