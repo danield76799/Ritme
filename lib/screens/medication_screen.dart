@@ -37,6 +37,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     });
     try {
       final configs = await db.getMedicationConfigs();
+      final schedules = await db.getMedicationSchedules();
       final intakes = await db.getMedicationIntake(_formattedDate);
       Map<int, int> intakeMap = {};
       for (var intake in intakes) {
@@ -60,8 +61,30 @@ class _MedicationScreenState extends State<MedicationScreen> {
           intakeMap[medId] = aantal;
         }
       }
+
+      // Combineer configs met reminder_time uit medication_schedule
+      final mergedConfigs = configs.map((config) {
+        dynamic rawId = config['id'];
+        int? configId;
+        if (rawId is int) {
+          configId = rawId;
+        } else if (rawId is String) {
+          configId = int.tryParse(rawId);
+        }
+        final schedule = schedules.firstWhere(
+          (s) => s['medication_id'] == configId,
+          orElse: () => {},
+        );
+        return {
+          ...config,
+          'reminder_time': schedule['reminder_time']?.toString(),
+          'days_of_week': schedule['days_of_week']?.toString() ?? '1,2,3,4,5,6,7',
+          'schedule_id': schedule['id'],
+        };
+      }).toList();
+
       setState(() {
-        _configs = configs;
+        _configs = mergedConfigs;
         _intakesForDay = intakeMap;
         _isLoading = false;
       });
