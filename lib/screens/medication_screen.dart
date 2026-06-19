@@ -681,21 +681,24 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       padding: const EdgeInsets.only(top: 6),
                       child: InkWell(
                         onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade300!,
+                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.4) : Colors.grey.shade300!,
                             ),
+                            boxShadow: reminderEnabled ? [
+                              BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))
+                            ] : [],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                reminderEnabled ? Icons.notifications_active : Icons.notifications_off,
+                                reminderEnabled ? Icons.access_time_filled : Icons.notifications_off,
                                 size: 14,
                                 color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
                               ),
@@ -704,15 +707,15 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                 reminderTime,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.bold,
                                   color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500,
                                 ),
                               ),
                               const SizedBox(width: 4),
                               Icon(
-                                Icons.edit,
+                                Icons.edit_calendar,
                                 size: 12,
-                                color: Colors.grey.shade400,
+                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
                               ),
                             ],
                           ),
