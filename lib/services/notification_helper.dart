@@ -282,7 +282,7 @@ class NotificationHelper {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'medication:$id',
-        matchDateTimeComponents: DateTimeComponents.time,
+        matchDateTimeComponents: DateTimeComponents.time, // Correct for daily repeat
       );
       AppLogger.info('Medication reminder scheduled: $medicationName at $scheduledDate (id=$notificationId)');
     } catch (e) {
