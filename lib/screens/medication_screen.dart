@@ -465,33 +465,51 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
                   const SizedBox(height: 2),
                   Text(dosage, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-                  if (reminderTime != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: InkWell(
-                        onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.4) : Colors.grey.shade300!),
-                            boxShadow: reminderEnabled ? [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))] : [],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(reminderEnabled ? Icons.access_time_filled : Icons.notifications_off, size: 14, color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400),
-                              const SizedBox(width: 6),
-                              Text(reminderTime, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500)),
-                              const SizedBox(width: 4),
-                              Icon(Icons.edit_calendar, size: 12, color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400),
-                            ],
-                          ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: InkWell(
+                      onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime ?? '08:00'),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: reminderTime != null
+                              ? (reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100)
+                              : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: reminderTime != null
+                              ? (reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.4) : Colors.grey.shade300!)
+                              : Colors.grey.shade400),
+                          boxShadow: reminderTime != null && reminderEnabled ? [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))] : [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(reminderTime != null
+                                ? (reminderEnabled ? Icons.access_time_filled : Icons.notifications_off)
+                                : Icons.access_time,
+                                size: 14,
+                                color: reminderTime != null
+                                    ? (reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400)
+                                    : Colors.grey.shade500),
+                            const SizedBox(width: 6),
+                            Text(
+                              reminderTime ?? 'Stel tijd in',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: reminderTime != null
+                                    ? (reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500)
+                                    : Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.edit_calendar, size: 12, color: reminderTime != null ? (reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400) : Colors.grey.shade500),
+                          ],
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
