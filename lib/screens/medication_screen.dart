@@ -14,7 +14,6 @@ class MedicationScreen extends StatefulWidget {
 }
 
 class _MedicationScreenState extends State<MedicationScreen> {
-
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _configs = [];
   Map<int, int> _intakesForDay = {};
@@ -43,7 +42,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
       Map<int, int> intakeMap = {};
       for (var intake in intakes) {
-        // Handle both String and int types for medication_id
         dynamic rawMedId = intake['medication_id'];
         int? medId;
         if (rawMedId is int) {
@@ -52,7 +50,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
           medId = int.tryParse(rawMedId);
         }
         
-        // Handle both String and int types for aantal_ingenomen
         dynamic rawAantal = intake['aantal_ingenomen'];
         int? aantal;
         if (rawAantal is int) {
@@ -89,16 +86,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
   Future<void> _addMedication(String name, double dosage, String unit, {bool reminderEnabled = true, TimeOfDay? reminderTime}) async {
     try {
-      AppLogger.debug('Adding medication: name=$name, dosage=$dosage, unit=$unit, reminderEnabled=$reminderEnabled');
       final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled);
-      AppLogger.debug('Medication added with id: $id');
       
-      // If reminder time is set, also create a schedule and notification
       if (reminderTime != null && reminderEnabled) {
         final timeStr = '${reminderTime.hour.toString().padLeft(2, '0')}:${reminderTime.minute.toString().padLeft(2, '0')}';
         await db.insertMedicationSchedule(id, timeStr, '1,2,3,4,5,6,7');
         
-        // Schedule push notification
         try {
           await NotificationHelper.instance.scheduleMedicationReminder(
             id: id,
@@ -106,25 +99,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
             time: timeStr,
             days: [1, 2, 3, 4, 5, 6, 7],
           );
-          
-          // Show immediate test notification to confirm it works
-          await NotificationHelper.instance.showTestNotification();
-          
-          // Debug: Show pending notifications
-          try {
-            final pending = await NotificationHelper.instance.getPendingNotificationCount();
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Geplande notificaties: $pending'),
-                  duration: const Duration(seconds: 5),
-                ),
-              );
-            }
-          } catch (e) {
-            debugPrint('Error checking pending: $e');
-          }
-          
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -138,33 +112,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
           }
         } catch (notifError) {
           AppLogger.error('Notification scheduling failed', error: notifError);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Medicatie opgeslagen, maar herinnering kon niet worden gezet: $notifError'),
-                backgroundColor: Colors.orange[700],
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          }
         }
       }
       
       _loadData();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add medication', error: e, stackTrace: stackTrace);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Kon medicatie niet toevoegen. Fout: $e'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-      }
     }
   }
 
@@ -182,16 +135,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
       _loadData();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update medication intake', error: e, stackTrace: stackTrace);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Kon inname niet bijwerken. Probeer opnieuw.'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-      }
     }
   }
 
@@ -201,56 +144,29 @@ class _MedicationScreenState extends State<MedicationScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Medicatie verwijderen?'),
-          content: Text('Deze actie kan niet ongedaan worden. Alle innamegegevens voor deze medicatie worden ook verwijderd.'),
+          content: Text('Deze actie kan niet ongedaan worden.'),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text('Annuleren'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Annuleren')),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('Verwijderen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+              child: Text('Verwijderen', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
       );
 
       if (confirmed == true) {
-        // Cancel notification before deleting
         await NotificationHelper.instance.cancelMedicationReminder(configId);
-        
         await db.deleteMedicationConfig(configId);
         _loadData();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Medicatie verwijderd'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
-        }
       }
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to delete medication', error: e, stackTrace: stackTrace);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Kon medicatie niet verwijderen. Probeer opnieuw.'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-      }
+    } catch (e) {
+      AppLogger.error('Failed to delete medication', error: e);
     }
   }
 
-
   Future<void> _editMedicationReminderTime(int configId, String name, bool reminderEnabled, String currentTime) async {
-    // Parse current time
     final parts = currentTime.split(':');
     TimeOfDay reminderTime = TimeOfDay(
       hour: int.parse(parts[0]),
@@ -267,23 +183,16 @@ class _MedicationScreenState extends State<MedicationScreen> {
       final newTimeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
       
       try {
-        // FIX: Update medication_schedule table, NOT medication_config
-        // We find the schedule record for this medication and update its time
         final schedules = await db.getMedicationSchedules();
-        final schedule = schedules.firstWhere(
-          (s) => s['medication_id'] == configId,
-          orElse: () => {},
-        );
+        final schedule = schedules.firstWhere((s) => s['medication_id'] == configId, orElse: () => {});
 
         if (schedule.isNotEmpty) {
           final scheduleId = schedule['id'] as int;
           await db.updateMedicationSchedule(scheduleId, {'reminder_time': newTimeStr});
         } else {
-          // If no schedule exists, create one
           await db.insertMedicationSchedule(configId, newTimeStr, '1,2,3,4,5,6,7');
         }
         
-        // Reschedule notification if reminders are enabled
         if (reminderEnabled) {
           await NotificationHelper.instance.scheduleMedicationReminder(
             id: configId,
@@ -294,7 +203,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
         }
 
         _loadData();
-        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Herinnertijd gewijzigd naar $newTimeStr')),
@@ -305,58 +213,28 @@ class _MedicationScreenState extends State<MedicationScreen> {
       }
     }
   }
-  Future<void> _resetDatabase() async {
-    try {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Database resetten?'),
-          content: Text('Dit wist ALLE data inclusief medicatie, stemmingen, en instellingen. Dit kan niet ongedaan worden gemaakt.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text('Annuleren'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('Resetten', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-            ),
-          ],
-        ),
-      );
 
-      if (confirmed == true) {
-        await db.clearAllData();
-        
-        // Cancel all notifications
-        await NotificationHelper.instance.cancelAllReminders();
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Database gereset. Herstart de app.'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
-        }
-        
-        _loadData();
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to reset database', error: e, stackTrace: stackTrace);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Kon database niet resetten.'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+  Future<void> _resetDatabase() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Database resetten?'),
+        content: Text('Dit wist ALLE data.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Annuleren')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('Resetten', style: TextStyle(color: Colors.white)),
           ),
-        );
-      }
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await db.clearAllData();
+      await NotificationHelper.instance.cancelAllReminders();
+      _loadData();
     }
   }
 
@@ -377,154 +255,97 @@ class _MedicationScreenState extends State<MedicationScreen> {
               textTheme: TextTheme(bodyLarge: TextStyle(color: Colors.black)),
             ),
             child: AlertDialog(
-              title: Text('Nieuwe Medicatie', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Naam (bijv. Lithium)',
-                      labelStyle: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
-                      ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
-                    ),
-                  ),
-                  onChanged: (v) => name = v,
-                ),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Dosering',
-                    labelStyle: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppTheme.primaryTeal, width: 2),
-                    ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (v) => dosage = double.tryParse(v) ?? 0,
-                ),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Eenheid (mg, ml, stuks)',
-                    labelStyle: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
-                    ),
-                  ),
-                  onChanged: (v) => unit = v,
-                ),
-                const SizedBox(height: 16),
-                // Reminder toggle
-                Row(
+              title: Text('Nieuwe Medicatie', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Herinnering'),
-                    const Spacer(),
-                    Switch(
-                      value: reminderEnabled,
-                      onChanged: (value) {
-                        setDialogState(() {
-                          reminderEnabled = value;
-                        });
-                      },
-                      activeColor: AppTheme.primaryTeal,
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Naam (bijv. Lithium)',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onChanged: (v) => name = v,
                     ),
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Dosering',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      keyboardType: TextInputType.number,
+                      onChanged: (v) => dosage = double.tryParse(v) ?? 0,
+                    ),
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Eenheid (mg, ml, stuks)',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onChanged: (v) => unit = v,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Text('Herinnering'),
+                        const Spacer(),
+                        Switch(
+                          value: reminderEnabled,
+                          onChanged: (value) => setDialogState(() => reminderEnabled = value),
+                          activeColor: AppTheme.primaryTeal,
+                        ),
+                      ],
+                    ),
+                    if (reminderEnabled)
+                      InkWell(
+                        onTap: () async {
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: reminderTime ?? TimeOfDay.now(),
+                          );
+                          if (picked != null) {
+                            setDialogState(() => reminderTime = picked);
+                          }
+                        },
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            labelText: 'Tijdstip herinnering',
+                            filled: true,
+                            fillColor: Colors.grey.shade200,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: Text(
+                            reminderTime == null 
+                              ? 'Selecteer tijd' 
+                              : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
+                            style: TextStyle(color: Colors.black, fontSize: 16),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-                // Time picker (only if reminder enabled)
-                if (reminderEnabled)
-                  InkWell(
-                    onTap: () async {
-                      final picked = await showTimePicker(
-                        context: context,
-                        initialTime: reminderTime ?? TimeOfDay.now(),
-                      );
-                      if (picked != null) {
-                        setDialogState(() {
-                          reminderTime = picked;
-                        });
-                      }
-                    },
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        labelText: 'Tijdstip herinnering',
-                        filled: true,
-                        fillColor: Colors.grey.shade200,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Colors.grey.shade400),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Colors.grey.shade400),
-                        ),
-                      ),
-                      child: Text(
-                        reminderTime == null 
-                          ? 'Selecteer tijd' 
-                          : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
-                        style: TextStyle(
-                          color: reminderTime == null ? Colors.black : Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuleer')),
+                ElevatedButton(
+                  onPressed: () {
+                    if (name.isNotEmpty) {
+                      _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime);
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: Text('Opslaan'),
+                ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuleer'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (name.isNotEmpty) {
-                  _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime);
-                }
-                Navigator.pop(context);
-              },
-              child: Text('Opslaan'),
-            ),
-          ],
         ),
-        );
-      },
-    ),
-  );
+      ),
+    );
   }
 
   @override
@@ -532,33 +353,20 @@ class _MedicationScreenState extends State<MedicationScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Medicatie',
-          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-        ),
+        title: Text('Medicatie', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: _showAddMedicationDialog,
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_forever, color: Colors.red),
-            onPressed: _resetDatabase,
-            tooltip: 'Reset database',
-          ),
+          IconButton(icon: Icon(Icons.add), onPressed: _showAddMedicationDialog),
+          IconButton(icon: Icon(Icons.delete_forever, color: Colors.red), onPressed: _resetDatabase),
         ],
       ),
       body: Column(
         children: [
           Container(
             color: Theme.of(context).colorScheme.surface,
-            child: DatumNavigator(
-              geselecteerdeDatum: _selectedDate,
-              onDatumVeranderd: _onDatumVeranderd,
-            ),
+            child: DatumNavigator(geselecteerdeDatum: _selectedDate, onDatumVeranderd: _onDatumVeranderd),
           ),
           Expanded(
             child: _isLoading
@@ -581,20 +389,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
           SizedBox(height: 12),
-          Text(
-            _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Colors.red[600]),
-            textAlign: TextAlign.center,
-          ),
+          Text(_errorMessage!, style: TextStyle(fontSize: 16, color: Colors.red[600]), textAlign: TextAlign.center),
           SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _loadData,
             icon: Icon(Icons.refresh),
             label: Text('Opnieuw proberen'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Colors.white),
           ),
         ],
       ),
@@ -608,15 +409,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
         children: [
           Icon(Icons.medication_outlined, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 12),
-          Text(
-            'Geen medicatie',
-            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
-          ),
+          Text('Geen medicatie', style: TextStyle(fontSize: 16, color: Color(0xFF333333))),
           const SizedBox(height: 4),
-          Text(
-            'Tik + om toe te voegen',
-            style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
-          ),
+          Text('Tik + om toe te voegen', style: TextStyle(fontSize: 13, color: Color(0xFF555555))),
         ],
       ),
     );
@@ -632,18 +427,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Widget _buildCompactMedCard(Map<String, dynamic> config) {
-    // Handle both int and String ids from Hive
     dynamic rawId = config['id'];
     int? configId;
-    if (rawId is int) {
-      configId = rawId;
-    } else if (rawId is String) {
-      configId = int.tryParse(rawId);
-    }
-    if (configId == null) {
-      AppLogger.warning('Skipping invalid medication entry - id: $rawId, type: ${rawId.runtimeType}');
-      return SizedBox.shrink(); // Skip invalid entries
-    }
+    if (rawId is int) configId = rawId; else if (rawId is String) configId = int.tryParse(rawId);
+    if (configId == null) return SizedBox.shrink();
+    
     int count = _intakesForDay[configId] ?? 0;
     String name = config['naam']?.toString() ?? 'Onbekend';
     String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
@@ -659,37 +447,20 @@ class _MedicationScreenState extends State<MedicationScreen> {
       ),
       child: Row(
         children: [
-          // Icon
           Container(
-            width: 48,
-            height: 48,
-            margin: const EdgeInsets.only(left: 12),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
+            width: 48, height: 48, margin: const EdgeInsets.only(left: 12),
+            decoration: BoxDecoration(color: AppTheme.primaryTeal.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
             child: Icon(Icons.medication, color: AppTheme.primaryTeal, size: 24),
           ),
-          // Name & dosage
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
-                    ),
-                  ),
+                  Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
                   const SizedBox(height: 2),
-                  Text(
-                    dosage,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                  ),
+                  Text(dosage, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                   if (reminderTime != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
@@ -701,36 +472,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           decoration: BoxDecoration(
                             color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.4) : Colors.grey.shade300!,
-                            ),
-                            boxShadow: reminderEnabled ? [
-                              BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))
-                            ] : [],
+                            border: Border.all(color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.4) : Colors.grey.shade300!),
+                            boxShadow: reminderEnabled ? [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))] : [],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                reminderEnabled ? Icons.access_time_filled : Icons.notifications_off,
-                                size: 14,
-                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
-                              ),
+                              Icon(reminderEnabled ? Icons.access_time_filled : Icons.notifications_off, size: 14, color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400),
                               const SizedBox(width: 6),
-                              Text(
-                                reminderTime,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500,
-                                ),
-                              ),
+                              Text(reminderTime, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500)),
                               const SizedBox(width: 4),
-                              Icon(
-                                Icons.edit_calendar,
-                                size: 12,
-                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
-                              ),
+                              Icon(Icons.edit_calendar, size: 12, color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400),
                             ],
                           ),
                         ),
@@ -740,35 +492,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
               ),
             ),
           ),
-          // Counter
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildCounterBtn(
-                icon: Icons.remove,
-                onPressed: count > 0 ? () => _updateIntake(configId!, -1) : null,
-              ),
+              _buildCounterBtn(icon: Icons.remove, onPressed: count > 0 ? () => _updateIntake(configId!, -1) : null),
               Container(
-                width: 36,
-                alignment: Alignment.center,
-                child: Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
-                  ),
-                ),
+                width: 36, alignment: Alignment.center,
+                child: Text('$count', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
               ),
-              _buildCounterBtn(
-                icon: Icons.add,
-                onPressed: () => _updateIntake(configId!, 1),
-                isPrimary: true,
-              ),
+              _buildCounterBtn(icon: Icons.add, onPressed: () => _updateIntake(configId!, 1), isPrimary: true),
               const SizedBox(width: 8),
-              _buildDeleteBtn(
-                onPressed: () => _deleteMedication(configId!),
-              ),
+              _buildDeleteBtn(onPressed: () => _deleteMedication(configId!)),
             ],
           ),
           const SizedBox(width: 8),
@@ -776,152 +510,33 @@ class _MedicationScreenState extends State<MedicationScreen> {
       ),
     );
   }
+
+  Widget _buildCounterBtn({required IconData icon, required VoidCallback? onPressed, bool isPrimary = false}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+          child: Icon(icon, size: 18, color: isPrimary ? Colors.white : Colors.black),
+        ),
       ),
     );
   }
 
-  Widget _buildCompactMedCard(Map<String, dynamic> config) {
-    // Handle both int and String ids from Hive
-    dynamic rawId = config['id'];
-    int? configId;
-    if (rawId is int) {
-      configId = rawId;
-    } else if (rawId is String) {
-      configId = int.tryParse(rawId);
-    }
-    if (configId == null) {
-      AppLogger.warning('Skipping invalid medication entry - id: $rawId, type: ${rawId.runtimeType}');
-      return SizedBox.shrink(); // Skip invalid entries
-    }
-    int count = _intakesForDay[configId] ?? 0;
-    String name = config['naam']?.toString() ?? 'Onbekend';
-    String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
-    bool reminderEnabled = (config['reminder_enabled']?.toString() ?? '1') == '1';
-    String? reminderTime = config['reminder_time']?.toString();
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          // Icon
-          Container(
-            width: 48,
-            height: 48,
-            margin: const EdgeInsets.only(left: 12),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(Icons.medication, color: AppTheme.primaryTeal, size: 24),
-          ),
-          // Name & dosage
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    dosage,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                  ),
-                  if (reminderTime != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: InkWell(
-                        onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.4) : Colors.grey.shade300!,
-                            ),
-                            boxShadow: reminderEnabled ? [
-                              BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))
-                            ] : [],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                reminderEnabled ? Icons.access_time_filled : Icons.notifications_off,
-                                size: 14,
-                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                reminderTime,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.edit_calendar,
-                                size: 12,
-                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          // Counter
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildCounterBtn(
-                icon: Icons.remove,
-                onPressed: count > 0 ? () => _updateIntake(configId!, -1) : null,
-              ),
-              Container(
-                width: 36,
-                alignment: Alignment.center,
-                child: Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
-                  ),
-                ),
-              ),
-              _buildCounterBtn(
-                icon: Icons.add,
-                onPressed: () => _updateIntake(configId!, 1),
-                isPrimary: true,
-              ),
-              const SizedBox(width: 8),
-              _buildDeleteBtn(
-                onPressed: () => _deleteMedication(configId!),
-              ),
-            ],
-          ),
-          const SizedBox(width: 8),
-        ],
+  Widget _buildDeleteBtn({required VoidCallback? onPressed}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
+          child: Icon(Icons.delete_outline, size: 18, color: Colors.red[400]),
+        ),
       ),
     );
   }
