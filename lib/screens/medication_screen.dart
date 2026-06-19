@@ -267,7 +267,21 @@ class _MedicationScreenState extends State<MedicationScreen> {
       final newTimeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
       
       try {
-        await db.updateMedicationConfig(configId, {'reminder_time': newTimeStr});
+        // FIX: Update medication_schedule table, NOT medication_config
+        // We find the schedule record for this medication and update its time
+        final schedules = await db.getMedicationSchedules();
+        final schedule = schedules.firstWhere(
+          (s) => s['medication_id'] == configId,
+          orElse: () => {},
+        );
+
+        if (schedule.isNotEmpty) {
+          final scheduleId = schedule['id'] as int;
+          await db.updateMedicationSchedule(scheduleId, {'reminder_time': newTimeStr});
+        } else {
+          // If no schedule exists, create one
+          await db.insertMedicationSchedule(configId, newTimeStr, '1,2,3,4,5,6,7');
+        }
         
         // Reschedule notification if reminders are enabled
         if (reminderEnabled) {
@@ -283,11 +297,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Herinnertijd gewijzigd naar \$newTimeStr')),
+            SnackBar(content: Text('Herinnertijd gewijzigd naar $newTimeStr')),
           );
         }
       } catch (e) {
-        debugPrint('Error updating reminder time: \$e');
+        debugPrint('Error updating reminder time: $e');
       }
     }
   }
