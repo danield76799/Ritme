@@ -35,11 +35,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
       _isLoading = true;
       _errorMessage = null;
     });
-    
     try {
       final configs = await db.getMedicationConfigs();
       final intakes = await db.getMedicationIntake(_formattedDate);
-
       Map<int, int> intakeMap = {};
       for (var intake in intakes) {
         dynamic rawMedId = intake['medication_id'];
@@ -49,7 +47,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
         } else if (rawMedId is String) {
           medId = int.tryParse(rawMedId);
         }
-        
         dynamic rawAantal = intake['aantal_ingenomen'];
         int? aantal;
         if (rawAantal is int) {
@@ -59,12 +56,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
         } else {
           aantal = 0;
         }
-        
         if (medId != null) {
           intakeMap[medId] = aantal;
         }
       }
-
       setState(() {
         _configs = configs;
         _intakesForDay = intakeMap;
@@ -87,11 +82,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
   Future<void> _addMedication(String name, double dosage, String unit, {bool reminderEnabled = true, TimeOfDay? reminderTime}) async {
     try {
       final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled);
-      
       if (reminderTime != null && reminderEnabled) {
         final timeStr = '${reminderTime.hour.toString().padLeft(2, '0')}:${reminderTime.minute.toString().padLeft(2, '0')}';
         await db.insertMedicationSchedule(id, timeStr, '1,2,3,4,5,6,7');
-        
         try {
           await NotificationHelper.instance.scheduleMedicationReminder(
             id: id,
@@ -114,7 +107,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
           AppLogger.error('Notification scheduling failed', error: notifError);
         }
       }
-      
       _loadData();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add medication', error: e, stackTrace: stackTrace);
@@ -126,7 +118,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
       int current = _intakesForDay[configId] ?? 0;
       int newVal = current + change;
       if (newVal < 0) return;
-
       await db.insertMedicationIntakeMap({
         'medication_id': configId,
         'date': _formattedDate,
@@ -155,7 +146,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
           ],
         ),
       );
-
       if (confirmed == true) {
         await NotificationHelper.instance.cancelMedicationReminder(configId);
         await db.deleteMedicationConfig(configId);
@@ -172,27 +162,22 @@ class _MedicationScreenState extends State<MedicationScreen> {
       hour: int.parse(parts[0]),
       minute: int.parse(parts[1]),
     );
-
     final picked = await showTimePicker(
       context: context,
       initialTime: reminderTime,
       helpText: 'Wijzig herinnertijd voor $name',
     );
-
     if (picked != null) {
       final newTimeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-      
       try {
         final schedules = await db.getMedicationSchedules();
         final schedule = schedules.firstWhere((s) => s['medication_id'] == configId, orElse: () => {});
-
         if (schedule.isNotEmpty) {
           final scheduleId = schedule['id'] as int;
           await db.updateMedicationSchedule(scheduleId, {'reminder_time': newTimeStr});
         } else {
           await db.insertMedicationSchedule(configId, newTimeStr, '1,2,3,4,5,6,7');
         }
-        
         if (reminderEnabled) {
           await NotificationHelper.instance.scheduleMedicationReminder(
             id: configId,
@@ -201,7 +186,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
             days: [1, 2, 3, 4, 5, 6, 7],
           );
         }
-
         _loadData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -230,7 +214,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
         ],
       ),
     );
-
     if (confirmed == true) {
       await db.clearAllData();
       await NotificationHelper.instance.cancelAllReminders();
@@ -244,7 +227,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
     String unit = 'mg';
     TimeOfDay? reminderTime;
     bool reminderEnabled = true;
-
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -319,8 +301,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           child: Text(
-                            reminderTime == null 
-                              ? 'Selecteer tijd' 
+                            reminderTime == null
+                              ? 'Selecteer tijd'
                               : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
                             style: TextStyle(color: Colors.black, fontSize: 16),
                           ),
@@ -342,8 +324,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ),
               ],
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -431,7 +413,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
     int? configId;
     if (rawId is int) configId = rawId; else if (rawId is String) configId = int.tryParse(rawId);
     if (configId == null) return SizedBox.shrink();
-    
     int count = _intakesForDay[configId] ?? 0;
     String name = config['naam']?.toString() ?? 'Onbekend';
     String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
