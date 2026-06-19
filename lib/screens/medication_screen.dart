@@ -72,7 +72,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
           configId = int.tryParse(rawId);
         }
         final schedule = schedules.firstWhere(
-          (s) => s['medication_id'] == configId,
+          (s) {
+            dynamic rawSchedId = s['medication_id'];
+            int? schedId;
+            if (rawSchedId is int) schedId = rawSchedId;
+            else if (rawSchedId is String) schedId = int.tryParse(rawSchedId);
+            return schedId != null && schedId == configId;
+          },
           orElse: () => {},
         );
         return {
