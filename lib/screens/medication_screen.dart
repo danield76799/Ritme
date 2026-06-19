@@ -776,55 +776,152 @@ class _MedicationScreenState extends State<MedicationScreen> {
       ),
     );
   }
-
-  Widget _buildCounterBtn({
-    required IconData icon,
-    required VoidCallback? onPressed,
-    bool isPrimary = false,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: isPrimary ? Colors.white : Colors.black,
-          ),
-        ),
       ),
     );
   }
 
-  Widget _buildDeleteBtn({
-    required VoidCallback? onPressed,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: Colors.red.shade50,
-            borderRadius: BorderRadius.circular(8),
+  Widget _buildCompactMedCard(Map<String, dynamic> config) {
+    // Handle both int and String ids from Hive
+    dynamic rawId = config['id'];
+    int? configId;
+    if (rawId is int) {
+      configId = rawId;
+    } else if (rawId is String) {
+      configId = int.tryParse(rawId);
+    }
+    if (configId == null) {
+      AppLogger.warning('Skipping invalid medication entry - id: $rawId, type: ${rawId.runtimeType}');
+      return SizedBox.shrink(); // Skip invalid entries
+    }
+    int count = _intakesForDay[configId] ?? 0;
+    String name = config['naam']?.toString() ?? 'Onbekend';
+    String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
+    bool reminderEnabled = (config['reminder_enabled']?.toString() ?? '1') == '1';
+    String? reminderTime = config['reminder_time']?.toString();
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          // Icon
+          Container(
+            width: 48,
+            height: 48,
+            margin: const EdgeInsets.only(left: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(Icons.medication, color: AppTheme.primaryTeal, size: 24),
           ),
-          child: Icon(
-            Icons.delete_outline,
-            size: 18,
-            color: Colors.red[400],
+          // Name & dosage
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    dosage,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
+                  if (reminderTime != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: InkWell(
+                        onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.4) : Colors.grey.shade300!,
+                            ),
+                            boxShadow: reminderEnabled ? [
+                              BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))
+                            ] : [],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                reminderEnabled ? Icons.access_time_filled : Icons.notifications_off,
+                                size: 14,
+                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                reminderTime,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.edit_calendar,
+                                size: 12,
+                                color: reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
+          // Counter
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildCounterBtn(
+                icon: Icons.remove,
+                onPressed: count > 0 ? () => _updateIntake(configId!, -1) : null,
+              ),
+              Container(
+                width: 36,
+                alignment: Alignment.center,
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
+                  ),
+                ),
+              ),
+              _buildCounterBtn(
+                icon: Icons.add,
+                onPressed: () => _updateIntake(configId!, 1),
+                isPrimary: true,
+              ),
+              const SizedBox(width: 8),
+              _buildDeleteBtn(
+                onPressed: () => _deleteMedication(configId!),
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
     );
   }
