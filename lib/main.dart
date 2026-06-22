@@ -50,6 +50,7 @@ void main() async {
   if (!kIsWeb) {
     await NotificationHelper.instance.initialize();
     await BootService.initialize();
+    await BootService.rescheduleNow();
     await WidgetService.initialize();
   }
 
