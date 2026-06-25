@@ -199,14 +199,35 @@ class _MedicationScreenState extends State<MedicationScreen> {
     if (picked != null) {
       final newTimeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
       try {
+        // Cancel any prior scheduled notification for this medication before
+        // re-scheduling, so we don't end up with a stale notification at the
+        // old time.
+        await NotificationHelper.instance.cancelMedicationReminder(configId);
+
+        // Wipe all existing schedules for this medication and insert exactly
+        // one fresh row. This prevents duplicate schedule rows from
+        // accumulating (e.g. from older versions that inserted a new row
+        // instead of updating).
         final schedules = await db.getMedicationSchedules();
-        final schedule = schedules.firstWhere((s) => s['medication_id'] == configId, orElse: () => {});
-        if (schedule.isNotEmpty) {
-          final scheduleId = schedule['id'] as int;
-          await db.updateMedicationSchedule(scheduleId, {'reminder_time': newTimeStr});
-        } else {
-          await db.insertMedicationSchedule(configId, newTimeStr, '1,2,3,4,5,6,7');
+        for (final s in schedules) {
+          dynamic rawMedId = s['medication_id'];
+          int? schedMedId;
+          if (rawMedId is int) {
+            schedMedId = rawMedId;
+          } else if (rawMedId is String) {
+            schedMedId = int.tryParse(rawMedId);
+          }
+          if (schedMedId == configId && s['id'] != null) {
+            final scheduleId = s['id'] is int
+                ? s['id'] as int
+                : int.tryParse(s['id'].toString());
+            if (scheduleId != null) {
+              await db.deleteMedicationSchedule(scheduleId);
+            }
+          }
         }
+        await db.insertMedicationSchedule(configId, newTimeStr, '1,2,3,4,5,6,7');
+
         if (reminderEnabled) {
           await NotificationHelper.instance.scheduleMedicationReminder(
             id: configId,
