@@ -49,6 +49,18 @@ class NotificationHelper {
         return;
       }
       
+      // Android 13+ notification permission
+      final androidImpl = _notifications.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImpl != null) {
+        final granted = await androidImpl.requestNotificationsPermission();
+        if (granted == false) {
+          AppLogger.warning('POST_NOTIFICATIONS permission denied');
+        }
+      }
+
+      // Check exact alarm permission for Android 12+/14+
+      // This is critical for medication reminders to fire on time.
       final permissionsGranted = await _requestPermissions();
       if (!permissionsGranted) {
         AppLogger.warning('Notificatie permissies geweigerd');
@@ -259,19 +271,37 @@ class NotificationHelper {
         'medication_reminders',
         'Medicatie Herinneringen',
         channelDescription: 'Herinneringen voor medicatie inname',
-        importance: Importance.high,
-        priority: Priority.high,
+        importance: Importance.max,
+        priority: Priority.max,
         showWhen: true,
         enableVibration: true,
         playSound: true,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+        fullScreenIntent: true,
+        ticker: 'Medicatie herinnering',
       );
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true, presentBadge: true, presentSound: true,
+        interruptionLevel: InterruptionLevel.timeSensitive,
       );
       final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
       // Use unique ID to avoid collisions — add 100_000 offset
       final notificationId = (id % 90000) + 10000;
+
+      // Cancel any prior version of this notification first to avoid
+      // orphaned or duplicate scheduled notifications.
+      await _notifications.cancel(notificationId);
+
+      // Re-validate the alarm permission right before scheduling.
+      // Android 14+ can revoke SCHEDULE_EXACT_ALARM silently.
+      final androidImpl = _notifications.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      final canScheduleExact = await androidImpl?.canScheduleExactNotifications() ?? false;
+      if (!canScheduleExact) {
+        AppLogger.warning('Exact alarm permission missing — scheduling with inexact mode');
+      }
 
       await _notifications.zonedSchedule(
         notificationId,
@@ -279,17 +309,19 @@ class NotificationHelper {
         'Tijd om je medicatie in te nemen! ($daysStr)',
         scheduledDate,
         details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: canScheduleExact
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'medication:$id',
         matchDateTimeComponents: DateTimeComponents.time, // Correct for daily repeat
       );
-      AppLogger.info('Medication reminder scheduled: $medicationName at $scheduledDate (id=$notificationId)');
+      AppLogger.info('Medication reminder scheduled: $medicationName at $scheduledDate (id=$notificationId, exact=$canScheduleExact)');
     } catch (e) {
       AppLogger.error('Medication scheduling error for $medicationName', error: e);
     }
   }
-
   Future<void> cancelMedicationReminder(int id) async {
     if (kIsWeb) return;
     try {
