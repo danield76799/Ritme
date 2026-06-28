@@ -6,6 +6,7 @@ import '../service_locator.dart';
 import '../utils/logger.dart';
 import '../services/backup_service.dart';
 import '../services/notification_helper.dart';
+import '../services/boot_service.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 
@@ -375,8 +376,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           _buildSectionHeader('Notificaties'),
-          SizedBox(height: 24),
-          SizedBox(height: 24),
+          _buildActionButton(
+            'Test notificatie (nu)',
+            Icons.notifications_active,
+            () async {
+              try {
+                await NotificationHelper.instance.showTestNotification();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Test notificatie verstuurd ✓'), backgroundColor: Colors.green),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Fout: $e'), backgroundColor: Colors.red),
+                  );
+                }
+              }
+            },
+          ),
+          _buildActionButton(
+            'Herplan alle medicatie herinneringen',
+            Icons.alarm,
+            () async {
+              try {
+                await BootService.rescheduleNow();
+                final count = await NotificationHelper.instance.getPendingNotificationCount();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Herinneringen herplant ✓ ($count ingepland)'), backgroundColor: Colors.green),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Fout: $e'), backgroundColor: Colors.red),
+                  );
+                }
+              }
+            },
+          ),
           _buildSectionHeader('Medicatie'),
           _buildActionButton(
             'Medicatie beheren',
