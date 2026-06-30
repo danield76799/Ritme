@@ -50,7 +50,8 @@ void main() async {
   if (!kIsWeb) {
     await NotificationHelper.instance.initialize();
     await BootService.initialize();
-    await BootService.rescheduleNow();
+    // Auto-reschedule if notifications were killed by Android battery optimization
+    await BootService.rescheduleIfEmpty();
     await WidgetService.initialize();
   }
 

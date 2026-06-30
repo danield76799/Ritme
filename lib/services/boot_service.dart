@@ -94,6 +94,33 @@ class BootService {
     }
   }
 
+  /// Check if any medication reminders are scheduled. If not (e.g. Android
+  /// killed them due to battery optimization), reschedule all from DB.
+  /// Call this on every app startup to ensure reliability.
+  static Future<void> rescheduleIfEmpty() async {
+    try {
+      final pendingCount = await NotificationHelper.instance.getPendingNotificationCount();
+      if (pendingCount == 0) {
+        developer.log(
+          'No pending notifications found — likely killed by battery optimization. Rescheduling...',
+          name: 'BootService',
+        );
+        await _rescheduleAllNotifications();
+      } else {
+        developer.log(
+          'Found $pendingCount pending notifications — no reschedule needed',
+          name: 'BootService',
+        );
+      }
+    } catch (e) {
+      developer.log(
+        'Error checking pending notifications: $e',
+        name: 'BootService',
+        error: e,
+      );
+    }
+  }
+
   /// Manually trigger a reschedule (for testing or recovery).
   static Future<void> rescheduleNow() async {
     await _rescheduleAllNotifications();
