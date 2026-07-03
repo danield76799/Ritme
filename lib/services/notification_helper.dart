@@ -280,6 +280,11 @@ class NotificationHelper {
         visibility: NotificationVisibility.public,
         fullScreenIntent: true,
         ticker: 'Medicatie herinnering',
+        actions: [
+          AndroidNotificationAction('taken', '✅ Ingenomen'),
+          AndroidNotificationAction('skip', '⏭ Sla over'),
+          AndroidNotificationAction('snooze', '⏳ Snooze (15m)'),
+        ],
       );
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true, presentBadge: true, presentSound: true,
@@ -478,6 +483,35 @@ class NotificationHelper {
             'aantal_ingenomen': 0,
           });
           AppLogger.debug('Medication $medicationId marked as skipped');
+        } else if (actionId == 'snooze') {
+          // Snooze for 15 minutes
+          final snoozeTime = DateTime.now().add(const Duration(minutes: 15));
+          
+          // We need the medication name to reschedule. 
+          // For now, we'll use a generic "Medicatie" or fetch it from DB if available.
+          // Since we don't have easy access to the name here without a DB call, 
+          // we'll use the payload to identify it.
+          
+          debugPrint('Snoozing medication $medicationId for 15 minutes...');
+          
+          // Reschedule a one-time notification for 15 mins from now
+          await _notifications.zonedSchedule(
+            (medicationId % 90000) + 10000,
+            '💊 Herinnering',
+            'Tijd om je medicatie in te nemen! (Snoozed)',
+            tz.TZDateTime.now(tz.local).add(const Duration(minutes: 15)),
+            const NotificationDetails(
+              android: AndroidNotificationDetails(
+                'medication_reminders',
+                'Medicatie Herinneringen',
+                importance: Importance.max,
+                priority: Priority.max,
+              ),
+            ),
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+            payload: 'medication:$medicationId',
+          );
         }
       }
     }
