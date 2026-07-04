@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
+import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../service_locator.dart';
@@ -63,9 +65,12 @@ class _LoginScreenState extends State<LoginScreen> {
       // Probeer biometrische login als beschikbaar (alleen als er al een PIN is ingesteld).
       // Wacht tot de eerste frame is gerenderd zodat de native prompt betrouwbaar opent.
       if (!kIsWeb && _biometricEnabled && _biometricAvailable && pinSet) {
+        AppLogger.info('Triggering biometric login: enabled=$biometricEnabled, available=$biometricAvailable, pinSet=$pinSet');
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _authenticateWithBiometrics();
         });
+      } else {
+        AppLogger.info('Skipping biometric login: enabled=$biometricEnabled, available=$biometricAvailable, pinSet=$pinSet, kIsWeb=$kIsWeb');
       }
     } catch (e) {
       AppLogger.error('Failed to check setup', error: e);
@@ -76,10 +81,30 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _authenticateWithBiometrics() async {
+  Future<bool> _authenticateWithBiometrics() async {
     try {
       final bool didAuthenticate = await _localAuth.authenticate(
         localizedReason: 'Authenticateer om Ritme te openen',
+        authMessages: const [
+          AndroidAuthMessages(
+            signInTitle: 'Biometrische login',
+            cancelButton: 'Annuleer',
+            biometricHint: 'Verifieer je identiteit',
+            biometricNotRecognized: 'Niet herkend, probeer opnieuw',
+            biometricRequiredTitle: 'Biometrische authenticatie vereist',
+            biometricSuccess: 'Authenticatie geslaagd',
+            deviceCredentialsRequiredTitle: 'Apparaatcode vereist',
+            deviceCredentialsSetupDescription: 'Stel eerst een schermvergrendeling in',
+            goToSettingsButton: 'Naar Instellingen',
+            goToSettingsDescription: 'Stel biometrische authenticatie in via je apparaatinstellingen',
+          ),
+          IOSAuthMessages(
+            cancelButton: 'Annuleer',
+            goToSettingsButton: 'Naar Instellingen',
+            goToSettingsDescription: 'Stel Face ID / Touch ID in via je apparaatinstellingen',
+            lockOut: 'Schakel biometrische authenticatie opnieuw in',
+          ),
+        ],
         options: const AuthenticationOptions(
           useErrorDialogs: true,
           stickyAuth: true,
@@ -93,8 +118,10 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (_) => const DashboardScreen()),
         );
       }
+      return didAuthenticate;
     } on PlatformException catch (e, stackTrace) {
       AppLogger.error('Biometric auth error', error: e, stackTrace: stackTrace);
+      return false;
     }
   }
 
@@ -173,10 +200,13 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              await _secureStorage.write(key: 'biometric_enabled', value: 'true');
-              if (mounted) {
-                Navigator.pop(context);
-                _showNotificationDialog();
+              final bool didAuthenticate = await _authenticateWithBiometrics();
+              if (didAuthenticate) {
+                await _secureStorage.write(key: 'biometric_enabled', value: 'true');
+                if (mounted) {
+                  Navigator.pop(context);
+                  _showNotificationDialog();
+                }
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
