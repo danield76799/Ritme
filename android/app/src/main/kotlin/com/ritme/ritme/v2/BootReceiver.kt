@@ -13,7 +13,7 @@ class BootReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "RitmeBootReceiver"
         private const val ALARM_REQUEST_CODE = 10001
-        private const val ACTION_RESCHEDULE = "com.ritme.ritme.ACTION_RESCHEDULE_NOTIFICATIONS"
+        const val ACTION_RESCHEDULE = "com.ritme.ritme.ACTION_RESCHEDULE_NOTIFICATIONS"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
