@@ -60,9 +60,12 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
       
-      // Probeer biometrische login als beschikbaar
-      if (!kIsWeb && _biometricEnabled && _biometricAvailable && !pinSet) {
-        _authenticateWithBiometrics();
+      // Probeer biometrische login als beschikbaar (alleen als er al een PIN is ingesteld).
+      // Wacht tot de eerste frame is gerenderd zodat de native prompt betrouwbaar opent.
+      if (!kIsWeb && _biometricEnabled && _biometricAvailable && pinSet) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _authenticateWithBiometrics();
+        });
       }
     } catch (e) {
       AppLogger.error('Failed to check setup', error: e);
