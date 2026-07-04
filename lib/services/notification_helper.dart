@@ -49,24 +49,62 @@ class NotificationHelper {
         return;
       }
       
-      // Android 13+ notification permission
+      // Request runtime permissions (notification + exact alarm).
+      // This is required on Android 12+ for medication reminders to fire on time.
+      await requestNotificationPermissions();
+    } catch (e) {
+      AppLogger.error('Notificatie initialisatie error', error: e);
+    }
+  }
+
+  /// Check and request all required permissions at runtime.
+  /// Shows system settings when needed and returns true if all critical
+  /// permissions are granted.
+  Future<bool> requestNotificationPermissions() async {
+    if (kIsWeb) return true;
+
+    try {
+      // POST_NOTIFICATIONS (Android 13+)
+      final notifStatus = await Permission.notification.request();
+      if (!notifStatus.isGranted) {
+        AppLogger.warning('Notification permission denied');
+        return false;
+      }
+
+      // Exact alarm (Android 12+). SCHEDULE_EXACT_ALARM is a special permission:
+      // it can only be granted by the user through the system settings.
       final androidImpl = _notifications.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
       if (androidImpl != null) {
-        final granted = await androidImpl.requestNotificationsPermission();
-        if (granted == false) {
-          AppLogger.warning('POST_NOTIFICATIONS permission denied');
+        final canScheduleExact = await androidImpl.canScheduleExactNotifications() ?? false;
+        if (!canScheduleExact) {
+          AppLogger.warning('Exact alarm permission not granted; opening system settings');
+          await androidImpl.requestExactAlarmsPermission();
         }
       }
 
-      // Check exact alarm permission for Android 12+/14+
-      // This is critical for medication reminders to fire on time.
-      final permissionsGranted = await _requestPermissions();
-      if (!permissionsGranted) {
-        AppLogger.warning('Notificatie permissies geweigerd');
-      }
+      return true;
     } catch (e) {
-      AppLogger.error('Notificatie initialisatie error', error: e);
+      AppLogger.error('Permission request error', error: e);
+      return false;
+    }
+  }
+
+  /// Open the system battery optimization settings so the user can disable
+  /// battery optimization for this app. Without this, scheduled alarms may not
+  /// fire reliably in the background.
+  Future<bool> openBatteryOptimizationSettings() async {
+    if (kIsWeb) return true;
+    try {
+      final status = await Permission.ignoreBatteryOptimizations.status;
+      if (!status.isGranted) {
+        final result = await Permission.ignoreBatteryOptimizations.request();
+        return result.isGranted;
+      }
+      return true;
+    } catch (e) {
+      AppLogger.error('Battery optimization request error', error: e);
+      return false;
     }
   }
 

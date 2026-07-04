@@ -380,6 +380,23 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
   }
 
+  Future<void> _checkNotificationPermissions() async {
+    final granted = await NotificationHelper.instance.requestNotificationPermissions();
+    if (!granted && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notificatiepermissie geweigerd. Zet deze aan in instellingen.')),
+      );
+      return;
+    }
+
+    final batteryOpt = await NotificationHelper.instance.openBatteryOptimizationSettings();
+    if (!batteryOpt && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Accu-optimalisatie kan notificaties blokkeren.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -391,6 +408,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
           IconButton(icon: Icon(Icons.add), onPressed: _showAddMedicationDialog),
+          IconButton(
+            icon: Icon(Icons.notifications_active_outlined),
+            tooltip: 'Notificatiepermissies controleren',
+            onPressed: _checkNotificationPermissions,
+          ),
           IconButton(icon: Icon(Icons.delete_forever, color: Colors.red), onPressed: _resetDatabase),
         ],
       ),
