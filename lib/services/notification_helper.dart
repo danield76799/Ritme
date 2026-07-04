@@ -131,6 +131,57 @@ class NotificationHelper {
     }
   }
 
+  /// Reschedule all medication reminders from the database. Useful after
+  /// permissions were granted, app updates, or device reboots.
+  Future<void> rescheduleAllMedicationReminders() async {
+    if (kIsWeb) return;
+    try {
+      await ensureInitialized();
+      final configs = await db.getMedicationConfigs();
+      final schedules = await db.getMedicationSchedules();
+
+      int rescheduled = 0;
+      for (final schedule in schedules) {
+        final enabledStr = schedule['enabled']?.toString() ?? '0';
+        final enabled = enabledStr == '1' || enabledStr.toLowerCase() == 'true';
+        if (!enabled) continue;
+
+        final idRaw = schedule['id'];
+        final medicationIdRaw = schedule['medication_id'];
+        final reminderTime = schedule['reminder_time']?.toString();
+        final daysOfWeekRaw = schedule['days_of_week']?.toString();
+
+        final id = idRaw is int ? idRaw : int.tryParse(idRaw.toString());
+        final medicationId = medicationIdRaw is int ? medicationIdRaw : int.tryParse(medicationIdRaw.toString());
+        if (id == null || medicationId == null || reminderTime == null) continue;
+
+        final config = configs.firstWhere(
+          (c) {
+            final cid = c['id'];
+            final cvalue = cid is int ? cid : int.tryParse(cid.toString());
+            return cvalue == medicationId;
+          },
+          orElse: () => {'naam': 'Medicatie'},
+        );
+        final name = config['naam']?.toString() ?? 'Medicatie';
+        final days = daysOfWeekRaw?.split(',').map((s) => int.tryParse(s.trim())).whereType<int>().toList() ??
+            [1, 2, 3, 4, 5, 6, 7];
+
+        await scheduleMedicationReminder(
+          id: id,
+          medicationName: name,
+          time: reminderTime,
+          days: days,
+        );
+        rescheduled++;
+      }
+
+      AppLogger.info('Rescheduled $rescheduled medication reminders from DB');
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to reschedule medication reminders', error: e, stackTrace: stackTrace);
+    }
+  }
+
   Future<void> scheduleDailyNotification({
     required int hour,
     required int minute,

@@ -50,9 +50,9 @@ void main() async {
   if (!kIsWeb) {
     await NotificationHelper.instance.initialize();
     await BootService.initialize();
-    // Force reschedule all medication reminders on every startup.
+    // Reschedule all medication reminders on every startup.
     // This is the only way to guarantee reliability against Android's battery optimization.
-    await BootService.rescheduleNow();
+    await NotificationHelper.instance.rescheduleAllMedicationReminders();
     await WidgetService.initialize();
   }
 

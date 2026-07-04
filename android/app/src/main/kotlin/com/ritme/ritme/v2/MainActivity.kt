@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -21,11 +22,25 @@ class MainActivity : FlutterFragmentActivity() {
         super.onCreate(savedInstanceState)
         createNotificationChannels()
         handleWidgetIntent(intent)
+        handleBootRescheduleIntent(intent)
     }
 
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         handleWidgetIntent(intent)
+        handleBootRescheduleIntent(intent)
+    }
+
+    private fun handleBootRescheduleIntent(intent: android.content.Intent?) {
+        if (intent?.action == BootReceiver.ACTION_RESCHEDULE) {
+            Log.i("RitmeMainActivity", "Reschedule intent received, notifying Flutter")
+            flutterEngine?.dartExecutor?.binaryMessenger?.let { messenger ->
+                MethodChannel(messenger, BOOT_CHANNEL).invokeMethod(
+                    "rescheduleNotifications",
+                    null,
+                )
+            }
+        }
     }
 
     private fun handleWidgetIntent(intent: android.content.Intent?) {
