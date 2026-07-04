@@ -43,55 +43,7 @@ class BootService {
   /// - Manually for recovery
   static Future<void> _rescheduleAllNotifications() async {
     developer.log('Rescheduling all medication reminders...', name: 'BootService');
-
-    try {
-      final db = DatabaseHelper.instance;
-      final schedules = await db.getMedicationSchedules();
-
-      int rescheduled = 0;
-      for (final schedule in schedules) {
-        final enabled = schedule['enabled'] as int? ?? 0;
-        if (enabled == 1) {
-          final id = schedule['id'] as int?;
-          final medicationId = schedule['medication_id'] as int?;
-          final reminderTime = schedule['reminder_time'] as String?;
-          final daysOfWeek = schedule['days_of_week'] as String?;
-          
-          if (id != null && medicationId != null && reminderTime != null) {
-            // Get medication name
-            final configs = await db.getMedicationConfigs();
-            final config = configs.firstWhere(
-              (c) => c['id'] == medicationId,
-              orElse: () => {'naam': 'Medicatie'},
-            );
-            final name = config['naam'] as String? ?? 'Medicatie';
-            
-            // Parse days
-            final days = daysOfWeek?.split(',').map(int.parse).toList() ?? [1,2,3,4,5,6,7];
-            
-            await NotificationHelper.instance.scheduleMedicationReminder(
-              id: id,
-              medicationName: name,
-              time: reminderTime,
-              days: days,
-            );
-            rescheduled++;
-          }
-        }
-      }
-
-      developer.log(
-        'Rescheduled $rescheduled medication reminders',
-        name: 'BootService',
-      );
-    } catch (e, stackTrace) {
-      developer.log(
-        'Failed to reschedule notifications',
-        name: 'BootService',
-        error: e,
-        stackTrace: stackTrace,
-      );
-    }
+    await NotificationHelper.instance.rescheduleAllMedicationReminders();
   }
 
   /// Check if any medication reminders are scheduled. If not (e.g. Android
