@@ -132,9 +132,9 @@ class NotificationHelper {
   }
 
   /// Reschedule all medication reminders from the database. Useful after
-  /// permissions were granted, app updates, or device reboots.
-  Future<void> rescheduleAllMedicationReminders() async {
-    if (kIsWeb) return;
+  Future<int> rescheduleAllMedicationReminders() async {
+    if (kIsWeb) return 0;
+
     try {
       await ensureInitialized();
       final configs = await db.getMedicationConfigs();
@@ -177,8 +177,10 @@ class NotificationHelper {
       }
 
       AppLogger.info('Rescheduled $rescheduled medication reminders from DB');
+      return rescheduled;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to reschedule medication reminders', error: e, stackTrace: stackTrace);
+      return 0;
     }
   }
 

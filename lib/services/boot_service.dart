@@ -41,15 +41,16 @@ class BootService {
   /// - After device reboot (via BootReceiver)
   /// - After app update (via MY_PACKAGE_REPLACED intent)
   /// - Manually for recovery
-  static Future<void> _rescheduleAllNotifications() async {
+  /// Returns the number of reminders that were rescheduled.
+  static Future<int> _rescheduleAllNotifications() async {
     developer.log('Rescheduling all medication reminders...', name: 'BootService');
-    await NotificationHelper.instance.rescheduleAllMedicationReminders();
+    return await NotificationHelper.instance.rescheduleAllMedicationReminders();
   }
 
   /// Check if any medication reminders are scheduled. If not (e.g. Android
   /// killed them due to battery optimization), reschedule all from DB.
   /// Call this on every app startup to ensure reliability.
-  static Future<void> rescheduleIfEmpty() async {
+  static Future<int> rescheduleIfEmpty() async {
     try {
       final pendingCount = await NotificationHelper.instance.getPendingNotificationCount();
       if (pendingCount == 0) {
@@ -57,12 +58,13 @@ class BootService {
           'No pending notifications found — likely killed by battery optimization. Rescheduling...',
           name: 'BootService',
         );
-        await _rescheduleAllNotifications();
+        return await _rescheduleAllNotifications();
       } else {
         developer.log(
           'Found $pendingCount pending notifications — no reschedule needed',
           name: 'BootService',
         );
+        return 0;
       }
     } catch (e) {
       developer.log(
@@ -70,11 +72,13 @@ class BootService {
         name: 'BootService',
         error: e,
       );
+      return 0;
     }
   }
 
   /// Manually trigger a reschedule (for testing or recovery).
-  static Future<void> rescheduleNow() async {
-    await _rescheduleAllNotifications();
+  /// Returns the number of reminders that were rescheduled.
+  static Future<int> rescheduleNow() async {
+    return await _rescheduleAllNotifications();
   }
 }

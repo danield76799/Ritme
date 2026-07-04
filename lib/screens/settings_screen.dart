@@ -401,11 +401,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icons.alarm,
             () async {
               try {
-                await BootService.rescheduleNow();
+                final rescheduled = await BootService.rescheduleNow();
                 final count = await NotificationHelper.instance.getPendingNotificationCount();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Herinneringen herplant ✓ ($count ingepland)'), backgroundColor: Colors.green),
+                    SnackBar(content: Text('Herinneringen herplant ✓ ($rescheduled in DB, $count ingepland)'), backgroundColor: Colors.green),
                   );
                 }
               } catch (e) {
