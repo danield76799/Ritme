@@ -65,12 +65,12 @@ class _LoginScreenState extends State<LoginScreen> {
       // Probeer biometrische login als beschikbaar (alleen als er al een PIN is ingesteld).
       // Wacht tot de eerste frame is gerenderd zodat de native prompt betrouwbaar opent.
       if (!kIsWeb && _biometricEnabled && _biometricAvailable && pinSet) {
-        AppLogger.info('Triggering biometric login: enabled=$biometricEnabled, available=$biometricAvailable, pinSet=$pinSet');
+        AppLogger.info('Triggering biometric login: enabled=$_biometricEnabled, available=$_biometricAvailable, pinSet=$pinSet');
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _authenticateWithBiometrics();
         });
       } else {
-        AppLogger.info('Skipping biometric login: enabled=$biometricEnabled, available=$biometricAvailable, pinSet=$pinSet, kIsWeb=$kIsWeb');
+        AppLogger.info('Skipping biometric login: enabled=$_biometricEnabled, available=$_biometricAvailable, pinSet=$pinSet, kIsWeb=$kIsWeb');
       }
     } catch (e) {
       AppLogger.error('Failed to check setup', error: e);
