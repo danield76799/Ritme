@@ -142,7 +142,7 @@ class NotificationHelper {
       
       // CRITICAL: Cancel ALL existing medication reminders first
       // This prevents duplicates when app launches multiple times
-      await cancelAllMedicationReminders();
+      await cancelAllReminders();
       
       final configs = await db.getMedicationConfigs();
       final schedules = await db.getMedicationSchedules();
