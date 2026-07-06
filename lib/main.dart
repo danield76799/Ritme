@@ -109,7 +109,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
                 const SizedBox(height: 8),
                 Text(
                   _error!.exception.toString(),
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),

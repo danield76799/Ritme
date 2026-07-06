@@ -18,7 +18,7 @@ class BottomNavBar extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -59,14 +59,14 @@ class BottomNavBar extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppTheme.primaryTeal : Colors.grey.shade400,
+              color: isSelected ? AppTheme.primaryTeal : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.primaryTeal : Colors.grey.shade400,
+                color: isSelected ? AppTheme.primaryTeal : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
