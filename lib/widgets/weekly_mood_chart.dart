@@ -16,7 +16,7 @@ class WeeklyMoodChart extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
         ),
         child: Center(
           child: Column(
@@ -25,13 +25,13 @@ class WeeklyMoodChart extends StatelessWidget {
               Icon(
                 Icons.show_chart,
                 size: 48,
-                color: Colors.grey.shade400,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
               SizedBox(height: 12),
               Text(
                 'Nog geen stemming data',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -40,7 +40,7 @@ class WeeklyMoodChart extends StatelessWidget {
               Text(
                 'Voeg minimaal 2 logs toe om een trend te zien',
                 style: TextStyle(
-                  color: Colors.black54,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   fontSize: 14,
                 ),
               ),
@@ -58,7 +58,7 @@ class WeeklyMoodChart extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
         ),
         child: Center(
           child: Column(
@@ -73,7 +73,7 @@ class WeeklyMoodChart extends StatelessWidget {
               Text(
                 'Eén log opgeslagen!',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -82,7 +82,7 @@ class WeeklyMoodChart extends StatelessWidget {
               Text(
                 'Voeg nog één log toe voor een trendlijn',
                 style: TextStyle(
-                  color: Colors.black54,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   fontSize: 14,
                 ),
               ),
@@ -162,7 +162,7 @@ class WeeklyMoodChart extends StatelessWidget {
                 : 'Stemming Trend (${recentLogs.length} dagen)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 16),
@@ -196,7 +196,7 @@ class WeeklyMoodChart extends StatelessWidget {
                             padding: EdgeInsets.only(top: 8.0),
                             child: Text(
                               titles[index],
-                              style: TextStyle(fontSize: 10, color: Colors.black87),
+                              style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
                             ),
                           );
                         }
@@ -258,14 +258,14 @@ class WeeklyMoodChart extends StatelessWidget {
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
                     getTooltipColor: (touchedSpot) {
-                      return Colors.black87;
+                      return Theme.of(context).colorScheme.surface;
                     },
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
                         return LineTooltipItem(
                           '${spot.y.toInt()}/100',
                           TextStyle(
-                            color: Theme.of(context).colorScheme.surface,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         );
@@ -282,16 +282,18 @@ class WeeklyMoodChart extends StatelessWidget {
   }
 
   Color _getStemmingKleur(double waarde, BuildContext context) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  if (waarde <= -4) return Colors.grey.shade800;     // Uiterst depressief
-  if (waarde <= -3) return Colors.grey[800]!;      // Ernstig depressief
-  if (waarde <= -2) return Colors.blue[400] ?? Colors.blueGrey[400]!;      // Matig depressief
-  if (waarde <= -1) return Colors.blue[200] ?? Colors.blueGrey[200]!;      // Licht depressief
-  if (waarde == 0) return Colors.green[400] ?? Colors.green[700]!;       // Neutraal
-  if (waarde <= 1) return Colors.yellow[600] ?? Colors.amber[600]!;     // Licht manisch
-  if (waarde <= 2) return Colors.orange[500] ?? Colors.orange[700]!;     // Matig manisch
-  if (waarde <= 3) return Colors.orange[700] ?? Colors.red[300]!;     // Druk / Actief
-  if (waarde <= 4) return Colors.red[400] ?? Colors.red[600]!;        // Ernstig manisch
-  return Colors.red[600]!;                          // Uiterst manisch
+    // Use theme-aware colors with safe fallbacks (no null assertions)
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    if (waarde <= -4) return isDark ? Colors.grey.shade400 : Colors.grey.shade800;
+    if (waarde <= -3) return isDark ? Colors.grey.shade500 : Colors.grey.shade700;
+    if (waarde <= -2) return isDark ? Colors.blue.shade400 : Colors.blue.shade300;
+    if (waarde <= -1) return isDark ? Colors.blue.shade200 : Colors.blue.shade100;
+    if (waarde == 0) return isDark ? Colors.green.shade400 : Colors.green.shade600;
+    if (waarde <= 1) return isDark ? Colors.yellow.shade700 : Colors.yellow.shade600;
+    if (waarde <= 2) return isDark ? Colors.orange.shade400 : Colors.orange.shade600;
+    if (waarde <= 3) return isDark ? Colors.orange.shade700 : Colors.orange.shade800;
+    if (waarde <= 4) return isDark ? Colors.red.shade300 : Colors.red.shade500;
+    return isDark ? Colors.red.shade400 : Colors.red.shade600;
   }
 }

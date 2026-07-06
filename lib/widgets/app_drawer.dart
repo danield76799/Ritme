@@ -31,12 +31,12 @@ class AppDrawer extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.favorite,
-                      color: Theme.of(context).colorScheme.surface,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       size: 28,
                     ),
                   ),
@@ -74,42 +74,42 @@ class AppDrawer extends StatelessWidget {
                     icon: Icons.sentiment_satisfied_alt,
                     title: 'Stemming',
                     route: '/mood',
-                    color: Colors.orange,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.directions_walk,
                     title: 'Activiteit + Slaap',
                     route: '/activity',
-                    color: Colors.green,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.medication_outlined,
                     title: 'Medicatie',
                     route: '/medication',
-                    color: Colors.redAccent,
+                    color: Theme.of(context).colorScheme.tertiary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.monitor_weight,
                     title: 'Gewicht',
                     route: '/weight',
-                    color: Colors.blueAccent,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.calendar_today_outlined,
                     title: 'Afspraken',
                     route: '/appointments',
-                    color: Colors.purpleAccent,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.schedule,
                     title: 'Sociaal Ritme',
                     route: '/sociaal-ritme',
-                    color: Colors.teal,
+                    color: Theme.of(context).colorScheme.tertiary,
                   ),
 
                   const Divider(height: 32),
@@ -119,14 +119,14 @@ class AppDrawer extends StatelessWidget {
                     icon: Icons.insights,
                     title: 'Inzichten & Patronen',
                     route: '/insights',
-                    color: Colors.teal,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.bar_chart,
                     title: 'Statistieken',
                     route: '/statistics',
-                    color: Colors.blue,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
 
                   const Divider(height: 32),
@@ -136,7 +136,7 @@ class AppDrawer extends StatelessWidget {
                     icon: Icons.settings_outlined,
                     title: 'Instellingen',
                     route: '/settings',
-                    color: Colors.grey.shade700!,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ],
               ),
@@ -148,7 +148,7 @@ class AppDrawer extends StatelessWidget {
               child: Text(
                 'Ritme v1.3.5+221',
                 style: TextStyle(
-                  color: Colors.grey.shade500,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 12,
                 ),
               ),
@@ -167,7 +167,7 @@ class AppDrawer extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.grey.shade500,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           letterSpacing: 1.2,
         ),
       ),
@@ -200,7 +200,7 @@ class AppDrawer extends StatelessWidget {
         title,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? AppTheme.textCharcoal : Colors.grey.shade700,
+          color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
         ),
       ),
       trailing: isSelected

@@ -19,7 +19,7 @@ DatabaseRepository get db {
   if (_db == null) {
     throw StateError('Database not initialized. Call initDatabase() first.');
   }
-  return _db!;
+  return _db!; // Safe: checked above
 }
 
 /// Ensure database is initialized before use
