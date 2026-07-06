@@ -132,11 +132,18 @@ class NotificationHelper {
   }
 
   /// Reschedule all medication reminders from the database. Useful after
+  /// reboot or app restart. **Important:** Cancels ALL existing medication
+  /// reminders first to prevent duplicates from multiple app launches.
   Future<int> rescheduleAllMedicationReminders() async {
     if (kIsWeb) return 0;
 
     try {
       await ensureInitialized();
+      
+      // CRITICAL: Cancel ALL existing medication reminders first
+      // This prevents duplicates when app launches multiple times
+      await cancelAllMedicationReminders();
+      
       final configs = await db.getMedicationConfigs();
       final schedules = await db.getMedicationSchedules();
 
@@ -176,7 +183,7 @@ class NotificationHelper {
         rescheduled++;
       }
 
-      AppLogger.info('Rescheduled $rescheduled medication reminders from DB');
+      AppLogger.info('Rescheduled $rescheduled medication reminders from DB (after canceling all)');
       return rescheduled;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to reschedule medication reminders', error: e, stackTrace: stackTrace);
