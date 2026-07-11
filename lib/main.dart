@@ -50,10 +50,17 @@ void main() async {
   if (!kIsWeb) {
     await NotificationHelper.instance.initialize();
     await BootService.initialize();
-    // Reschedule all medication reminders on every startup.
-    // This is the only way to guarantee reliability against Android's battery optimization.
-    final rescheduled = await NotificationHelper.instance.rescheduleAllMedicationReminders();
-    AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled');
+
+    // Vraag expliciet permissies en herplan pas daarna.
+    // Zonder SCHEDULE_EXACT_ALARM gaan medicatieherinneringen niet af op tijd.
+    final permissionsOk = await NotificationHelper.instance.ensurePermissions();
+    if (permissionsOk) {
+      final rescheduled = await NotificationHelper.instance.rescheduleAllMedicationReminders();
+      AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled');
+    } else {
+      AppLogger.warning('Notification/exact alarm permissions not granted; medication reminders not rescheduled');
+    }
+
     await WidgetService.initialize();
   }
 

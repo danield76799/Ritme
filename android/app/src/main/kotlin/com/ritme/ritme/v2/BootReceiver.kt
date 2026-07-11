@@ -34,8 +34,9 @@ class BootReceiver : BroadcastReceiver() {
      * foreground via MainActivity. When the app launches, the Dart side can
      * reschedule notifications from the database.
      *
-     * This avoids spawning a full Flutter engine from a BroadcastReceiver,
-     * which is unreliable on Android 12+ and frequently causes ANRs.
+     * We use an exact alarm with RTC_WAKEUP; if exact alarms are not allowed,
+     * we fall back to setAndAllowWhileIdle. We also add a direct foreground
+     * launch attempt as a safety net for devices with aggressive Doze policies.
      */
     private fun scheduleRescheduleAlarm(context: Context) {
         try {
@@ -98,6 +99,21 @@ class BootReceiver : BroadcastReceiver() {
             Log.i(TAG, "Reschedule alarm set for ${triggerAtMillis}")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to schedule reschedule alarm", e)
+        }
+
+        // Veiligheidsnet: probeer MainActivity direct op te starten zodat
+        // het Dart-gedeelte het reschedule-intent kan afhandelen, ook als het
+        // alarm wordt tegengehouden door battery optimization.
+        try {
+            context.startActivity(
+                Intent(context, MainActivity::class.java).apply {
+                    action = ACTION_RESCHEDULE
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+            )
+            Log.i(TAG, "Foreground reschedule launch attempted")
+        } catch (e: Exception) {
+            Log.e(TAG, "Foreground reschedule launch failed", e)
         }
     }
 }
