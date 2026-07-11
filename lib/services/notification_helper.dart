@@ -131,6 +131,36 @@ class NotificationHelper {
     }
   }
 
+  /// Controleer of alle benodigde notificatiepermissies zijn gegeven.
+  /// Opent de systeeminstellingen als SCHEDULE_EXACT_ALARM ontbreekt.
+  /// Geeft true terug als het veilig is om exacte alarmen in te plannen.
+  Future<bool> ensurePermissions() async {
+    if (kIsWeb) return true;
+    try {
+      final notifStatus = await Permission.notification.request();
+      if (!notifStatus.isGranted) {
+        AppLogger.warning('Notification permission denied');
+        return false;
+      }
+
+      final androidImpl = _notifications.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImpl == null) return true;
+
+      final canScheduleExact = await androidImpl.canScheduleExactNotifications() ?? false;
+      if (!canScheduleExact) {
+        AppLogger.warning('Exact alarm permission denied; opening settings');
+        await androidImpl.requestExactAlarmsPermission();
+        // Return false; app will reschedule on next startup or user can manually retry.
+        return false;
+      }
+      return true;
+    } catch (e) {
+      AppLogger.error('ensurePermissions error', error: e);
+      return false;
+    }
+  }
+
   /// Reschedule all medication reminders from the database. Useful after
   /// reboot or app restart. **Important:** Cancels ALL existing medication
   /// reminders first to prevent duplicates from multiple app launches.
@@ -403,7 +433,8 @@ class NotificationHelper {
           AndroidFlutterLocalNotificationsPlugin>();
       final canScheduleExact = await androidImpl?.canScheduleExactNotifications() ?? false;
       if (!canScheduleExact) {
-        AppLogger.warning('Exact alarm permission missing — scheduling with inexact mode');
+        AppLogger.error('Exact alarm permission missing — cannot schedule medication reminder reliably');
+        return;
       }
 
       await _notifications.zonedSchedule(
