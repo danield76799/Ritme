@@ -387,10 +387,6 @@ class NotificationHelper {
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
       final now = tz.TZDateTime.now(tz.local);
-      var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-      if (scheduledDate.isBefore(now)) {
-        scheduledDate = scheduledDate.add(const Duration(days: 1));
-      }
 
       final dayNames = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
       final daysStr = days.map((d) => dayNames[d - 1]).join(', ');
@@ -423,44 +419,90 @@ class NotificationHelper {
       // Use unique ID to avoid collisions — add 100_000 offset
       final notificationId = (id % 90000) + 10000;
 
-      // Cancel any prior version of this notification first to avoid
-      // orphaned or duplicate scheduled notifications.
+      // Cancel any prior version of this notification first
       await _notifications.cancel(notificationId);
 
-      // Re-validate the alarm permission right before scheduling.
-      // Android 14+ can revoke SCHEDULE_EXACT_ALARM silently.
+      // Check exact alarm permission, but ALWAYS schedule — fallback to inexact
       final androidImpl = _notifications.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
       final canScheduleExact = await androidImpl?.canScheduleExactNotifications() ?? false;
-      if (!canScheduleExact) {
-        AppLogger.error('Exact alarm permission missing — cannot schedule medication reminder reliably');
-        return;
-      }
 
-      await _notifications.zonedSchedule(
-        notificationId,
-        '💊 $medicationName',
-        'Tijd om je medicatie in te nemen! ($daysStr)',
-        scheduledDate,
-        details,
-        androidScheduleMode: canScheduleExact
-            ? AndroidScheduleMode.exactAllowWhileIdle
-            : AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        payload: 'medication:$id',
-        matchDateTimeComponents: DateTimeComponents.time, // Correct for daily repeat
-      );
-      AppLogger.info('Medication reminder scheduled: $medicationName at $scheduledDate (id=$notificationId, exact=$canScheduleExact)');
+      if (days.length == 7) {
+        // Every day — use daily repeating schedule
+        var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+        if (scheduledDate.isBefore(now)) {
+          scheduledDate = scheduledDate.add(const Duration(days: 1));
+        }
+
+        await _notifications.zonedSchedule(
+          notificationId,
+          '💊 $medicationName',
+          'Tijd om je medicatie in te nemen! ($daysStr)',
+          scheduledDate,
+          details,
+          androidScheduleMode: canScheduleExact
+              ? AndroidScheduleMode.exactAllowWhileIdle
+              : AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: 'medication:$id',
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+        AppLogger.info('Medication reminder scheduled (daily): $medicationName at $scheduledDate (id=$notificationId, exact=$canScheduleExact)');
+      } else {
+        // Specific days — schedule each day of the week separately
+        // ISO weekday: Monday=1, Sunday=7
+        // tz.TZDateTime: weekday: Monday=1, Sunday=7 (same as ISO)
+        for (final dayOfWeek in days) {
+          final dayNotificationId = notificationId * 10 + dayOfWeek;
+          await _notifications.cancel(dayNotificationId);
+
+          var scheduledDate = _nextWeekday(now, dayOfWeek, hour, minute);
+
+          await _notifications.zonedSchedule(
+            dayNotificationId,
+            '💊 $medicationName',
+            'Tijd om je medicatie in te nemen! ($daysStr)',
+            scheduledDate,
+            details,
+            androidScheduleMode: canScheduleExact
+                ? AndroidScheduleMode.exactAllowWhileIdle
+                : AndroidScheduleMode.inexactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            payload: 'medication:$id',
+            matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          );
+          AppLogger.info('Medication reminder scheduled (day $dayOfWeek): $medicationName at $scheduledDate (id=$dayNotificationId, exact=$canScheduleExact)');
+        }
+      }
     } catch (e) {
       AppLogger.error('Medication scheduling error for $medicationName', error: e);
     }
+  }
+
+  /// Calculate the next occurrence of a specific weekday at the given time.
+  /// weekday: Monday=1, Sunday=7 (ISO standard)
+  tz.TZDateTime _nextWeekday(tz.TZDateTime now, int weekday, int hour, int minute) {
+    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    final currentWeekday = now.weekday;
+    var daysToAdd = weekday - currentWeekday;
+    if (daysToAdd < 0) daysToAdd += 7;
+    if (daysToAdd == 0 && scheduled.isBefore(now)) {
+      daysToAdd = 7;
+    }
+    scheduled = scheduled.add(Duration(days: daysToAdd));
+    return scheduled;
   }
   Future<void> cancelMedicationReminder(int id) async {
     if (kIsWeb) return;
     try {
       final notificationId = (id % 90000) + 10000;
       await _notifications.cancel(notificationId);
+      // Also cancel per-day-of-week variants (id*10 + dayOfWeek)
+      for (var dayOfWeek = 1; dayOfWeek <= 7; dayOfWeek++) {
+        await _notifications.cancel(notificationId * 10 + dayOfWeek);
+      }
       AppLogger.info('Medication reminder cancelled: $id (notificationId=$notificationId)');
     } catch (e) {
       AppLogger.error('Cancel medication error for id=$id', error: e);

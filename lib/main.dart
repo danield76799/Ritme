@@ -54,12 +54,11 @@ void main() async {
     // Vraag expliciet permissies en herplan pas daarna.
     // Zonder SCHEDULE_EXACT_ALARM gaan medicatieherinneringen niet af op tijd.
     final permissionsOk = await NotificationHelper.instance.ensurePermissions();
-    if (permissionsOk) {
-      final rescheduled = await NotificationHelper.instance.rescheduleAllMedicationReminders();
-      AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled');
-    } else {
-      AppLogger.warning('Notification/exact alarm permissions not granted; medication reminders not rescheduled');
-    }
+    // Vraag battery optimization uitzetting — kritiek voor achtergrondnotificaties
+    await NotificationHelper.instance.openBatteryOptimizationSettings();
+    // Plan ALTIJD herinneringen, ook als exact alarm niet gegeven is (fallback naar inexact)
+    final rescheduled = await NotificationHelper.instance.rescheduleAllMedicationReminders();
+    AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled (exactAlarm=$permissionsOk)');
 
     await WidgetService.initialize();
   }
