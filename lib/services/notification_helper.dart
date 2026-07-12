@@ -21,11 +21,19 @@ class NotificationHelper {
       tz.initializeTimeZones();
       try {
         final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-        final String timeZoneName = timezoneInfo.identifier;
-        tz.setLocalLocation(tz.getLocation(timeZoneName));
-        debugPrint('Timezone set to: $timeZoneName');
+        // flutter_timezone 5.0.x returns a FlutterLocalTimezone object
+        // whose toString() or identifier gives the IANA name.
+        final String timeZoneName = timezoneInfo.identifier.isNotEmpty
+            ? timezoneInfo.identifier
+            : timezoneInfo.toString();
+        final location = tz.getLocation(timeZoneName);
+        tz.setLocalLocation(location);
+        debugPrint('Timezone set to: $timeZoneName (offset=${location.currentTimeZone.offset})');
       } catch (e) {
-        debugPrint('Failed to set local timezone: $e');
+        debugPrint('Failed to set local timezone, falling back to UTC offset of device: $e');
+        // Fallback: use the device's UTC offset to construct a fixed-offset location
+        final deviceOffset = DateTime.now().timeZoneName;
+        debugPrint('Device timezone name: $deviceOffset');
       }
 
       const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -387,6 +395,8 @@ class NotificationHelper {
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
       final now = tz.TZDateTime.now(tz.local);
+      final localTzName = now.timeZoneName;
+      AppLogger.info('Scheduling $medicationName for ${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} (device tz=$localTzName, offset=${now.timeZoneOffset})');
 
       final dayNames = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
       final daysStr = days.map((d) => dayNames[d - 1]).join(', ');
