@@ -816,6 +816,46 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<void> cleanupMedicationSchedulesAndCancelNotifications() async {
+    final configs = await getMedicationConfigs();
+    final configIds = configs.map((c) => c['id']).toSet();
+
+    final entries = _medicationSchedule.toMap().entries.toList();
+    // Group schedules per medication_id and keep only the most recent
+    final schedulesByMedId = <dynamic, List<MapEntry<dynamic, dynamic>>>{};
+    for (final entry in entries) {
+      final map = Map<String, dynamic>.from(entry.value);
+      final medId = map['medication_id'];
+      schedulesByMedId.putIfAbsent(medId, () => []).add(entry);
+    }
+
+    for (final medId in schedulesByMedId.keys.toList()) {
+      final medSchedules = schedulesByMedId[medId]!;
+      // Delete orphaned schedules (medication doesn't exist)
+      final medicationExists = configIds.contains(medId) || configIds.contains(medId?.toString());
+      if (!medicationExists) {
+        for (final entry in medSchedules) {
+          await _medicationSchedule.delete(entry.key);
+        }
+        continue;
+      }
+
+      // Keep only the most recent schedule per medication
+      medSchedules.sort((a, b) {
+        final idA = a.value['id'] ?? a.key;
+        final idB = b.value['id'] ?? b.key;
+        final numA = idA is num ? idA.toInt() : int.tryParse(idA.toString()) ?? 0;
+        final numB = idB is num ? idB.toInt() : int.tryParse(idB.toString()) ?? 0;
+        return numB.compareTo(numA); // descending
+      });
+
+      for (int i = 1; i < medSchedules.length; i++) {
+        await _medicationSchedule.delete(medSchedules[i].key);
+      }
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday() async {
     final today = DateTime.now().weekday;
     final allSchedules = _medicationSchedule.toMap().entries.map((entry) {
