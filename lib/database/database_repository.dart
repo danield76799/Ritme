@@ -40,6 +40,7 @@ abstract class DatabaseRepository {
   Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek);
   Future<int> updateMedicationSchedule(int id, Map<String, dynamic> data);
   Future<int> deleteMedicationSchedule(int id);
+  Future<void> cleanupMedicationSchedulesAndCancelNotifications();
   Future<List<Map<String, dynamic>>> getScheduledMedicationsForToday();
   Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed);
 

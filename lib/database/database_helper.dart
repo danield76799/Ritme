@@ -541,6 +541,38 @@ class DatabaseHelper implements DatabaseRepository {
     });
   }
 
+  /// Cleanup orphaned and duplicate medication schedules, then cancel all
+  /// scheduled local notifications. Call this before rescheduling to ensure
+  /// no stale or duplicate reminders remain.
+  @override
+  Future<void> cleanupMedicationSchedulesAndCancelNotifications() async {
+    final db = await database;
+
+    // 1. Delete schedules for medications that no longer exist
+    await db.rawDelete('''
+      DELETE FROM medication_schedule
+      WHERE medication_id NOT IN (SELECT id FROM medication_config)
+    ''');
+
+    // 2. Delete disabled schedules (reminder_enabled=0 in medication_config)
+    await db.rawDelete('''
+      DELETE FROM medication_schedule
+      WHERE medication_id IN (
+        SELECT id FROM medication_config WHERE reminder_enabled = 0
+      )
+    ''');
+
+    // 3. Keep only the most recent schedule per medication_id
+    await db.rawDelete('''
+      DELETE FROM medication_schedule
+      WHERE id NOT IN (
+        SELECT MAX(id)
+        FROM medication_schedule
+        GROUP BY medication_id
+      )
+    ''');
+  }
+
   @override
   Future<int> deleteMedicationConfig(int id) async {
     final db = await database;

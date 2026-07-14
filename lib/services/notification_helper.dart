@@ -178,8 +178,10 @@ class NotificationHelper {
     try {
       await ensureInitialized();
       
-      // CRITICAL: Cancel ALL existing medication reminders first
-      // This prevents duplicates when app launches multiple times
+      // CRITICAL: Clean up orphaned/duplicate DB schedules and cancel ALL
+      // existing local notifications before rescheduling. This prevents stale
+      // reminders from deleted/disabled medications from reappearing.
+      await db.cleanupMedicationSchedulesAndCancelNotifications();
       await cancelAllReminders();
       
       final configs = await db.getMedicationConfigs();
