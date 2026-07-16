@@ -30,6 +30,7 @@ import 'screens/sociaal_ritme_meter_screen.dart';
 import 'screens/statistics_screen.dart' show StatistiekenScherm;
 import 'screens/voortekenen_screen.dart';
 import 'screens/weight_screen.dart';
+import 'services/theme_service.dart';
 
 // Pages & Utils
 import 'pages/splash_screen.dart' show SplashScreenWrapper;
@@ -138,8 +139,36 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   }
 }
 
-class RitmeApp extends StatelessWidget {
+class RitmeApp extends StatefulWidget {
   const RitmeApp({super.key});
+
+  /// Globale toegang tot de actieve app-state zodat schermen de thema-modus
+  /// kunnen wijzigen (bijv. vanuit Instellingen).
+  static _RitmeAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_RitmeAppState>();
+
+  @override
+  State<RitmeApp> createState() => _RitmeAppState();
+}
+
+class _RitmeAppState extends State<RitmeApp> {
+  ThemeMode themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final mode = await ThemeService.instance.getThemeMode();
+    if (mounted) setState(() => themeMode = mode);
+  }
+
+  void setThemeMode(ThemeMode mode) {
+    setState(() => themeMode = mode);
+    ThemeService.instance.setThemeMode(mode);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +177,7 @@ class RitmeApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      themeMode: themeMode,
       home: SplashScreenWrapper(),
       routes: {
         '/mood': (context) => MoodScreen(),

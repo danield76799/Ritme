@@ -30,10 +30,10 @@ class BottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.home_outlined, 'Home', 0),
-              _buildNavItem(Icons.sentiment_satisfied_alt, 'Stemming', 1),
-              _buildNavItem(Icons.directions_walk, 'Activiteit + Slaap', 2),
-              _buildNavItem(Icons.bar_chart, 'Stats', 3),
+              _buildNavItem(context, Icons.home_outlined, 'Home', 0),
+              _buildNavItem(context, Icons.sentiment_satisfied_alt, 'Stemming', 1),
+              _buildNavItem(context, Icons.directions_walk, 'Activiteit + Slaap', 2),
+              _buildNavItem(context, Icons.bar_chart, 'Stats', 3),
             ],
           ),
         ),
@@ -41,7 +41,7 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
+  Widget _buildNavItem(BuildContext context, IconData icon, String label, int index) {
     final isSelected = currentIndex == index;
 
     return GestureDetector(

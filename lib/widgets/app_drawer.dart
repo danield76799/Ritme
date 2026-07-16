@@ -1,13 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../theme/app_theme.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
   final String currentRoute;
 
-  AppDrawer({
+  const AppDrawer({
     super.key,
     required this.currentRoute,
   });
+
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  String _version = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) setState(() => _version = 'Ritme v${info.version}+${info.buildNumber}');
+    } catch (e) {
+      if (mounted) setState(() => _version = 'Ritme');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +169,7 @@ class AppDrawer extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Ritme v1.3.5+221',
+                _version,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 12,
@@ -181,7 +204,7 @@ class AppDrawer extends StatelessWidget {
     required String route,
     required Color color,
   }) {
-    final isSelected = currentRoute == route;
+    final isSelected = widget.currentRoute == route;
 
     return ListTile(
       leading: Container(
@@ -215,7 +238,7 @@ class AppDrawer extends StatelessWidget {
           : null,
       onTap: () {
         Navigator.pop(context); // Close drawer
-        if (currentRoute != route) {
+        if (widget.currentRoute != route) {
           Navigator.pushNamed(context, route);
         }
       },

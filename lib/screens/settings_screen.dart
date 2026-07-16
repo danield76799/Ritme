@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'dart:convert';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
@@ -7,8 +6,9 @@ import '../utils/logger.dart';
 import '../services/backup_service.dart';
 import '../services/notification_helper.dart';
 import '../services/boot_service.dart';
-import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import '../services/theme_service.dart';
+import '../main.dart';
 
 class _CustomTimePickerDialog extends StatefulWidget {
   final TimeOfDay initialTime;
@@ -179,6 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _showMenstruatie = true;
   bool _isLoading = true;
   String? _errorMessage;
+  ThemeMode _themeMode = ThemeMode.system;
 
   // Controllers for text fields
   final _usernameController = TextEditingController();
@@ -203,10 +204,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       final settings = await db.getSettings();
+      final appState = RitmeApp.of(context);
       setState(() {
         _settings = settings;
         _showMenstruatie = settings?['show_menstruatie'] == '1' || settings?['show_menstruatie'] == 1 || settings?['show_menstruatie'] == 'true' || settings?['show_menstruatie'] == null;
         _isLoading = false;
+        // Sync huidige thema-modus van de app
+        if (appState != null) _themeMode = appState.themeMode;
         // Update controllers with loaded values
         _usernameController.text = settings?['username']?.toString() ?? '';
       });
@@ -301,7 +305,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50, // Very light grey background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Volgt thema (ook dark mode)
       appBar: AppBar(
         title: Text('Instellingen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -374,6 +378,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
             activeColor: AppTheme.primaryTeal,
           ),
+          const SizedBox(height: 12),
+          _buildThemeSelector(),
           const SizedBox(height: 24),
           _buildSectionHeader('Notificaties'),
           _buildActionButton(
@@ -547,6 +553,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: AppTheme.primaryTeal,
           letterSpacing: 0.5,
         ),
+      ),
+    );
+  }
+
+  Widget _buildThemeSelector() {
+    final options = [
+      (ThemeMode.system, Icons.brightness_auto, 'Systeem'),
+      (ThemeMode.light, Icons.brightness_5, 'Licht'),
+      (ThemeMode.dark, Icons.brightness_2, 'Donker'),
+    ];
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Weergave modus',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
+          ),
+          const SizedBox(height: 12),
+          SegmentedButton<ThemeMode>(
+            style: ButtonStyle(
+              visualDensity: VisualDensity.comfortable,
+            ),
+            selected: {_themeMode},
+            onSelectionChanged: (selected) {
+              final mode = selected.first;
+              setState(() => _themeMode = mode);
+              RitmeApp.of(context)?.setThemeMode(mode);
+            },
+            segments: options
+                .map(
+                  (o) => ButtonSegment<ThemeMode>(
+                    value: o.$1,
+                    icon: Icon(o.$2, size: 18),
+                    label: Text(o.$3),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
       ),
     );
   }

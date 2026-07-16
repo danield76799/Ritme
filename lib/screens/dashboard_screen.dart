@@ -260,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   borderRadius: BorderRadius.circular(AppTheme.largeRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: (isDark ? Colors.black : Color(0xFFB4A8D4)).withOpacity(0.25),
+                      color: (isDark ? Colors.black : const Color(0xFFB4A8D4)).withValues(alpha: 0.25),
                       blurRadius: 16,
                       offset: Offset(0, 8),
                     ),
@@ -285,7 +285,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     Text(
                       dateStr,
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
                         fontSize: 15,
                       ),
                     ),
@@ -417,7 +417,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.20),
+        color: Theme.of(context).cardColor.withValues(alpha: 0.20),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -451,7 +451,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 28),
@@ -497,7 +497,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
                 child: Icon(icon, color: color, size: 24),
               ),
               const SizedBox(width: 16),
@@ -530,7 +530,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning.withOpacity(0.5)),
+        border: Border.all(color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

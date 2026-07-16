@@ -62,6 +62,7 @@ class DatumNavigator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -69,7 +70,7 @@ class DatumNavigator extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -82,7 +83,7 @@ class DatumNavigator extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.chevron_left, size: 28),
             onPressed: _gaDagTerug,
-            color: const Color(0xFF4FB2C1),
+            color: theme.colorScheme.primary,
           ),
           
           // Datum weergave (tik om datum te kiezen)
@@ -103,10 +104,10 @@ class DatumNavigator extends StatelessWidget {
                 children: [
                   Text(
                     _formatteerDatum(geselecteerdeDatum),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333),
+                      color: theme.colorScheme.onSurface,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -118,11 +119,11 @@ class DatumNavigator extends StatelessWidget {
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text(
+                      child: Text(
                         'Ga naar vandaag',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF4FB2C1),
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                     ),
@@ -135,7 +136,7 @@ class DatumNavigator extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.chevron_right, size: 28),
             onPressed: _kanVooruit() ? _gaDagVooruit : null,
-            color: _kanVooruit() ? const Color(0xFF4FB2C1) : const Color(0xFFBDBDBD),
+            color: _kanVooruit() ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.4),
           ),
         ],
       ),
