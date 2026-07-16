@@ -67,7 +67,7 @@ class WeeklyMoodChart extends StatelessWidget {
               Icon(
                 Icons.trending_up,
                 size: 48,
-                color: AppTheme.primaryTeal.withOpacity(0.5),
+                color: AppTheme.primaryTeal.withValues(alpha: 0.5),
               ),
               SizedBox(height: 12),
               Text(
@@ -176,7 +176,7 @@ class WeeklyMoodChart extends StatelessWidget {
                   horizontalInterval: 20,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.grey.withOpacity(0.15),
+                      color: Colors.grey.withValues(alpha: 0.15),
                       strokeWidth: 1,
                     );
                   },
