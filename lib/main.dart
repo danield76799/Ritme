@@ -61,6 +61,14 @@ void main() async {
     final rescheduled = await NotificationHelper.instance.rescheduleAllMedicationReminders();
     AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled (exactAlarm=$permissionsOk)');
 
+    // Verzeker dat medicatieherinneringen hersteld zijn na een reboot of als Android
+    // ze heeft weggehaald door batterijoptimalisatie. Zonder deze check blijven ze
+    // stil als er geen pending notificaties meer zijn.
+    final recovered = await BootService.rescheduleIfEmpty();
+    if (recovered > 0) {
+      AppLogger.info('Recovered $recovered reminders after empty pending queue');
+    }
+
     await WidgetService.initialize();
   }
 
