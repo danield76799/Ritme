@@ -6,6 +6,7 @@ abstract class DatabaseRepository {
   Future<int> insertSettings(Map<String, dynamic> settings);
   Future<int> updateSettings(String username, Map<String, dynamic> settings);
   Future<int> updateSettingsMap(Map<String, dynamic> settings);
+  Future<int> updateBiometricEnabled(bool enabled);
   Future<bool> hasPinSet();
   Future<bool> updatePin(String pin);
   Future<Map<String, dynamic>?> validateLoginPin(String pin);

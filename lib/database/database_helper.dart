@@ -290,6 +290,9 @@ class DatabaseHelper implements DatabaseRepository {
       await db.execute('ALTER TABLE medication_config ADD COLUMN target_max REAL');
       try {
         await db.execute('ALTER TABLE settings ADD COLUMN show_menstruatie TEXT DEFAULT ''1''');
+      try {
+        await db.execute('ALTER TABLE settings ADD COLUMN biometric_enabled TEXT DEFAULT ''0''');
+      } catch (_) {}
       } catch (_) {}
       await _seedProdromalChecklist(db);
     } catch (e) {
@@ -363,6 +366,25 @@ class DatabaseHelper implements DatabaseRepository {
       return await db.update('settings', settings, where: 'username = ?', whereArgs: [existing['username']]);
     } else {
       return await db.insert('settings', settings);
+    }
+  }
+
+  @override
+  Future<int> updateBiometricEnabled(bool enabled) async {
+    final db = await database;
+    final existing = await getSettings();
+    if (existing != null) {
+      return await db.update(
+        'settings',
+        {'biometric_enabled': enabled ? '1' : '0'},
+        where: 'username = ?',
+        whereArgs: [existing['username']],
+      );
+    } else {
+      return await db.insert('settings', {
+        'username': 'user',
+        'biometric_enabled': enabled ? '1' : '0',
+      });
     }
   }
 
