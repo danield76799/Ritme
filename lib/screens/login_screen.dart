@@ -197,6 +197,56 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showEnableBiometricManuallyDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.fingerprint, color: AppTheme.primaryTeal),
+            const SizedBox(width: 8),
+            const Text('Biometrie activeren'),
+          ],
+        ),
+        content: const Text(
+          'Wil je biometrische authenticatie (vingerafdruk/gezichtsherkenning) inschakelen voor snellere toegang?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuleren'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final bool didAuthenticate = await _authenticateWithBiometrics();
+              if (didAuthenticate) {
+                await _secureStorage.write(key: 'biometric_enabled', value: 'true');
+                try {
+                  await db.updateBiometricEnabled(true);
+                } catch (_) {}
+                if (mounted) {
+                  setState(() => _biometricEnabled = true);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Biometrie geactiveerd ✓'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
+            child: Text(
+              'Activeren',
+              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showEnableBiometricDialog() {
     showDialog(
       context: context,
@@ -470,6 +520,20 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 24),
                           ],
+                        ),
+
+                      // Activeer biometrie (als beschikbaar, maar nog niet ingeschakeld)
+                      if (!kIsWeb && _biometricAvailable && !_biometricEnabled && !_isFirstTime)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: TextButton.icon(
+                            onPressed: () => _showEnableBiometricManuallyDialog(),
+                            icon: Icon(Icons.fingerprint, color: AppTheme.primaryTeal),
+                            label: Text(
+                              'Biometrie activeren',
+                              style: TextStyle(color: AppTheme.primaryTeal),
+                            ),
+                          ),
                         ),
                       
                       Container(
