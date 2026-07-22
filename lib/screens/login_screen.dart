@@ -129,6 +129,19 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (didAuthenticate && mounted) {
+        // Zorg dat er altijd een PIN bestaat voordat we verdergaan. Anders
+        // zou biometrie de PIN volledig kunnen omzeilen.
+        final pinSet = await db.hasPinSet();
+        if (!pinSet) {
+          setState(() => _isFirstTime = true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Stel een PIN in om verder te gaan'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          return didAuthenticate;
+        }
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -197,7 +210,22 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showEnableBiometricManuallyDialog() {
+  void _showEnableBiometricManuallyDialog() async {
+    // Biometrie mag alleen bovenop een bestaande PIN worden geactiveerd.
+    final pinSet = await db.hasPinSet();
+    if (!pinSet) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Stel eerst een PIN in voordat je biometrie activeert'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      setState(() => _isFirstTime = true);
+      return;
+    }
+
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
