@@ -51,6 +51,22 @@ class _LoginScreenState extends State<LoginScreen> {
           if (_biometricAvailable) {
             final biometricEnabled = await _secureStorage.read(key: 'biometric_enabled');
             _biometricEnabled = biometricEnabled == 'true';
+            if (!_biometricEnabled) {
+              // Fallback: controleer ook de database. De secure storage kan leeg
+              // zijn na een herinstallatie terwijl de gebruiker biometrie eerder
+              // wél had ingeschakeld.
+              try {
+                final settings = await db.getSettings();
+                final stored = settings?['biometric_enabled']?.toString();
+                _biometricEnabled = stored == '1' || stored == 'true';
+                if (_biometricEnabled) {
+                  // Herstel de secure storage zodat de app meteen kan inloggen.
+                  await _secureStorage.write(key: 'biometric_enabled', value: 'true');
+                }
+              } catch (_) {
+                // DB-lees is optioneel, fallback naar false.
+              }
+            }
           }
         } on PlatformException catch (e) {
           AppLogger.warning('Biometric check error', error: e);
@@ -203,6 +219,10 @@ class _LoginScreenState extends State<LoginScreen> {
               final bool didAuthenticate = await _authenticateWithBiometrics();
               if (didAuthenticate) {
                 await _secureStorage.write(key: 'biometric_enabled', value: 'true');
+                // Bewaar de vlag ook in de database zodat herinstallatie hem niet kwijt is.
+                try {
+                  await db.updateBiometricEnabled(true);
+                } catch (_) {}
                 if (mounted) {
                   Navigator.pop(context);
                   _showNotificationDialog();
@@ -327,6 +347,11 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _secureStorage.delete(key: 'biometric_enabled');
       await _secureStorage.delete(key: 'password_hash');
+      // Wis ook de database-vlag zodat een toekomstige herinstallatie de app
+      // niet in een half-ingestelde staat achterlaat.
+      try {
+        await db.updateBiometricEnabled(false);
+      } catch (_) {}
       await db.clearAllData();
       
       if (mounted) {

@@ -146,6 +146,14 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<int> updateBiometricEnabled(bool enabled) async {
+    final existing = await getSettings() ?? <String, dynamic>{'id': 'user'};
+    existing['biometric_enabled'] = enabled ? '1' : '0';
+    await _settings.put('user', existing);
+    return 1;
+  }
+
+  @override
   Future<bool> hasPinSet() async {
     final settings = await getSettings();
     return settings != null && settings['password_hash'] != null;
