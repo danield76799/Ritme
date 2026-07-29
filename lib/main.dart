@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'services/boot_service.dart';
 import 'services/notification_helper.dart';
 import 'services/widget_service.dart';
+import 'services/work_manager_service.dart';
 
 // Screens
 import 'screens/activities_detail_screen.dart';
@@ -70,6 +71,11 @@ void main() async {
     }
 
     await WidgetService.initialize();
+
+    // WorkManager periodic task: reschedules medication reminders every 12
+    // hours in the background, surviving Android Doze mode. This prevents
+    // reminders from going silent after a few days of inactivity.
+    await WorkManagerService.initialize();
   }
 
   // Set up error handling
