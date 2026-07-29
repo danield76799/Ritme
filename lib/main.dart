@@ -75,11 +75,15 @@ void main() async {
     // WorkManager periodic task: reschedules medication reminders every 12
     // hours in the background, surviving Android Doze mode. This prevents
     // reminders from going silent after a few days of inactivity.
-    try {
-      await WorkManagerService.initialize();
-    } catch (e, stackTrace) {
-      AppLogger.error('WorkManager initialization failed (non-fatal)', error: e, stackTrace: stackTrace);
-    }
+    // Deferred to a post-frame callback so it does not interfere with the
+    // app's initialisation (local_auth, etc.).
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await WorkManagerService.initialize();
+      } catch (e, stackTrace) {
+        AppLogger.error('WorkManager initialization failed (non-fatal)', error: e, stackTrace: stackTrace);
+      }
+    });
   }
 
   // Set up error handling
