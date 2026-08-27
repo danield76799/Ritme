@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class SociaalRitmeMeterScreen extends StatefulWidget {
   const SociaalRitmeMeterScreen({super.key});
@@ -136,7 +137,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Sociaal Ritme', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).sociaalRitme, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
@@ -144,7 +145,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
-            tooltip: 'Vernieuwen',
+            tooltip: AppLocalizations.of(context).vernieuwen,
           ),
         ],
       ),
@@ -167,7 +168,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadData,
-            child: const Text('Opnieuw proberen'),
+            child: Text(AppLocalizations.of(context).opnieuwProberen),
           ),
         ],
       ),

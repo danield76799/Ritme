@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../utils/bool_helper.dart';
 import '../widgets/datum_navigator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -178,7 +179,7 @@ class _MoodScreenState extends State<MoodScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Opgeslagen!'),
+            content: Text(AppLocalizations.of(context).opgeslagen),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -191,7 +192,7 @@ class _MoodScreenState extends State<MoodScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fout bij opslaan: $e'),
+            content: Text(AppLocalizations.of(context).foutOpslaan2(e)),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -242,14 +243,14 @@ class _MoodScreenState extends State<MoodScreen> {
       debugPrint('MoodScreen build error: $e');
       debugPrint('Stack: $stack');
       return Scaffold(
-        appBar: AppBar(title: Text('Stemming - Fout')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).stemmingFout)),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.error_outline, color: Colors.red, size: 64),
               SizedBox(height: 16),
-              Text('Fout: $e', style: TextStyle(fontSize: 16)),
+              Text(AppLocalizations.of(context).fout(e), style: TextStyle(fontSize: 16)),
             ],
           ),
         ),
@@ -271,7 +272,7 @@ class _MoodScreenState extends State<MoodScreen> {
         actions: [
           TextButton(
             onPressed: _opslaan,
-            child: Text('Opslaan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
+            child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

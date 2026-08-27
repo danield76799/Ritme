@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 import '../utils/logger.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class WeightScreen extends StatefulWidget {
   const WeightScreen({super.key});
@@ -82,8 +83,8 @@ class _WeightScreenState extends State<WeightScreen> {
                 controller: weightController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Gewicht (kg) - gebruik punt (.)',
-                  hintText: 'Bijv. 101.5',
+                  labelText: AppLocalizations.of(context).gewichtKgGebruikPunt,
+                  hintText: AppLocalizations.of(context).bijv1015,
                   prefixIcon: const Icon(Icons.monitor_weight),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -93,7 +94,7 @@ class _WeightScreenState extends State<WeightScreen> {
                 controller: notesController,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  labelText: 'Notities (optioneel)',
+                  labelText: AppLocalizations.of(context).notitiesOptioneel,
                   prefixIcon: const Icon(Icons.notes),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -103,7 +104,7 @@ class _WeightScreenState extends State<WeightScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Annuleren'),
+              child: Text(AppLocalizations.of(context).annuleren),
             ),
             ElevatedButton(
               onPressed: () {
@@ -114,7 +115,7 @@ class _WeightScreenState extends State<WeightScreen> {
                   if (weight == null || weight < 20 || weight > 300) {
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
                       SnackBar(
-                        content: const Text('Gewicht moet tussen 20 en 300 kg zijn. Gebruik een punt (.) als decimaal.'),
+                        content: Text(AppLocalizations.of(context).gewichtMoetTussen20),
                         backgroundColor: Colors.red,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -133,7 +134,7 @@ class _WeightScreenState extends State<WeightScreen> {
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text('Opslaan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+              child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
             ),
           ],
         ),
@@ -175,8 +176,8 @@ class _WeightScreenState extends State<WeightScreen> {
               controller: weightController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Gewicht (kg) - gebruik punt (.)',
-                hintText: 'Bijv. 101.5',
+                labelText: AppLocalizations.of(context).gewichtKgGebruikPunt,
+                hintText: AppLocalizations.of(context).bijv1015,
                 prefixIcon: const Icon(Icons.monitor_weight),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -186,7 +187,7 @@ class _WeightScreenState extends State<WeightScreen> {
               controller: notesController,
               maxLines: 2,
               decoration: InputDecoration(
-                labelText: 'Notities (optioneel)',
+                labelText: AppLocalizations.of(context).notitiesOptioneel,
                 prefixIcon: const Icon(Icons.notes),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -196,7 +197,7 @@ class _WeightScreenState extends State<WeightScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Annuleren'),
+            child: Text(AppLocalizations.of(context).annuleren),
           ),
           ElevatedButton(
             onPressed: () {
@@ -209,7 +210,7 @@ class _WeightScreenState extends State<WeightScreen> {
                 if (weight == null || weight < 20 || weight > 300) {
                   ScaffoldMessenger.of(dialogContext).showSnackBar(
                     SnackBar(
-                      content: const Text('Gewicht moet tussen 20 en 300 kg zijn. Gebruik een punt (.) als decimaal.'),
+                      content: Text(AppLocalizations.of(context).gewichtMoetTussen20),
                       backgroundColor: Colors.red,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -228,7 +229,7 @@ class _WeightScreenState extends State<WeightScreen> {
               backgroundColor: Theme.of(context).colorScheme.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text('Opslaan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -256,7 +257,7 @@ class _WeightScreenState extends State<WeightScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fout bij opslaan: $e'),
+            content: Text(AppLocalizations.of(context).foutOpslaan2(e)),
             backgroundColor: Colors.red,
           ),
         );

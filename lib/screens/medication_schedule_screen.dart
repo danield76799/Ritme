@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class MedicationScheduleScreen extends StatefulWidget {
   const MedicationScheduleScreen({super.key});
@@ -48,7 +49,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Medicatie Schema', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).medicatieSchema, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
@@ -78,7 +79,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadData,
-            child: const Text('Opnieuw proberen'),
+            child: Text(AppLocalizations.of(context).opnieuwProberen),
           ),
         ],
       ),
@@ -133,8 +134,8 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           ),
           child: Icon(Icons.access_time, color: AppTheme.primaryTeal),
         ),
-        title: Text('Herinnering: $time', style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('Dagen: $days'),
+        title: Text(AppLocalizations.of(context).herinnering2(time), style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(AppLocalizations.of(context).dagen(days)),
       ),
     );
   }

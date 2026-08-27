@@ -5,6 +5,7 @@ import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 import '../utils/logger.dart';
 import '../services/notification_helper.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
@@ -124,7 +125,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Herinnering gezet voor $name om $timeStr'),
+                content: Text(AppLocalizations.of(context).herinneringGezet(name, timeStr)),
                 backgroundColor: Colors.green[700],
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -163,14 +164,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Medicatie verwijderen?'),
-          content: Text('Deze actie kan niet ongedaan worden.'),
+          title: Text(AppLocalizations.of(context).medicatieVerwijderen),
+          content: Text(AppLocalizations.of(context).dezeActieOngedaan),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Annuleren')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context).annuleren)),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('Verwijderen', style: TextStyle(color: Colors.white)),
+              child: Text(AppLocalizations.of(context).verwijderen, style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -239,7 +240,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         _loadData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Herinnertijd gewijzigd naar $newTimeStr')),
+            SnackBar(content: Text(AppLocalizations.of(context).herinnertijdGewijzigd(newTimeStr))),
           );
         }
       } catch (e) {
@@ -252,14 +253,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Database resetten?'),
-        content: Text('Dit wist ALLE data.'),
+        title: Text(AppLocalizations.of(context).databaseResetten),
+        content: Text(AppLocalizations.of(context).wistAlleData),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Annuleren')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context).annuleren)),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Resetten', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context).resetten, style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -287,14 +288,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
               textTheme: TextTheme(bodyLarge: TextStyle(color: Colors.black)),
             ),
             child: AlertDialog(
-              title: Text('Nieuwe Medicatie', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+              title: Text(AppLocalizations.of(context).nieuweMedicatie, style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       decoration: InputDecoration(
-                        labelText: 'Naam (bijv. Lithium)',
+                        labelText: AppLocalizations.of(context).naamBijvLithium,
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -303,7 +304,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     ),
                     TextField(
                       decoration: InputDecoration(
-                        labelText: 'Dosering',
+                        labelText: AppLocalizations.of(context).dosering,
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -313,17 +314,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     ),
                     TextField(
                       decoration: InputDecoration(
-                        labelText: 'Eenheid (mg, ml, stuks)',
+                        labelText: AppLocalizations.of(context).eenheidMgMlStuks,
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onChanged: (v) => unit = v,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Row(
                       children: [
-                        const Text('Herinnering'),
+                        Text(AppLocalizations.of(context).herinnering),
                         const Spacer(),
                         Switch(
                           value: reminderEnabled,
@@ -345,7 +346,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         },
                         child: InputDecorator(
                           decoration: InputDecoration(
-                            labelText: 'Tijdstip herinnering',
+                            labelText: AppLocalizations.of(context).tijdstipHerinnering,
                             filled: true,
                             fillColor: Colors.grey.shade200,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -362,7 +363,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuleer')),
+                TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context).annuleer)),
                 ElevatedButton(
                   onPressed: () {
                     if (name.isNotEmpty) {
@@ -370,7 +371,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     }
                     Navigator.pop(context);
                   },
-                  child: Text('Opslaan'),
+                  child: Text(AppLocalizations.of(context).opslaan),
                 ),
               ],
             ),
@@ -384,7 +385,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     final granted = await NotificationHelper.instance.requestNotificationPermissions();
     if (!granted && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Notificatiepermissie geweigerd. Zet deze aan in instellingen.')),
+        SnackBar(content: Text(AppLocalizations.of(context).notificatiepermissieGeweigerdZetDeze)),
       );
       return;
     }
@@ -392,7 +393,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     final batteryOpt = await NotificationHelper.instance.openBatteryOptimizationSettings();
     if (!batteryOpt && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Accu-optimalisatie kan notificaties blokkeren.')),
+        SnackBar(content: Text(AppLocalizations.of(context).accuOptimalisatieNotificatiesBlokkeren)),
       );
     }
   }
@@ -402,7 +403,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Medicatie', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).medicatie, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
@@ -410,7 +411,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           IconButton(icon: Icon(Icons.add), onPressed: _showAddMedicationDialog),
           IconButton(
             icon: Icon(Icons.notifications_active_outlined),
-            tooltip: 'Notificatiepermissies controleren',
+            tooltip: AppLocalizations.of(context).notificatiepermissiesControleren,
             onPressed: _checkNotificationPermissions,
           ),
           IconButton(icon: Icon(Icons.delete_forever, color: Colors.red), onPressed: _resetDatabase),
@@ -448,7 +449,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           ElevatedButton.icon(
             onPressed: _loadData,
             icon: Icon(Icons.refresh),
-            label: Text('Opnieuw proberen'),
+            label: Text(AppLocalizations.of(context).opnieuwProberen),
             style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Colors.white),
           ),
         ],
@@ -463,9 +464,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
         children: [
           Icon(Icons.medication_outlined, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 12),
-          Text('Geen medicatie', style: TextStyle(fontSize: 16, color: Color(0xFF333333))),
+          Text(AppLocalizations.of(context).geenMedicatie, style: TextStyle(fontSize: 16, color: Color(0xFF333333))),
           const SizedBox(height: 4),
-          Text('Tik + om toe te voegen', style: TextStyle(fontSize: 13, color: Color(0xFF555555))),
+          Text(AppLocalizations.of(context).tikToeVoegen, style: TextStyle(fontSize: 13, color: Color(0xFF555555))),
         ],
       ),
     );

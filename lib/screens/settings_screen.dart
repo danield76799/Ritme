@@ -9,6 +9,7 @@ import '../services/boot_service.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/theme_service.dart';
 import '../main.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class _CustomTimePickerDialog extends StatefulWidget {
   final TimeOfDay initialTime;
@@ -105,7 +106,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Klaar',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -307,7 +308,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Volgt thema (ook dark mode)
       appBar: AppBar(
-        title: Text('Instellingen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).instellingen, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
@@ -332,10 +333,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadData,
-            child: const Text('Opnieuw proberen'),
+            child: Text(AppLocalizations.of(context).opnieuwProberen),
           ),
         ],
       ),
@@ -354,17 +355,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader('Slaapschema'),
           _buildTimeField('Opstaan', 'target_opstaan'),
           _buildTimeField('Slapen', 'target_slapen'),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _buildSectionHeader('Dagelijkse Doelen'),
           _buildTimeField('Eerste contact', 'target_contact'),
           _buildTimeField('Werk / Hobby', 'target_werk'),
           _buildTimeField('Avondeten', 'target_eten'),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _buildSectionHeader('Weergave'),
           SwitchListTile(
-            title: const Text('Toon menstruatie tracking',
+            title: Text(AppLocalizations.of(context).toonMenstruatieTracking,
               style: TextStyle(fontSize: 14, color: Color(0xFF333333))),
-            subtitle: const Text('Zet uit als je dit niet wilt bijhouden',
+            subtitle: Text(AppLocalizations.of(context).zetAlsJe,
               style: TextStyle(fontSize: 12, color: Colors.grey)),
             value: _showMenstruatie,
             onChanged: (value) {
@@ -390,13 +391,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await NotificationHelper.instance.showTestNotification();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Test notificatie verstuurd ✓'), backgroundColor: Colors.green),
+                    SnackBar(content: Text(AppLocalizations.of(context).testNotificatieVerstuurd), backgroundColor: Colors.green),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Fout: $e'), backgroundColor: Colors.red),
+                    SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
                   );
                 }
               }
@@ -411,13 +412,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final count = await NotificationHelper.instance.getPendingNotificationCount();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Herinneringen herplant ✓ ($rescheduled in DB, $count ingepland)'), backgroundColor: Colors.green),
+                    SnackBar(content: Text(AppLocalizations.of(context).herinneringenHerplantDbIngepland(rescheduled, count)), backgroundColor: Colors.green),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Fout: $e'), backgroundColor: Colors.red),
+                    SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
                   );
                 }
               }
@@ -440,7 +441,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: 24),
@@ -472,7 +473,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Backup opgeslagen: $backupPath'),
+                    content: Text(AppLocalizations.of(context).backupOpgeslagen(backupPath)),
                     backgroundColor: Colors.green[700],
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -484,7 +485,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Backup error: $e'),
+                    content: Text(AppLocalizations.of(context).backupError(e)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -513,7 +514,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Backup succesvol hersteld!'),
+                      content: Text(AppLocalizations.of(context).backupSuccesvolHersteld),
                       backgroundColor: Colors.green[700],
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -527,7 +528,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Herstel error: $e'),
+                    content: Text(AppLocalizations.of(context).herstelError(e)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

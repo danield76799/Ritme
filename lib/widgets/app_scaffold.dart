@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class AppScaffold extends StatelessWidget {
   final String title;
@@ -56,7 +57,7 @@ class AppScaffold extends StatelessWidget {
                 builder: (context) => IconButton(
                   icon: Icon(Icons.menu, color: Colors.white),
                   onPressed: () => Scaffold.of(context).openDrawer(),
-                  tooltip: 'Menu',
+                  tooltip: AppLocalizations.of(context).menu,
                 ),
               )
             : null,

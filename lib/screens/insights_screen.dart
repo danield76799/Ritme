@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
@@ -378,7 +379,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Samenvatting gekopieerd naar klembord!'),
+            content: Text(AppLocalizations.of(context).samenvattingGekopieerdKlembord),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -390,7 +391,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kon rapport niet kopiëren: $e'),
+            content: Text(AppLocalizations.of(context).konRapportKopieren(e)),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -423,7 +424,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _laadData,
-            tooltip: 'Vernieuwen',
+            tooltip: AppLocalizations.of(context).vernieuwen,
           ),
         ],
       ),
@@ -604,7 +605,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                               child: ElevatedButton.icon(
                                 onPressed: _kopieerNaarKlembord,
                                 icon: Icon(Icons.copy, size: 18),
-                                label: Text('Kopieer Rapport'),
+                                label: Text(AppLocalizations.of(context).kopieerRapport),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: AppTheme.primaryTeal,
@@ -620,7 +621,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                               child: ElevatedButton.icon(
                                 onPressed: _openGemini,
                                 icon: Icon(Icons.open_in_browser, size: 18),
-                                label: Text('Open Gemini'),
+                                label: Text(AppLocalizations.of(context).openGemini),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white.withValues(alpha: 0.2),
                                   foregroundColor: Colors.white,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class EpisodesScreen extends StatefulWidget {
   const EpisodesScreen({super.key});
@@ -67,7 +68,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
               SizedBox(height: 20),
-              Text('Nieuwe episode', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(AppLocalizations.of(context).nieuweEpisode, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 20),
 
               // Type selector
@@ -88,22 +89,22 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               // Start date
               TextField(
                 controller: startController,
-                decoration: const InputDecoration(
-                  labelText: 'Startdatum',
-                  border: OutlineInputBorder(),
-                  hintText: 'YYYY-MM-DD',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).startdatum,
+                  border: const OutlineInputBorder(),
+                  hintText: AppLocalizations.of(context).yyyyMmDd,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
 
               // Active toggle
               SwitchListTile(
-                title: const Text('Nog bezig'),
+                title: Text(AppLocalizations.of(context).nogBezig),
                 value: isActive,
                 onChanged: (val) => setModalState(() => isActive = val),
                 activeThumbColor: AppTheme.primaryTeal,
@@ -129,7 +130,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  child: const Text('Toevoegen', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context).toevoegen, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -190,7 +191,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text('Episodes', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
+        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text(AppLocalizations.of(context).episodes, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
         body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
@@ -200,7 +201,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text('Episodes', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).episodes, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
       ),
       floatingActionButton: FloatingActionButton(
@@ -215,9 +216,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 children: [
                   Icon(Icons.timeline, size: 64, color: Colors.grey.shade300),
                   const SizedBox(height: 16),
-                  Text('Nog geen episodes', style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+                  Text(AppLocalizations.of(context).nogGeenEpisodes, style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
                   const SizedBox(height: 8),
-                  Text('Tik + om je eerste episode bij te houden', style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
+                  Text(AppLocalizations.of(context).tikJeEersteEpisode, style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
                 ],
               ),
             )
@@ -265,7 +266,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     trailing: isActive
                         ? IconButton(
                             icon: const Icon(Icons.stop_circle_outlined, color: Colors.red),
-                            tooltip: 'Episode beëindigen',
+                            tooltip: AppLocalizations.of(context).episodeBeeindigen,
                             onPressed: () => _endEpisode(ep['id'] as int),
                           )
                         : null,
@@ -273,11 +274,11 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('Verwijderen?'),
-                          content: const Text('Deze episode definitief verwijderen?'),
+                          title: Text(AppLocalizations.of(context).verwijderen2),
+                          content: Text(AppLocalizations.of(context).dezeEpisodeDefinitiefVerwijderen),
                           actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuleren')),
-                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Verwijderen', style: TextStyle(color: Colors.red))),
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context).annuleren)),
+                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context).verwijderen, style: TextStyle(color: Colors.red))),
                           ],
                         ),
                       );

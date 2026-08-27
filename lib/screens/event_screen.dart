@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class EventScreen extends StatefulWidget {
   const EventScreen({super.key});
@@ -102,8 +103,8 @@ class _EventScreenState extends State<EventScreen> {
   Future<void> _opslaan() async {
     if (_omschrijvingController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vul eerst een korte omschrijving in.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).vulEerstKorteOmschrijving),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -117,7 +118,7 @@ class _EventScreenState extends State<EventScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Gebeurtenis opgeslagen!'),
+          content: Text(AppLocalizations.of(context).gebeurtenisOpgeslagen),
           backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
@@ -128,7 +129,7 @@ class _EventScreenState extends State<EventScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Kon gebeurtenis niet opslaan. Probeer opnieuw.'),
+          content: Text(AppLocalizations.of(context).konGebeurtenisOpslaanProbeer),
           backgroundColor: Colors.red,
         ),
       );
@@ -153,7 +154,7 @@ class _EventScreenState extends State<EventScreen> {
           IconButton(
             icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadEvents,
-            tooltip: 'Verversen',
+            tooltip: AppLocalizations.of(context).verversen,
           ),
         ],
       ),
@@ -347,7 +348,7 @@ class _EventScreenState extends State<EventScreen> {
             children: [
               Row(
                 children: [
-                  const Text(
+                  Text(
                     'Nieuwe Gebeurtenis',
                     style: TextStyle(
                       fontSize: 20,
@@ -368,7 +369,7 @@ class _EventScreenState extends State<EventScreen> {
                 maxLines: 3,
                 style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
                 decoration: InputDecoration(
-                  hintText: 'Bijv. Goed gesprek gehad met...',
+                  hintText: AppLocalizations.of(context).bijvGoedGesprekGehad,
                   hintStyle: TextStyle(color: Colors.grey.shade400),
                   filled: true,
                   fillColor: Colors.grey.shade50,
@@ -383,7 +384,7 @@ class _EventScreenState extends State<EventScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Invloed op stemming:',
                 style: TextStyle(
                   fontSize: 16,
@@ -434,7 +435,7 @@ class _EventScreenState extends State<EventScreen> {
                           width: 20,
                           child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2),
                         )
-                      : const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      : Text(AppLocalizations.of(context).opslaan, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
               const SizedBox(height: 20),

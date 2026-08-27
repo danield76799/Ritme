@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
 import '../services/notification_helper.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -102,7 +103,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
             await db.deleteMedicalAppointment(appointmentId);
             debugPrint('Delete completed, reloading appointments');
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Afspraak verwijderd!'), backgroundColor: Colors.green),
+              SnackBar(content: Text(AppLocalizations.of(context).afspraakVerwijderd), backgroundColor: Colors.green),
             );
             // Reload appointments after a small delay to ensure dialog is closed
             await Future.delayed(const Duration(milliseconds: 100));
@@ -114,7 +115,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         } catch (e) {
           debugPrint('Delete error: $e');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Kon afspraak niet verwijderen: $e'), backgroundColor: Colors.red),
+            SnackBar(content: Text(AppLocalizations.of(context).konAfspraakVerwijderen(e)), backgroundColor: Colors.red),
           );
         }
         return;
@@ -151,23 +152,23 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     debugPrint('ID to delete: $id');
     
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Delete tapped voor ID $id'), duration: const Duration(seconds: 2)),
+      SnackBar(content: Text(AppLocalizations.of(context).deleteTappedId(id)), duration: const Duration(seconds: 2)),
     );
     
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Afspraak verwijderen?'),
-        content: Text('Deze actie kan niet ongedaan worden.'),
+        title: Text(AppLocalizations.of(context).afspraakVerwijderen),
+        content: Text(AppLocalizations.of(context).dezeActieOngedaan),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Annuleren'),
+            child: Text(AppLocalizations.of(context).annuleren),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Verwijderen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            child: Text(AppLocalizations.of(context).verwijderen, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -195,7 +196,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       if (mounted) {
         final pending = await NotificationHelper.instance.getPendingNotificationCount();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Afspraak verwijderd. Nog $pending notificaties pending.')),
+          SnackBar(content: Text(AppLocalizations.of(context).afspraakVerwijderdNogNotificatiesPending(pending))),
         );
       }
     } catch (e, stackTrace) {
@@ -222,7 +223,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Afspraken', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).afspraken, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
@@ -238,7 +239,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         onPressed: _addAppointment,
         backgroundColor: Theme.of(context).colorScheme.primary,
         icon: Icon(Icons.add, color: Colors.white),
-        label: Text('Nieuwe afspraak', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        label: Text(AppLocalizations.of(context).nieuweAfspraak, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
       ),
     );
   }
@@ -249,16 +250,16 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             _errorMessage!,
             style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadAppointments,
-            child: const Text('Opnieuw proberen'),
+            child: Text(AppLocalizations.of(context).opnieuwProberen),
           ),
         ],
       ),
@@ -340,8 +341,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                           ),
                           SizedBox(height: 4),
-                          if (doctor.isNotEmpty) Text('Dokter: $doctor', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
-                          if (location.isNotEmpty) Text('Locatie: $location', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
+                          if (doctor.isNotEmpty) Text(AppLocalizations.of(context).dokter(doctor), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
+                          if (location.isNotEmpty) Text(AppLocalizations.of(context).locatie(location), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
                           Text('$date ${time.isNotEmpty ? 'om $time' : ''}', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
                         ],
                       ),
@@ -497,17 +498,17 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('Afspraak verwijderen?'),
-                          content: const Text('Deze actie kan niet ongedaan worden.'),
+                          title: Text(AppLocalizations.of(context).afspraakVerwijderen),
+                          content: Text(AppLocalizations.of(context).dezeActieOngedaan),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Annuleren'),
+                              child: Text(AppLocalizations.of(context).annuleren),
                             ),
                             ElevatedButton(
                               onPressed: () => Navigator.pop(ctx, true),
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                              child: const Text('Verwijderen'),
+                              child: Text(AppLocalizations.of(context).verwijderen),
                             ),
                           ],
                         ),
@@ -516,7 +517,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                         if (context.mounted) Navigator.pop(context, {'_delete': true, 'id': int.parse(widget.appointment!['id'].toString())});
                       }
                     },
-                    child: const Text('🗑️ Verwijderen', style: TextStyle(color: Colors.red, fontSize: 16)),
+                    child: Text(AppLocalizations.of(context).verwijderen3, style: TextStyle(color: Colors.red, fontSize: 16)),
                   ),
                 ),
               Row(
@@ -524,7 +525,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Annuleren', style: TextStyle(fontSize: 16)),
+                    child: Text(AppLocalizations.of(context).annuleren, style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
@@ -546,7 +547,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -763,10 +764,10 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
             value: _reminderDays,
             underline: SizedBox(),
             items: [
-              DropdownMenuItem(value: 0, child: Text('Geen')),
-              DropdownMenuItem(value: 1, child: Text('1 dag')),
-              DropdownMenuItem(value: 3, child: Text('3 dagen')),
-              DropdownMenuItem(value: 7, child: Text('7 dagen')),
+              DropdownMenuItem(value: 0, child: Text(AppLocalizations.of(context).geen)),
+              DropdownMenuItem(value: 1, child: Text(AppLocalizations.of(context).eenDag)),
+              DropdownMenuItem(value: 3, child: Text(AppLocalizations.of(context).drieDagen)),
+              DropdownMenuItem(value: 7, child: Text(AppLocalizations.of(context).zevenDagen)),
             ],
             onChanged: (value) {
               if (value != null) {

@@ -150,5 +150,8 @@
   "zetAlsJe": "Turn off if you don't want to track this",
   "laatsteWaarschuwing": "⚠️ Final Warning",
   "checkOpgeslagen": "✓ Check-in saved!",
-  "verwijderen3": "🗑️ Delete"
+  "verwijderen3": "🗑️ Delete",
+  "eenDag": "1 dag",
+  "drieDagen": "3 dagen",
+  "zevenDagen": "7 dagen"
 }

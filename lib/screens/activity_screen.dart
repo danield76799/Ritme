@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 import '../utils/logger.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -151,7 +152,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     if (selected.isAfter(today)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Je kunt geen activiteiten in de toekomst loggen'),
+          content: Text(AppLocalizations.of(context).jeKuntGeenActiviteiten),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -293,7 +294,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Kon activiteit niet opslaan. Probeer opnieuw.'),
+            content: Text(AppLocalizations.of(context).konActiviteitOpslaanProbeer),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -371,7 +372,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('Annuleer', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16)),
+                      child: Text(AppLocalizations.of(context).annuleer, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16)),
                     ),
                     Text(
                       'Wakker gelegen',
@@ -383,7 +384,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         _saveSleepData();
                         Navigator.pop(context);
                       },
-                      child: Text('Klaar', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                      child: Text(AppLocalizations.of(context).klaar, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -710,7 +711,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ElevatedButton.icon(
             onPressed: _loadData,
             icon: Icon(Icons.refresh),
-            label: Text('Opnieuw proberen'),
+            label: Text(AppLocalizations.of(context).opnieuwProberen),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
