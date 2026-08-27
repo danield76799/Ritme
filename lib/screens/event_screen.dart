@@ -83,12 +83,13 @@ class _EventScreenState extends State<EventScreen> {
     return AppTheme.primaryTeal;
   }
 
-  String _getLabel(int invloed) {
-    if (invloed == 4) return 'Uiterst positief';
-    if (invloed > 0) return 'Positief';
-    if (invloed == -4) return 'Uiterst negatief';
-    if (invloed < 0) return 'Negatief';
-    return 'Neutraal';
+  String _getLabel(BuildContext context, int invloed) {
+    final l10n = AppLocalizations.of(context);
+    if (invloed == 4) return l10n.uiterstPositief;
+    if (invloed > 0) return l10n.positief;
+    if (invloed == -4) return l10n.uiterstNegatief;
+    if (invloed < 0) return l10n.negatief;
+    return l10n.neutraal;
   }
 
   String _formatDate(String dateStr) {
@@ -144,7 +145,7 @@ class _EventScreenState extends State<EventScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Life Events',
+          AppLocalizations.of(context).lifeEvents,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -219,7 +220,7 @@ class _EventScreenState extends State<EventScreen> {
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          _getLabel(invloed),
+                                          _getLabel(context, invloed),
                                           style: TextStyle(
                                             color: _getKleur(invloed),
                                             fontWeight: FontWeight.bold,
@@ -258,7 +259,7 @@ class _EventScreenState extends State<EventScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         icon: Icon(Icons.add, color: Colors.white),
         label: Text(
-          'Nieuwe Gebeurtenis',
+          AppLocalizations.of(context).nieuweGebeurtenis,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.bold),
         ),
       ),
@@ -305,7 +306,7 @@ class _EventScreenState extends State<EventScreen> {
           Icon(Icons.event_note, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
-            'Geen gebeurtenissen gevonden',
+            AppLocalizations.of(context).geenGebeurtenissenGevonden,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey.shade500,
@@ -314,7 +315,7 @@ class _EventScreenState extends State<EventScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Voeg je eerste gebeurtenis toe met de knop onderaan',
+            AppLocalizations.of(context).voegEersteGebeurtenisToe,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade400,
@@ -349,7 +350,7 @@ class _EventScreenState extends State<EventScreen> {
               Row(
                 children: [
                   Text(
-                    'Nieuwe Gebeurtenis',
+                    AppLocalizations.of(context).nieuweGebeurtenis,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -398,14 +399,14 @@ class _EventScreenState extends State<EventScreen> {
                 min: -4,
                 max: 4,
                 divisions: 8,
-                label: _getLabel(_invloedWaarde.toInt()),
+                label: _getLabel(context, _invloedWaarde.toInt()),
                 onChanged: (value) {
                   setModalState(() => _invloedWaarde = value);
                 },
               ),
               Center(
                 child: Text(
-                  _getLabel(_invloedWaarde.toInt()),
+                  _getLabel(context, _invloedWaarde.toInt()),
                   style: TextStyle(
                     color: _getKleur(_invloedWaarde.toInt()),
                     fontWeight: FontWeight.bold,
