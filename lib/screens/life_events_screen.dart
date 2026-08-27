@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class LifeEventsScreen extends StatefulWidget {
   const LifeEventsScreen({super.key});
@@ -48,12 +49,13 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
     return Colors.grey;
   }
 
-  String _getImpactLabel(int invloed) {
-    if (invloed >= 3) return 'Uiterst positief';
-    if (invloed >= 1) return 'Positief';
-    if (invloed == 0) return 'Neutraal';
-    if (invloed >= -2) return 'Negatief';
-    return 'Uiterst negatief';
+  String _getImpactLabel(BuildContext context, int invloed) {
+    final l10n = AppLocalizations.of(context);
+    if (invloed >= 3) return l10n.uiterstPositief;
+    if (invloed >= 1) return l10n.positief;
+    if (invloed == 0) return l10n.neutraal;
+    if (invloed >= -2) return l10n.negatief;
+    return l10n.uiterstNegatief;
   }
 
   @override
@@ -64,7 +66,7 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(
-          'Life Events',
+          AppLocalizations.of(context).lifeEvents,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
@@ -194,7 +196,7 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    _getImpactLabel(invloed),
+                    _getImpactLabel(context, invloed),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,

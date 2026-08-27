@@ -386,5 +386,13 @@
   "slaapLogboek": "Sleep log",
   "geenSlaapdataGevonden": "No sleep data found",
   "voegSlaapurenToe": "Add sleep hours to your daily log.",
-  "slecht": "Poor"
+  "slecht": "Poor",
+  "perfect": "Perfect",
+  "opTijd": "On time",
+  "enigszins": "Somewhat",
+  "gemist": "Missed",
+  "opstaanLabel": "Wake up",
+  "naarBed": "Go to bed",
+  "konSociaalRitmeDataNietLaden": "Could not load social rhythm data.",
+  "gaNaarVandaag": "Go to today"
 }

@@ -20,11 +20,11 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
 
   // De 5 standaard activiteiten
   final List<Map<String, dynamic>> _standaardActiviteiten = [
-    {'naam': 'Opstaan', 'icoon': Icons.wb_sunny_outlined, 'targetKey': 'target_opstaan'},
-    {'naam': 'Eerste contact', 'icoon': Icons.person_outline, 'targetKey': 'target_contact'},
-    {'naam': 'Werk / Hobby', 'icoon': Icons.work_outline, 'targetKey': 'target_werk'},
-    {'naam': 'Avondeten', 'icoon': Icons.restaurant_outlined, 'targetKey': 'target_eten'},
-    {'naam': 'Naar bed', 'icoon': Icons.bedtime_outlined, 'targetKey': 'target_slapen'},
+    {'naamKey': 'opstaanLabel', 'icoon': Icons.wb_sunny_outlined, 'targetKey': 'target_opstaan'},
+    {'naamKey': 'eersteContact', 'icoon': Icons.person_outline, 'targetKey': 'target_contact'},
+    {'naamKey': 'werkHobby', 'icoon': Icons.work_outline, 'targetKey': 'target_werk'},
+    {'naamKey': 'avondeten', 'icoon': Icons.restaurant_outlined, 'targetKey': 'target_eten'},
+    {'naamKey': 'naarBed', 'icoon': Icons.bedtime_outlined, 'targetKey': 'target_slapen'},
   ];
 
   @override
@@ -52,7 +52,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load SRM data', error: e, stackTrace: stackTrace);
       setState(() {
-        _errorMessage = 'Kon sociaal ritme data niet laden.';
+        _errorMessage = AppLocalizations.of(context).konSociaalRitmeDataNietLaden;
         _isLoading = false;
       });
     }
@@ -226,7 +226,7 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final activiteit = _standaardActiviteiten[index];
-              return _buildActivityCard(activiteit);
+              return _buildActivityCard(context, activiteit);
             },
           ),
         ),
@@ -234,8 +234,21 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     );
   }
 
-  Widget _buildActivityCard(Map<String, dynamic> activiteit) {
-    final naam = activiteit['naam'] as String;
+  String _lookupName(AppLocalizations l10n, String key) {
+    switch (key) {
+      case 'opstaanLabel': return l10n.opstaanLabel;
+      case 'eersteContact': return l10n.eersteContact;
+      case 'werkHobby': return l10n.werkHobby;
+      case 'avondeten': return l10n.avondeten;
+      case 'naarBed': return l10n.naarBed;
+      default: return key;
+    }
+  }
+
+  Widget _buildActivityCard(BuildContext context, Map<String, dynamic> activiteit) {
+    final l10n = AppLocalizations.of(context);
+    final naamKey = activiteit['naamKey'] as String;
+    final naam = _lookupName(l10n, naamKey);
     final icoon = activiteit['icoon'] as IconData;
     final targetKey = activiteit['targetKey'] as String;
     final theme = Theme.of(context);

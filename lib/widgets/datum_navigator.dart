@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class DatumNavigator extends StatelessWidget {
   final DateTime geselecteerdeDatum;
@@ -120,7 +121,7 @@ class DatumNavigator extends StatelessWidget {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
-                        'Ga naar vandaag',
+                        AppLocalizations.of(context).gaNaarVandaag,
                         style: TextStyle(
                           fontSize: 12,
                           color: theme.colorScheme.primary,
