@@ -76,7 +76,7 @@
   "kopieerRapport": "Copy Report",
   "kopieer": "Copy from {lastDate}",
   "laden": "Loading...",
-  "licht": "Light",
+  "licht": "Mild",
   "locatie": "Location",
   "matig": "Moderate",
   "medicatie": "Medication",
@@ -368,5 +368,8 @@
   "gemengd": "Mixed",
   "stabielEuthym": "Stable (euthymic)",
   "weken": "{n, plural, =1{1 week} other{{n} weeks}}",
-  "wekenDagen": "{w, plural, =1{1 week} other{{w} weeks}}, {d, plural, =0{} =1{1 day} other{{d} days}}"
+  "wekenDagen": "{w, plural, =1{1 week} other{{w} weeks}}, {d, plural, =0{} =1{1 day} other{{d} days}}",
+  "snelStarten": "Quick start",
+  "databaseOpruimenBevestiging": "This marks all duplicate logs per day as empty.\n\nOnly the most recent log per day is preserved.\n\nAre you sure you want to continue?",
+  "databaseWissenBevestiging": "This deletes ALL data from the database.\n\nThis cannot be undone!\n\nAre you sure you want to continue?"
 }

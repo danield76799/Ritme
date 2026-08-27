@@ -244,7 +244,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                         Icon(Icons.content_copy, color: Colors.blue.shade700, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          'Snel starten',
+                          AppLocalizations.of(context).snelStarten,
                           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade900, fontSize: 14),
                         ),
                       ],
@@ -370,7 +370,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      severity >= 3 ? 'Ernstig' : severity == 2 ? 'Matig' : 'Licht',
+                      severity >= 3 ? AppLocalizations.of(context).ernstig : severity == 2 ? AppLocalizations.of(context).matig : AppLocalizations.of(context).licht,
                       style: TextStyle(fontSize: 11, color: severity >= 3 ? Colors.red : severity == 2 ? Colors.orange.shade800 : Colors.green.shade800),
                     ),
                   ),
