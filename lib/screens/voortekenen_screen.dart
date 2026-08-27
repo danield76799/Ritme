@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class VoortekenenScreen extends StatefulWidget {
   const VoortekenenScreen({super.key});
@@ -79,7 +80,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Voortekenen van $_lastDate gekopieerd. Pas aan en sla op.'),
+            content: Text(AppLocalizations.of(context).voortekenenGekopieerdPas(_lastDate!)),
             backgroundColor: Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 3),
           ),
@@ -88,7 +89,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fout bij kopiëren'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).foutKopieren), backgroundColor: Colors.red),
         );
         setState(() => _isLoading = false);
       }
@@ -162,7 +163,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fout bij opslaan'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).foutOpslaan), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -175,7 +176,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text('Voortekenen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
+        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text(AppLocalizations.of(context).voortekenen2, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
         body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
       );
     }
@@ -187,13 +188,13 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text('Voortekenen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).voortekenen2, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
         actions: [
           TextButton.icon(
             onPressed: () => _showHistory(context),
             icon: Icon(Icons.history, color: Colors.white),
-            label: Text('Historie', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            label: Text(AppLocalizations.of(context).historie, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -253,13 +254,13 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                       'Je hebt nog geen voortekenen ingevuld voor vandaag. Wil je de gegevens van $_lastDate kopiëren als startpunt?',
                       style: TextStyle(color: Colors.blue.shade800, fontSize: 13),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: _copyFromLastDate,
                         icon: Icon(Icons.copy, size: 18, color: Colors.blue.shade700),
-                        label: Text('Kopieer van $_lastDate', style: TextStyle(color: Colors.blue.shade700)),
+                        label: Text(AppLocalizations.of(context).kopieer(_lastDate!), style: TextStyle(color: Colors.blue.shade700)),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: Colors.blue.shade300),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -311,7 +312,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                 ),
                 child: _isSaving
                     ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
-                    : Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    : Text(AppLocalizations.of(context).opslaan, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             SizedBox(height: 80),
@@ -379,9 +380,9 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                     });
                   },
                   itemBuilder: (context) => [
-                    PopupMenuItem(value: 1, child: Text('Licht', style: TextStyle(color: Colors.green.shade700))),
-                    PopupMenuItem(value: 2, child: Text('Matig', style: TextStyle(color: Colors.orange.shade700))),
-                    PopupMenuItem(value: 3, child: Text('Ernstig', style: TextStyle(color: Colors.red.shade700))),
+                    PopupMenuItem(value: 1, child: Text(AppLocalizations.of(context).licht, style: TextStyle(color: Colors.green.shade700))),
+                    PopupMenuItem(value: 2, child: Text(AppLocalizations.of(context).matig, style: TextStyle(color: Colors.orange.shade700))),
+                    PopupMenuItem(value: 3, child: Text(AppLocalizations.of(context).ernstig, style: TextStyle(color: Colors.red.shade700))),
                   ],
                 ),
               // Notes icon
@@ -393,7 +394,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                     color: (_todaysNotes[cid] ?? '').isNotEmpty ? Colors.orange.shade600 : Colors.grey.shade400,
                   ),
                   onPressed: () => _showNoteDialog(cid, item['sign'] as String),
-                  tooltip: 'Opmerking toevoegen',
+                  tooltip: AppLocalizations.of(context).opmerkingToevoegen,
                 ),
             ],
           ),
@@ -407,19 +408,19 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Opmerking: $signName', style: const TextStyle(fontSize: 16)),
+        title: Text(AppLocalizations.of(context).opmerking(signName), style: const TextStyle(fontSize: 16)),
         content: TextField(
           controller: controller,
           maxLines: 3,
           decoration: InputDecoration(
-            hintText: 'Beschrijf hoe dit voorteken zich vandaag manifesteert...',
+            hintText: AppLocalizations.of(context).beschrijfHoeVoortekenZich,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Annuleren'),
+            child: Text(AppLocalizations.of(context).annuleren),
           ),
           ElevatedButton(
             onPressed: () {
@@ -429,7 +430,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
-            child: Text('Opslaan', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -440,7 +441,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Voortekenen Historie'),
+        title: Text(AppLocalizations.of(context).voortekenenHistorie),
         content: SizedBox(
           width: double.maxFinite,
           height: 300,
@@ -448,7 +449,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
             future: db.getRecentProdromalTrends(14),
             builder: (context, snapshot) {
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text('Nog geen historie'));
+                return Center(child: Text(AppLocalizations.of(context).nogGeenHistorie));
               }
               return ListView.builder(
                 itemCount: snapshot.data!.length,
@@ -461,14 +462,14 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                       child: Text('$count', style: TextStyle(color: count > 5 ? Colors.red : Colors.orange.shade800, fontWeight: FontWeight.bold)),
                     ),
                     title: Text(item['date'] as String),
-                    subtitle: Text('$count voortekenen', style: TextStyle(color: Colors.black)),
+                    subtitle: Text(AppLocalizations.of(context).voortekenen, style: TextStyle(color: Colors.black)),
                   );
                 },
               );
             },
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Sluiten'))],
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context).sluiten))],
       ),
     );
   }

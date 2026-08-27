@@ -5,6 +5,7 @@ import 'dart:io';
 import '../theme/app_theme.dart';
 import '../services/rapport_generator.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class RapportScreen extends StatefulWidget {
   RapportScreen({super.key});
@@ -25,7 +26,7 @@ class _RapportScreenState extends State<RapportScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text('Rapport', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).rapport, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
       ),
       body: SingleChildScrollView(
@@ -56,7 +57,7 @@ class _RapportScreenState extends State<RapportScreen> {
             const SizedBox(height: 24),
 
             // Period selector
-            const Text('Periode:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
+            Text(AppLocalizations.of(context).periode, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -101,7 +102,7 @@ class _RapportScreenState extends State<RapportScreen> {
                 children: [
                   Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryTeal, borderRadius: BorderRadius.circular(2))),
                   SizedBox(width: 12),
-                  Text('Voorbeeld', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
+                  Text(AppLocalizations.of(context).voorbeeld, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
                 ],
               ),
               SizedBox(height: 12),
@@ -158,7 +159,7 @@ class _RapportScreenState extends State<RapportScreen> {
       if (mounted) {
         setState(() => _isGenerating = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fout: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
         );
       }
     }

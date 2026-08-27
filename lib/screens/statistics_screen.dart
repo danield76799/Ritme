@@ -7,6 +7,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class StatistiekenScherm extends StatefulWidget {
   @override
@@ -139,8 +140,8 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   Future<void> _genereerEnDeelPdf() async {
     // PDF functionaliteit tijdelijk uitgeschakeld wegens dependency conflict
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('PDF export tijdelijk niet beschikbaar'),
+      SnackBar(
+        content: Text(AppLocalizations.of(context).pdfExportTijdelijkBeschikbaar),
         backgroundColor: Colors.orange,
       ),
     );
@@ -205,13 +206,13 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text('Statistieken (Life Chart)', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).statistiekenLifeChart, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
             onPressed: _genereerEnDeelPdf,
-            tooltip: 'Exporteer als PDF',
+            tooltip: AppLocalizations.of(context).exporteerAlsPdf,
           ),
         ],
       ),
@@ -227,7 +228,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                     SizedBox(height: 16),
                     _bouwSlaapGrafiek(),
                     SizedBox(height: 32),
-                    Text('Samenvatting', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal)),
+                    Text(AppLocalizations.of(context).samenvatting, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal)),
                     SizedBox(height: 16),
                     GridView.count(
                       crossAxisCount: 2,
@@ -433,7 +434,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         children: [
           Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textCharcoal)),
           SizedBox(height: 24),
-          Center(child: Text('Nog geen data beschikbaar', style: TextStyle(color: Colors.black))),
+          Center(child: Text(AppLocalizations.of(context).nogGeenDataBeschikbaar, style: TextStyle(color: Colors.black))),
           SizedBox(height: 16),
         ],
       ),

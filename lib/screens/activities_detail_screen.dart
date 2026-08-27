@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class ActivitiesDetailScreen extends StatefulWidget {
   const ActivitiesDetailScreen({super.key});
@@ -309,7 +310,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
           ElevatedButton.icon(
             onPressed: _loadData,
             icon: Icon(Icons.refresh),
-            label: Text('Opnieuw proberen'),
+            label: Text(AppLocalizations.of(context).opnieuwProberen),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,

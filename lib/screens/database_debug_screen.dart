@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class DatabaseDebugScreen extends StatefulWidget {
   const DatabaseDebugScreen({super.key});
@@ -46,8 +47,8 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Database Opruimen'),
-        content: const Text(
+        title: Text(AppLocalizations.of(context).databaseOpruimen),
+        content: Text(
           'Dit markeert alle dubbele logs per dag als leeg.\n\n'
           'Alleen de meest recente log per dag blijft behouden.\n\n'
           'Weet je zeker dat je door wilt gaan?',
@@ -55,12 +56,12 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuleren'),
+            child: Text(AppLocalizations.of(context).annuleren),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.orange),
-            child: const Text('Opruimen'),
+            child: Text(AppLocalizations.of(context).opruimen),
           ),
         ],
       ),
@@ -108,7 +109,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$cleanedCount dubbele logs opgeruimd!'),
+          content: Text(AppLocalizations.of(context).dubbeleLogsOpgeruimd(cleanedCount)),
           backgroundColor: Colors.green,
         ),
       );
@@ -117,7 +118,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Fout bij opruimen: $e'),
+          content: Text(AppLocalizations.of(context).foutOpruimen(e)),
           backgroundColor: Colors.red,
         ),
       );
@@ -129,8 +130,8 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Database Reset'),
-        content: const Text(
+        title: Text(AppLocalizations.of(context).databaseReset),
+        content: Text(
           'Dit verwijdert ALLE data uit de database.\n\n'
           'Dit kan niet ongedaan worden gemaakt!\n\n'
           'Weet je zeker dat je door wilt gaan?',
@@ -138,12 +139,12 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuleren'),
+            child: Text(AppLocalizations.of(context).annuleren),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('ALLES WISSEN'),
+            child: Text(AppLocalizations.of(context).allesWissen),
           ),
         ],
       ),
@@ -175,8 +176,8 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Alle data is verwijderd!'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).alleDataVerwijderd),
           backgroundColor: Colors.green,
         ),
       );
@@ -185,7 +186,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Fout bij reset: $e'),
+          content: Text(AppLocalizations.of(context).foutReset(e)),
           backgroundColor: Colors.red,
         ),
       );
@@ -198,7 +199,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Database Debug', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+        title: Text(AppLocalizations.of(context).databaseDebug, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
         backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
@@ -221,7 +222,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _cleanupDatabase,
                           icon: Icon(Icons.cleaning_services),
-                          label: Text('Dubbele Opruimen'),
+                          label: Text(AppLocalizations.of(context).dubbeleOpruimen),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
@@ -233,7 +234,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _resetDatabase,
                           icon: Icon(Icons.delete_forever),
-                          label: Text('Alles Wissen'),
+                          label: Text(AppLocalizations.of(context).allesWissen2),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
@@ -327,7 +328,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                 color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text(
+              child: Text(
                 'SLAAP',
                 style: TextStyle(
                   color: Colors.blue,

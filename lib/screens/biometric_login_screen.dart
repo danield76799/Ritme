@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ritme/utils/biometric_auth.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class BiometricLoginScreen extends StatefulWidget {
   final VoidCallback onAuthenticated;
@@ -95,8 +96,8 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen> {
         // Show success message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Biometric authentication enabled!'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context).biometricAuthenticationEnabled),
               backgroundColor: Colors.green,
             ),
           );

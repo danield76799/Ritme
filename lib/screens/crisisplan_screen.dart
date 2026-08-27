@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class CrisisPlanScreen extends StatefulWidget {
   const CrisisPlanScreen({super.key});
@@ -89,9 +90,9 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2)))),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(isCustom ? 'Bewerk eigen sectie' : displayTitle, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
-              if (isCustom) const Padding(padding: EdgeInsets.only(top: 4), child: Text('Tip: de eerste regel wordt de titel in het overzicht.', style: TextStyle(fontSize: 12, color: Colors.grey))),
+              if (isCustom) Padding(padding: const EdgeInsets.only(top: 4), child: Text(AppLocalizations.of(context).tipEersteRegel, style: TextStyle(fontSize: 12, color: Colors.grey))),
               const SizedBox(height: 16),
               Expanded(
                 child: TextField(
@@ -124,7 +125,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                     if (mounted) Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Theme.of(context).colorScheme.onPrimary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                  child: const Text('Opslaan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -157,13 +158,13 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return Scaffold(backgroundColor: Theme.of(context).scaffoldBackgroundColor, appBar: AppBar(title: const Text('Crisisplan')), body: const Center(child: CircularProgressIndicator()));
+    if (_isLoading) return Scaffold(backgroundColor: Theme.of(context).scaffoldBackgroundColor, appBar: AppBar(title: Text(AppLocalizations.of(context).crisisplan)), body: const Center(child: CircularProgressIndicator()));
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(elevation: 0, title: const Text('Crisisplan'), leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)), actions: [IconButton(icon: const Icon(Icons.add), tooltip: 'Snel toevoegen', onPressed: () => _showAddSectionDialog())]),
+      appBar: AppBar(elevation: 0, title: Text(AppLocalizations.of(context).crisisplan), leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)), actions: [IconButton(icon: const Icon(Icons.add), tooltip: AppLocalizations.of(context).snelToevoegen, onPressed: () => _showAddSectionDialog())]),
       body: _sections.isEmpty
-          ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.assignment, size: 64, color: Colors.grey.withOpacity(0.5)), const SizedBox(height: 16), const Text('Nog geen crisisplan', style: TextStyle(fontSize: 18, color: Colors.grey))]))
+          ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.assignment, size: 64, color: Colors.grey.withOpacity(0.5)), const SizedBox(height: 16), Text(AppLocalizations.of(context).nogGeenCrisisplan, style: TextStyle(fontSize: 18, color: Colors.grey))]))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: _sections.length,
@@ -215,7 +216,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
           const SizedBox(height: 16),
-          const Text('Sectie toevoegen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(AppLocalizations.of(context).sectieToevoegen, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           Flexible(child: ListView(shrinkWrap: true, children: [
             ...availableDefaults.map((def) => ListTile(
@@ -229,7 +230,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             )),
             ListTile(
               leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.blueGrey.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.add, color: Colors.blueGrey, size: 20)),
-              title: const Text('Eigen sectie maken', style: TextStyle(fontWeight: FontWeight.w500)),
+              title: Text(AppLocalizations.of(context).eigenSectieMaken, style: TextStyle(fontWeight: FontWeight.w500)),
               onTap: () { Navigator.pop(ctx); _showCustomSectionDialog(); },
             ),
           ])),
@@ -253,13 +254,13 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
           padding: const EdgeInsets.all(24),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 16),
-            const Text('Eigen sectie maken', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            TextField(controller: titleController, decoration: InputDecoration(labelText: 'Titel', filled: true, fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2C) : Colors.grey.shade100, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none))),
-            const SizedBox(height: 16),
-            Expanded(child: TextField(controller: contentController, maxLines: null, expands: true, textAlignVertical: TextAlignVertical.top, decoration: InputDecoration(hintText: 'Beschrijving...', filled: true, fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2C) : Colors.grey.shade100, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)))),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
+            Text(AppLocalizations.of(context).eigenSectieMaken, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 16),
+            TextField(controller: titleController, decoration: InputDecoration(labelText: AppLocalizations.of(context).titel, filled: true, fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2C) : Colors.grey.shade100, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none))),
+            SizedBox(height: 16),
+            Expanded(child: TextField(controller: contentController, maxLines: null, expands: true, textAlignVertical: TextAlignVertical.top, decoration: InputDecoration(hintText: AppLocalizations.of(context).beschrijving, filled: true, fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2C) : Colors.grey.shade100, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)))),
+            SizedBox(height: 16),
             SizedBox(width: double.infinity, height: 50, child: ElevatedButton(
               onPressed: () async {
                 if (titleController.text.trim().isEmpty) return;
@@ -267,7 +268,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 _loadData();
                 if (mounted) Navigator.pop(ctx);
               },
-              child: const Text('Toevoegen', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(AppLocalizations.of(context).toevoegen, style: TextStyle(fontWeight: FontWeight.bold)),
             )),
           ]),
         ),

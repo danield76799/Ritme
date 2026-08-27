@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
 import 'dashboard_screen.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -135,8 +136,8 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!pinSet) {
           setState(() => _isFirstTime = true);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Stel een PIN in om verder te gaan'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context).stelPin),
               backgroundColor: Colors.orange,
             ),
           );
@@ -216,8 +217,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!pinSet) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Stel eerst een PIN in voordat je biometrie activeert'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).stelEerstPin),
           backgroundColor: Colors.orange,
         ),
       );
@@ -232,17 +233,17 @@ class _LoginScreenState extends State<LoginScreen> {
         title: Row(
           children: [
             Icon(Icons.fingerprint, color: AppTheme.primaryTeal),
-            const SizedBox(width: 8),
-            const Text('Biometrie activeren'),
+            SizedBox(width: 8),
+            Text(AppLocalizations.of(context).biometrieActiveren),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Wil je biometrische authenticatie (vingerafdruk/gezichtsherkenning) inschakelen voor snellere toegang?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuleren'),
+            child: Text(AppLocalizations.of(context).annuleren),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -256,8 +257,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (mounted) {
                   setState(() => _biometricEnabled = true);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Biometrie geactiveerd ✓'),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context).biometrieGeactiveerd),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -280,8 +281,8 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Biometrische Authenticatie'),
-        content: const Text(
+        title: Text(AppLocalizations.of(context).biometrischeAuthenticatie),
+        content: Text(
           'Wil je biometrische authenticatie (vingerafdruk/gezichtsherkenning) inschakelen voor snellere toegang?',
         ),
         actions: [
@@ -290,7 +291,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Navigator.pop(context);
               _showNotificationDialog();
             },
-            child: Text('Nee, bedankt'),
+            child: Text(AppLocalizations.of(context).neeBedankt),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -308,7 +309,7 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
-            child: Text('Ja, inschakelen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            child: Text(AppLocalizations.of(context).jaInschakelen, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -320,8 +321,8 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Notificaties'),
-        content: const Text(
+        title: Text(AppLocalizations.of(context).notificaties),
+        content: Text(
           'Wil je notificaties ontvangen voor herinneringen en updates?',
         ),
         actions: [
@@ -333,7 +334,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 MaterialPageRoute(builder: (_) => const DashboardScreen()),
               );
             },
-            child: const Text('Nee, bedankt'),
+            child: Text(AppLocalizations.of(context).neeBedankt),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -348,7 +349,7 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
-            child: Text('Ja, inschakelen', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            child: Text(AppLocalizations.of(context).jaInschakelen, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -362,11 +363,11 @@ class _LoginScreenState extends State<LoginScreen> {
         title: Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
-            const SizedBox(width: 8),
-            const Text('PIN Vergeten?'),
+            SizedBox(width: 8),
+            Text(AppLocalizations.of(context).pinVergeten),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Omdat uw medische gegevens veilig en lokaal op uw eigen telefoon worden opgeslagen, kunnen wij uw PIN helaas niet voor u herstellen.\n\n'
           'Als u uw PIN echt niet meer weet, is de enige optie om de app volledig te resetten. Hierbij gaan al uw eerdere invoeren verloren.\n\n'
           'Weet u zeker dat u wilt doorgaan?',
@@ -374,7 +375,7 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuleren'),
+            child: Text(AppLocalizations.of(context).annuleren),
           ),
           TextButton(
             onPressed: () {
@@ -382,7 +383,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _showResetConfirmationDialog();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('App Resetten'),
+            child: Text(AppLocalizations.of(context).appResetten),
           ),
         ],
       ),
@@ -394,8 +395,8 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('⚠️ Laatste Waarschuwing'),
-        content: const Text(
+        title: Text(AppLocalizations.of(context).laatsteWaarschuwing),
+        content: Text(
           'DIT KAN NIET ONGEDAAN WORDEN!\n\n'
           'Alle uw data zal worden verwijderd:\n'
           '• Dagelijkse logs\n'
@@ -407,14 +408,14 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Nee, annuleren'),
+            child: Text(AppLocalizations.of(context).neeAnnuleren),
           ),
           ElevatedButton(
             onPressed: () async {
               await _resetApp();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Ja, reset alles', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            child: Text(AppLocalizations.of(context).jaResetAlles, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
@@ -435,8 +436,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('App is gereset. Start opnieuw.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).appGeresetStartOpnieuw),
             backgroundColor: Colors.green,
           ),
         );
@@ -451,7 +452,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fout bij resetten: $e'),
+            content: Text(AppLocalizations.of(context).foutResetten(e)),
             backgroundColor: Colors.red,
           ),
         );
@@ -478,7 +479,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Icon(Icons.favorite, size: 64, color: AppTheme.primaryTeal),
                     SizedBox(height: 16),
-                    Text('Laden...', style: TextStyle(fontSize: 18, color: AppTheme.primaryTeal)),
+                    Text(AppLocalizations.of(context).laden, style: TextStyle(fontSize: 18, color: AppTheme.primaryTeal)),
                   ],
                 ),
               ),
@@ -574,7 +575,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               obscureText: true,
                               maxLength: 6,
                               decoration: InputDecoration(
-                                labelText: 'PIN',
+                                labelText: AppLocalizations.of(context).pin,
                                 hintText: _isFirstTime
                                     ? 'Minimaal 4 cijfers'
                                     : 'Voer je PIN in',

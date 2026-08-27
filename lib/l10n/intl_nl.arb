@@ -150,5 +150,8 @@
   "zetAlsJe": "Zet uit als je dit niet wilt bijhouden",
   "laatsteWaarschuwing": "⚠️ Laatste Waarschuwing",
   "checkOpgeslagen": "✓ Check-in opgeslagen!",
-  "verwijderen3": "🗑️ Verwijderen"
+  "verwijderen3": "🗑️ Verwijderen",
+  "eenDag": "1 dag",
+  "drieDagen": "3 dagen",
+  "zevenDagen": "7 dagen"
 }

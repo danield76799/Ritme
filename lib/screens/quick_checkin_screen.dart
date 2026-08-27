@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 /// Snelle check-in: 3 taps en klaar.
 /// 
@@ -87,7 +88,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('✓ Check-in opgeslagen!'),
+            content: Text(AppLocalizations.of(context).checkOpgeslagen),
             backgroundColor: Colors.green[700],
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -100,7 +101,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fout: $e'),
+            content: Text(AppLocalizations.of(context).fout(e)),
             backgroundColor: Colors.red[700],
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -365,7 +366,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 2,
                       ),
-                      child: const Text(
+                      child: Text(
                         'Opslaan',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),

@@ -16,6 +16,7 @@ import 'sociaal_ritme_meter_screen.dart';
 import 'voortekenen_screen.dart';
 import 'crisisplan_screen.dart';
 import 'rapport_screen.dart';
+import '../generated/l10n/app_localizations.dart';
 
 // Add enum for AlertSeverity
 enum AlertSeverity { high, medium }
@@ -215,12 +216,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           IconButton(
             icon: Icon(Icons.help_outline, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () => Navigator.pushNamed(context, '/help'),
-            tooltip: 'Gebruiksaanwijzing',
+            tooltip: AppLocalizations.of(context).gebruiksaanwijzing,
           ),
           IconButton(
             icon: Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () => Navigator.pushNamed(context, '/statistics'),
-            tooltip: 'Statistieken',
+            tooltip: AppLocalizations.of(context).statistieken,
           ),
           IconButton(
             icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.onSurface),
@@ -228,12 +229,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               await Navigator.pushNamed(context, '/settings');
               _loadData();
             },
-            tooltip: 'Instellingen',
+            tooltip: AppLocalizations.of(context).instellingen,
           ),
           IconButton(
             icon: Icon(Icons.logout, color: Theme.of(context).colorScheme.onSurface),
             onPressed: _logout,
-            tooltip: 'Uitloggen',
+            tooltip: AppLocalizations.of(context).uitloggen,
           ),
         ],
       ),
@@ -313,9 +314,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Row(children: [
-                  const Text('Vandaag', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                  Text(AppLocalizations.of(context).vandaag, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                   const Spacer(),
-                  Text('Tik om te loggen', style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color)),
+                  Text(AppLocalizations.of(context).tikLoggen, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color)),
                 ]),
               ),
 
@@ -342,7 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
               Row(
                 children: [
-                  const Text('Overzicht', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                  Text(AppLocalizations.of(context).overzicht, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                   const Spacer(),
                   if (_lastUpdated != null)
                     Text(_formatLastUpdated(), style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
@@ -382,12 +383,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               const SizedBox(height: 28),
 
               Row(children: [
-                const Text('Stemming Trend', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                Text(AppLocalizations.of(context).stemmingTrend, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () => Navigator.pushNamed(context, '/insights'),
                   icon: const Icon(Icons.insights, size: 18),
-                  label: const Text('Inzichten'),
+                  label: Text(AppLocalizations.of(context).inzichten),
                 ),
               ]),
               const SizedBox(height: 12),
@@ -408,7 +409,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           if (result == true) _loadData();
         },
         icon: Icon(Icons.bolt, color: Theme.of(context).colorScheme.onPrimary),
-        label: Text('Snelle Check-in', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
+        label: Text(AppLocalizations.of(context).snelleCheck, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
       ),
     );
   }
