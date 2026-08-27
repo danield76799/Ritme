@@ -25,7 +25,7 @@
   "biometrieGeactiveerd": "Biometrie geactiveerd ✓",
   "biometrischeAuthenticatie": "Biometrische Authenticatie",
   "crisisplan": "Crisisplan",
-  "dagen": "Dagen: $days",
+  "dagen": "{n, plural, =1{1 dag} other{{n} dagen}}",
   "databaseDebug": "Database Debug",
   "databaseOpruimen": "Database Opruimen",
   "databaseReset": "Database Reset",
@@ -357,5 +357,16 @@
   "gemStemming": "Gem. stemming",
   "gemSlaap": "Gem. slaap",
   "activiteitenGelogd": "Activiteiten gelogd",
-  "gebeurtenissen": "Gebeurtenissen"
+  "gebeurtenissen": "Gebeurtenissen",
+  "nogNietIngevuld": "Nog niet ingevuld — tik om te bewerken",
+  "eigenSectie": "Eigen sectie",
+  "tikOmTeBewerken": "Tik om te bewerken",
+  "schrijfHierJePlan": "Schrijf hier je plan...",
+  "hypomanie": "Hypomanie",
+  "manie": "Manie",
+  "depressie": "Depressie",
+  "gemengd": "Gemengd",
+  "stabielEuthym": "Stabiel (euthym)",
+  "weken": "{n, plural, =1{1 week} other{{n} weken}}",
+  "wekenDagen": "{w, plural, =1{1 week} other{{w} weken}}, {d, plural, =0{} =1{1 dag} other{{d} dagen}}"
 }
