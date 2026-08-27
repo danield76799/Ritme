@@ -394,5 +394,12 @@
   "opstaanLabel": "Wake up",
   "naarBed": "Go to bed",
   "konSociaalRitmeDataNietLaden": "Could not load social rhythm data.",
-  "gaNaarVandaag": "Go to today"
+  "gaNaarVandaag": "Go to today",
+  "activiteitEnSlaapTitel": "Activity & Sleep",
+  "alle": "All",
+  "nogGeenStemmingData": "No mood data yet",
+  "voegMinimaal2LogsToe": "Add at least 2 logs to see a trend",
+  "eenLogOpgeslagen": "One log saved!",
+  "voegNogEenLogToe": "Add one more log for a trend line",
+  "erIsIetsMisgegaan": "Something went wrong"
 }

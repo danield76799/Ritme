@@ -394,5 +394,12 @@
   "opstaanLabel": "Opstaan",
   "naarBed": "Naar bed",
   "konSociaalRitmeDataNietLaden": "Kon sociaal ritme data niet laden.",
-  "gaNaarVandaag": "Ga naar vandaag"
+  "gaNaarVandaag": "Ga naar vandaag",
+  "activiteitEnSlaapTitel": "Activiteit & Slaap",
+  "alle": "Alle",
+  "nogGeenStemmingData": "Nog geen stemming data",
+  "voegMinimaal2LogsToe": "Voeg minimaal 2 logs toe om een trend te zien",
+  "eenLogOpgeslagen": "Eén log opgeslagen!",
+  "voegNogEenLogToe": "Voeg nog één log toe voor een trendlijn",
+  "erIsIetsMisgegaan": "Er is iets misgegaan"
 }
