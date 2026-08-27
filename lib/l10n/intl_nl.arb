@@ -191,5 +191,14 @@
   "inloggen": "Inloggen",
   "voerEenPinIn": "Voer een PIN in",
   "ongeldigePin": "Ongeldige PIN",
-  "bewerkEigenSectie": "Bewerk eigen sectie"
+  "bewerkEigenSectie": "Bewerk eigen sectie",
+  "biometrieVerplichtTitel": "Biometrische verificatie vereist",
+  "biometrieVerplichtInhoud": "Voor uw veiligheid is biometrische verificatie verplicht om Ritme te gebruiken. Uw PIN blijft beschikbaar als fallback als biometrische verificatie mislukt of wordt geannuleerd.",
+  "biometrieVerplichtBevestigen": "Biometrie Inschakelen",
+  "geenBiometrieBeschikbaar": "Biometrische verificatie is niet beschikbaar op dit apparaat. U gebruikt een PIN-code om toegang te krijgen tot de app.",
+  "biometrieGeannuleerdPinInvoeren": "Biometrie geannuleerd. Voer uw PIN in om door te gaan.",
+  "biometrieMisluktPinInvoeren": "Biometrische verificatie mislukt. Voer uw PIN in om door te gaan.",
+  "pinMinimaal4Cijfers": "PIN moet minimaal 4 cijfers bevatten",
+  "inloggenMisluktProbeer": "Inloggen mislukt. Probeer opnieuw.",
+  "konAppNietInitialiseren": "Kon app niet initialiseren. Probeer opnieuw."
 }
