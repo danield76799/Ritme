@@ -16,11 +16,11 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   Map<String, dynamic>? _activeEpisode;
 
   final _types = [
-    {'value': 'hypomanie', 'label': 'Hypomanie', 'icon': Icons.trending_up, 'color': Colors.orange},
-    {'value': 'manie', 'label': 'Manie', 'icon': Icons.warning, 'color': Colors.red},
-    {'value': 'depressie', 'label': 'Depressie', 'icon': Icons.trending_down, 'color': Colors.blue},
-    {'value': 'gemengd', 'label': 'Gemengd', 'icon': Icons.compare_arrows, 'color': Colors.purple},
-    {'value': 'euthym', 'label': 'Stabiel (euthym)', 'icon': Icons.check_circle, 'color': Colors.green},
+    {'value': 'hypomanie', 'key': 'hypomanie', 'icon': Icons.trending_up, 'color': Colors.orange},
+    {'value': 'manie', 'key': 'manie', 'icon': Icons.warning, 'color': Colors.red},
+    {'value': 'depressie', 'key': 'depressie', 'icon': Icons.trending_down, 'color': Colors.blue},
+    {'value': 'gemengd', 'key': 'gemengd', 'icon': Icons.compare_arrows, 'color': Colors.purple},
+    {'value': 'euthym', 'key': 'stabielEuthym', 'icon': Icons.check_circle, 'color': Colors.green},
   ];
 
   @override
@@ -81,7 +81,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     label: Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(t['icon'] as IconData, size: 16, color: isSelected ? Colors.white : t['color'] as Color),
                       const SizedBox(width: 6),
-                      Text(t['label'] as String),
+                      Text(_labelFor(context, t['key'] as String)),
                     ]),
                     selected: isSelected,
                     selectedColor: t['color'] as Color,
@@ -163,6 +163,18 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     }
   }
 
+  String _labelFor(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context);
+    switch (key) {
+      case 'hypomanie': return l10n.hypomanie;
+      case 'manie': return l10n.manie;
+      case 'depressie': return l10n.depressie;
+      case 'gemengd': return l10n.gemengd;
+      case 'stabielEuthym': return l10n.stabielEuthym;
+      default: return key;
+    }
+  }
+
   Map<String, dynamic>? _getTypeInfo(String type) {
     for (final t in _types) {
       if (t['value'] == type) return t;
@@ -170,17 +182,18 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     return null;
   }
 
-  String _durationText(String start, String? end) {
+  String _durationText(BuildContext context, String start, String? end) {
+    final l10n = AppLocalizations.of(context);
     try {
       final s = DateTime.parse(start);
       final e = end != null ? DateTime.parse(end) : DateTime.now();
       final days = e.difference(s).inDays;
-      if (days == 0) return '1 dag';
-      if (days < 7) return '$days dagen';
+      if (days == 0) return l10n.eenDag;
+      if (days < 7) return l10n.dagen(days);
       final weeks = days ~/ 7;
       final remainder = days % 7;
-      if (remainder == 0) return '$weeks weken';
-      return '$weeks weken, $remainder dagen';
+      if (remainder == 0) return l10n.weken(weeks);
+      return l10n.wekenDagen(weeks, remainder);
     } catch (e) {
       return '?';
     }
@@ -259,7 +272,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                       ],
                     ),
                     subtitle: Text(
-                      '${_formatDate(ep['start_date'] as String)} — ${isActive ? "loopt nog" : _formatDate(ep['end_date'] as String)}\n${_durationText(ep['start_date'] as String, ep['end_date'] as String?)}',
+                      '${_formatDate(ep['start_date'] as String)} — ${isActive ? "loopt nog" : _formatDate(ep['end_date'] as String)}\n${_durationText(context, ep['start_date'] as String, ep['end_date'] as String?)}',
                       style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 13),
                     ),
                     isThreeLine: true,

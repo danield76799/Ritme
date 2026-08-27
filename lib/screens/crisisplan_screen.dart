@@ -57,9 +57,9 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     final key = section['section'] as String? ?? '';
     final content = section['content'] as String? ?? '';
     for (final def in _defaultSections) {
-      if (def['section'] == key) return [def['title'] ?? key, content.isNotEmpty ? content : 'Nog niet ingevuld — tik om te bewerken', false];
+      if (def['section'] == key) return [def['title'] ?? key, content.isNotEmpty ? content : AppLocalizations.of(context).nogNietIngevuld, false];
     }
-    if (content.isEmpty) return ['Eigen sectie', 'Tik om te bewerken', true];
+    if (content.isEmpty) return [AppLocalizations.of(context).eigenSectie, AppLocalizations.of(context).tikOmTeBewerken, true];
     final lines = content.split('\n');
     final title = lines[0].trim();
     String subtitle = '';
@@ -107,7 +107,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade700 : Colors.grey.shade300, width: 1)),
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2)),
-                    hintText: isCustom ? 'Titel\n\nBeschrijving...' : 'Schrijf hier je plan...',
+                    hintText: isCustom ? 'Titel\n\nBeschrijving...' : AppLocalizations.of(context).schrijfHierJePlan,
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.all(16),
                   ),
