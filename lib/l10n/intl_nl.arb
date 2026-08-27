@@ -338,5 +338,18 @@
   "medicatieNietGenomen": "Medicatie nog niet genomen",
   "medicatieGenomen": "✓ Medicatie genomen",
   "medicatieGeregistreerd": "Je medicatie is geregistreerd",
-  "vergeetMedicatieNiet": "Vergeet je medicatie niet"
+  "vergeetMedicatieNiet": "Vergeet je medicatie niet",
+  "activiteitenDezeWeek": "Activiteiten Deze Week",
+  "verdelingPerType": "Verdeling per type",
+  "perDag": "Per dag",
+  "geenActiviteitenDezeWeek": "Geen activiteiten deze week",
+  "voegActiviteitenToeVia": "Voeg activiteiten toe via het Sociaal Ritme scherm.",
+  "maandag": "Maandag",
+  "dinsdag": "Dinsdag",
+  "woensdag": "Woensdag",
+  "donderdag": "Donderdag",
+  "vrijdag": "Vrijdag",
+  "zaterdag": "Zaterdag",
+  "zondag": "Zondag",
+  "totaleActiviteitenDezeWeek": "totale activiteiten deze week"
 }

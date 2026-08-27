@@ -338,5 +338,18 @@
   "medicatieNietGenomen": "Medication not yet taken",
   "medicatieGenomen": "✓ Medication taken",
   "medicatieGeregistreerd": "Your medication has been recorded",
-  "vergeetMedicatieNiet": "Don't forget your medication"
+  "vergeetMedicatieNiet": "Don't forget your medication",
+  "activiteitenDezeWeek": "Activities This Week",
+  "verdelingPerType": "Distribution by type",
+  "perDag": "Per day",
+  "geenActiviteitenDezeWeek": "No activities this week",
+  "voegActiviteitenToeVia": "Add activities via the Social Rhythm screen.",
+  "maandag": "Monday",
+  "dinsdag": "Tuesday",
+  "woensdag": "Wednesday",
+  "donderdag": "Thursday",
+  "vrijdag": "Friday",
+  "zaterdag": "Saturday",
+  "zondag": "Sunday",
+  "totaleActiviteitenDezeWeek": "total activities this week"
 }
