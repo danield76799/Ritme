@@ -169,13 +169,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     return 'Goedenavond, $name';
   }
 
-  String _formatLastUpdated() {
+  String _formatLastUpdated(BuildContext context) {
     if (_lastUpdated == null) return '';
+    final l10n = AppLocalizations.of(context);
     final diff = DateTime.now().difference(_lastUpdated!);
-    if (diff.inSeconds < 60) return 'Zojuist bijgewerkt';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} min geleden';
-    if (diff.inHours < 24) return '${diff.inHours}u geleden';
-    return '${diff.inDays}d geleden';
+    if (diff.inSeconds < 60) return l10n.zojuistBijgewerkt;
+    if (diff.inMinutes < 60) return l10n.minutenGeleden(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.urenGeleden(diff.inHours);
+    return l10n.dagenGeleden(diff.inDays);
   }
 
   String _formatHours(double hours) {
@@ -293,9 +294,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     const SizedBox(height: 18),
                     Row(
                       children: [
-                        _buildTimeChip(Icons.wb_sunny_outlined, 'Opstaan', _settings?['target_opstaan'] ?? '08:00', isDark),
+                        _buildTimeChip(Icons.wb_sunny_outlined, AppLocalizations.of(context).opstaan, _settings?['target_opstaan'] ?? '08:00', isDark),
                         const SizedBox(width: 8),
-                        _buildTimeChip(Icons.bedtime, 'Slapen', _settings?['target_slapen'] ?? '23:00', isDark),
+                        _buildTimeChip(Icons.bedtime, AppLocalizations.of(context).slapen, _settings?['target_slapen'] ?? '23:00', isDark),
                       ],
                     ),
                   ],
@@ -328,14 +329,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.2,
                 children: [
-                  _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: 'Stemming', route: '/mood'),
-                  _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: 'Activiteit', route: '/activity'),
-                  _buildActionCard(context, icon: Icons.monitor_weight, color: const Color(0xFF88B0C7), title: 'Gewicht', route: '/weight'),
-                  _buildActionCard(context, icon: Icons.calendar_today, color: const Color(0xFFB4A8D4), title: 'Afspraken', route: '/appointments'),
-                  _buildActionCard(context, icon: Icons.schedule, color: const Color(0xFF9DC09D), title: 'Sociaal Ritme', route: '/sociaal-ritme'),
-                  _buildActionCard(context, icon: Icons.warning_amber, color: AppTheme.warning, title: 'Voortekenen', route: '/voortekenen'),
-                  _buildActionCard(context, icon: Icons.assignment, color: AppTheme.error, title: 'Crisisplan', route: '/crisisplan'),
-                  _buildActionCard(context, icon: Icons.description, color: AppTheme.primaryTeal, title: 'Rapport', route: '/rapport'),
+                  _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: AppLocalizations.of(context).stemming, route: '/mood'),
+                  _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: AppLocalizations.of(context).activiteitEnSlaap, route: '/activity'),
+                  _buildActionCard(context, icon: Icons.monitor_weight, color: const Color(0xFF88B0C7), title: AppLocalizations.of(context).gewicht, route: '/weight'),
+                  _buildActionCard(context, icon: Icons.calendar_today, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).afspraken, route: '/appointments'),
+                  _buildActionCard(context, icon: Icons.schedule, color: const Color(0xFF9DC09D), title: AppLocalizations.of(context).sociaalRitme, route: '/sociaal-ritme'),
+                  _buildActionCard(context, icon: Icons.warning_amber, color: AppTheme.warning, title: AppLocalizations.of(context).voortekenen, route: '/voortekenen'),
+                  _buildActionCard(context, icon: Icons.assignment, color: AppTheme.error, title: AppLocalizations.of(context).crisisplan, route: '/crisisplan'),
+                  _buildActionCard(context, icon: Icons.description, color: AppTheme.primaryTeal, title: AppLocalizations.of(context).rapport, route: '/rapport'),
                 ],
               ),
 
@@ -346,7 +347,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   Text(AppLocalizations.of(context).overzicht, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                   const Spacer(),
                   if (_lastUpdated != null)
-                    Text(_formatLastUpdated(), style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
+                    Text(_formatLastUpdated(context), style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
                 ],
               ),
               const SizedBox(height: 16),
@@ -354,9 +355,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               _buildMetricCard(
                 context,
                 icon: Icons.bedtime,
-                title: 'Slaapduur',
+                title: AppLocalizations.of(context).slaapduurLabel,
                 value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : '-',
-                subtitle: _loggedDaysCount > 0 ? '$_loggedDaysCount nachten' : null,
+                subtitle: _loggedDaysCount > 0 ? AppLocalizations.of(context).nachten(_loggedDaysCount) : null,
                 color: const Color(0xFF88B0C7),
                 route: '/sleep-detail',
               ),
@@ -364,9 +365,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               _buildMetricCard(
                 context,
                 icon: Icons.schedule,
-                title: 'SRT Score',
+                title: AppLocalizations.of(context).srtScore,
                 value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : '-',
-                subtitle: _getSrtLabel(_rhythmStability),
+                subtitle: _getSrtLabel(_rhythmStability, context),
                 color: _getSrtColor(_rhythmStability),
                 route: '/rhythm-detail',
               ),
@@ -374,7 +375,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               _buildMetricCard(
                 context,
                 icon: Icons.local_activity,
-                title: 'Activiteiten deze week',
+                title: AppLocalizations.of(context).activiteitenDezeWeekLabel,
                 value: _weeklyActivities > 0 ? '$_weeklyActivities' : '-',
                 color: AppTheme.warning,
                 route: '/activities-detail',
@@ -571,10 +572,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     return AppTheme.primaryTeal;
   }
 
-  String _getSrtLabel(double score) {
-    if (score <= 20) return 'Laag';
-    if (score <= 40) return 'Matig';
-    if (score <= 60) return 'Goed';
-    return 'Uitstekend';
+  String _getSrtLabel(double score, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    if (score <= 20) return l10n.laag;
+    if (score <= 40) return l10n.matigLabel;
+    if (score <= 60) return l10n.goed;
+    return l10n.uitstekendLabel;
   }
 }
