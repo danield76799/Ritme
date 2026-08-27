@@ -84,7 +84,7 @@ class _RapportScreenState extends State<RapportScreen> {
                     ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
                     : Icon(Icons.picture_as_pdf, size: 22),
                 label: Text(
-                  _isGenerating ? 'Genereren...' : 'Genereer & Deel Rapport',
+                  _isGenerating ? AppLocalizations.of(context).genereren : AppLocalizations.of(context).genereerDeelRapport,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -151,7 +151,7 @@ class _RapportScreenState extends State<RapportScreen> {
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(file.path)],
-            subject: 'Ritme Life Chart Rapport',
+            subject: AppLocalizations.of(context).ritmeRapportOnderwerp,
           ),
         );
       }

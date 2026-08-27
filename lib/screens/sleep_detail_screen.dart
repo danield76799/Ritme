@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class SleepDetailScreen extends StatefulWidget {
   const SleepDetailScreen({super.key});
@@ -149,11 +150,11 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                     // Stats cards
                     Row(
                       children: [
-                        Expanded(child: _buildStatCard('Gemiddeld', _formatHours(_avgSleep), Icons.trending_flat)),
+                        Expanded(child: _buildStatCard(AppLocalizations.of(context).gemiddeld, _formatHours(_avgSleep), Icons.trending_flat)),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildStatCard('Beste', _formatHours(_bestSleep), Icons.trending_up)),
+                        Expanded(child: _buildStatCard(AppLocalizations.of(context).beste, _formatHours(_bestSleep), Icons.trending_up)),
                         SizedBox(width: 12),
-                        Expanded(child: _buildStatCard('Minste', _formatHours(_worstSleep), Icons.trending_down)),
+                        Expanded(child: _buildStatCard(AppLocalizations.of(context).minste, _formatHours(_worstSleep), Icons.trending_down)),
                       ],
                     ),
                     SizedBox(height: 24),
@@ -263,7 +264,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                     
                     // Sleep log list
                     Text(
-                      'Slaap logboek',
+                      AppLocalizations.of(context).slaapLogboek,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -273,9 +274,9 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                     const SizedBox(height: 12),
                     
                     if (_sleepData.isEmpty)
-                      _buildEmptyState('Geen slaapdata gevonden', 'Voeg slaapuren toe bij je dagelijkse log.')
+                      _buildEmptyState(AppLocalizations.of(context).geenSlaapdataGevonden, AppLocalizations.of(context).voegSlaapurenToe)
                     else
-                      ..._sleepData.reversed.map((entry) => _buildSleepLogItem(entry)),
+                      ..._sleepData.reversed.map((entry) => _buildSleepLogItem(context, entry)),
                   ],
                 ),
               ),
@@ -322,10 +323,11 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
     );
   }
 
-  Widget _buildSleepLogItem(Map<String, dynamic> entry) {
+  Widget _buildSleepLogItem(BuildContext context, Map<String, dynamic> entry) {
+    final l10n = AppLocalizations.of(context);
     final sleep = entry['sleep'] as double;
     final awakeMinutes = entry['awakeMinutes'] as int? ?? 0;
-    final quality = sleep >= 8 ? 'Uitstekend' : sleep >= 6 ? 'Goed' : sleep >= 5 ? 'Matig' : 'Slecht';
+    final quality = sleep >= 8 ? l10n.uitstekendLabel : sleep >= 6 ? l10n.goed : sleep >= 5 ? l10n.matigLabel : l10n.slecht;
     final qualityColor = sleep >= 8 ? AppTheme.primaryTeal : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
 
     return Container(
