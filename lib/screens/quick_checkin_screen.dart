@@ -30,17 +30,18 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
-  String _getStemmingLabel(double waarde) {
-    if (waarde <= -4) return 'Ernstig depressief';
-    if (waarde <= -3) return 'Matig depressief';
-    if (waarde <= -2) return 'Licht depressief';
-    if (waarde <= -1) return 'Somber';
-    if (waarde == 0) return 'Stabiel / Neutraal';
-    if (waarde <= 1) return 'Licht manisch';
-    if (waarde <= 2) return 'Matig manisch';
-    if (waarde <= 3) return 'Druk / Actief';
-    if (waarde <= 4) return 'Ernstig manisch';
-    return 'Uiterst manisch';
+  String _getStemmingLabel(BuildContext context, double waarde) {
+    final l10n = AppLocalizations.of(context);
+    if (waarde <= -4) return l10n.ernstigDepressief;
+    if (waarde <= -3) return l10n.matigDepressief;
+    if (waarde <= -2) return l10n.lichtDepressief;
+    if (waarde <= -1) return l10n.somber;
+    if (waarde == 0) return l10n.stabielNeutraal;
+    if (waarde <= 1) return l10n.lichtManisch;
+    if (waarde <= 2) return l10n.matigManisch;
+    if (waarde <= 3) return l10n.drukActief;
+    if (waarde <= 4) return l10n.ernstigManisch;
+    return l10n.uiterstManisch;
   }
 
   String _formatDatum() {
@@ -119,7 +120,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Snelle Check-in',
+          AppLocalizations.of(context).snelleCheckIn,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -174,7 +175,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                                 ),
                               ),
                               Text(
-                                _getStemmingLabel(_stemming),
+                                _getStemmingLabel(context, _stemming),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -324,7 +325,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _medicatieGenomen ? '✓ Medicatie genomen' : 'Medicatie nog niet genomen',
+                                  _medicatieGenomen ? AppLocalizations.of(context).medicatieGenomen : AppLocalizations.of(context).medicatieNietGenomen,
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -332,9 +333,9 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                                   ),
                                 ),
                                 Text(
-                                  _medicatieGenomen 
-                                    ? 'Je medicatie is geregistreerd'
-                                    : 'Vergeet je medicatie niet',
+                                  _medicatieGenomen
+                                    ? AppLocalizations.of(context).medicatieGeregistreerd
+                                    : AppLocalizations.of(context).vergeetMedicatieNiet,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade500,
@@ -367,7 +368,7 @@ class _QuickCheckInScreenState extends State<QuickCheckInScreen> {
                         elevation: 2,
                       ),
                       child: Text(
-                        'Opslaan',
+                        AppLocalizations.of(context).opslaan,
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
