@@ -479,7 +479,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Activiteit & Slaap',
+          AppLocalizations.of(context).activiteitEnSlaapTitel,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,

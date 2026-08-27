@@ -88,11 +88,11 @@ class _LifeEventsScreenState extends State<LifeEventsScreen> {
             color: Theme.of(context).colorScheme.surface,
             child: Row(
               children: [
-                _buildFilterChip('alle', 'Alle'),
+                _buildFilterChip('alle', AppLocalizations.of(context).alle),
                 const SizedBox(width: 8),
-                _buildFilterChip('positief', 'Positief'),
+                _buildFilterChip('positief', AppLocalizations.of(context).positief),
                 const SizedBox(width: 8),
-                _buildFilterChip('negatief', 'Negatief'),
+                _buildFilterChip('negatief', AppLocalizations.of(context).negatief),
               ],
             ),
           ),

@@ -133,8 +133,8 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 64),
                 const SizedBox(height: 16),
-                const Text(
-                  'Er is iets misgegaan',
+                Text(
+                  AppLocalizations.of(context).erIsIetsMisgegaan,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),

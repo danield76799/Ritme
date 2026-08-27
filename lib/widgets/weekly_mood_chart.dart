@@ -30,7 +30,7 @@ class WeeklyMoodChart extends StatelessWidget {
               ),
               SizedBox(height: 12),
               Text(
-                'Nog geen stemming data',
+                AppLocalizations.of(context).nogGeenStemmingData,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
@@ -39,7 +39,7 @@ class WeeklyMoodChart extends StatelessWidget {
               ),
               SizedBox(height: 8),
               Text(
-                'Voeg minimaal 2 logs toe om een trend te zien',
+                AppLocalizations.of(context).voegMinimaal2LogsToe,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   fontSize: 14,
@@ -72,7 +72,7 @@ class WeeklyMoodChart extends StatelessWidget {
               ),
               SizedBox(height: 12),
               Text(
-                'Eén log opgeslagen!',
+                AppLocalizations.of(context).eenLogOpgeslagen,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
@@ -81,7 +81,7 @@ class WeeklyMoodChart extends StatelessWidget {
               ),
               SizedBox(height: 8),
               Text(
-                'Voeg nog één log toe voor een trendlijn',
+                AppLocalizations.of(context).voegNogEenLogToe,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   fontSize: 14,
