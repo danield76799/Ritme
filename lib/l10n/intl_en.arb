@@ -200,5 +200,15 @@
   "biometrieMisluktPinInvoeren": "Biometric verification failed. Enter your PIN to continue.",
   "pinMinimaal4Cijfers": "PIN must be at least 4 digits",
   "inloggenMisluktProbeer": "Login failed. Please try again.",
-  "konAppNietInitialiseren": "Could not initialize app. Please try again."
+  "konAppNietInitialiseren": "Could not initialize app. Please try again.",
+  "gewicht": "Weight",
+  "geschiedenis": "History",
+  "nogGeenGewichtGelogd": "No weight logged yet",
+  "gewichtBewerken": "Edit weight",
+  "gewichtLoggen": "Log weight",
+  "gemiddeld": "Average",
+  "minimum": "Min",
+  "maximum": "Max",
+  "verandering": "Change",
+  "veranderingMetKg": "Change: {value} kg"
 }

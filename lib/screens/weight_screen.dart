@@ -296,7 +296,7 @@ class _WeightScreenState extends State<WeightScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(
-          'Gewicht',
+          AppLocalizations.of(context).gewicht,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
@@ -389,7 +389,7 @@ class _WeightScreenState extends State<WeightScreen> {
                         ),
                         SizedBox(width: 12),
                         Text(
-                          'Geschiedenis',
+                          AppLocalizations.of(context).geschiedenis,
                           style: TextStyle(
                             color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
                             fontSize: 20,
@@ -407,7 +407,7 @@ class _WeightScreenState extends State<WeightScreen> {
                             Icon(Icons.monitor_weight_outlined, size: 64, color: Colors.grey.shade300),
                             const SizedBox(height: 16),
                             Text(
-                              'Nog geen gewicht gelogd',
+                              AppLocalizations.of(context).nogGeenGewichtGelogd,
                               style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
                             ),
                           ],
@@ -502,9 +502,9 @@ class _WeightScreenState extends State<WeightScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         icon: Icon(Icons.add, color: Colors.white),
         label: Text(
-          _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(_selectedDate)) 
-            ? 'Gewicht bewerken' 
-            : 'Gewicht loggen',
+          _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(_selectedDate))
+            ? AppLocalizations.of(context).gewichtBewerken
+            : AppLocalizations.of(context).gewichtLoggen,
           style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.bold),
         ),
       ),
@@ -552,7 +552,7 @@ class _WeightScreenState extends State<WeightScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Statistieken',
+            AppLocalizations.of(context).statistieken,
             style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -562,13 +562,13 @@ class _WeightScreenState extends State<WeightScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildStatItem('Gemiddeld', '${avgWeight.toStringAsFixed(1)} kg'),
+                child: _buildStatItem(AppLocalizations.of(context).gemiddeld, '${avgWeight.toStringAsFixed(1)} kg'),
               ),
               Expanded(
-                child: _buildStatItem('Min', '${minWeight.toStringAsFixed(1)} kg'),
+                child: _buildStatItem(AppLocalizations.of(context).minimum, '${minWeight.toStringAsFixed(1)} kg'),
               ),
               Expanded(
-                child: _buildStatItem('Max', '${maxWeight.toStringAsFixed(1)} kg'),
+                child: _buildStatItem(AppLocalizations.of(context).maximum, '${maxWeight.toStringAsFixed(1)} kg'),
               ),
             ],
           ),
@@ -590,7 +590,8 @@ class _WeightScreenState extends State<WeightScreen> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Verandering: ${weightChange > 0 ? '+' : ''}${weightChange.toStringAsFixed(1)} kg',
+                    AppLocalizations.of(context).veranderingMetKg(
+                        '${weightChange > 0 ? '+' : ''}${weightChange.toStringAsFixed(1)}'),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.surface,
                       fontWeight: FontWeight.bold,
