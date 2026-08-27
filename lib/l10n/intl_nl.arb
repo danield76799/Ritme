@@ -386,5 +386,13 @@
   "slaapLogboek": "Slaap logboek",
   "geenSlaapdataGevonden": "Geen slaapdata gevonden",
   "voegSlaapurenToe": "Voeg slaapuren toe bij je dagelijkse log.",
-  "slecht": "Slecht"
+  "slecht": "Slecht",
+  "perfect": "Perfect",
+  "opTijd": "Op tijd",
+  "enigszins": "Enigszins",
+  "gemist": "Gemist",
+  "opstaanLabel": "Opstaan",
+  "naarBed": "Naar bed",
+  "konSociaalRitmeDataNietLaden": "Kon sociaal ritme data niet laden.",
+  "gaNaarVandaag": "Ga naar vandaag"
 }

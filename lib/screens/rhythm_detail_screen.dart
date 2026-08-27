@@ -154,11 +154,12 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
     return Colors.redAccent;
   }
 
-  String _getPScoreLabel(int score) {
-    if (score >= 5) return 'Perfect';
-    if (score >= 3) return 'Op tijd';
-    if (score >= 1) return 'Enigszins';
-    return 'Gemist';
+  String _getPScoreLabel(BuildContext context, int score) {
+    final l10n = AppLocalizations.of(context);
+    if (score >= 5) return l10n.perfect;
+    if (score >= 3) return l10n.opTijd;
+    if (score >= 1) return l10n.enigszins;
+    return l10n.gemist;
   }
 
   @override
@@ -366,7 +367,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              _getPScoreLabel(pScore),
+              _getPScoreLabel(context, pScore),
               style: TextStyle(
                 color: _getPScoreColor(pScore),
                 fontWeight: FontWeight.bold,
