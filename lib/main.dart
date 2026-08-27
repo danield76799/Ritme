@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'generated/l10n/app_localizations.dart';
+
 // Services
 import 'services/boot_service.dart';
 import 'services/notification_helper.dart';
@@ -148,7 +150,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
                       _error = null;
                     });
                   },
-                  child: const Text('Opnieuw proberen'),
+                  child: Text(AppLocalizations.of(context).opnieuwProberen),
                 ),
               ],
             ),
@@ -200,6 +202,8 @@ class _RitmeAppState extends State<RitmeApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: SplashScreenWrapper(),
       routes: {
         '/mood': (context) => MoodScreen(),
