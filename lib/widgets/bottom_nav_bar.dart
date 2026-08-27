@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -30,10 +31,10 @@ class BottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(context, Icons.home_outlined, 'Home', 0),
-              _buildNavItem(context, Icons.sentiment_satisfied_alt, 'Stemming', 1),
-              _buildNavItem(context, Icons.directions_walk, 'Activiteit + Slaap', 2),
-              _buildNavItem(context, Icons.bar_chart, 'Stats', 3),
+              _buildNavItem(context, Icons.home_outlined, AppLocalizations.of(context).home, 0),
+              _buildNavItem(context, Icons.sentiment_satisfied_alt, AppLocalizations.of(context).stemming, 1),
+              _buildNavItem(context, Icons.directions_walk, AppLocalizations.of(context).activiteitSlaap, 2),
+              _buildNavItem(context, Icons.bar_chart, AppLocalizations.of(context).stats, 3),
             ],
           ),
         ),
