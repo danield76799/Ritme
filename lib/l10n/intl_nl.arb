@@ -295,5 +295,18 @@
   "vandaagBuitenGeweest": "Vandaag buiten geweest",
   "socialeContacten": "Sociale contacten",
   "aantalSocialeInteractiesVandaag": "Aantal sociale interacties vandaag",
-  "menstruatie": "Menstruatie"
+  "menstruatie": "Menstruatie",
+  "zojuistBijgewerkt": "Zojuist bijgewerkt",
+  "activiteitEnSlaap": "Activiteit",
+  "slaapduurLabel": "Slaapduur",
+  "activiteitenDezeWeekLabel": "Activiteiten deze week",
+  "matigLabel": "Matig",
+  "uitstekendLabel": "Uitstekend",
+  "minutenGeleden": "{n, plural, =1{1 minuut geleden} other{{n} minuten geleden}}",
+  "urenGeleden": "{n, plural, =1{1u geleden} other{{n}u geleden}}",
+  "dagenGeleden": "{n, plural, =1{1 dag geleden} other{{n} dagen geleden}}",
+  "srtScore": "SRT Score",
+  "laag": "Laag",
+  "goed": "Goed",
+  "nachten": "{n, plural, =1{1 nacht} other{{n} nachten}}"
 }

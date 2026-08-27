@@ -295,5 +295,18 @@
   "vandaagBuitenGeweest": "Went outside today",
   "socialeContacten": "Social contacts",
   "aantalSocialeInteractiesVandaag": "Number of social interactions today",
-  "menstruatie": "Menstruation"
+  "menstruatie": "Menstruation",
+  "zojuistBijgewerkt": "Just updated",
+  "activiteitEnSlaap": "Activity",
+  "slaapduurLabel": "Sleep duration",
+  "activiteitenDezeWeekLabel": "Activities this week",
+  "matigLabel": "Moderate",
+  "uitstekendLabel": "Excellent",
+  "minutenGeleden": "{n, plural, =1{1 minute ago} other{{n} minutes ago}}",
+  "urenGeleden": "{n, plural, =1{1h ago} other{{n}h ago}}",
+  "dagenGeleden": "{n, plural, =1{1d ago} other{{n}d ago}}",
+  "srtScore": "SRT Score",
+  "laag": "Low",
+  "goed": "Good",
+  "nachten": "{n, plural, =1{1 night} other{{n} nights}}"
 }
