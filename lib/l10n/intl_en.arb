@@ -270,5 +270,9 @@
   "sociaalRitmeMeter": "Social Rhythm Meter",
   "naarBedGegaan": "Gone to bed",
   "tikOmTijdInTeStellen": "Tap to set time",
-  "opgestaan": "Got up"
+  "opgestaan": "Got up",
+  "dagelijkseTracking": "Daily Tracking",
+  "inzichtenPatronen": "Insights & Patterns",
+  "activiteitSlaap": "Activity + Sleep",
+  "instellingenItem": "Settings"
 }

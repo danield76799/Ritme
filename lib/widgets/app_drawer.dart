@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../theme/app_theme.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class AppDrawer extends StatefulWidget {
   final String currentRoute;
@@ -91,73 +92,73 @@ class _AppDrawerState extends State<AppDrawer> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
-                  _buildSectionTitle('Dagelijkse Tracking'),
+                  _buildSectionTitle(AppLocalizations.of(context).dagelijkseTracking),
                   _buildMenuItem(
                     context,
                     icon: Icons.sentiment_satisfied_alt,
-                    title: 'Stemming',
+                    title: AppLocalizations.of(context).stemming,
                     route: '/mood',
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.directions_walk,
-                    title: 'Activiteit + Slaap',
+                    title: AppLocalizations.of(context).activiteitSlaap,
                     route: '/activity',
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.medication_outlined,
-                    title: 'Medicatie',
+                    title: AppLocalizations.of(context).medicatie,
                     route: '/medication',
                     color: Theme.of(context).colorScheme.tertiary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.monitor_weight,
-                    title: 'Gewicht',
+                    title: AppLocalizations.of(context).gewicht,
                     route: '/weight',
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.calendar_today_outlined,
-                    title: 'Afspraken',
+                    title: AppLocalizations.of(context).afspraken,
                     route: '/appointments',
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.schedule,
-                    title: 'Sociaal Ritme',
+                    title: AppLocalizations.of(context).sociaalRitme,
                     route: '/sociaal-ritme',
                     color: Theme.of(context).colorScheme.tertiary,
                   ),
 
                   const Divider(height: 32),
-                  _buildSectionTitle('Inzichten'),
+                  _buildSectionTitle(AppLocalizations.of(context).inzichten),
                   _buildMenuItem(
                     context,
                     icon: Icons.insights,
-                    title: 'Inzichten & Patronen',
+                    title: AppLocalizations.of(context).inzichtenPatronen,
                     route: '/insights',
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   _buildMenuItem(
                     context,
                     icon: Icons.bar_chart,
-                    title: 'Statistieken',
+                    title: AppLocalizations.of(context).statistieken,
                     route: '/statistics',
                     color: Theme.of(context).colorScheme.secondary,
                   ),
 
                   const Divider(height: 32),
-                  _buildSectionTitle('Instellingen'),
+                  _buildSectionTitle(AppLocalizations.of(context).instellingen),
                   _buildMenuItem(
                     context,
                     icon: Icons.settings_outlined,
-                    title: 'Instellingen',
+                    title: AppLocalizations.of(context).instellingenItem,
                     route: '/settings',
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
