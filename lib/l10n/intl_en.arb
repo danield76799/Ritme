@@ -333,5 +333,10 @@
   "lifeEvents": "Life Events",
   "nieuweGebeurtenis": "New event",
   "geenGebeurtenissenGevonden": "No events found",
-  "voegEersteGebeurtenisToe": "Add your first event using the button below"
+  "voegEersteGebeurtenisToe": "Add your first event using the button below",
+  "snelleCheckIn": "Quick check-in",
+  "medicatieNietGenomen": "Medication not yet taken",
+  "medicatieGenomen": "✓ Medication taken",
+  "medicatieGeregistreerd": "Your medication has been recorded",
+  "vergeetMedicatieNiet": "Don't forget your medication"
 }
