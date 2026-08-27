@@ -39,7 +39,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load appointments', error: e, stackTrace: stackTrace);
       setState(() {
-        _errorMessage = 'Kon afspraken niet laden. Probeer opnieuw.';
+        _errorMessage = AppLocalizations.of(context).konAfsprakenNietLaden;
         _isLoading = false;
       });
     }
@@ -143,7 +143,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to edit appointment', error: e, stackTrace: stackTrace);
-      _showError('Kon afspraak niet bewerken.');
+      _showError(AppLocalizations.of(context).konAfspraakNietBewerken);
     }
   }
 
@@ -201,7 +201,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to delete appointment', error: e, stackTrace: stackTrace);
-      _showError('Kon afspraak niet verwijderen.');
+      _showError(AppLocalizations.of(context).konAfspraakNietVerwijderen);
     }
   }
 
@@ -274,12 +274,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           Icon(Icons.calendar_today_outlined, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 12),
           Text(
-            'Geen afspraken',
+            AppLocalizations.of(context).geenAfspraken,
             style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
           ),
           const SizedBox(height: 4),
           Text(
-            'Tik + om een afspraak toe te voegen',
+            AppLocalizations.of(context).tikOmAfspraakToeTeVoegen,
             style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
           ),
         ],
@@ -293,13 +293,14 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       itemCount: _appointments.length,
       itemBuilder: (context, index) {
         final appointment = _appointments[index];
-        return _buildAppointmentCard(appointment);
+        return _buildAppointmentCard(context, appointment);
       },
     );
   }
 
-  Widget _buildAppointmentCard(Map<String, dynamic> appointment) {
-    final title = appointment['title'] ?? 'Onbekend';
+  Widget _buildAppointmentCard(BuildContext context, Map<String, dynamic> appointment) {
+    final l10n = AppLocalizations.of(context);
+    final title = appointment['title'] ?? l10n.onbekend;
     final doctor = appointment['doctor_name'] ?? '';
     final location = appointment['location'] ?? '';
     final date = appointment['appointment_date'] ?? '';
@@ -341,8 +342,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                           ),
                           SizedBox(height: 4),
-                          if (doctor.isNotEmpty) Text(AppLocalizations.of(context).dokter(doctor), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
-                          if (location.isNotEmpty) Text(AppLocalizations.of(context).locatie(location), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
+                          if (doctor.isNotEmpty) Text(AppLocalizations.of(context).dokterMetNaam(doctor), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
+                          if (location.isNotEmpty) Text(AppLocalizations.of(context).locatieMetNaam(location), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
                           Text(
                             time.isNotEmpty
                                 ? AppLocalizations.of(context).omTijd(time)
@@ -462,7 +463,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.appointment == null ? 'Nieuwe afspraak' : 'Afspraak bewerken',
+                widget.appointment == null ? AppLocalizations.of(context).nieuweAfspraak : AppLocalizations.of(context).afspraakBewerken,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -477,17 +478,17 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _buildTextField('Titel *', _titleController, validator: (value) => value?.isEmpty == true ? 'Titel is verplicht' : null),
+                        _buildTextField(AppLocalizations.of(context).titelLabel, _titleController, validator: (value) => value?.isEmpty == true ? AppLocalizations.of(context).titelIsVerplicht : null),
                         const SizedBox(height: 16),
-                        _buildTextField('Dokter', _doctorController),
+                        _buildTextField(AppLocalizations.of(context).dokter, _doctorController),
                         const SizedBox(height: 16),
-                        _buildTextField('Locatie', _locationController),
+                        _buildTextField(AppLocalizations.of(context).locatie, _locationController),
                         const SizedBox(height: 16),
-                        _buildDateField(),
+                        _buildDateField(context),
                         const SizedBox(height: 16),
-                        _buildTimeField(),
+                        _buildTimeField(context),
                         const SizedBox(height: 16),
-                        _buildReminderDropdown(),
+                        _buildReminderDropdown(context),
                       ],
                     ),
                   ),
@@ -601,10 +602,11 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
     );
   }
 
-  Widget _buildDateField() {
+  Widget _buildDateField(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return FormField<String>(
       initialValue: _dateController.text,
-      validator: (value) => value?.isEmpty == true ? 'Datum is verplicht' : null,
+      validator: (value) => value?.isEmpty == true ? l10n.datumIsVerplicht : null,
       builder: (field) => InkWell(
         onTap: () async {
           final picked = await showDatePicker(
@@ -655,7 +657,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    _dateController.text.isEmpty ? 'Selecteer datum' : _dateController.text,
+                    _dateController.text.isEmpty ? l10n.selecteerDatum : _dateController.text,
                     style: TextStyle(
                       color: _dateController.text.isEmpty ? Colors.grey.shade400 : Colors.black,
                       fontSize: 16,
@@ -671,7 +673,8 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
     );
   }
 
-  Widget _buildTimeField() {
+  Widget _buildTimeField(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return InkWell(
       onTap: () async {
         final picked = await showTimePicker(
@@ -714,12 +717,12 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Tijd',
+                  l10n.tijd,
                   style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  _timeController.text.isEmpty ? 'Selecteer tijd' : _timeController.text,
+                  _timeController.text.isEmpty ? l10n.selecteerTijd : _timeController.text,
                   style: TextStyle(
                     color: _timeController.text.isEmpty ? Colors.grey.shade400 : Colors.black,
                     fontSize: 16,
@@ -734,7 +737,8 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
     );
   }
 
-  Widget _buildReminderDropdown() {
+  Widget _buildReminderDropdown(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: Color(0xFFFFFFFF),
@@ -749,15 +753,15 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Herinnering',
+                l10n.herinnering,
                 style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
               ),
               SizedBox(height: 4),
               Text(
-                _reminderDays == 0 ? 'Geen herinnering' :
-                _reminderDays == 1 ? '1 dag van tevoren' :
-                _reminderDays == 3 ? '3 dagen van tevoren' :
-                '7 dagen van tevoren',
+                _reminderDays == 0 ? l10n.geenHerinnering :
+                _reminderDays == 1 ? l10n.eenDag :
+                _reminderDays == 3 ? l10n.drieDagen :
+                l10n.zevenDagen,
                 style: TextStyle(
                   color: _reminderDays == 0 ? Colors.grey.shade400 : Colors.black,
                   fontSize: 16,
