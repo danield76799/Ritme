@@ -200,5 +200,15 @@
   "biometrieMisluktPinInvoeren": "Biometrische verificatie mislukt. Voer uw PIN in om door te gaan.",
   "pinMinimaal4Cijfers": "PIN moet minimaal 4 cijfers bevatten",
   "inloggenMisluktProbeer": "Inloggen mislukt. Probeer opnieuw.",
-  "konAppNietInitialiseren": "Kon app niet initialiseren. Probeer opnieuw."
+  "konAppNietInitialiseren": "Kon app niet initialiseren. Probeer opnieuw.",
+  "gewicht": "Gewicht",
+  "geschiedenis": "Geschiedenis",
+  "nogGeenGewichtGelogd": "Nog geen gewicht gelogd",
+  "gewichtBewerken": "Gewicht bewerken",
+  "gewichtLoggen": "Gewicht loggen",
+  "gemiddeld": "Gemiddeld",
+  "minimum": "Min",
+  "maximum": "Max",
+  "verandering": "Verandering",
+  "veranderingMetKg": "Verandering: {value} kg"
 }
