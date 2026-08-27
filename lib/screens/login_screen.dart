@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       AppLogger.error('Failed to check setup', error: e);
       setState(() {
-        _errorMessage = 'Kon app niet initialiseren. Probeer opnieuw.';
+        _errorMessage = AppLocalizations.of(context).konAppNietInitialiseren;
         _isLoading = false;
       });
     }
@@ -147,10 +147,25 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(builder: (_) => const DashboardScreen()),
         );
+      } else if (!didAuthenticate && mounted) {
+        // Biometrie geannuleerd of mislukt. Toon PIN-fallback bericht zodat
+        // gebruiker weet dat hij via PIN kan inloggen. Alleen tonen als er
+        // al een PIN bestaat (anders is dit een eerste-setup flow).
+        final pinExists = await db.hasPinSet();
+        if (pinExists) {
+          setState(() {
+            _errorMessage = AppLocalizations.of(context).biometrieGeannuleerdPinInvoeren;
+          });
+        }
       }
       return didAuthenticate;
     } on PlatformException catch (e, stackTrace) {
       AppLogger.error('Biometric auth error', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        setState(() {
+          _errorMessage = AppLocalizations.of(context).biometrieMisluktPinInvoeren;
+        });
+      }
       return false;
     }
   }
@@ -173,19 +188,20 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_isFirstTime) {
         if (pin.length < 4) {
           setState(() {
-            _errorMessage = 'PIN moet minimaal 4 cijfers bevatten';
+            _errorMessage = AppLocalizations.of(context).pinMinimaal4Cijfers;
           });
           return;
         }
         await db.updatePin(pin);
-        
-        // Vraag of biometrie ingeschakeld moet worden
+
+        // Biometrie is verplicht (indien beschikbaar). Als biometrie niet
+        // beschikbaar is, ga direct door naar notificaties.
         if (!kIsWeb && _biometricAvailable) {
           _showEnableBiometricDialog();
           return;
         }
-        
-        // Als geen biometrie, vraag om notificaties
+
+        // Geen biometrie beschikbaar → PIN-only flow.
         _showNotificationDialog();
         return;
       }
@@ -206,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e, stackTrace) {
       AppLogger.error('Login error', error: e, stackTrace: stackTrace);
       setState(() {
-        _errorMessage = 'Inloggen mislukt. Probeer opnieuw.';
+        _errorMessage = AppLocalizations.of(context).inloggenMisluktProbeer;
       });
     }
   }
@@ -277,41 +293,40 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showEnableBiometricDialog() {
+    // Biometrie is verplicht (verplichte verificatie). Gebruiker kan alleen
+    // via PIN verder als biometrie niet beschikbaar is.
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context).biometrischeAuthenticatie),
-        content: Text(
-          AppLocalizations.of(context).biometrieInschakelenVraag,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showNotificationDialog();
-            },
-            child: Text(AppLocalizations.of(context).neeBedankt),
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,  // Blokkeer back-button
+        child: AlertDialog(
+          title: Text(AppLocalizations.of(context).biometrieVerplichtTitel),
+          content: Text(
+            AppLocalizations.of(context).biometrieVerplichtInhoud,
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final bool didAuthenticate = await _authenticateWithBiometrics();
-              if (didAuthenticate) {
-                await _secureStorage.write(key: 'biometric_enabled', value: 'true');
-                // Bewaar de vlag ook in de database zodat herinstallatie hem niet kwijt is.
-                try {
-                  await db.updateBiometricEnabled(true);
-                } catch (_) {}
-                if (mounted) {
-                  Navigator.pop(context);
-                  _showNotificationDialog();
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                final bool didAuthenticate = await _authenticateWithBiometrics();
+                if (didAuthenticate) {
+                  await _secureStorage.write(key: 'biometric_enabled', value: 'true');
+                  // Bewaar de vlag ook in de database zodat herinstallatie hem niet kwijt is.
+                  try {
+                    await db.updateBiometricEnabled(true);
+                  } catch (_) {}
+                  if (mounted) {
+                    Navigator.pop(context);
+                    _showNotificationDialog();
+                  }
                 }
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
-            child: Text(AppLocalizations.of(context).jaInschakelen, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-          ),
-        ],
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
+              child: Text(AppLocalizations.of(context).biometrieVerplichtBevestigen,
+                  style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            ),
+          ],
+        ),
       ),
     );
   }

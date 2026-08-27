@@ -191,5 +191,14 @@
   "inloggen": "Log in",
   "voerEenPinIn": "Enter a PIN",
   "ongeldigePin": "Invalid PIN",
-  "bewerkEigenSectie": "Edit custom section"
+  "bewerkEigenSectie": "Edit custom section",
+  "biometrieVerplichtTitel": "Biometric verification required",
+  "biometrieVerplichtInhoud": "For your security, biometric verification is required to access Ritme. Your PIN remains available as a fallback if biometric verification fails or is cancelled.",
+  "biometrieVerplichtBevestigen": "Enable Biometric",
+  "geenBiometrieBeschikbaar": "Biometric verification is not available on this device. You will use a PIN code to access the app.",
+  "biometrieGeannuleerdPinInvoeren": "Biometric cancelled. Enter your PIN to continue.",
+  "biometrieMisluktPinInvoeren": "Biometric verification failed. Enter your PIN to continue.",
+  "pinMinimaal4Cijfers": "PIN must be at least 4 digits",
+  "inloggenMisluktProbeer": "Login failed. Please try again.",
+  "konAppNietInitialiseren": "Could not initialize app. Please try again."
 }
