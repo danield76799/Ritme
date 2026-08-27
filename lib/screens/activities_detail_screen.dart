@@ -20,10 +20,12 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadData(context);
+    });
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData(BuildContext context) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -57,7 +59,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
           daysData.add({
             'date': checkDateStr,
             'day': _dayName(checkDate.weekday),
-            'dayFull': _dayNameFull(checkDate.weekday),
+            'dayFull': _dayNameFull(context, checkDate.weekday),
             'dateShort': '${checkDate.day}/${checkDate.month}',
             'activities': acts,
             'count': acts.length,
@@ -93,9 +95,19 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
     return days[weekday];
   }
 
-  String _dayNameFull(int weekday) {
-    const days = ['', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
-    return days[weekday];
+  String _dayNameFull(BuildContext context, int weekday) {
+    final l10n = AppLocalizations.of(context);
+    const days = ['', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
+    switch (days[weekday]) {
+      case 'maandag': return l10n.maandag;
+      case 'dinsdag': return l10n.dinsdag;
+      case 'woensdag': return l10n.woensdag;
+      case 'donderdag': return l10n.donderdag;
+      case 'vrijdag': return l10n.vrijdag;
+      case 'zaterdag': return l10n.zaterdag;
+      case 'zondag': return l10n.zondag;
+      default: return '';
+    }
   }
 
   IconData _getActivityIcon(String type) {
@@ -134,7 +146,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(
-          'Activiteiten Deze Week',
+          AppLocalizations.of(context).activiteitenDezeWeek,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
@@ -147,7 +159,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
           : _errorMessage != null
               ? _buildErrorState()
               : RefreshIndicator(
-                  onRefresh: _loadData,
+                  onRefresh: () => _loadData(context),
                   color: AppTheme.primaryTeal,
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -195,7 +207,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'totale activiteiten deze week',
+                                AppLocalizations.of(context).totaleActiviteitenDezeWeek,
                                 style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -210,7 +222,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                         // Type breakdown
                         if (_typeBreakdown.isNotEmpty) ...[
                           Text(
-                            'Verdeling per type',
+                            AppLocalizations.of(context).verdelingPerType,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -274,7 +286,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                         
                         // Daily breakdown
                         Text(
-                          'Per dag',
+                          AppLocalizations.of(context).perDag,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -284,7 +296,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                         const SizedBox(height: 12),
                         
                         if (_dailyActivities.isEmpty)
-                          _buildEmptyState('Geen activiteiten deze week', 'Voeg activiteiten toe via het Sociaal Ritme scherm.')
+                          _buildEmptyState(AppLocalizations.of(context).geenActiviteitenDezeWeek, AppLocalizations.of(context).voegActiviteitenToeVia)
                         else
                           ..._dailyActivities.map((day) => _buildDayCard(day)),
                       ],
@@ -308,7 +320,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
           ),
           SizedBox(height: 16),
           ElevatedButton.icon(
-            onPressed: _loadData,
+            onPressed: () => _loadData(context),
             icon: Icon(Icons.refresh),
             label: Text(AppLocalizations.of(context).opnieuwProberen),
             style: ElevatedButton.styleFrom(
