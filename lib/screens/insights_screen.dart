@@ -46,7 +46,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     try {
       final stats = await _berekenWeekstats();
-      final inzichten = _genereerInzichten(stats);
+      final inzichten = _genereerInzichten(stats, context);
 
       if (mounted) {
         setState(() {
@@ -211,11 +211,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
     };
   }
 
-  List<String> _genereerInzichten(Map<String, dynamic> stats) {
+  List<String> _genereerInzichten(Map<String, dynamic> stats, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     List<String> inzichten = [];
 
     if (stats['aantalDagen'] == 0) {
-      inzichten.add('Nog geen data om te analyseren. Begin met het bijhouden van je stemming en slaap!');
+      inzichten.add(l10n.geenDataTeAnalyseren);
       return inzichten;
     }
 
@@ -225,13 +226,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
     int sleepDays = stats['sleepDays'] ?? 0;
     if (gemSlaap > 0) {
       if (sleepDays <= 2) {
-        inzichten.add('Je hebt ${sleepDays == 1 ? '1 nacht' : '$sleepDays nachten'} slaap gelogd. Log meer dagen voor betere inzichten.');
+        inzichten.add(l10n.slaapNachtenGelogdEnkele(sleepDays));
       } else if (gemSlaap < 6) {
-        inzichten.add('Je slaapt gemiddeld minder dan 6 uur. Dit kan je stemming negatief beinvloeden.');
+        inzichten.add(l10n.slaapMinderDan6Uur);
       } else if (gemSlaap >= 7 && gemSlaap <= 9) {
-        inzichten.add('Je slaap van gemiddeld ${_formatSlaap(gemSlaap)} is prima!');
+        inzichten.add(l10n.slaapIsPrima(_formatSlaap(gemSlaap)));
       } else if (gemSlaap > 9) {
-        inzichten.add('Je slaapt gemiddeld ${_formatSlaap(gemSlaap)} - veel rust is goed!');
+        inzichten.add(l10n.slaapGemiddeldVeelRust(_formatSlaap(gemSlaap)));
       }
     }
 
@@ -256,7 +257,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
       }
       
       if (aantalStemmingen < 3) {
-        inzichten.add('Je hebt ${aantalStemmingen == 1 ? '1 stemming' : '$aantalStemmingen stemmingen'} gelogd. Log meer voor betrouwbare inzichten.');
+        inzichten.add(l10n.stemmingenGelogdEnkele(aantalStemmingen));
       } else if (stemmingSchaal.abs() < 0.5) {
         // CORRECTIE: Neutrale stemming kan stabiel zijn of fluctuerend
         // Check de variantie
@@ -281,41 +282,42 @@ class _InsightsScreenState extends State<InsightsScreen> {
         }
         
         if (variantie > 2.0) {
-          inzichten.add('Je stemming fluctueert rond het gemiddelde. Er is variatie in je dagelijkse stemming.');
+          inzichten.add(l10n.stemmingFluctueertRondGemiddelde);
         } else {
-          inzichten.add('Je stemming is stabiel/neutraal.');
+          inzichten.add(l10n.stemmingStabielNeutraal);
         }
       } else if (stemmingSchaal < -2) {
-        inzichten.add('Je gemiddelde stemming is aan de lage kant. Overweeg extra zelfzorg deze week.');
+        inzichten.add(l10n.gemiddeldeStemmingLageKant);
       } else if (stemmingSchaal > 2) {
-        inzichten.add('Je stemming is overwegend positief!');
+        inzichten.add(l10n.stemmingOverwegendPositief);
       }
     }
 
     // Activiteiten
     int activiteiten = stats['totaleActiviteiten'];
     if (activiteiten < 7 && aantalDagen > 2) {
-      inzichten.add('Probeer meer sociale activiteiten te plannen - die helpen je ritme stabiel te houden.');
+      inzichten.add(l10n.meerSocialeActiviteitenPlannen);
     } else if (activiteiten >= 14) {
-      inzichten.add('Veel activiteiten deze week! Zorg voor voldoende rustmomenten.');
+      inzichten.add(l10n.veelActiviteitenDezeWeek);
     }
 
     // Stabiliteit - alleen tonen als er genoeg data is
     double stabiliteit = stats['stabiliteit'];
     if (aantalDagen >= 5) {
       if (stabiliteit > 80) {
-        inzichten.add('Je ritme is erg stabiel - uitstekend!');
+        inzichten.add(l10n.ritmeErgStabiel);
       } else if (stabiliteit < 50) {
-        inzichten.add('Je ritme wisselt sterk. Probeer vaste tijden aan te houden voor opstaan en slapen.');
+        inzichten.add(l10n.ritmeWisseltSterk);
       }
     }
 
     return inzichten;
   }
 
-  String _genereerAiSamenvatting() {
+  String _genereerAiSamenvatting(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_weeklyStats.isEmpty || _weeklyStats['aantalDagen'] == 0) {
-      return 'Geen data beschikbaar over de afgelopen 7 dagen.';
+      return l10n.geenDataBeschikbaar7Dagen;
     }
 
     final logs = _weeklyStats['logs'] as List<Map<String, dynamic>>? ?? [];
@@ -348,7 +350,7 @@ Slaap:
 Stemming:
 - Gemiddeld: ${stemmingSchaal.toStringAsFixed(1)} (schaal -5 tot +5)
 - Aantal stemmingen gelogd: ${logs.where((l) => l['stemming_hoog'] != null).length}
-- Stemming: ${stemmingSchaal.abs() < 0.5 ? 'Stabiel/Neutraal' : (stemmingSchaal >= 0 ? 'Overwegend positief' : 'Overwegend negatief')}
+- Stemming: ${stemmingSchaal.abs() < 0.5 ? l10n.stabielNeutraal : (stemmingSchaal >= 0 ? l10n.overwegendPositief : l10n.overwegendNegatief)}
 
 Activiteiten:
 - Totaal geregistreerd: $activiteiten
@@ -370,7 +372,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
 
   Future<void> _kopieerNaarKlembord() async {
     try {
-      final samenvatting = _genereerAiSamenvatting();
+      final samenvatting = _genereerAiSamenvatting(context);
       AppLogger.debug('Kopieer rapport: samenvatting lengte = ${samenvatting.length}');
       AppLogger.debug('Kopieer rapport: samenvatting lengte = ${samenvatting.length}');
       await Clipboard.setData(ClipboardData(text: samenvatting));
@@ -451,7 +453,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Afgelopen 7 dagen',
+                                AppLocalizations.of(context).afgelopen7Dagen,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -475,7 +477,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
 
                   // Stats cards
                   Text(
-                    'Jouw Stats',
+                    AppLocalizations.of(context).jouwStats,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -485,24 +487,24 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _bouwStatCard('Slaap', 'Gem. Slaap', _formatSlaapUren((_weeklyStats['gemiddeldeSlaap'] ?? 0).toDouble()), Colors.blue)),
+                      Expanded(child: _bouwStatCard(AppLocalizations.of(context).slaap, AppLocalizations.of(context).gemiddeldeSlaapLabel, _formatSlaapUren((_weeklyStats['gemiddeldeSlaap'] ?? 0).toDouble()), Colors.blue)),
                       const SizedBox(width: 12),
-                      Expanded(child: _bouwStatCard('Stemming', 'Gem. Stemming', _formatStemming((_weeklyStats['gemiddeldeStemming'] ?? 0).toDouble()), Colors.orange)),
+                      Expanded(child: _bouwStatCard(AppLocalizations.of(context).stemming, AppLocalizations.of(context).gemiddeldeStemmingLabel, _formatStemming((_weeklyStats['gemiddeldeStemming'] ?? 0).toDouble()), Colors.orange)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _bouwStatCard('Ritme', 'Sociaal Ritme', '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
+                      Expanded(child: _bouwStatCard(AppLocalizations.of(context).ritme, AppLocalizations.of(context).sociaalRitmeLabel, '${_weeklyStats['totaleActiviteiten'] ?? 0}', Colors.green)),
                       SizedBox(width: 12),
-                      Expanded(child: _bouwStatCard('Stabiliteit', 'Stabiliteit', '${(_weeklyStats['stabiliteit'] ?? 0).toStringAsFixed(0)}%', Colors.purple)),
+                      Expanded(child: _bouwStatCard(AppLocalizations.of(context).stabiliteitLabel, AppLocalizations.of(context).stabiliteitLabel, '${(_weeklyStats['stabiliteit'] ?? 0).toStringAsFixed(0)}%', Colors.purple)),
                     ],
                   ),
                   SizedBox(height: 32),
 
                   // Inzichten
                   Text(
-                    'Persoonlijke Inzichten',
+                    AppLocalizations.of(context).persoonlijkeInzichten,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -583,7 +585,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                             ),
                             SizedBox(width: 12),
                             Text(
-                              'AI Diepgang',
+                              AppLocalizations.of(context).aiDiepgang,
                               style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -593,7 +595,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'Kopieer je anonieme weekrapport en plak het in Google Gemini voor gepersonaliseerde tips.',
+                          AppLocalizations.of(context).kopieerVoorGemini,
                           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
                             fontSize: 14,
                           ),
@@ -652,7 +654,7 @@ Gemini, wil jij deze data analyseren en me tips geven om mijn stemming en slaapr
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Ritme deelt nooit data met derden. AI-analyse doe je bewust en persoonlijk.',
+                            AppLocalizations.of(context).ritmeDeeltGeenData,
                             style: TextStyle(
                               fontSize: 12,
                               color: Theme.of(context).textTheme.bodyMedium?.color,
