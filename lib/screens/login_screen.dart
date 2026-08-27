@@ -101,25 +101,25 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<bool> _authenticateWithBiometrics() async {
     try {
       final bool didAuthenticate = await _localAuth.authenticate(
-        localizedReason: 'Authenticateer om Ritme te openen',
-        authMessages: const [
+        localizedReason: AppLocalizations.of(context).authenticateerOmRitme,
+        authMessages: [
           AndroidAuthMessages(
-            signInTitle: 'Biometrische login',
-            cancelButton: 'Annuleer',
-            biometricHint: 'Verifieer je identiteit',
-            biometricNotRecognized: 'Niet herkend, probeer opnieuw',
-            biometricRequiredTitle: 'Biometrische authenticatie vereist',
-            biometricSuccess: 'Authenticatie geslaagd',
-            deviceCredentialsRequiredTitle: 'Apparaatcode vereist',
-            deviceCredentialsSetupDescription: 'Stel eerst een schermvergrendeling in',
-            goToSettingsButton: 'Naar Instellingen',
-            goToSettingsDescription: 'Stel biometrische authenticatie in via je apparaatinstellingen',
+            signInTitle: AppLocalizations.of(context).biometrischeLogin,
+            cancelButton: AppLocalizations.of(context).annuleer,
+            biometricHint: AppLocalizations.of(context).verifieerJeIdentiteit,
+            biometricNotRecognized: AppLocalizations.of(context).nietHerkend,
+            biometricRequiredTitle: AppLocalizations.of(context).biometrischeAuthVereist,
+            biometricSuccess: AppLocalizations.of(context).authenticatieGeslaagd,
+            deviceCredentialsRequiredTitle: AppLocalizations.of(context).apparaatcodeVereist,
+            deviceCredentialsSetupDescription: AppLocalizations.of(context).stelSchermvergrendelingIn,
+            goToSettingsButton: AppLocalizations.of(context).naarInstellingen,
+            goToSettingsDescription: AppLocalizations.of(context).stelBiometrieInViaApparaat,
           ),
           IOSAuthMessages(
-            cancelButton: 'Annuleer',
-            goToSettingsButton: 'Naar Instellingen',
-            goToSettingsDescription: 'Stel Face ID / Touch ID in via je apparaatinstellingen',
-            lockOut: 'Schakel biometrische authenticatie opnieuw in',
+            cancelButton: AppLocalizations.of(context).annuleer,
+            goToSettingsButton: AppLocalizations.of(context).naarInstellingen,
+            goToSettingsDescription: AppLocalizations.of(context).stelFaceIdTouchIdIn,
+            lockOut: AppLocalizations.of(context).schakelBiometrieOpnieuwIn,
           ),
         ],
         options: const AuthenticationOptions(
@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (pin.isEmpty) {
       setState(() {
-        _errorMessage = 'Voer een PIN in';
+        _errorMessage = AppLocalizations.of(context).voerEenPinIn;
       });
       return;
     }
@@ -200,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } else {
         setState(() {
-          _errorMessage = 'Ongeldige PIN';
+          _errorMessage = AppLocalizations.of(context).ongeldigePin;
         });
       }
     } catch (e, stackTrace) {
@@ -238,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
         content: Text(
-          'Wil je biometrische authenticatie (vingerafdruk/gezichtsherkenning) inschakelen voor snellere toegang?',
+          AppLocalizations.of(context).biometrieInschakelenVraag,
         ),
         actions: [
           TextButton(
@@ -267,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
             child: Text(
-              'Activeren',
+              AppLocalizations.of(context).activeren,
               style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
             ),
           ),
@@ -283,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context).biometrischeAuthenticatie),
         content: Text(
-          'Wil je biometrische authenticatie (vingerafdruk/gezichtsherkenning) inschakelen voor snellere toegang?',
+          AppLocalizations.of(context).biometrieInschakelenVraag,
         ),
         actions: [
           TextButton(
@@ -323,7 +323,7 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context).notificaties),
         content: Text(
-          'Wil je notificaties ontvangen voor herinneringen en updates?',
+          AppLocalizations.of(context).notificatiesOntvangenVraag,
         ),
         actions: [
           TextButton(
@@ -368,9 +368,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
         content: Text(
-          'Omdat uw medische gegevens veilig en lokaal op uw eigen telefoon worden opgeslagen, kunnen wij uw PIN helaas niet voor u herstellen.\n\n'
-          'Als u uw PIN echt niet meer weet, is de enige optie om de app volledig te resetten. Hierbij gaan al uw eerdere invoeren verloren.\n\n'
-          'Weet u zeker dat u wilt doorgaan?',
+          AppLocalizations.of(context).pinVergetenInhoud,
         ),
         actions: [
           TextButton(
@@ -397,13 +395,7 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context).laatsteWaarschuwing),
         content: Text(
-          'DIT KAN NIET ONGEDAAN WORDEN!\n\n'
-          'Alle uw data zal worden verwijderd:\n'
-          '• Dagelijkse logs\n'
-          '• Medicatie inname\n'
-          '• Activiteiten\n'
-          '• Instellingen\n\n'
-          'Weet u ABSOLUUT zeker dat u wilt doorgaan?',
+          AppLocalizations.of(context).laatsteWaarschuwingInhoud,
         ),
         actions: [
           TextButton(
@@ -512,8 +504,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(height: 8),
                       Text(
                         _isFirstTime
-                            ? 'Stel een PIN in om te beginnen'
-                            : 'Voer je PIN in',
+                            ? AppLocalizations.of(context).stelPinOmTeBeginnen
+                            : AppLocalizations.of(context).voerJePinIn,
                         style: TextStyle(
                           fontSize: 16,
                           color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -529,7 +521,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               onPressed: _authenticateWithBiometrics,
                               icon: Icon(Icons.lock_outline, size: 28),
                               label: Text(
-                                'Login met Biometrie',
+                                AppLocalizations.of(context).loginMetBiometrie,
                                 style: TextStyle(fontSize: 16),
                               ),
                               style: ElevatedButton.styleFrom(
@@ -544,7 +536,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 24),
                             Text(
-                              'of',
+                              AppLocalizations.of(context).ofWord,
                               style: TextStyle(color: Colors.grey.shade500),
                             ),
                             const SizedBox(height: 24),
@@ -559,7 +551,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () => _showEnableBiometricManuallyDialog(),
                             icon: Icon(Icons.fingerprint, color: AppTheme.primaryTeal),
                             label: Text(
-                              'Biometrie activeren',
+                              AppLocalizations.of(context).biometrieActiveren,
                               style: TextStyle(color: AppTheme.primaryTeal),
                             ),
                           ),
@@ -577,8 +569,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: InputDecoration(
                                 labelText: AppLocalizations.of(context).pin,
                                 hintText: _isFirstTime
-                                    ? 'Minimaal 4 cijfers'
-                                    : 'Voer je PIN in',
+                                    ? AppLocalizations.of(context).minimaal4Cijfers
+                                    : AppLocalizations.of(context).voerJePinIn,
                                 prefixIcon: const Icon(Icons.pin),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -631,7 +623,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 onPressed: _login,
                                 child: Text(
-                                  _isFirstTime ? 'PIN Instellen' : 'Inloggen',
+                                  _isFirstTime
+                                      ? AppLocalizations.of(context).pinInstellen
+                                      : AppLocalizations.of(context).inloggen,
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -647,7 +641,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: TextButton(
                                   onPressed: _showForgotPinDialog,
                                   child: Text(
-                                    'PIN Vergeten?',
+                                    AppLocalizations.of(context).pinVergeten,
                                     style: TextStyle(
                                       color: Theme.of(context).textTheme.bodyMedium?.color,
                                       fontSize: 14,
