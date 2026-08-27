@@ -351,5 +351,11 @@
   "vrijdag": "Vrijdag",
   "zaterdag": "Zaterdag",
   "zondag": "Zondag",
-  "totaleActiviteitenDezeWeek": "totale activiteiten deze week"
+  "totaleActiviteitenDezeWeek": "totale activiteiten deze week",
+  "home": "Home",
+  "stats": "Stats",
+  "gemStemming": "Gem. stemming",
+  "gemSlaap": "Gem. slaap",
+  "activiteitenGelogd": "Activiteiten gelogd",
+  "gebeurtenissen": "Gebeurtenissen"
 }
