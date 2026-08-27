@@ -324,5 +324,14 @@
   "titelLabel": "Titel *",
   "tijd": "Tijd",
   "dokterMetNaam": "Dokter: {name}",
-  "locatieMetNaam": "Locatie: {name}"
+  "locatieMetNaam": "Locatie: {name}",
+  "positief": "Positief",
+  "negatief": "Negatief",
+  "uiterstPositief": "Uiterst positief",
+  "uiterstNegatief": "Uiterst negatief",
+  "neutraal": "Neutraal",
+  "lifeEvents": "Life Events",
+  "nieuweGebeurtenis": "Nieuwe Gebeurtenis",
+  "geenGebeurtenissenGevonden": "Geen gebeurtenissen gevonden",
+  "voegEersteGebeurtenisToe": "Voeg je eerste gebeurtenis toe met de knop onderaan"
 }
