@@ -34,7 +34,6 @@ import 'screens/statistics_screen.dart' show StatistiekenScherm;
 import 'screens/voortekenen_screen.dart';
 import 'screens/weight_screen.dart';
 import 'services/theme_service.dart';
-import 'services/locale_service.dart';
 
 // Pages & Utils
 import 'pages/splash_screen.dart' show SplashScreenWrapper;
@@ -178,13 +177,11 @@ class RitmeApp extends StatefulWidget {
 
 class _RitmeAppState extends State<RitmeApp> {
   ThemeMode themeMode = ThemeMode.system;
-  Locale? locale;  // null = volg systeem-locale
 
   @override
   void initState() {
     super.initState();
     _loadThemeMode();
-    _loadLocale();
   }
 
   Future<void> _loadThemeMode() async {
@@ -192,19 +189,9 @@ class _RitmeAppState extends State<RitmeApp> {
     if (mounted) setState(() => themeMode = mode);
   }
 
-  Future<void> _loadLocale() async {
-    final loc = await LocaleService.instance.getLocale();
-    if (mounted) setState(() => locale = loc);
-  }
-
   void setThemeMode(ThemeMode mode) {
     setState(() => themeMode = mode);
     ThemeService.instance.setThemeMode(mode);
-  }
-
-  void setLocale(Locale? newLocale) {
-    setState(() => locale = newLocale);
-    LocaleService.instance.setLocale(newLocale);
   }
 
   @override
@@ -215,7 +202,6 @@ class _RitmeAppState extends State<RitmeApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      locale: locale,  // null = volg systeem-locale
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: SplashScreenWrapper(),

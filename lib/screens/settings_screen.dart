@@ -181,7 +181,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   ThemeMode _themeMode = ThemeMode.system;
-  Locale? _locale;  // null = volg systeem-locale
 
   // Controllers for text fields
   final _usernameController = TextEditingController();
@@ -211,11 +210,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _settings = settings;
         _showMenstruatie = settings?['show_menstruatie'] == '1' || settings?['show_menstruatie'] == 1 || settings?['show_menstruatie'] == 'true' || settings?['show_menstruatie'] == null;
         _isLoading = false;
-        // Sync huidige thema-modus en locale van de app
-        if (appState != null) {
-          _themeMode = appState.themeMode;
-          _locale = appState.locale;
-        }
+        // Sync huidige thema-modus van de app
+        if (appState != null) _themeMode = appState.themeMode;
         // Update controllers with loaded values
         _usernameController.text = settings?['username']?.toString() ?? '';
       });
@@ -385,8 +381,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 12),
           _buildThemeSelector(),
-          const SizedBox(height: 12),
-          _buildLanguageSelector(),
           const SizedBox(height: 24),
           _buildSectionHeader('Notificaties'),
           _buildActionButton(
@@ -604,59 +598,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             segments: options
                 .map(
                   (o) => ButtonSegment<ThemeMode>(
-                    value: o.$1,
-                    icon: Icon(o.$2, size: 18),
-                    label: Text(o.$3),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguageSelector() {
-    // Beschikbare talen (moet overeenkomen met AppLocalizations.supportedLocales).
-    final options = <(Locale?, IconData, String)>[
-      (null, Icons.phone_android, 'Systeem'),
-      (const Locale('nl'), Icons.flag, 'Nederlands'),
-      (const Locale('en'), Icons.flag_outlined, 'English'),
-    ];
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Taal',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
-          ),
-          const SizedBox(height: 12),
-          SegmentedButton<Locale?>(
-            style: ButtonStyle(
-              visualDensity: VisualDensity.comfortable,
-            ),
-            selected: {_locale},
-            onSelectionChanged: (selected) {
-              final newLocale = selected.first;
-              setState(() => _locale = newLocale);
-              RitmeApp.of(context)?.setLocale(newLocale);
-            },
-            segments: options
-                .map(
-                  (o) => ButtonSegment<Locale?>(
                     value: o.$1,
                     icon: Icon(o.$2, size: 18),
                     label: Text(o.$3),
