@@ -75,7 +75,7 @@ class _WeightScreenState extends State<WeightScreen> {
         context: context,
         builder: (dialogContext) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Gewicht bewerken - ${DateFormat('d MMM yyyy').format(_selectedDate)}'),
+          title: Text(AppLocalizations.of(context).gewichtBewerkenVoor(DateFormat('d MMM yyyy').format(_selectedDate))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -151,7 +151,7 @@ class _WeightScreenState extends State<WeightScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Gewicht opgeslagen voor ${DateFormat('d MMM yyyy').format(_selectedDate)}'),
+              content: Text(AppLocalizations.of(context).gewichtOpgeslagenVoor(DateFormat('d MMM yyyy').format(_selectedDate))),
               backgroundColor: Colors.green,
             ),
           );
@@ -168,7 +168,7 @@ class _WeightScreenState extends State<WeightScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Gewicht toevoegen - ${DateFormat('d MMM yyyy').format(_selectedDate)}'),
+        title: Text(AppLocalizations.of(context).gewichtToevoegenVoor(DateFormat('d MMM yyyy').format(_selectedDate))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -246,7 +246,7 @@ class _WeightScreenState extends State<WeightScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gewicht opgeslagen voor ${DateFormat('d MMM yyyy').format(_selectedDate)}'),
+            content: Text(AppLocalizations.of(context).gewichtOpgeslagenVoor(DateFormat('d MMM yyyy').format(_selectedDate))),
             backgroundColor: Colors.green,
           ),
         );

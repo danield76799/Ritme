@@ -570,7 +570,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
               _buildCounterBtn(icon: Icons.remove, onPressed: count > 0 ? () => _updateIntake(configId!, -1) : null),
               Container(
                 width: 36, alignment: Alignment.center,
-                child: Text('$count', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+                child: Text(count.toString(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
               ),
               _buildCounterBtn(icon: Icons.add, onPressed: () => _updateIntake(configId!, 1), isPrimary: true),
               const SizedBox(width: 8),

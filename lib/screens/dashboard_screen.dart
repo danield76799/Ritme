@@ -426,7 +426,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         children: [
           Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
           SizedBox(width: 8),
-          Text('$label $time', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context).labelEnTijd(label, time), style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w600)),
         ],
       ),
     );

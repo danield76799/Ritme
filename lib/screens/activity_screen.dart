@@ -438,7 +438,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Slaapduur: ${_formatSleepDuration(sleepHours)}'),
+            content: Text(AppLocalizations.of(context).slaapduurMetUren(_formatSleepDuration(sleepHours))),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

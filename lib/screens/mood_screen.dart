@@ -415,7 +415,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildCounterBtn(Icons.remove, _stemmingsOmslagen > 0 ? () => _veranderOmslagen(-1) : null),
-                                  Container(width: 36, alignment: Alignment.center, child: Text('$_stemmingsOmslagen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal))),
+                                  Container(width: 36, alignment: Alignment.center, child: Text(_stemmingsOmslagen.toString(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal))),
                                   _buildCounterBtn(Icons.add, () => _veranderOmslagen(1), isPrimary: true),
                                 ],
                               ),
@@ -508,7 +508,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildCounterBtn(Icons.remove, _socialeContacten > 0 ? () => setState(() => _socialeContacten--) : null),
-                                  Container(width: 36, alignment: Alignment.center, child: Text('$_socialeContacten', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal))),
+                                  Container(width: 36, alignment: Alignment.center, child: Text(_socialeContacten.toString(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal))),
                                   _buildCounterBtn(Icons.add, () => setState(() => _socialeContacten++), isPrimary: true),
                                 ],
                               ),
@@ -665,9 +665,9 @@ class _MoodScreenState extends State<MoodScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('-5 😞', style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
-                Text('0', style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
-                Text('+5 😄', style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+                Text(AppLocalizations.of(context).schaalMin5, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+                Text(AppLocalizations.of(context).schaalNul, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+                Text(AppLocalizations.of(context).schaalPlus5, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
               ],
             ),
           ),

@@ -153,5 +153,16 @@
   "verwijderen3": "🗑️ Delete",
   "eenDag": "1 dag",
   "drieDagen": "3 dagen",
-  "zevenDagen": "7 dagen"
+  "zevenDagen": "7 dagen",
+  "slaapduurMetUren": "Sleep duration: {hours}",
+  "labelEnTijd": "{label} {time}",
+  "sleutelWaarde": "{key}: {value}",
+  "datumEnTijdOptioneel": "{date} {time}",
+  "omTijd": "at {time}",
+  "schaalMin5": "-5 😞",
+  "schaalNul": "0",
+  "schaalPlus5": "+5 😄",
+  "gewichtBewerkenVoor": "Edit weight - {date}",
+  "gewichtToevoegenVoor": "Add weight - {date}",
+  "gewichtOpgeslagenVoor": "Weight saved for {date}"
 }
