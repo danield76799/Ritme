@@ -353,7 +353,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           ),
                           child: Text(
                             reminderTime == null
-                              ? 'Selecteer tijd'
+                              ? AppLocalizations.of(context).selecteerTijdMed
                               : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
                             style: TextStyle(color: Colors.black, fontSize: 16),
                           ),
@@ -487,7 +487,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     if (rawId is int) configId = rawId; else if (rawId is String) configId = int.tryParse(rawId);
     if (configId == null) return SizedBox.shrink();
     int count = _intakesForDay[configId] ?? 0;
-    String name = config['naam']?.toString() ?? 'Onbekend';
+    String name = config['naam']?.toString() ?? AppLocalizations.of(context).onbekend;
     String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
     bool reminderEnabled = (config['reminder_enabled']?.toString() ?? '1') == '1';
     String? reminderTime = config['reminder_time']?.toString();
@@ -544,7 +544,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                     : Colors.grey.shade500),
                             const SizedBox(width: 6),
                             Text(
-                              reminderTime ?? 'Stel tijd in',
+                              reminderTime ?? AppLocalizations.of(context).stelTijdIn,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,

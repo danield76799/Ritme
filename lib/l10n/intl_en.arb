@@ -371,5 +371,20 @@
   "wekenDagen": "{w, plural, =1{1 week} other{{w} weeks}}, {d, plural, =0{} =1{1 day} other{{d} days}}",
   "snelStarten": "Quick start",
   "databaseOpruimenBevestiging": "This marks all duplicate logs per day as empty.\n\nOnly the most recent log per day is preserved.\n\nAre you sure you want to continue?",
-  "databaseWissenBevestiging": "This deletes ALL data from the database.\n\nThis cannot be undone!\n\nAre you sure you want to continue?"
+  "databaseWissenBevestiging": "This deletes ALL data from the database.\n\nThis cannot be undone!\n\nAre you sure you want to continue?",
+  "genereren": "Generating...",
+  "genereerDeelRapport": "Generate & Share Report",
+  "ritmeRapportOnderwerp": "Ritme Life Chart Report",
+  "konMedicatieschemaNietLaden": "Could not load medication schedule.",
+  "geenSchemaIngesteld": "No schedule set",
+  "voegMedicatieschemaToe": "Add a medication schedule",
+  "stelTijdIn": "Set time",
+  "selecteerTijdMed": "Select time",
+  "medicatieNaamOnbekend": "Unknown",
+  "beste": "Best",
+  "minste": "Worst",
+  "slaapLogboek": "Sleep log",
+  "geenSlaapdataGevonden": "No sleep data found",
+  "voegSlaapurenToe": "Add sleep hours to your daily log.",
+  "slecht": "Poor"
 }

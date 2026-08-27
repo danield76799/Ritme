@@ -38,7 +38,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load medication schedules', error: e, stackTrace: stackTrace);
       setState(() {
-        _errorMessage = 'Kon medicatieschema niet laden.';
+        _errorMessage = AppLocalizations.of(context).konMedicatieschemaNietLaden;
         _isLoading = false;
       });
     }
@@ -94,12 +94,12 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           Icon(Icons.schedule_outlined, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 12),
           Text(
-            'Geen schema ingesteld',
+            AppLocalizations.of(context).geenSchemaIngesteld,
             style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
           ),
           const SizedBox(height: 4),
           Text(
-            'Voeg een medicatieschema toe',
+            AppLocalizations.of(context).voegMedicatieschemaToe,
             style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
           ),
         ],
