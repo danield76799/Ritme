@@ -89,7 +89,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Annuleer',
+                    AppLocalizations.of(context).annuleer,
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                 ),
@@ -107,7 +107,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                   child: Text(
-                    'Klaar',
+                    AppLocalizations.of(context).klaar,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -218,7 +218,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load settings', error: e, stackTrace: stackTrace);
       setState(() {
-        _errorMessage = 'Kon instellingen niet laden.';
+        _errorMessage = AppLocalizations.of(context).konInstellingenNietLaden;
         _isLoading = false;
       });
     }
@@ -232,10 +232,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       merged.addAll(_settings ?? {});
       merged['username'] = _usernameController.text;
       await db.updateSettingsMap(merged);
-      _showSuccess('Instellingen opgeslagen!');
+      _showSuccess(AppLocalizations.of(context).instellingenOpgeslagen);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save settings', error: e, stackTrace: stackTrace);
-      _showError('Kon instellingen niet opslaan.');
+      _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
     }
   }
 
@@ -349,19 +349,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader('Profiel'),
-          _buildTextField('Gebruikersnaam', _usernameController),
+          _buildSectionHeader(AppLocalizations.of(context).profiel),
+          _buildTextField(AppLocalizations.of(context).gebruikersnaam, _usernameController),
           const SizedBox(height: 24),
-          _buildSectionHeader('Slaapschema'),
-          _buildTimeField('Opstaan', 'target_opstaan'),
-          _buildTimeField('Slapen', 'target_slapen'),
+          _buildSectionHeader(AppLocalizations.of(context).slaapschema),
+          _buildTimeField(AppLocalizations.of(context).opstaan, 'target_opstaan'),
+          _buildTimeField(AppLocalizations.of(context).slapen, 'target_slapen'),
           SizedBox(height: 24),
-          _buildSectionHeader('Dagelijkse Doelen'),
-          _buildTimeField('Eerste contact', 'target_contact'),
-          _buildTimeField('Werk / Hobby', 'target_werk'),
-          _buildTimeField('Avondeten', 'target_eten'),
+          _buildSectionHeader(AppLocalizations.of(context).dagelijkseDoelen),
+          _buildTimeField(AppLocalizations.of(context).eersteContact, 'target_contact'),
+          _buildTimeField(AppLocalizations.of(context).werkHobby, 'target_werk'),
+          _buildTimeField(AppLocalizations.of(context).avondeten, 'target_eten'),
           SizedBox(height: 24),
-          _buildSectionHeader('Weergave'),
+          _buildSectionHeader(AppLocalizations.of(context).weergave),
           SwitchListTile(
             title: Text(AppLocalizations.of(context).toonMenstruatieTracking,
               style: TextStyle(fontSize: 14, color: Color(0xFF333333))),
@@ -382,9 +382,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 12),
           _buildThemeSelector(),
           const SizedBox(height: 24),
-          _buildSectionHeader('Notificaties'),
+          _buildSectionHeader(AppLocalizations.of(context).notificaties),
           _buildActionButton(
-            'Test notificatie (nu)',
+            AppLocalizations.of(context).testNotificatieNu,
             Icons.notifications_active,
             () async {
               try {
@@ -404,7 +404,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           _buildActionButton(
-            'Herplan alle medicatie herinneringen',
+            AppLocalizations.of(context).herplanMedicatieHerinneringen,
             Icons.alarm,
             () async {
               try {
@@ -424,9 +424,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
           ),
-          _buildSectionHeader('Medicatie'),
+          _buildSectionHeader(AppLocalizations.of(context).medicatie),
           _buildActionButton(
-            'Medicatie beheren',
+            AppLocalizations.of(context).medicatieBeheren,
             Icons.medication_outlined,
             () => Navigator.pushNamed(context, '/medication'),
           ),
@@ -448,9 +448,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader('Backup & Herstel'),
           _buildBackupButtons(),
           const SizedBox(height: 32),
-          _buildSectionHeader('Overige'),
+          _buildSectionHeader(AppLocalizations.of(context).overige),
           _buildActionButton(
-            'Database Debug',
+            AppLocalizations.of(context).databaseDebug,
             Icons.storage,
             () => Navigator.pushNamed(context, '/database-debug'),
           ),
@@ -464,7 +464,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       children: [
         _buildActionButton(
-          'Backup maken',
+          AppLocalizations.of(context).backupMaken,
           Icons.backup,
           () async {
             try {
@@ -498,7 +498,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(height: 12),
         _buildActionButton(
-          'Backup herstellen',
+          AppLocalizations.of(context).backupHerstellen,
           Icons.restore,
           () async {
             try {
@@ -560,9 +560,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildThemeSelector() {
     final options = [
-      (ThemeMode.system, Icons.brightness_auto, 'Systeem'),
-      (ThemeMode.light, Icons.brightness_5, 'Licht'),
-      (ThemeMode.dark, Icons.brightness_2, 'Donker'),
+      (ThemeMode.system, Icons.brightness_auto, AppLocalizations.of(context).systeem),
+      (ThemeMode.light, Icons.brightness_5, AppLocalizations.of(context).licht),
+      (ThemeMode.dark, Icons.brightness_2, AppLocalizations.of(context).donker),
     ];
     return Container(
       padding: const EdgeInsets.all(12),
@@ -581,7 +581,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Weergave modus',
+            AppLocalizations.of(context).weergaveModus,
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
           ),
           const SizedBox(height: 12),
