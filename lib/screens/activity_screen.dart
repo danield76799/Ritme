@@ -375,7 +375,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       child: Text(AppLocalizations.of(context).annuleer, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16)),
                     ),
                     Text(
-                      'Wakker gelegen',
+                      AppLocalizations.of(context).wakkerGelegen,
                       style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                     ),
                     TextButton(
@@ -504,12 +504,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         padding: const EdgeInsets.all(12),
                         children: [
                           // Sleep section
-                          _buildSectionHeader('Slaap'),
+                          _buildSectionHeader(AppLocalizations.of(context).slaapSectie),
                           _buildSleepCard(),
                           const SizedBox(height: 24),
                           
                           // Activities section
-                          _buildSectionHeader('Sociaal Ritme Meter'),
+                          _buildSectionHeader(AppLocalizations.of(context).sociaalRitmeMeter),
                           ..._activiteiten.asMap().entries.map((entry) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 8),
@@ -597,8 +597,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
           
           // Bed time
           _buildSleepTimeField(
-            'Naar bed gegaan',
-            _bedTime ?? 'Tik om tijd in te stellen',
+            context,
+            AppLocalizations.of(context).naarBedGegaan,
+            _bedTime ?? AppLocalizations.of(context).tikOmTijdInTeStellen,
             Icons.bedtime,
             _setBedTime,
           ),
@@ -606,8 +607,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
           
           // Wake time
           _buildSleepTimeField(
-            'Opgestaan',
-            _wakeTime ?? 'Tik om tijd in te stellen',
+            context,
+            AppLocalizations.of(context).opgestaan,
+            _wakeTime ?? AppLocalizations.of(context).tikOmTijdInTeStellen,
             Icons.wb_sunny,
             _setWakeTime,
           ),
@@ -615,8 +617,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
           
           // Awake time
           _buildSleepTimeField(
-            'Wakker gelegen',
-            _formatAwakeTime(),
+            context,
+            AppLocalizations.of(context).wakkerGelegen,
+            _formatAwakeTime(context),
             Icons.access_time,
             _setAwakeTime,
           ),
@@ -625,8 +628,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
     );
   }
 
-  String _formatAwakeTime() {
-    if (_awakeMinutes == 0) return 'Tik om tijd in te stellen';
+  String _formatAwakeTime(BuildContext context) {
+    if (_awakeMinutes == 0) return AppLocalizations.of(context).tikOmTijdInTeStellen;
     final hours = _awakeMinutes ~/ 60;
     final mins = _awakeMinutes % 60;
     if (hours > 0 && mins > 0) return '${hours}u ${mins}m';
@@ -634,8 +637,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return '${mins}m';
   }
 
-  Widget _buildSleepTimeField(String label, String value, IconData icon, VoidCallback onTap) {
-    final hasValue = value != 'Tik om tijd in te stellen';
+  Widget _buildSleepTimeField(BuildContext context, String label, String value, IconData icon, VoidCallback onTap) {
+    final hasValue = value != AppLocalizations.of(context).tikOmTijdInTeStellen;
     
     return InkWell(
       onTap: onTap,
@@ -806,7 +809,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             Icon(Icons.touch_app, size: 12, color: Colors.grey.shade500),
                             const SizedBox(width: 4),
                             Text(
-                              'Tik om tijd in te stellen',
+                              AppLocalizations.of(context).tikOmTijdInTeStellen,
                               style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
                             ),
                           ],
