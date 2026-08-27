@@ -202,18 +202,19 @@ class _MoodScreenState extends State<MoodScreen> {
     }
   }
 
-  String _getStemmingLabel(double waarde) {
-    if (waarde <= -5) return 'Uiterst depressief';
-    if (waarde <= -4) return 'Ernstig depressief';
-    if (waarde <= -3) return 'Matig depressief';
-    if (waarde <= -2) return 'Licht depressief';
-    if (waarde <= -1) return 'Somber';
-    if (waarde == 0) return 'Stabiel / Neutraal';
-    if (waarde <= 1) return 'Licht manisch';
-    if (waarde <= 2) return 'Matig manisch';
-    if (waarde <= 3) return 'Druk / Actief';
-    if (waarde <= 4) return 'Ernstig manisch';
-    return 'Uiterst manisch';
+  String _getStemmingLabel(BuildContext context, double waarde) {
+    final l10n = AppLocalizations.of(context);
+    if (waarde <= -5) return l10n.uiterstDepressief;
+    if (waarde <= -4) return l10n.ernstigDepressief;
+    if (waarde <= -3) return l10n.matigDepressief;
+    if (waarde <= -2) return l10n.lichtDepressief;
+    if (waarde <= -1) return l10n.somber;
+    if (waarde == 0) return l10n.stabielNeutraal;
+    if (waarde <= 1) return l10n.lichtManisch;
+    if (waarde <= 2) return l10n.matigManisch;
+    if (waarde <= 3) return l10n.drukActief;
+    if (waarde <= 4) return l10n.ernstigManisch;
+    return l10n.uiterstManisch;
   }
 
   Color _getStemmingKleur(double waarde) {
@@ -263,7 +264,7 @@ class _MoodScreenState extends State<MoodScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Life Chart',
+          AppLocalizations.of(context).lifeChart,
           style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimary),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -289,7 +290,7 @@ class _MoodScreenState extends State<MoodScreen> {
                       children: [
                         // Hoogste stemming (-5 tot +5)
                         _buildStemmingCard(
-                          title: 'Hoogste stemming vandaag',
+                          title: AppLocalizations.of(context).hoogsteStemmingVandaag,
                           value: _stemmingHoog,
                           onChanged: (value) => setState(() => _stemmingHoog = value),
                           color: _getStemmingKleur(_stemmingHoog),
@@ -299,7 +300,7 @@ class _MoodScreenState extends State<MoodScreen> {
                         // Gesplitste stemming toggle
                         if (_gesplitsteStemming)
                           _buildStemmingCard(
-                            title: 'Laagste stemming vandaag',
+                            title: AppLocalizations.of(context).laagsteStemmingVandaag,
                             value: _stemmingLaag,
                             onChanged: (value) => setState(() => _stemmingLaag = value),
                             color: _getStemmingKleur(_stemmingLaag),
@@ -317,7 +318,7 @@ class _MoodScreenState extends State<MoodScreen> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Stemming veranderde vandaag',
+                                  AppLocalizations.of(context).stemmingVeranderdeVandaag,
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
                                 ),
                               ),
@@ -356,7 +357,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Ontstemde manie',
+                                      AppLocalizations.of(context).ontstemdeManie,
                                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                                     ),
                                     Text(
@@ -401,7 +402,7 @@ class _MoodScreenState extends State<MoodScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Stemmingsomslagen',
+                                      AppLocalizations.of(context).stemmingsomslagen,
                                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
                                     ),
                                     Text(
@@ -449,11 +450,11 @@ class _MoodScreenState extends State<MoodScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Daglicht',
+                                      AppLocalizations.of(context).daglicht,
                                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                                     ),
                                     Text(
-                                      'Vandaag buiten geweest',
+                                      AppLocalizations.of(context).vandaagBuitenGeweest,
                                       style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color ?? Colors.black),
                                     ),
                                   ],
@@ -494,11 +495,11 @@ class _MoodScreenState extends State<MoodScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Sociale contacten',
+                                      AppLocalizations.of(context).socialeContacten,
                                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
                                     ),
                                     Text(
-                                      'Aantal sociale interacties vandaag',
+                                      AppLocalizations.of(context).aantalSocialeInteractiesVandaag,
                                       style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
                                     ),
                                   ],
@@ -574,7 +575,7 @@ class _MoodScreenState extends State<MoodScreen> {
                               SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'Menstruatie',
+                                  AppLocalizations.of(context).menstruatie,
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
                                 ),
                               ),
@@ -632,7 +633,7 @@ class _MoodScreenState extends State<MoodScreen> {
                   ),
                 ),
                 Text(
-                  _getStemmingLabel(value),
+                  _getStemmingLabel(context, value),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
