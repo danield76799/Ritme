@@ -49,9 +49,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context).databaseOpruimen),
         content: Text(
-          'Dit markeert alle dubbele logs per dag als leeg.\n\n'
-          'Alleen de meest recente log per dag blijft behouden.\n\n'
-          'Weet je zeker dat je door wilt gaan?',
+          AppLocalizations.of(context).databaseOpruimenBevestiging,
         ),
         actions: [
           TextButton(
@@ -132,9 +130,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context).databaseReset),
         content: Text(
-          'Dit verwijdert ALLE data uit de database.\n\n'
-          'Dit kan niet ongedaan worden gemaakt!\n\n'
-          'Weet je zeker dat je door wilt gaan?',
+          AppLocalizations.of(context).databaseWissenBevestiging,
         ),
         actions: [
           TextButton(

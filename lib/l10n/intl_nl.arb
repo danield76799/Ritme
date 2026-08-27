@@ -368,5 +368,8 @@
   "gemengd": "Gemengd",
   "stabielEuthym": "Stabiel (euthym)",
   "weken": "{n, plural, =1{1 week} other{{n} weken}}",
-  "wekenDagen": "{w, plural, =1{1 week} other{{w} weken}}, {d, plural, =0{} =1{1 dag} other{{d} dagen}}"
+  "wekenDagen": "{w, plural, =1{1 week} other{{w} weken}}, {d, plural, =0{} =1{1 dag} other{{d} dagen}}",
+  "snelStarten": "Snel starten",
+  "databaseOpruimenBevestiging": "Dit markeert alle dubbele logs per dag als leeg.\n\nAlleen de meest recente log per dag blijft behouden.\n\nWeet je zeker dat je door wilt gaan?",
+  "databaseWissenBevestiging": "Dit verwijdert ALLE data uit de database.\n\nDit kan niet ongedaan worden gemaakt!\n\nWeet je zeker dat je door wilt gaan?"
 }
