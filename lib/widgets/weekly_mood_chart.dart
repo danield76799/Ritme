@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../theme/app_theme.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class WeeklyMoodChart extends StatelessWidget {
   final List<Map<String, dynamic>> logs;
@@ -211,7 +212,7 @@ class WeeklyMoodChart extends StatelessWidget {
                       getTitlesWidget: (value, meta) {
                         // SRM -5 tot +5 labels
                         if (value == 0) return const Text('0', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold));
-                        if (value == -5 || value == 5) return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                        if (value == -5 || value == 5) return Text(value.toInt().toString(), style: const TextStyle(fontSize: 10));
                         return const Text('');
                       },
                     ),

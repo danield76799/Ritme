@@ -343,7 +343,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           SizedBox(height: 4),
                           if (doctor.isNotEmpty) Text(AppLocalizations.of(context).dokter(doctor), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
                           if (location.isNotEmpty) Text(AppLocalizations.of(context).locatie(location), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
-                          Text('$date ${time.isNotEmpty ? 'om $time' : ''}', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
+                          Text(
+                            time.isNotEmpty
+                                ? AppLocalizations.of(context).omTijd(time)
+                                : '',
+                            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13),
+                          ),
                         ],
                       ),
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class RhythmDetailScreen extends StatefulWidget {
   const RhythmDetailScreen({super.key});
@@ -261,7 +262,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                               size: 18,
                               color: AppTheme.primaryTeal,
                             ),
-                            label: Text('${entry.key}: ${entry.value}'),
+                            label: Text(AppLocalizations.of(context).sleutelWaarde(entry.key.toString(), entry.value.toString())),
                             backgroundColor: Colors.white,
                             side: BorderSide(color: Colors.grey.shade300!),
                           );
