@@ -91,7 +91,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2)))),
               SizedBox(height: 16),
-              Text(isCustom ? 'Bewerk eigen sectie' : displayTitle, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+              Text(isCustom ? AppLocalizations.of(context).bewerkEigenSectie : displayTitle, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
               if (isCustom) Padding(padding: const EdgeInsets.only(top: 4), child: Text(AppLocalizations.of(context).tipEersteRegel, style: TextStyle(fontSize: 12, color: Colors.grey))),
               const SizedBox(height: 16),
               Expanded(

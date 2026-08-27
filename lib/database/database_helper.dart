@@ -290,9 +290,7 @@ class DatabaseHelper implements DatabaseRepository {
       await db.execute('ALTER TABLE medication_config ADD COLUMN target_max REAL');
       try {
         await db.execute('ALTER TABLE settings ADD COLUMN show_menstruatie TEXT DEFAULT ''1''');
-      try {
         await db.execute('ALTER TABLE settings ADD COLUMN biometric_enabled TEXT DEFAULT ''0''');
-      } catch (_) {}
       } catch (_) {}
       await _seedProdromalChecklist(db);
     } catch (e) {
