@@ -55,6 +55,19 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
   Future<void> _finish() async {
     if (_q1 == null || _q3 == null || _q4 == null || _q5 == null) return;
     final result = _bereken();
+    // Toon de resultaat-stap DIRECT; opslaan gebeurt op de achtergrond
+    // zodat een trage/geblokkeerde DB-write de UI nooit blokkeert.
+    if (!mounted) return;
+    setState(() {
+      _step = 5;
+      _result = result;
+    });
+    // Fire-and-forget: errors worden gelogd, UI is al door.
+    _opslaanMoodAssessment(result);
+    _opslaanInDailyLog(result);
+  }
+
+  Future<void> _opslaanMoodAssessment(MoodScoreResult result) async {
     try {
       await ensureInitialized();
       await db.upsertMoodAssessment({
@@ -70,13 +83,6 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
     } catch (e) {
       debugPrint('MoodAssessment save error: $e');
     }
-    if (!mounted) return;
-    await _opslaanInDailyLog(result);
-    if (!mounted) return;
-    setState(() {
-      _step = 5;
-      _result = result;
-    });
   }
 
   MoodScoreResult _bereken() {
@@ -362,17 +368,17 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
               color: _getStemmingColor(4),
             ),
             _ChoiceOption(
-              label: 'Positief hoog',
+              label: l10n.stemmingsCheckOptiePositiefHoog,
               value: 3,
               color: _getStemmingColor(3),
             ),
             _ChoiceOption(
-              label: 'Positief matig',
+              label: l10n.stemmingsCheckOptiePositiefMatig,
               value: 2,
               color: _getStemmingColor(2),
             ),
             _ChoiceOption(
-              label: 'Licht positief',
+              label: l10n.stemmingsCheckOptieLichtPositief,
               value: 1,
               color: _getStemmingColor(1),
             ),
@@ -382,17 +388,17 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
               color: _getStemmingColor(0),
             ),
             _ChoiceOption(
-              label: 'Licht negatief',
+              label: l10n.stemmingsCheckOptieLichtNegatief,
               value: -1,
               color: _getStemmingColor(-1),
             ),
             _ChoiceOption(
-              label: 'Negatief matig',
+              label: l10n.stemmingsCheckOptieNegatiefMatig,
               value: -2,
               color: _getStemmingColor(-2),
             ),
             _ChoiceOption(
-              label: 'Negatief hoog',
+              label: l10n.stemmingsCheckOptieNegatiefHoog,
               value: -3,
               color: _getStemmingColor(-3),
             ),
