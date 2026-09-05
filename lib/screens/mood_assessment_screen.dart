@@ -15,7 +15,14 @@ import '../utils/mood_assessment_scorer.dart';
 ///  4. Slaapbehoefte                          (-4..+4)
 ///  5. Belangrijke gebeurtenis                (-4..+4)
 class MoodAssessmentScreen extends StatefulWidget {
-  const MoodAssessmentScreen({super.key});
+  /// Optionele close-callback. De dashboard-tegel opent dit scherm via
+  /// OpenContainer (animations-package) en geeft daar de closeContainer-
+  /// action door; via gewone routes (bv. /mood, drawer) blijft dit null
+  /// en wordt Navigator.pop gebruikt.
+  const MoodAssessmentScreen({super.key, this.onClose});
+
+  /// Sluit het scherm; `saved=true` als de data is opgeslagen.
+  final void Function(bool saved)? onClose;
 
   @override
   State<MoodAssessmentScreen> createState() => _MoodAssessmentScreenState();
@@ -122,7 +129,11 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
 
   void _sluiten() {
     if (!mounted) return;
-    Navigator.of(context).pop(true); // true = data is opgeslagen
+    if (widget.onClose != null) {
+      widget.onClose!(true);
+    } else {
+      Navigator.of(context).pop(true); // true = data is opgeslagen
+    }
   }
 
   @override
