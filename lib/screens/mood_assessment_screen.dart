@@ -3,11 +3,10 @@ import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../theme/app_theme.dart';
 import '../utils/mood_assessment_scorer.dart';
-import 'mood_screen.dart';
 
 /// 5-staps vragenlijst die een stemming-score berekent op basis van gewogen
-/// antwoorden, en het MoodScreen opent met de berekende waarde als
-/// voorselectie.
+/// antwoorden, de stemming direct wegschrijft naar de daily log, en de
+/// bipolaire analyse-tags toont.
 ///
 /// Vragenlijst:
 ///  1. Hoe is uw stemming vandaag?            (-4..+4)
@@ -72,6 +71,8 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
       debugPrint('MoodAssessment save error: $e');
     }
     if (!mounted) return;
+    await _opslaanInDailyLog(result);
+    if (!mounted) return;
     setState(() {
       _step = 5;
       _result = result;
@@ -92,17 +93,30 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
     return tags.map((t) => t.id).join(',');
   }
 
-  void _goToMoodScreen() {
+  /// Slaat de berekende stemming direct op in de daily_log (merge-preserving:
+  /// bestaande velden zoals slaap/activiteit blijven staan).
+  Future<void> _opslaanInDailyLog(MoodScoreResult result) async {
+    final date = _todayDate();
+    try {
+      await ensureInitialized();
+      // Bestaande log laden zodat we die niet overschrijven (upsert vervangt
+      // de hele rij in Hive).
+      final existing = await db.getDailyLog(date);
+      final log = existing != null ? Map<String, dynamic>.from(existing) : <String, dynamic>{};
+      log['date'] = date;
+      log['stemming_hoog'] = result.ritmeScore;
+      // Geen gesplitste stemming via de vragenlijst: laag = hoog.
+      log['stemming_laag'] = result.ritmeScore;
+      log['gesplitste_stemming'] = 0;
+      await db.upsertDailyLog(log);
+    } catch (e) {
+      debugPrint('MoodAssessment daily-log save error: $e');
+    }
+  }
+
+  void _sluiten() {
     if (!mounted) return;
-    final result = _result ?? _bereken();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => MoodScreen(
-          prefillStemmingHoog: result.ritmeScore.toDouble(),
-          prefillGesplitst: result.recommendSplit,
-        ),
-      ),
-    );
+    Navigator.of(context).pop(true); // true = data is opgeslagen
   }
 
   @override
@@ -125,7 +139,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
                     ? _ResultStep(
                         key: const ValueKey('result'),
                         result: _result,
-                        onContinue: _goToMoodScreen,
+                        onContinue: _sluiten,
                       )
                     : _buildQuestion(l10n),
               ),

@@ -23,7 +23,7 @@ import 'screens/insights_screen.dart';
 import 'screens/life_events_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/medication_screen.dart';
-import 'screens/mood_screen.dart';
+import 'screens/mood_assessment_screen.dart';
 import 'screens/quick_checkin_screen.dart';
 import 'screens/rapport_screen.dart';
 import 'screens/rhythm_detail_screen.dart';
@@ -206,7 +206,7 @@ class _RitmeAppState extends State<RitmeApp> {
       supportedLocales: AppLocalizations.supportedLocales,
       home: SplashScreenWrapper(),
       routes: {
-        '/mood': (context) => MoodScreen(),
+        '/mood': (context) => MoodAssessmentScreen(),
         '/activity': (context) => ActivityScreen(),
         '/medication': (context) => MedicationScreen(),
         '/event': (context) => EventScreen(),
