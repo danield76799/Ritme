@@ -448,7 +448,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   Widget _buildActionCard(BuildContext context,
       {required IconData icon, required Color color, required String title, required String route}) {
-    return OpenContainer(
+    return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: Duration(milliseconds: 400),
       closedElevation: 2,
@@ -478,14 +478,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         );
       },
       openBuilder: (context, closeContainer) {
-        return _routeBuilder(route);
+        return _routeBuilder(route, closeContainer: closeContainer);
       },
     );
   }
 
-  Widget _routeBuilder(String route) {
+  Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
     switch (route) {
-      case '/mood': return MoodAssessmentScreen();
+      case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
       case '/activity': return ActivityScreen();
       case '/medication': return MedicationScreen();
       case '/weight': return WeightScreen();
