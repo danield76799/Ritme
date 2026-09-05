@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
 import '../screens/login_screen.dart';
-import '../screens/mood_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   SplashScreen({super.key});

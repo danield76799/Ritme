@@ -8,8 +8,9 @@ import '../services/bipolar_alert_service.dart';
 import '../utils/logger.dart';
 import '../widgets/weekly_mood_chart.dart';
 import 'login_screen.dart';
-import 'mood_screen.dart';
+import 'mood_assessment_screen.dart';
 import 'activity_screen.dart';
+import 'medication_screen.dart';
 import 'weight_screen.dart';
 import 'appointments_screen.dart';
 import 'sociaal_ritme_meter_screen.dart';
@@ -215,14 +216,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.help_outline, color: Theme.of(context).colorScheme.onSurface),
-            onPressed: () => Navigator.pushNamed(context, '/help'),
-            tooltip: AppLocalizations.of(context).gebruiksaanwijzing,
-          ),
-          IconButton(
-            icon: Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.onSurface),
-            onPressed: () => Navigator.pushNamed(context, '/statistics'),
-            tooltip: AppLocalizations.of(context).statistieken,
+            icon: Icon(Icons.health_and_safety, color: AppTheme.error),
+            onPressed: () => Navigator.pushNamed(context, '/crisisplan'),
+            tooltip: AppLocalizations.of(context).crisisplan,
           ),
           IconButton(
             icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.onSurface),
@@ -232,10 +228,37 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             },
             tooltip: AppLocalizations.of(context).instellingen,
           ),
-          IconButton(
-            icon: Icon(Icons.logout, color: Theme.of(context).colorScheme.onSurface),
-            onPressed: _logout,
-            tooltip: AppLocalizations.of(context).uitloggen,
+          PopupMenuButton<int>(
+            icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onSurface),
+            tooltip: AppLocalizations.of(context).meer,
+            onSelected: (value) async {
+              switch (value) {
+                case 0: Navigator.pushNamed(context, '/statistics'); break;
+                case 1: Navigator.pushNamed(context, '/insights'); break;
+                case 2: Navigator.pushNamed(context, '/episodes'); break;
+                case 3: Navigator.pushNamed(context, '/life-events'); break;
+                case 4: Navigator.pushNamed(context, '/weight'); break;
+                case 5: Navigator.pushNamed(context, '/appointments'); break;
+                case 6: Navigator.pushNamed(context, '/voortekenen'); break;
+                case 7: Navigator.pushNamed(context, '/rapport'); break;
+                case 8: Navigator.pushNamed(context, '/help'); break;
+                case 9: _logout(); break;
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 0, child: ListTile(leading: Icon(Icons.bar_chart), title: Text(AppLocalizations.of(context).statistieken), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.insights), title: Text(AppLocalizations.of(context).inzichten), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.timeline), title: Text(AppLocalizations.of(context).episodes), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.event), title: Text(AppLocalizations.of(context).lifeEvents), contentPadding: EdgeInsets.zero, dense: true)),
+              const PopupMenuDivider(),
+              PopupMenuItem(value: 4, child: ListTile(leading: Icon(Icons.monitor_weight), title: Text(AppLocalizations.of(context).gewicht), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 5, child: ListTile(leading: Icon(Icons.calendar_today), title: Text(AppLocalizations.of(context).afspraken), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 6, child: ListTile(leading: Icon(Icons.warning_amber), title: Text(AppLocalizations.of(context).voortekenen), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 7, child: ListTile(leading: Icon(Icons.description), title: Text(AppLocalizations.of(context).rapport), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 8, child: ListTile(leading: Icon(Icons.help_outline), title: Text(AppLocalizations.of(context).gebruiksaanwijzing), contentPadding: EdgeInsets.zero, dense: true)),
+              const PopupMenuDivider(),
+              PopupMenuItem(value: 9, child: ListTile(leading: Icon(Icons.logout, color: AppTheme.error), title: Text(AppLocalizations.of(context).uitloggen, style: TextStyle(color: AppTheme.error)), contentPadding: EdgeInsets.zero, dense: true)),
+            ],
           ),
         ],
       ),
@@ -331,12 +354,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 children: [
                   _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: AppLocalizations.of(context).stemming, route: '/mood'),
                   _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: AppLocalizations.of(context).activiteitEnSlaap, route: '/activity'),
-                  _buildActionCard(context, icon: Icons.monitor_weight, color: const Color(0xFF88B0C7), title: AppLocalizations.of(context).gewicht, route: '/weight'),
-                  _buildActionCard(context, icon: Icons.calendar_today, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).afspraken, route: '/appointments'),
+                  _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication'),
                   _buildActionCard(context, icon: Icons.schedule, color: const Color(0xFF9DC09D), title: AppLocalizations.of(context).sociaalRitme, route: '/sociaal-ritme'),
-                  _buildActionCard(context, icon: Icons.warning_amber, color: AppTheme.warning, title: AppLocalizations.of(context).voortekenen, route: '/voortekenen'),
-                  _buildActionCard(context, icon: Icons.assignment, color: AppTheme.error, title: AppLocalizations.of(context).crisisplan, route: '/crisisplan'),
-                  _buildActionCard(context, icon: Icons.description, color: AppTheme.primaryTeal, title: AppLocalizations.of(context).rapport, route: '/rapport'),
                 ],
               ),
 
@@ -385,12 +404,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
               Row(children: [
                 Text(AppLocalizations.of(context).stemmingTrend, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () => Navigator.pushNamed(context, '/insights'),
-                  icon: const Icon(Icons.insights, size: 18),
-                  label: Text(AppLocalizations.of(context).inzichten),
-                ),
               ]),
               const SizedBox(height: 12),
 
@@ -472,8 +485,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   Widget _routeBuilder(String route) {
     switch (route) {
-      case '/mood': return MoodScreen();
+      case '/mood': return MoodAssessmentScreen();
       case '/activity': return ActivityScreen();
+      case '/medication': return MedicationScreen();
       case '/weight': return WeightScreen();
       case '/appointments': return AppointmentsScreen();
       case '/sociaal-ritme': return SociaalRitmeMeterScreen();
