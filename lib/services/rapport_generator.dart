@@ -1,5 +1,4 @@
 import '../service_locator.dart';
-import 'dart:convert';
 
 /// Generates comprehensive reports for bipolar disorder management
 /// Life Chart Method (LCM) style for healthcare providers
@@ -28,7 +27,67 @@ class RapportGenerator {
       buf.writeln();
     }
 
-    // === 1. DAILY OVERVIEW TABLE ===
+    // === 1. STEMMINGSCHECK (5 VAGEN) — COMPACTE SECTIE ===
+    final assessments = await db.getMoodAssessmentRange(startStr, '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}');
+    if (assessments.isNotEmpty) {
+      // Gemiddelden per vraag
+      double sumQ1 = 0, sumQ2 = 0, sumQ3 = 0, sumQ4 = 0, sumQ5 = 0;
+      double sumRaw = 0;
+      int nQ1 = 0, nQ2 = 0, nQ3 = 0, nQ4 = 0, nQ5 = 0, nRaw = 0;
+      final flagCounts = <String, int>{};
+      for (final a in assessments) {
+        final v1 = _extractDouble(a['q1_stemming']);
+        final v2 = _extractDouble(a['q2_energie_slider']);
+        final v3 = _extractDouble(a['q3_energie_detail']);
+        final v4 = _extractDouble(a['q4_slaapbehoefte']);
+        final v5 = _extractDouble(a['q5_gebeurtenis']);
+        final raw = _extractDouble(a['gewogen_score']) ?? _extractDouble(a['berekende_score']);
+        if (v1 != null) { sumQ1 += v1; nQ1++; }
+        if (v2 != null) { sumQ2 += v2; nQ2++; }
+        if (v3 != null) { sumQ3 += v3; nQ3++; }
+        if (v4 != null) { sumQ4 += v4; nQ4++; }
+        if (v5 != null) { sumQ5 += v5; nQ5++; }
+        if (raw != null) { sumRaw += raw; nRaw++; }
+        final flags = (a['flags_json'] as String?) ?? '';
+        if (flags.isNotEmpty) {
+          for (final f in flags.split(',')) {
+            if (f.trim().isEmpty) continue;
+            flagCounts[f] = (flagCounts[f] ?? 0) + 1;
+          }
+        }
+      }
+
+      buf.writeln('## 🧠 Stemmingscheck (5 vragen) — $nQ1 invulmomenten');
+      buf.writeln();
+      buf.writeln('| Metriek | Gemiddelde |');
+      buf.writeln('|---------|-----------|');
+      if (nQ1 > 0) buf.writeln('| **Stemming** (−4..+4) | ${_fmt(sumQ1 / nQ1)} |');
+      if (nQ2 > 0) buf.writeln('| **Energie** (0..100; 100=manisch) | ${_fmt(sumQ2 / nQ2)} |');
+      if (nQ3 > 0) buf.writeln('| **Energie-niveau** (−3..+3) | ${_fmt(sumQ3 / nQ3)} |');
+      if (nQ4 > 0) buf.writeln('| **Slaapbehoefte** (−4..+4) | ${_fmt(sumQ4 / nQ4)} |');
+      if (nQ5 > 0) buf.writeln('| **Belangrijke gebeurtenis** (−4..+4) | ${_fmt(sumQ5 / nQ5)} |');
+      if (nRaw > 0) buf.writeln('| **Berekende stemming** (−5..+5) | ${_fmt(sumRaw / nRaw)} |');
+      buf.writeln();
+
+      // Bipolaire analyse-signalen (alleen als er signalen zijn)
+      final signalLines = <String>[];
+      for (final entry in flagCounts.entries) {
+        final label = _flagLabel(entry.key);
+        if (label == null) continue;
+        final pct = (entry.value * 100 / assessments.length).round();
+        signalLines.add('- **$label**: ${entry.value}× (${pct}%)');
+      }
+      if (signalLines.isNotEmpty) {
+        buf.writeln('**Bipolaire analyse-signalen:**');
+        buf.writeln();
+        buf.writeln(signalLines.join('\n'));
+        buf.writeln();
+      }
+      buf.writeln('---');
+      buf.writeln();
+    }
+
+    // === 2. DAILY OVERVIEW TABLE ===
     buf.writeln('## 📊 Dagelijks Overzicht');
     buf.writeln();
     buf.writeln('| Datum | Stemming (H/L) | Slaap | P-Score | Medicatie | Events |');
@@ -285,6 +344,25 @@ class RapportGenerator {
       case 'gemengd': return 'Gemengd';
       case 'euthym': return 'Stabiel';
       default: return type;
+    }
+  }
+
+  String _fmt(double v) => v.toStringAsFixed(1);
+
+  /// NL-labels voor de bipolaire analyse-flags (zelfde namen als de
+  /// BipolarTag-enum in mood_assessment_scorer.dart).
+  String? _flagLabel(String id) {
+    switch (id) {
+      case 'maniaShift': return 'Mogelijke manische shift';
+      case 'probableMania': return 'Waarschijnlijke manie (triade)';
+      case 'sleepReductionAlone': return 'Verminderde slaapbehoefte (vroeg manie-signaal)';
+      case 'depressionShift': return 'Mogelijke depressieve shift';
+      case 'probableDepression': return 'Waarschijnlijke depressie (triade)';
+      case 'positiveLifeEventTrigger': return 'Positieve gebeurtenis als manie-trigger';
+      case 'negativeLifeEventTrigger': return 'Negatieve gebeurtenis als depressie-trigger';
+      case 'mixedEpisode': return 'Mogelijke gemengde episode';
+      case 'opposingSignals': return 'Tegenstrijdige signalen';
+      default: return null; // onbekende flag overslaan
     }
   }
 
