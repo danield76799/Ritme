@@ -19,6 +19,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   static const String _crisisPlanBox = 'crisis_plan';
   static const String _prodromalChecklistBox = 'prodromal_checklist';
   static const String _prodromalLogsBox = 'prodromal_logs';
+  static const String _moodAssessmentBox = 'mood_assessment';
 
   HiveDatabaseHelper._init();
 
@@ -35,6 +36,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_crisisPlanBox);
     await Hive.openBox(_prodromalChecklistBox);
     await Hive.openBox(_prodromalLogsBox);
+    await Hive.openBox(_moodAssessmentBox);
     // Seed default prodromal checklist if empty
     await instance._seedProdromalChecklistIfEmpty();
     // Migreer oude p_scores (eenmalig)
@@ -53,6 +55,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Box get _crisisPlan => Hive.box(_crisisPlanBox);
   Box get _prodromalChecklist => Hive.box(_prodromalChecklistBox);
   Box get _prodromalLogs => Hive.box(_prodromalLogsBox);
+  Box get _moodAssessment => Hive.box(_moodAssessmentBox);
 
   Future<void> _seedProdromalChecklistIfEmpty() async {
     if (_prodromalChecklist.isNotEmpty) return;
@@ -1555,4 +1558,39 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<Map<String, dynamic>?> getLatestMedicationLevel(int medicationId) async => null;
+
+  // ---- MOOD ASSESSMENT ----
+
+  @override
+  Future<int> upsertMoodAssessment(Map<String, dynamic> data) async {
+    final date = data['date'] as String;
+    data['id'] = date;
+    await _moodAssessment.put(date, data);
+    return 1;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getMoodAssessment(String date) async {
+    final value = _moodAssessment.get(date);
+    if (value == null) return null;
+    return Map<String, dynamic>.from(value as Map);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMoodAssessmentRange(
+    String startDate,
+    String endDate,
+  ) async {
+    final results = <Map<String, dynamic>>[];
+    for (final key in _moodAssessment.keys) {
+      final date = key.toString();
+      if (date.compareTo(startDate) >= 0 && date.compareTo(endDate) <= 0) {
+        results.add(Map<String, dynamic>.from(_moodAssessment.get(key) as Map));
+      }
+    }
+    results.sort(
+      (a, b) => (a['date'] as String).compareTo(b['date'] as String),
+    );
+    return results;
+  }
 }

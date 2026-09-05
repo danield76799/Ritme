@@ -108,4 +108,9 @@ abstract class DatabaseRepository {
   Future<int> insertMedicationLevel(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getMedicationLevels(int medicationId);
   Future<Map<String, dynamic>?> getLatestMedicationLevel(int medicationId);
+
+  // ---- MOOD ASSESSMENT (vragenlijst-scherm) ----
+  Future<int> upsertMoodAssessment(Map<String, dynamic> data);
+  Future<Map<String, dynamic>?> getMoodAssessment(String date);
+  Future<List<Map<String, dynamic>>> getMoodAssessmentRange(String startDate, String endDate);
 }

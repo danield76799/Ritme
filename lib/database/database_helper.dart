@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -166,6 +166,23 @@ class DatabaseHelper implements DatabaseRepository {
       )
     ''');
 
+    // ---- MOOD ASSESSMENT (vragenlijst, v4) ----
+    // 5-vragenlijst: stemming, energie-slider, energie-detail, slaapbehoefte,
+    // belangrijke gebeurtenis. Eén rij per datum (UNIQUE).
+    await db.execute('''
+      CREATE TABLE mood_assessment (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL UNIQUE,
+        q1_stemming REAL,
+        q2_energie_slider REAL,
+        q3_energie_detail REAL,
+        q4_slaapbehoefte REAL,
+        q5_gebeurtenis REAL,
+        berekende_score REAL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+
     // Nieuwe kolommen in medication_config
     await db.execute('ALTER TABLE medication_config ADD COLUMN bloedspiegel_bijhouden INTEGER DEFAULT 0');
     await db.execute('ALTER TABLE medication_config ADD COLUMN target_min REAL');
@@ -225,6 +242,28 @@ class DatabaseHelper implements DatabaseRepository {
     }
     if (oldVersion < 3) {
       await _migrateToV3(db);
+    }
+    if (oldVersion < 4) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS mood_assessment (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL UNIQUE,
+            q1_stemming REAL,
+            q2_energie_slider REAL,
+            q3_energie_detail REAL,
+            q4_slaapbehoefte REAL,
+            q5_gebeurtenis REAL,
+            berekende_score REAL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_mood_assessment_date ON mood_assessment(date)',
+        );
+      } catch (e) {
+        // Table may already exist
+      }
     }
   }
 
@@ -1082,5 +1121,45 @@ class DatabaseHelper implements DatabaseRepository {
     for (final setting in (data['settings'] as List? ?? [])) {
       await db.insert('settings', setting as Map<String, dynamic>);
     }
+  }
+
+  // ---- MOOD ASSESSMENT ----
+
+  @override
+  Future<int> upsertMoodAssessment(Map<String, dynamic> data) async {
+    final db = await database;
+    final date = data['date'] as String;
+    return await db.insert(
+      'mood_assessment',
+      data,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getMoodAssessment(String date) async {
+    final db = await database;
+    final results = await db.query(
+      'mood_assessment',
+      where: 'date = ?',
+      whereArgs: [date],
+      limit: 1,
+    );
+    if (results.isEmpty) return null;
+    return results.first;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMoodAssessmentRange(
+    String startDate,
+    String endDate,
+  ) async {
+    final db = await database;
+    return await db.query(
+      'mood_assessment',
+      where: 'date BETWEEN ? AND ?',
+      whereArgs: [startDate, endDate],
+      orderBy: 'date ASC',
+    );
   }
 }
