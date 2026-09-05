@@ -1,13 +1,17 @@
-/// Berekening voor de stemming-vragenlijst (5 vragen, gewogen).
+/// Berekening voor de stemming-vragenlijst (5 vragen, gewogen) met
+/// bipolaire-screeningslogica.
 ///
 /// Brondata: `q1_stemming` (-4..+4, gewicht 3), `q2_energie_slider`
 /// (0..100, zachtere mapping), `q3_energie_detail` (-3..+3, gewicht 2),
 /// `q4_slaapbehoefte` (-4..+4, gewicht 2), `q5_gebeurtenis`
 /// (-4..+4, gewicht 1).
 ///
-/// Resultaat: een waarde op de Ritme-schaal -5..+5 (afgerond naar gehele
-/// waarde) en een optioneel voorschrift voor `gesplitste_stemming` als de
-/// q3 en q1 te ver uit elkaar lopen.
+/// Resultaat:
+///  - Ritme-waarde -5..+5 (bestaande schaal, onveranderd)
+///  - Continue rawScore (voor trendanalyse)
+///  - Aanbeveling voor gesplitste stemming
+///  - Diagnostische tags (bv. "Mogelijke manische shift",
+///    "Gemengde episode")
 class MoodAssessmentScorer {
   /// Weegfactoren per vraag.
   static const _w1 = 3.0; // stemming
@@ -27,7 +31,6 @@ class MoodAssessmentScorer {
   }
 
   /// Berekent het gewogen gemiddelde van de 5 antwoorden, vóór clamp/round.
-  /// Geeft een continue waarde terug (kan buiten -5..+5 vallen).
   static double rawWeightedScore({
     required double q1,
     required double q2Slider,
@@ -45,6 +48,7 @@ class MoodAssessmentScorer {
   }
 
   /// Map een continue score naar een gehele Ritme-waarde (-5..+5).
+  /// Houdt rekening met conditionele boosts uit [applyBipolarBoosts].
   static int toRitmeScale(double raw) {
     if (raw <= -3.5) return -4;
     if (raw <= -2.5) return -3;
@@ -57,9 +61,90 @@ class MoodAssessmentScorer {
     return 4;
   }
 
-  /// Berekent zowel de continue score als de Ritme-mapping.
-  /// Geeft ook aan of `gesplitste_stemming` aanbevolen wordt (als q1 en
-  /// q3 meer dan 4 punten uit elkaar liggen).
+  // ============================
+  // BIPOLAIRE-SCREENING (A + B)
+  // ============================
+
+  /// Berekent bipolaire-specifieke boosts en tags op basis van de 5
+  /// antwoorden. Boost = extra gewicht in de rawScore; tag = diagnostische
+  /// markering die de gebruiker kan zien (zonder Ritme-waarde te beïnvloeden
+  /// als de boost leidt tot een verkeerde classificatie).
+  static BipolarAnalysis analyzeBipolar({
+    required double q1,
+    required double q3,
+    required double q4,
+    required double q5,
+  }) {
+    final tags = <BipolarTag>[];
+    var bonus = 0.0;
+
+    // ---- MANIE-POOL ----
+    // Klassieke triade: stemming + energie + verminderde slaapbehoefte
+    if (q1 >= 3 && q4 >= 3) {
+      bonus += 0.5; // stemming + slaap = manie-signaal
+      tags.add(BipolarTag.maniaShift);
+    }
+    if (q1 >= 3 && q3 >= 2 && q4 >= 2) {
+      bonus += 0.7; // triade: stemming + energie + slaap
+      tags.add(BipolarTag.probableMania);
+    }
+    // Verlaagde slaapbehoefte alleen al is een vroeg manie-signaal
+    if (q4 >= 3 && (q1 >= 1 || q3 >= 1)) {
+      tags.add(BipolarTag.sleepReductionAlone);
+    }
+
+    // ---- DEPRESSIE-POOL ----
+    if (q1 <= -3 && q4 <= -2) {
+      bonus -= 0.5; // stemming + slaapstoornis (vroeg wakker) = depressie-signaal
+      tags.add(BipolarTag.depressionShift);
+    }
+    if (q1 <= -3 && q3 <= -2 && q4 <= -2) {
+      bonus -= 0.7; // triade: stemming + energie + slaap
+      tags.add(BipolarTag.probableDepression);
+    }
+
+    // ---- LIFE-EVENT TRIGGERS ----
+    if (q5 >= 3 && q1 >= 2) {
+      bonus += 0.3;
+      tags.add(BipolarTag.positiveLifeEventTrigger);
+    }
+    if (q5 <= -3 && q1 <= -2) {
+      bonus -= 0.3;
+      tags.add(BipolarTag.negativeLifeEventTrigger);
+    }
+
+    // ---- GEMENGDE EPISODE ----
+    // Tegenstrijdige signalen: stemming hoog + energie laag, of andersom
+    final maniaSignsHigh = (q1 >= 2) || (q3 >= 2) || (q4 >= 2);
+    final depressionSignsHigh = (q1 <= -2) || (q3 <= -2) || (q4 <= -2);
+    if (maniaSignsHigh && depressionSignsHigh) {
+      tags.add(BipolarTag.mixedEpisode);
+    }
+    // Sterke variant: q1 en q3 op tegenpolen
+    if ((q1 >= 2 && q3 <= -2) || (q1 <= -2 && q3 >= 2)) {
+      tags.add(BipolarTag.opposingSignals);
+    }
+
+    // Dedup-tags (houd ze uniek op id)
+    final unique = <String, BipolarTag>{};
+    for (final t in tags) {
+      unique[t.name] = t;
+    }
+
+    return BipolarAnalysis(bonus: bonus, tags: unique.values.toList());
+  }
+
+  /// Past bipolaire boosts toe op de rawScore. Resultaat is een
+  /// aangepaste continue score die de Ritme-mapping ingaat.
+  static double applyBipolarBoosts({
+    required double raw,
+    required double bonus,
+  }) {
+    return raw + bonus;
+  }
+
+  /// Berekent zowel de continue score, de Ritme-mapping, aanbeveling voor
+  /// gesplitste stemming, én bipolaire diagnostische tags.
   static MoodScoreResult compute({
     required double q1,
     required double q2Slider,
@@ -67,31 +152,85 @@ class MoodAssessmentScorer {
     required double q4,
     required double q5,
   }) {
-    final raw = rawWeightedScore(
+    final rawBase = rawWeightedScore(
       q1: q1,
       q2Slider: q2Slider,
       q3: q3,
       q4: q4,
       q5: q5,
     );
-    final ritme = toRitmeScale(raw);
+    final analysis = analyzeBipolar(
+      q1: q1,
+      q3: q3,
+      q4: q4,
+      q5: q5,
+    );
+    final rawWithBoosts = applyBipolarBoosts(
+      raw: rawBase,
+      bonus: analysis.bonus,
+    );
+    final ritme = toRitmeScale(rawWithBoosts);
     final recommendSplit = (q1 - q3).abs() >= 4.0;
     return MoodScoreResult(
-      rawScore: raw,
+      rawScore: rawWithBoosts,
       ritmeScore: ritme,
       recommendSplit: recommendSplit,
+      bipolarTags: analysis.tags,
     );
   }
+}
+
+class BipolarAnalysis {
+  final double bonus;
+  final List<BipolarTag> tags;
+
+  const BipolarAnalysis({
+    required this.bonus,
+    required this.tags,
+  });
+}
+
+enum BipolarTag {
+  maniaShift('maniaShift', 'Mogelijke manische shift'),
+  probableMania('probableMania', 'Waarschijnlijke manie (triade)'),
+  sleepReductionAlone(
+    'sleepReductionAlone',
+    'Verminderde slaapbehoefte — vroeg manie-signaal',
+  ),
+  depressionShift('depressionShift', 'Mogelijke depressieve shift'),
+  probableDepression(
+    'probableDepression',
+    'Waarschijnlijke depressie (triade)',
+  ),
+  positiveLifeEventTrigger(
+    'positiveLifeEventTrigger',
+    'Positieve gebeurtenis als mogelijke manie-trigger',
+  ),
+  negativeLifeEventTrigger(
+    'negativeLifeEventTrigger',
+    'Negatieve gebeurtenis als mogelijke depressie-trigger',
+  ),
+  mixedEpisode('mixedEpisode', 'Mogelijke gemengde episode'),
+  opposingSignals(
+    'opposingSignals',
+    'Tegenstrijdige signalen — controleer handmatig',
+  );
+
+  final String id;
+  final String label;
+  const BipolarTag(this.id, this.label);
 }
 
 class MoodScoreResult {
   final double rawScore;
   final int ritmeScore;
   final bool recommendSplit;
+  final List<BipolarTag> bipolarTags;
 
   const MoodScoreResult({
     required this.rawScore,
     required this.ritmeScore,
     required this.recommendSplit,
+    this.bipolarTags = const [],
   });
 }

@@ -24,6 +24,7 @@ class MoodAssessmentScreen extends StatefulWidget {
 
 class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
   int _step = 0; // 0..4 = vraag 1..5, 5 = resultaat
+  MoodScoreResult? _result; // berekend bij _finish, getoond in resultaat-stap
   double? _q1; // stemming -4..+4
   double _q2Slider = 50; // 0..100 (manisch=0, depressief=100)
   double? _q3; // energie detail -3..+3
@@ -54,13 +55,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
 
   Future<void> _finish() async {
     if (_q1 == null || _q3 == null || _q4 == null || _q5 == null) return;
-    final result = MoodAssessmentScorer.compute(
-      q1: _q1!,
-      q2Slider: _q2Slider,
-      q3: _q3!,
-      q4: _q4!,
-      q5: _q5!,
-    );
+    final result = _bereken();
     try {
       await ensureInitialized();
       await db.upsertMoodAssessment({
@@ -71,23 +66,35 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
         'q4_slaapbehoefte': _q4,
         'q5_gebeurtenis': _q5,
         'berekende_score': result.ritmeScore,
+        'flags_json': _encodeFlags(result.bipolarTags),
       });
     } catch (e) {
       debugPrint('MoodAssessment save error: $e');
     }
     if (!mounted) return;
-    setState(() => _step = 5);
+    setState(() {
+      _step = 5;
+      _result = result;
+    });
   }
 
-  void _goToMoodScreen() {
-    if (!mounted) return;
-    final result = MoodAssessmentScorer.compute(
+  MoodScoreResult _bereken() {
+    return MoodAssessmentScorer.compute(
       q1: _q1!,
       q2Slider: _q2Slider,
       q3: _q3!,
       q4: _q4!,
       q5: _q5!,
     );
+  }
+
+  String _encodeFlags(List<BipolarTag> tags) {
+    return tags.map((t) => t.id).join(',');
+  }
+
+  void _goToMoodScreen() {
+    if (!mounted) return;
+    final result = _result ?? _bereken();
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => MoodScreen(
@@ -116,6 +123,8 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
                 duration: const Duration(milliseconds: 200),
                 child: _step == 5
                     ? _ResultStep(
+                        key: const ValueKey('result'),
+                        result: _result,
                         onContinue: _goToMoodScreen,
                       )
                     : _buildQuestion(l10n),
@@ -638,19 +647,66 @@ class _SliderQuestion extends StatelessWidget {
 }
 
 class _ResultStep extends StatelessWidget {
+  final MoodScoreResult? result;
   final VoidCallback onContinue;
-  const _ResultStep({required this.onContinue});
+  const _ResultStep({
+    super.key,
+    required this.result,
+    required this.onContinue,
+  });
+
+  String _tagLabel(BipolarTag tag, AppLocalizations l10n) {
+    switch (tag) {
+      case BipolarTag.maniaShift:
+        return l10n.tagManiaShift;
+      case BipolarTag.probableMania:
+        return l10n.tagProbableMania;
+      case BipolarTag.sleepReductionAlone:
+        return l10n.tagSleepReductionAlone;
+      case BipolarTag.depressionShift:
+        return l10n.tagDepressionShift;
+      case BipolarTag.probableDepression:
+        return l10n.tagProbableDepression;
+      case BipolarTag.positiveLifeEventTrigger:
+        return l10n.tagPositiveLifeEventTrigger;
+      case BipolarTag.negativeLifeEventTrigger:
+        return l10n.tagNegativeLifeEventTrigger;
+      case BipolarTag.mixedEpisode:
+        return l10n.tagMixedEpisode;
+      case BipolarTag.opposingSignals:
+        return l10n.tagOpposingSignals;
+    }
+  }
+
+  Color _tagColor(BipolarTag tag, ThemeData theme) {
+    switch (tag) {
+      case BipolarTag.maniaShift:
+      case BipolarTag.probableMania:
+      case BipolarTag.sleepReductionAlone:
+      case BipolarTag.positiveLifeEventTrigger:
+        return Colors.orange.shade700;
+      case BipolarTag.depressionShift:
+      case BipolarTag.probableDepression:
+      case BipolarTag.negativeLifeEventTrigger:
+        return Colors.indigo.shade400;
+      case BipolarTag.mixedEpisode:
+      case BipolarTag.opposingSignals:
+        return Colors.deepPurple.shade400;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    // We can't read private state directly; the parent computes via onContinue.
-    // Display a generic success layout and a "continue" button.
-    return Padding(
+    final theme = Theme.of(context);
+    final tags = result?.bipolarTags ?? const <BipolarTag>[];
+
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const SizedBox(height: 16),
           Icon(
             Icons.check_circle_outline,
             size: 96,
@@ -660,8 +716,96 @@ class _ResultStep extends StatelessWidget {
           Text(
             l10n.stemmingsCheckSuccesTitel,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge,
+            style: theme.textTheme.titleLarge,
           ),
+          const SizedBox(height: 24),
+
+          // Bipolaire analyse-sectie
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.dividerColor),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.psychology_outlined,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.stemmingsCheckAnalyseTitel,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (tags.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      l10n.stemmingsCheckAnalyseGeen,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  )
+                else
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: tags.map((tag) {
+                      final color = _tagColor(tag, theme);
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.15),
+                          border: Border.all(
+                            color: color.withValues(alpha: 0.6),
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              size: 14,
+                              color: color,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _tagLabel(tag, l10n),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: color,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.stemmingsCheckAnalyseTip,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: onContinue,
