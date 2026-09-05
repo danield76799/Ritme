@@ -22,12 +22,12 @@ class MoodAssessmentScorer {
 
   static double _sumWeights = _w1 + _w2 + _w3 + _w4 + _w5; // 9.0
 
-  /// Map q2 (0..100 slider, 0=manisch, 100=depressief) naar de Ritme-schaal.
+  /// Map q2 (0..100 slider, 100=manisch, 0=depressief) naar de Ritme-schaal.
   /// Zachtere variant: de slider meet een *globaal* energiegevoel, niet een
   /// scherpe manie/depressie-meting — andere vragen vangen de extremen op.
   static double mapQ2Slider(double sliderValue) {
     final clamped = sliderValue.clamp(0.0, 100.0);
-    return (50.0 - clamped) / 20.0; // [-2.5..+2.5]
+    return (clamped - 50.0) / 20.0; // [-2.5..+2.5]
   }
 
   /// Berekent het gewogen gemiddelde van de 5 antwoorden, vóór clamp/round.
