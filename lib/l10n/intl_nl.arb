@@ -444,5 +444,17 @@
   "stemmingsCheckOptieSlaapUrenEerder": "Uren eerder wakker, kan niet meer inslapen",
   "stemmingsCheckOptieSlaapNietTot": "Slaap niet tot nauwelijks, terwijl ik wel moe ben",
   "stemmingsCheckSluiten": "Sluiten",
-  "stemmingsCheckOpenKnop": "Vragenlijst invullen"
+  "stemmingsCheckOpenKnop": "Vragenlijst invullen",
+  "stemmingsCheckAnalyseTitel": "Bipolaire analyse",
+  "stemmingsCheckAnalyseGeen": "Geen bijzondere patronen gedetecteerd.",
+  "stemmingsCheckAnalyseTip": "Deze tags zijn screenings-signalen, geen diagnose. Bespreek met je behandelaar als ze vaak terugkomen.",
+  "tagManiaShift": "Mogelijke manische shift",
+  "tagProbableMania": "Waarschijnlijke manie (triade)",
+  "tagSleepReductionAlone": "Verminderde slaapbehoefte — vroeg manie-signaal",
+  "tagDepressionShift": "Mogelijke depressieve shift",
+  "tagProbableDepression": "Waarschijnlijke depressie (triade)",
+  "tagPositiveLifeEventTrigger": "Positieve gebeurtenis als mogelijke manie-trigger",
+  "tagNegativeLifeEventTrigger": "Negatieve gebeurtenis als mogelijke depressie-trigger",
+  "tagMixedEpisode": "Mogelijke gemengde episode",
+  "tagOpposingSignals": "Tegenstrijdige signalen — controleer handmatig"
 }
