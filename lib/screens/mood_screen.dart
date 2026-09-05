@@ -5,9 +5,21 @@ import '../service_locator.dart';
 import '../utils/bool_helper.dart';
 import '../widgets/datum_navigator.dart';
 import '../generated/l10n/app_localizations.dart';
+import 'mood_assessment_screen.dart';
 
 class MoodScreen extends StatefulWidget {
-  const MoodScreen({super.key});
+  /// Optionele prefill-waarde voor stemming_hoog (vanuit de
+  /// vragenlijst-flow).
+  final double? prefillStemmingHoog;
+
+  /// Of de gesplitste stemming aanbevolen wordt (vanuit de vragenlijst-flow).
+  final bool prefillGesplitst;
+
+  const MoodScreen({
+    super.key,
+    this.prefillStemmingHoog,
+    this.prefillGesplitst = false,
+  });
 
   @override
   State<MoodScreen> createState() => _MoodScreenState();
@@ -37,7 +49,15 @@ class _MoodScreenState extends State<MoodScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    // Prefill uit vragenlijst heeft voorrang boven opgeslagen data.
+    if (widget.prefillStemmingHoog != null) {
+      _stemmingHoog = widget.prefillStemmingHoog!.clamp(-4.0, 4.0);
+      _stemmingLaag = _stemmingHoog;
+      _gesplitsteStemming = widget.prefillGesplitst;
+      _isLoading = false;
+    } else {
+      _loadData();
+    }
   }
 
   @override
@@ -271,6 +291,17 @@ class _MoodScreenState extends State<MoodScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
+          IconButton(
+            tooltip: AppLocalizations.of(context).stemmingsCheckOpenKnop,
+            icon: const Icon(Icons.quiz_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const MoodAssessmentScreen(),
+                ),
+              );
+            },
+          ),
           TextButton(
             onPressed: _opslaan,
             child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600)),
