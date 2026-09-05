@@ -10,7 +10,7 @@ import '../utils/mood_assessment_scorer.dart';
 ///
 /// Vragenlijst:
 ///  1. Hoe is uw stemming vandaag?            (-4..+4)
-///  2. Hoe is uw energie? Slider 0..100       (manisch → depressief)
+/// 2. Hoe is uw energie? Slider 0..100       (depressief → manisch)
 ///  3. Hoe is uw energie niveau?              (-3..+3)
 ///  4. Slaapbehoefte                          (-4..+4)
 ///  5. Belangrijke gebeurtenis                (-4..+4)
@@ -25,7 +25,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
   int _step = 0; // 0..4 = vraag 1..5, 5 = resultaat
   MoodScoreResult? _result; // berekend bij _finish, getoond in resultaat-stap
   double? _q1; // stemming -4..+4
-  double _q2Slider = 50; // 0..100 (manisch=0, depressief=100)
+  double _q2Slider = 50; // 0..100 (depressief=0, manisch=100)
   double? _q3; // energie detail -3..+3
   double? _q4; // slaapbehoefte -4..+4
   double? _q5; // gebeurtenis -4..+4
