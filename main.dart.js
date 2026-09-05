@@ -121653,9 +121653,9 @@ gY_(){return"Mood check"},
 gY3(){return"How is your mood today?"},
 gY2(){return"Position 1/5 \u2014 required"},
 gY7(){return"How is your energy?"},
-gY5(){return"Position 2/5 \u2014 slide from manic (left) to depressive (right)"},
-gY4(){return"Manic"},
-gY6(){return"Depressive"},
+gY5(){return"Position 2/5 \u2014 slide from depressive (left) to manic (right)"},
+gY4(){return"Depressive"},
+gY6(){return"Manic"},
 gY9(){return"How is your energy level?"},
 gY8(){return"Position 3/5 \u2014 required"},
 gYb(){return"Sleep need"},
@@ -122056,9 +122056,9 @@ gY_(){return"Stemmingscheck"},
 gY3(){return"Hoe is uw stemming vandaag?"},
 gY2(){return"Position 1/5 \u2014 verplicht"},
 gY7(){return"Hoe is uw energie?"},
-gY5(){return"Position 2/5 \u2014 schuif van manisch (links) naar depressief (rechts)"},
-gY4(){return"Manisch"},
-gY6(){return"Depressief"},
+gY5(){return"Position 2/5 \u2014 schuif van depressief (links) naar manisch (rechts)"},
+gY4(){return"Depressief"},
+gY6(){return"Manisch"},
 gY9(){return"Hoe is uw energie niveau?"},
 gY8(){return"Position 3/5 \u2014 verplicht"},
 gYb(){return"Slaapbehoefte"},
@@ -126919,7 +126919,7 @@ h=n.y
 h.toString
 g=B.c.dO(k,0,100)
 f=A.blC(d,j,i,h)
-m=new A.auS(A.blD((3*d+(50-g)/20+2*j+2*i+h)/9+f.a),f.b)
+m=new A.auS(A.blD((3*d+(g-50)/20+2*j+2*i+h)/9+f.a),f.b)
 p=4
 s=7
 return A.j(A.agL(),$async$uZ)
