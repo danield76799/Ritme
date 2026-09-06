@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../theme/app_theme.dart';
@@ -37,9 +38,58 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
   double? _q4; // slaapbehoefte -4..+4
   double? _q5; // gebeurtenis -4..+4
 
-  String _todayDate() {
+  @override
+  void initState() {
+    super.initState();
+    _checkAlIngevuld();
+  }
+
+  String _datumLabel(BuildContext context) {
     final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final d = _geselecteerdeDatum;
+    final fmt = DateFormat('d MMM', 'nl');
+    if (d.year == now.year && d.month == now.month && d.day == now.day) {
+      return AppLocalizations.of(context).vandaag;
+    }
+    if (d.year == now.year && d.month == now.month && d.day == now.day - 1) {
+      return AppLocalizations.of(context).gisteren;
+    }
+    return fmt.format(d);
+  }
+
+  /// Geselecteerde datum voor de vragenlijst (default: vandaag).
+  DateTime _geselecteerdeDatum = DateTime.now();
+  bool _isAlIngevuld = false; // bestaat er al een assessment voor _geselecteerdeDatum?
+
+  String get _geselecteerdeDatumStr {
+    final d = _geselecteerdeDatum;
+    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  /// Checkt of er al een assessment is voor de geselecteerde datum en
+  /// werkt de "al ingevuld"-indicator bij.
+  Future<void> _checkAlIngevuld() async {
+    try {
+      await ensureInitialized();
+      final existing = await db.getMoodAssessment(_geselecteerdeDatumStr);
+      if (!mounted) return;
+      setState(() => _isAlIngevuld = existing != null);
+    } catch (e) {
+      debugPrint('MoodAssessment check error: $e');
+    }
+  }
+
+  Future<void> _kiesDatum() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _geselecteerdeDatum,
+      firstDate: now.subtract(const Duration(days: 30)),
+      lastDate: now,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _geselecteerdeDatum = picked);
+    _checkAlIngevuld();
   }
 
   bool _canProceed() {
@@ -78,7 +128,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
     try {
       await ensureInitialized();
       await db.upsertMoodAssessment({
-        'date': _todayDate(),
+        'date': _geselecteerdeDatumStr,
         'q1_stemming': _q1,
         'q2_energie_slider': _q2Slider,
         'q3_energie_detail': _q3,
@@ -109,7 +159,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
   /// Slaat de berekende stemming direct op in de daily_log (merge-preserving:
   /// bestaande velden zoals slaap/activiteit blijven staan).
   Future<void> _opslaanInDailyLog(MoodScoreResult result) async {
-    final date = _todayDate();
+    final date = _geselecteerdeDatumStr;
     try {
       await ensureInitialized();
       // Bestaande log laden zodat we die niet overschrijven (upsert vervangt
@@ -148,6 +198,64 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // Datum-selector + "al ingevuld"-indicator
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: _kiesDatum,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Theme.of(context).dividerColor),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.calendar_today, size: 18, color: Theme.of(context).colorScheme.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              _datumLabel(context),
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_isAlIngevuld) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade700.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.orange.shade700.withValues(alpha: 0.6)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.edit_note, size: 14, color: Colors.orange.shade700),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.stemmingsCheckAlIngevuld,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.orange.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
             _ProgressBar(step: _step, total: 5),
             Expanded(
               child: AnimatedSwitcher(

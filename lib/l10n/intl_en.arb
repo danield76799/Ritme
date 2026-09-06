@@ -455,6 +455,8 @@
   "stemmingsCheckOptieSlaapNietTot": "Hardly sleep at all while still feeling tired",
   "stemmingsCheckSluiten": "Close",
   "stemmingsCheckOpenKnop": "Fill in questionnaire",
+  "stemmingsCheckAlIngevuld": "Already filled in",
+  "gisteren": "Yesterday",
   "stemmingsCheckAnalyseTitel": "Bipolar analysis",
   "stemmingsCheckAnalyseGeen": "No unusual patterns detected.",
   "stemmingsCheckAnalyseTip": "These tags are screening signals, not a diagnosis. Discuss with your practitioner if they keep coming back.",
