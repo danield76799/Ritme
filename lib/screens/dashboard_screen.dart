@@ -337,8 +337,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Row(children: [
                   Text(AppLocalizations.of(context).vandaag, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                  const Spacer(),
-                  Text(AppLocalizations.of(context).tikLoggen, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color)),
                 ]),
               ),
 

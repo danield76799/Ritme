@@ -4,7 +4,6 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../theme/app_theme.dart';
 import '../services/rapport_generator.dart';
-import '../service_locator.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class RapportScreen extends StatefulWidget {
@@ -16,6 +15,7 @@ class RapportScreen extends StatefulWidget {
 
 class _RapportScreenState extends State<RapportScreen> {
   bool _isGenerating = false;
+  bool _isSharing = false;
   String? _reportText;
   int _selectedDays = 30;
 
@@ -98,6 +98,28 @@ class _RapportScreenState extends State<RapportScreen> {
 
             // Preview (if generated)
             if (_reportText != null) ...[
+              const SizedBox(height: 24),
+              // Deel-knop (altijd beschikbaar zodra er een rapport is)
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton.icon(
+                  onPressed: _isSharing ? null : _deelRapport,
+                  icon: _isSharing
+                      ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
+                      : const Icon(Icons.share, size: 22),
+                  label: Text(
+                    AppLocalizations.of(context).delen,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.success,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
               Row(
                 children: [
                   Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryTeal, borderRadius: BorderRadius.circular(2))),
@@ -135,26 +157,16 @@ class _RapportScreenState extends State<RapportScreen> {
 
     try {
       final report = await RapportGenerator.instance.generateLCMReport(days: _selectedDays);
-
-      // Save to temp file
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/ritme_rapport_${DateTime.now().millisecondsSinceEpoch}.md');
-      await file.writeAsString(report);
-
-      if (mounted) {
-        setState(() {
-          _reportText = report;
-          _isGenerating = false;
-        });
-
-        // Share
-        await SharePlus.instance.share(
-          ShareParams(
-            files: [XFile(file.path)],
-            subject: AppLocalizations.of(context).ritmeRapportOnderwerp,
-          ),
-        );
-      }
+      if (!mounted) return;
+      setState(() {
+        _reportText = report;
+        _isGenerating = false;
+      });
+      // Scroll naar beneden zodat de preview + Delen-knop zichtbaar zijn.
+      await Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 300),
+      );
     } catch (e) {
       if (mounted) {
         setState(() => _isGenerating = false);
@@ -162,6 +174,35 @@ class _RapportScreenState extends State<RapportScreen> {
           SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
         );
       }
+    }
+  }
+
+  /// Deelt het gegenereerde rapport als tekst (werkt in WhatsApp, e-mail,
+  /// etc.) met het .md-bestand als bijlage-variant.
+  Future<void> _deelRapport() async {
+    if (_reportText == null || _reportText!.isEmpty) return;
+    setState(() => _isSharing = true);
+    try {
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/ritme_rapport_${DateTime.now().millisecondsSinceEpoch}.md');
+      await file.writeAsString(_reportText!);
+
+      await SharePlus.instance.share(
+        ShareParams(
+          text: _reportText,
+          files: [XFile(file.path)],
+          subject: AppLocalizations.of(context).ritmeRapportOnderwerp,
+          title: AppLocalizations.of(context).ritmeRapportOnderwerp,
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 }
