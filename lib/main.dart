@@ -40,51 +40,6 @@ import 'utils/logger.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize date formatting for Dutch locale
-  await initializeDateFormatting('nl_NL', null);
-
-  // Initialize the appropriate database
-  await initDatabase();
-
-  // Initialize notifications (local only, no external push)
-  if (!kIsWeb) {
-    await NotificationHelper.instance.initialize();
-    await BootService.initialize();
-
-    // Vraag expliciet permissies en herplan pas daarna.
-    // Zonder SCHEDULE_EXACT_ALARM gaan medicatieherinneringen niet af op tijd.
-    final permissionsOk = await NotificationHelper.instance.ensurePermissions();
-    // Vraag battery optimization uitzetting — kritiek voor achtergrondnotificaties
-    await NotificationHelper.instance.openBatteryOptimizationSettings();
-    // Plan ALTIJD herinneringen, ook als exact alarm niet gegeven is (fallback naar inexact)
-    final rescheduled = await NotificationHelper.instance.rescheduleAllMedicationReminders();
-    AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled (exactAlarm=$permissionsOk)');
-
-    // Verzeker dat medicatieherinneringen hersteld zijn na een reboot of als Android
-    // ze heeft weggehaald door batterijoptimalisatie. Zonder deze check blijven ze
-    // stil als er geen pending notificaties meer zijn.
-    final recovered = await BootService.rescheduleIfEmpty();
-    if (recovered > 0) {
-      AppLogger.info('Recovered $recovered reminders after empty pending queue');
-    }
-
-    await WidgetService.initialize();
-
-    // WorkManager periodic task: reschedules medication reminders every 12
-    // hours in the background, surviving Android Doze mode. This prevents
-    // reminders from going silent after a few days of inactivity.
-    // Deferred to a post-frame callback so it does not interfere with the
-    // app's initialisation (local_auth, etc.).
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        await WorkManagerService.initialize();
-      } catch (e, stackTrace) {
-        AppLogger.error('WorkManager initialization failed (non-fatal)', error: e, stackTrace: stackTrace);
-      }
-    });
-  }
-
-  // Set up error handling
   FlutterError.onError = (FlutterErrorDetails details) {
     AppLogger.error(
       'Flutter error',
@@ -94,11 +49,41 @@ void main() async {
     FlutterError.presentError(details);
   };
 
-  runApp(
-    ErrorBoundary(
-      child: const RitmeApp(),
-    ),
-  );
+  try {
+    await initializeDateFormatting('nl_NL', null);
+    await initDatabase();
+
+    if (!kIsWeb) {
+      await NotificationHelper.instance.initialize();
+      await BootService.initialize();
+      final permissionsOk = await NotificationHelper.instance.ensurePermissions();
+      await NotificationHelper.instance.openBatteryOptimizationSettings();
+      final rescheduled = await NotificationHelper.instance.rescheduleAllMedicationReminders();
+      AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled (exactAlarm=$permissionsOk)');
+      final recovered = await BootService.rescheduleIfEmpty();
+      if (recovered > 0) AppLogger.info('Recovered $recovered reminders after empty pending queue');
+      await WidgetService.initialize();
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try { await WorkManagerService.initialize(); } catch (e, stackTrace) { AppLogger.error('WorkManager initialization failed (non-fatal)', error: e, stackTrace: stackTrace); }
+      });
+    }
+
+    runApp(const ErrorBoundary(child: RitmeApp()));
+  } catch (e, stack) {
+    AppLogger.error('Fatal startup error', error: e, stackTrace: stack);
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Text('Ritme kon niet starten.\n\nFout: $e\n\nHerinstalleer of reboot de app.'),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class ErrorBoundary extends StatefulWidget {
