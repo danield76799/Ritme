@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -231,7 +232,7 @@ class _RapportScreenState extends State<RapportScreen> {
       await Clipboard.setData(ClipboardData(text: _reportText!));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).samenvattingGekopieerdNaarKlembord)),
+          SnackBar(content: Text(AppLocalizations.of(context).samenvattingGekopieerdKlembord)),
         );
       }
     } catch (e) {
