@@ -17,14 +17,11 @@ import 'screens/appointments_screen.dart';
 import 'screens/crisisplan_screen.dart';
 import 'screens/database_debug_screen.dart';
 import 'screens/episodes_screen.dart';
-import 'screens/event_screen.dart';
 import 'screens/help_screen.dart';
-import 'screens/insights_screen.dart';
 import 'screens/life_events_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/medication_screen.dart';
 import 'screens/mood_assessment_screen.dart';
-import 'screens/quick_checkin_screen.dart';
 import 'screens/rapport_screen.dart';
 import 'screens/rhythm_detail_screen.dart';
 import 'screens/settings_screen.dart';
@@ -209,14 +206,12 @@ class _RitmeAppState extends State<RitmeApp> {
         '/mood': (context) => MoodAssessmentScreen(),
         '/activity': (context) => ActivityScreen(),
         '/medication': (context) => MedicationScreen(),
-        '/event': (context) => EventScreen(),
         '/database-debug': (context) => DatabaseDebugScreen(),
         '/settings': (context) => SettingsScreen(),
         '/medication-schedule': (context) => MedicationScheduleScreen(),
         '/weight': (context) => WeightScreen(),
         '/sociaal-ritme': (context) => SociaalRitmeMeterScreen(),
         '/appointments': (context) => AppointmentsScreen(),
-        '/insights': (context) => InsightsScreen(),
         '/statistics': (context) => StatistiekenScherm(),
         '/sleep-detail': (context) => SleepDetailScreen(),
         '/rhythm-detail': (context) => RhythmDetailScreen(),
@@ -227,7 +222,6 @@ class _RitmeAppState extends State<RitmeApp> {
         '/crisisplan': (context) => CrisisPlanScreen(),
         '/episodes': (context) => EpisodesScreen(),
         '/rapport': (context) => RapportScreen(),
-        '/quick-checkin': (context) => QuickCheckInScreen(),
       },
     );
   }

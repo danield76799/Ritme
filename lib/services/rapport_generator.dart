@@ -87,12 +87,7 @@ class RapportGenerator {
       buf.writeln();
     }
 
-    // === 2. DAILY OVERVIEW TABLE ===
-    buf.writeln('## 📊 Dagelijks Overzicht');
-    buf.writeln();
-    buf.writeln('| Datum | Stemming (H/L) | Slaap | P-Score | Medicatie | Events |');
-    buf.writeln('|-------|---------------|-------|---------|-----------|--------|');
-
+    // === 2. WEEKOVERZICHT (i.p.v. per-dag tabel) ===
     final dailyLogs = await db.getDailyLogs();
     final medicationConfigs = await db.getMedicationConfigs();
 
@@ -102,63 +97,77 @@ class RapportGenerator {
     int sleepCount = 0;
     double totalPScore = 0;
     int pScoreDays = 0;
+    int takenCount = 0;
+    int intakeCount = 0;
 
-    for (int i = 0; i < days; i++) {
-      final d = now.subtract(Duration(days: i));
-      final dateStr = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-      final dateShort = '${d.day}/${d.month}';
+    buf.writeln('## 📊 Weekoverzicht');
+    buf.writeln();
+    buf.writeln('| Week | Gem. stemming | Gem. slaap | Gem. P-Score | Medicatie |');
+    buf.writeln('|------|--------------|-----------|-------------|-----------|');
 
-      // Mood
-      var log = dailyLogs.where((l) => l['date'] == dateStr).firstOrNull;
-      String moodStr = '-';
-      if (log != null) {
-        final ho = _extractDouble(log['stemming_hoog']);
-        final la = log['gesplitste_stemming'] == 1 ? _extractDouble(log['stemming_laag']) : null;
-        if (ho != null) {
-          moodStr = la != null ? '${ho.toStringAsFixed(1)}/${la.toStringAsFixed(1)}' : ho.toStringAsFixed(1);
-          totalMood += ho;
-          moodCount++;
+    // Loop per week (nieuwste week eerst)
+    final fullWeeks = (days / 7).ceil();
+    for (int w = 0; w < fullWeeks; w++) {
+      final weekEnd = now.subtract(Duration(days: 7 * w));
+      final weekStart = now.subtract(Duration(days: 7 * w + 6));
+      double wMood = 0;
+      int wMoodN = 0;
+      double wSleep = 0;
+      int wSleepN = 0;
+      double wP = 0;
+      int wPN = 0;
+      int wTaken = 0;
+      int wIntake = 0;
+
+      for (int i = 0; i < 7; i++) {
+        final d = weekEnd.subtract(Duration(days: i));
+        if (d.isBefore(weekStart) || d.isAfter(now) || d.isAfter(weekEnd)) continue;
+        final dateStr = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+        var log = dailyLogs.where((l) => l['date'] == dateStr).firstOrNull;
+        if (log != null) {
+          final ho = _extractDouble(log['stemming_hoog']);
+          if (ho != null) { wMood += ho; wMoodN++; }
+          final sle = _extractDouble(log['sleep_hours']) ?? _extractDouble(log['uren_slaap']);
+          if (sle != null) { wSleep += sle; wSleepN++; }
+        }
+
+        final srmActs = await db.getSrmActivities(dateStr);
+        double pSum = 0;
+        int pCount = 0;
+        for (var a in srmActs) {
+          final ps = a['p_score'];
+          if (ps != null) {
+            pSum += ps is int ? ps : int.tryParse('$ps') ?? 0;
+            pCount++;
+          }
+        }
+        if (pCount > 0) { wP += pSum / pCount; wPN++; }
+
+        final intake = await db.getMedicationIntake(dateStr);
+        for (var m in intake) {
+          wIntake++;
+          if (m['aantal_ingenomen'] == 1) wTaken++;
         }
       }
 
-      // Sleep
-      final sle = _extractDouble(log?['sleep_hours']) ?? _extractDouble(log?['uren_slaap']);
-      String sleepStr = sle != null ? '${sle.toStringAsFixed(1)}u' : '-';
-      if (sle != null) { totalSleep += sle; sleepCount++; }
+      takenCount += wTaken;
+      intakeCount += wIntake;
 
-      // P-score
-      final srmActs = await db.getSrmActivities(dateStr);
-      double pSum = 0;
-      int pCount = 0;
-      for (var a in srmActs) {
-        final ps = a['p_score'];
-        if (ps != null) {
-          pSum += ps is int ? ps : int.tryParse('$ps') ?? 0;
-          pCount++;
-        }
-      }
-      String pScoreStr = pCount > 0 ? (pSum / pCount).toStringAsFixed(1) : '-';
-      if (pCount > 0) { totalPScore += pSum / pCount; pScoreDays++; }
+      final weekLabel = '${weekStart.day}/${weekStart.month} – ${weekEnd.day}/${weekEnd.month}';
+      final moodStr = wMoodN > 0 ? (wMood / wMoodN).toStringAsFixed(1) : '-';
+      final sleepStr = wSleepN > 0 ? '${_formatUren(wSleep / wSleepN)}' : '-';
+      final pStr = wPN > 0 ? (wP / wPN).toStringAsFixed(1) : '-';
+      final medStr = wIntake > 0 ? '$wTaken/$wIntake' : '-';
+      buf.writeln('| $weekLabel | $moodStr | $sleepStr | $pStr | $medStr |');
 
-      // Medication
-      final intake = await db.getMedicationIntake(dateStr);
-      String medStr = intake.isEmpty ? '-' : intake.map((m) {
-        final config = medicationConfigs.where((c) => c['id'] == m['medication_id']).firstOrNull;
-        final name = config?['naam'] ?? '?';
-        final taken = m['aantal_ingenomen'] == 1 ? '✓' : '✗';
-        return '$name $taken';
-      }).join(', ');
-      if (medStr.length > 30) medStr = '${medStr.substring(0, 28)}...';
-
-      // Events
-      String eventStr = '-';
-      if (log != null && log['life_event'] != null) {
-        eventStr = log['life_event'].toString().length > 20
-            ? '${log['life_event'].toString().substring(0, 18)}...'
-            : log['life_event'].toString();
-      }
-
-      buf.writeln('| $dateShort | $moodStr | $sleepStr | $pScoreStr | $medStr | $eventStr |');
+      // Totaal-accumulatie voor de Samenvatting-sectie
+      totalMood += wMood;
+      moodCount += wMoodN;
+      totalSleep += wSleep;
+      sleepCount += wSleepN;
+      totalPScore += wP;
+      pScoreDays += wPN;
     }
 
     buf.writeln();
@@ -178,6 +187,10 @@ class RapportGenerator {
     if (pScoreDays > 0) {
       final avgP = totalPScore / pScoreDays;
       buf.writeln('| **Gem. P-Score** | ${avgP.toStringAsFixed(1)} / 5 (SRT: ${(avgP / 5 * 100).round()}%) |');
+    }
+    if (intakeCount > 0) {
+      final pct = (takenCount * 100 / intakeCount).round();
+      buf.writeln('| **Medicatie-trouw** | $takenCount/$intakeCount ingenomen ($pct%) |');
     }
 
     buf.writeln();
