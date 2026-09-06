@@ -292,7 +292,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Naam
                     TextField(
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context).naamBijvLithium,
@@ -302,36 +304,51 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       ),
                       onChanged: (v) => name = v,
                     ),
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context).dosering,
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      keyboardType: TextInputType.number,
-                      onChanged: (v) => dosage = double.tryParse(v) ?? 0,
-                    ),
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context).eenheidMgMlStuks,
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onChanged: (v) => unit = v,
-                    ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 12),
+                    // Dosering + eenheid op één rij
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(AppLocalizations.of(context).herinnering),
-                        const Spacer(),
-                        Switch(
-                          value: reminderEnabled,
-                          onChanged: (value) => setDialogState(() => reminderEnabled = value),
-                          activeColor: AppTheme.primaryTeal,
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context).dosering,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (v) => dosage = double.tryParse(v.replaceAll(',', '.')) ?? 0,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        SizedBox(
+                          width: 96,
+                          child: DropdownButtonFormField<String>(
+                            initialValue: unit,
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context).eenheidMgMlStuks,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                            ),
+                            items: ['mg', 'ml', 'stuks', 'µg', 'IE']
+                                .map((u) => DropdownMenuItem(value: u, child: Text(u, style: const TextStyle(fontSize: 15))))
+                                .toList(),
+                            onChanged: (v) => setDialogState(() => unit = v ?? 'mg'),
+                          ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 6),
+                    // Herinnering-switch als eigen rij, netjes uitgelijnd
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(AppLocalizations.of(context).herinnering, style: TextStyle(color: Colors.black, fontSize: 16)),
+                      value: reminderEnabled,
+                      onChanged: (value) => setDialogState(() => reminderEnabled = value),
+                      activeColor: AppTheme.primaryTeal,
                     ),
                     if (reminderEnabled)
                       InkWell(
