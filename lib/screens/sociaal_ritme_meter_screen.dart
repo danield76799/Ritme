@@ -75,6 +75,55 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
     }
   }
 
+  /// Tik op een activiteitskaart → tijdpicker → opslaan als werkelijke tijd.
+  Future<void> _selectActualTime(BuildContext context, String naam, String targetKey) async {
+    final dbActiviteit = _getActivityForType(naam);
+    final current = dbActiviteit?['actual_time']?.toString();
+    TimeOfDay initial;
+    if (current != null && current.isNotEmpty && current != '--:--') {
+      final parts = current.split(':');
+      initial = TimeOfDay(hour: int.tryParse(parts[0]) ?? 8, minute: int.tryParse(parts[1]) ?? 0);
+    } else {
+      initial = TimeOfDay.now();
+    }
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    if (picked == null || !mounted) return;
+
+    final timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+    try {
+      await ensureInitialized();
+      // Het SRM-scherm werkt met vandaag (zie _loadData)
+      final now = DateTime.now();
+      final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final targetTijd = _getTargetTime(targetKey);
+      final pScore = _calculatePScore(targetTijd, timeStr);
+      await db.insertSrmActivity(dateStr, naam, timeStr, pScore, null, targetTime: targetTijd == '--:--' ? null : targetTijd);
+      await _loadData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$naam: $timeStr'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('SRM invoer fout', error: e);
+    }
+  }
+
   Color _getPScoreColor(int score) {
     if (score >= 5) return Colors.green.shade600;  // Perfect
     if (score >= 4) return Colors.green.shade400;  // Goed
@@ -274,10 +323,13 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _selectActualTime(context, naam, targetKey),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
             // Icoon
             Container(
               width: 50,
@@ -361,7 +413,15 @@ class _SociaalRitmeMeterScreenState extends State<SociaalRitmeMeterScreen> {
                 ),
               ),
             ),
-          ],
+            const SizedBox(width: 6),
+            // Edit-affordance: tikken = tijd invullen/wijzigen
+            Icon(
+              Icons.edit_outlined,
+              size: 18,
+              color: Colors.grey.shade400,
+            ),
+            ],
+          ),
         ),
       ),
     );
