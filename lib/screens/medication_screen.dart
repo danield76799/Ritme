@@ -143,11 +143,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
-  Future<void> _updateIntake(int configId, int change) async {
+  Future<void> _toggleIntake(int configId) async {
     try {
-      int current = _intakesForDay[configId] ?? 0;
-      int newVal = current + change;
-      if (newVal < 0) return;
+      final current = _intakesForDay[configId] ?? 0;
+      final newVal = current > 0 ? 0 : 1;
       await db.insertMedicationIntakeMap({
         'medication_id': configId,
         'date': _formattedDate,
@@ -155,7 +154,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       });
       _loadData();
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to update medication intake', error: e, stackTrace: stackTrace);
+      AppLogger.error('Failed to toggle medication intake', error: e, stackTrace: stackTrace);
     }
   }
 
@@ -584,12 +583,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildCounterBtn(icon: Icons.remove, onPressed: count > 0 ? () => _updateIntake(configId!, -1) : null),
-              Container(
-                width: 36, alignment: Alignment.center,
-                child: Text(count.toString(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+              _buildIntakeToggleBtn(
+                configId: configId,
+                taken: count > 0,
               ),
-              _buildCounterBtn(icon: Icons.add, onPressed: () => _updateIntake(configId!, 1), isPrimary: true),
               const SizedBox(width: 8),
               _buildDeleteBtn(onPressed: () => _deleteMedication(configId!)),
             ],
@@ -610,6 +607,33 @@ class _MedicationScreenState extends State<MedicationScreen> {
           width: 32, height: 32,
           decoration: BoxDecoration(color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
           child: Icon(icon, size: 18, color: isPrimary ? Colors.white : Colors.black),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntakeToggleBtn({required int configId, required bool taken}) {
+    final l10n = AppLocalizations.of(context);
+    final label = taken ? l10n.medicatieGenomen : l10n.medicatieNietGenomen;
+    final icon = taken ? Icons.check_circle : Icons.add_circle_outline;
+    final bg = taken ? AppTheme.primaryTeal : Colors.grey.shade100;
+    final fg = taken ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _toggleIntake(configId),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: taken ? Colors.white : Colors.grey.shade600),
+              const SizedBox(width: 6),
+              Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: fg)),
+            ],
+          ),
         ),
       ),
     );
