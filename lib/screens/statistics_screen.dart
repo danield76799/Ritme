@@ -26,7 +26,6 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   double _gemStemming = 0.0;
   double _gemSlaap = 0.0;
   int _aantalActiviteiten = 0;
-  int _aantalGebeurtenissen = 0;
 
   // Format hours as "9u 30m" instead of "9.5u"
   String _formatHours(double hours) {
@@ -104,15 +103,12 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         _gemSlaap = sleepCount > 0 ? totaalSlaap / sleepCount : 0.0;
       }
 
-      // Ophalen van totaal aantal opgeslagen SRM activiteiten en Life Events
+      // Ophalen van totaal aantal opgeslagen SRM activiteiten
       int actCount = 0;
-      int eventCount = 0;
       for (var log in logs) {
         try {
           final acts = await db.getSrmActivities(log['date']);
-          final events = await db.getLifeEvents(log['date']);
           actCount += acts.length;
-          eventCount += events.length;
         } catch (e) {
           // Skip logs with database errors
         }
@@ -122,7 +118,6 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         setState(() {
           _logs = logs.reversed.toList();
           _aantalActiviteiten = actCount;
-          _aantalGebeurtenissen = eventCount;
           _isLoading = false;
         });
       }
@@ -240,7 +235,6 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                         _bouwKpiKaart(_gemStemming.toStringAsFixed(1), AppLocalizations.of(context).gemStemming, Colors.orange),
                         _bouwKpiKaart(_formatHours(_gemSlaap), AppLocalizations.of(context).gemSlaap, Colors.blue),
                         _bouwKpiKaart('$_aantalActiviteiten', AppLocalizations.of(context).activiteitenGelogd, Colors.green),
-                        _bouwKpiKaart('$_aantalGebeurtenissen', AppLocalizations.of(context).gebeurtenissen, Colors.purple),
                       ],
                     ),
                     SizedBox(height: 24),

@@ -18,7 +18,6 @@ import 'screens/crisisplan_screen.dart';
 import 'screens/database_debug_screen.dart';
 import 'screens/episodes_screen.dart';
 import 'screens/help_screen.dart';
-import 'screens/life_events_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/medication_screen.dart';
 import 'screens/mood_assessment_screen.dart';
@@ -216,7 +215,6 @@ class _RitmeAppState extends State<RitmeApp> {
         '/sleep-detail': (context) => SleepDetailScreen(),
         '/rhythm-detail': (context) => RhythmDetailScreen(),
         '/activities-detail': (context) => ActivitiesDetailScreen(),
-        '/life-events': (context) => LifeEventsScreen(),
         '/help': (context) => HelpScreen(),
         '/voortekenen': (context) => VoortekenenScreen(),
         '/crisisplan': (context) => CrisisPlanScreen(),

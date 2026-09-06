@@ -235,27 +235,25 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               switch (value) {
                 case 0: Navigator.pushNamed(context, '/statistics'); break;
                 case 1: Navigator.pushNamed(context, '/episodes'); break;
-                case 2: Navigator.pushNamed(context, '/life-events'); break;
-                case 3: Navigator.pushNamed(context, '/weight'); break;
-                case 4: Navigator.pushNamed(context, '/appointments'); break;
-                case 5: Navigator.pushNamed(context, '/voortekenen'); break;
-                case 6: Navigator.pushNamed(context, '/rapport'); break;
-                case 7: Navigator.pushNamed(context, '/help'); break;
-                case 8: _logout(); break;
+                case 2: Navigator.pushNamed(context, '/weight'); break;
+                case 3: Navigator.pushNamed(context, '/appointments'); break;
+                case 4: Navigator.pushNamed(context, '/voortekenen'); break;
+                case 5: Navigator.pushNamed(context, '/rapport'); break;
+                case 6: Navigator.pushNamed(context, '/help'); break;
+                case 7: _logout(); break;
               }
             },
             itemBuilder: (context) => [
               PopupMenuItem(value: 0, child: ListTile(leading: Icon(Icons.bar_chart), title: Text(AppLocalizations.of(context).statistieken), contentPadding: EdgeInsets.zero, dense: true)),
               PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.timeline), title: Text(AppLocalizations.of(context).episodes), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.event), title: Text(AppLocalizations.of(context).lifeEvents), contentPadding: EdgeInsets.zero, dense: true)),
               const PopupMenuDivider(),
-              PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.monitor_weight), title: Text(AppLocalizations.of(context).gewicht), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 4, child: ListTile(leading: Icon(Icons.calendar_today), title: Text(AppLocalizations.of(context).afspraken), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 5, child: ListTile(leading: Icon(Icons.warning_amber), title: Text(AppLocalizations.of(context).voortekenen), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 6, child: ListTile(leading: Icon(Icons.description), title: Text(AppLocalizations.of(context).rapport), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 7, child: ListTile(leading: Icon(Icons.help_outline), title: Text(AppLocalizations.of(context).gebruiksaanwijzing), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.monitor_weight), title: Text(AppLocalizations.of(context).gewicht), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.calendar_today), title: Text(AppLocalizations.of(context).afspraken), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 4, child: ListTile(leading: Icon(Icons.warning_amber), title: Text(AppLocalizations.of(context).voortekenen), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 5, child: ListTile(leading: Icon(Icons.description), title: Text(AppLocalizations.of(context).rapport), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 6, child: ListTile(leading: Icon(Icons.help_outline), title: Text(AppLocalizations.of(context).gebruiksaanwijzing), contentPadding: EdgeInsets.zero, dense: true)),
               const PopupMenuDivider(),
-              PopupMenuItem(value: 8, child: ListTile(leading: Icon(Icons.logout, color: AppTheme.error), title: Text(AppLocalizations.of(context).uitloggen, style: TextStyle(color: AppTheme.error)), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 7, child: ListTile(leading: Icon(Icons.logout, color: AppTheme.error), title: Text(AppLocalizations.of(context).uitloggen, style: TextStyle(color: AppTheme.error)), contentPadding: EdgeInsets.zero, dense: true)),
             ],
           ),
         ],
