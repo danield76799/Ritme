@@ -67,17 +67,15 @@ class WidgetService {
 
       final db = DatabaseHelper.instance;
 
-      // Get existing log to preserve sleep hours if already entered
+      // Merge-preserving: laad bestaande rij zodat slaap/overige velden
+      // blijven staan (upsertDailyLog vervangt de hele rij)
       final existing = await db.getDailyLog(today);
-      final sleepHours = existing?['uren_slaap'] as double? ?? 7.0;
-
-      await db.upsertDailyLog({
-        'date': today,
-        'stemming_hoog': mood,
-        'stemming_laag': mood,
-        'gesplitste_stemming': false,
-        'uren_slaap': sleepHours,
-      });
+      final log = existing != null ? Map<String, dynamic>.from(existing) : <String, dynamic>{};
+      log['date'] = today;
+      log['stemming_hoog'] = mood;
+      log['stemming_laag'] = mood;
+      log['gesplitste_stemming'] = 0;
+      await db.upsertDailyLog(log);
 
       developer.log('Widget mood saved: $mood', name: 'WidgetService');
     } catch (e, stackTrace) {

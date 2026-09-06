@@ -375,6 +375,7 @@ class RapportGenerator {
       case 'negativeLifeEventTrigger': return 'Negatieve gebeurtenis als depressie-trigger';
       case 'mixedEpisode': return 'Mogelijke gemengde episode';
       case 'opposingSignals': return 'Tegenstrijdige signalen';
+      case 'menstruationMoodSwing': return 'Menstruatie + afwijkende stemming (mogelijke hormonale omslag)';
       default: return null; // onbekende flag overslaan
     }
   }

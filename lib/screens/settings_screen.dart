@@ -363,10 +363,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).weergave),
           SwitchListTile(
+            contentPadding: EdgeInsets.zero,
             title: Text(AppLocalizations.of(context).toonMenstruatieTracking,
-              style: TextStyle(fontSize: 14, color: Color(0xFF333333))),
+              style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color)),
             subtitle: Text(AppLocalizations.of(context).zetAlsJe,
-              style: TextStyle(fontSize: 12, color: Colors.grey)),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             value: _showMenstruatie,
             onChanged: (value) {
               setState(() {
@@ -384,8 +385,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).notificaties),
           _buildActionButton(
-            AppLocalizations.of(context).testNotificatieNu,
-            Icons.notifications_active,
+                        AppLocalizations.of(context).testNotificatieNu,
             () async {
               try {
                 await NotificationHelper.instance.showTestNotification();
@@ -404,8 +404,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           _buildActionButton(
-            AppLocalizations.of(context).herplanMedicatieHerinneringen,
-            Icons.alarm,
+                        AppLocalizations.of(context).herplanMedicatieHerinneringen,
             () async {
               try {
                 final rescheduled = await BootService.rescheduleNow();
@@ -426,8 +425,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _buildSectionHeader(AppLocalizations.of(context).medicatie),
           _buildActionButton(
-            AppLocalizations.of(context).medicatieBeheren,
-            Icons.medication_outlined,
+                        AppLocalizations.of(context).medicatieBeheren,
             () => Navigator.pushNamed(context, '/medication'),
           ),
           SizedBox(height: 32),
@@ -450,8 +448,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 32),
           _buildSectionHeader(AppLocalizations.of(context).overige),
           _buildActionButton(
-            AppLocalizations.of(context).databaseDebug,
-            Icons.storage,
+                        AppLocalizations.of(context).databaseDebug,
             () => Navigator.pushNamed(context, '/database-debug'),
           ),
           const SizedBox(height: 32),
@@ -464,8 +461,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       children: [
         _buildActionButton(
-          AppLocalizations.of(context).backupMaken,
-          Icons.backup,
+                    AppLocalizations.of(context).backupMaken,
           () async {
             try {
               final backupPath = await BackupService.saveLocalBackup();
@@ -498,8 +494,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(height: 12),
         _buildActionButton(
-          AppLocalizations.of(context).backupHerstellen,
-          Icons.restore,
+                    AppLocalizations.of(context).backupHerstellen,
           () async {
             try {
               final result = await FilePicker.platform.pickFiles(
@@ -545,14 +540,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(top: 8, bottom: 12),
       child: Text(
-        title,
+        title.toUpperCase(),
         style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.primaryTeal,
-          letterSpacing: 0.5,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          color: Theme.of(context).colorScheme.primary,
+          letterSpacing: 1.2,
         ),
       ),
     );
@@ -634,10 +629,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
-        style: TextStyle(color: Colors.black87, fontSize: 16),
+        style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87, fontSize: 16),
       ),
     );
   }
@@ -665,7 +660,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         subtitle: Text(
           timeValue,
-          style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         trailing: Icon(Icons.access_time, color: AppTheme.primaryTeal),
         onTap: () => _showTimePicker(label, key),
@@ -674,17 +673,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, VoidCallback onPressed) {
+  Widget _buildActionButton(String label, VoidCallback onPressed) {
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 8),
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, color: Colors.white),
-        label: Text(label, style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.w600)),
+        icon: const Icon(Icons.arrow_forward_ios, size: 14),
+        label: Text(label,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+            )),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primaryTeal.withValues(alpha: 0.8),
-          foregroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,

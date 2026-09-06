@@ -69,11 +69,16 @@ class MoodAssessmentScorer {
   /// antwoorden. Boost = extra gewicht in de rawScore; tag = diagnostische
   /// markering die de gebruiker kan zien (zonder Ritme-waarde te beïnvloeden
   /// als de boost leidt tot een verkeerde classificatie).
+  ///
+  /// `menstruatie` (optioneel): true als de gebruiker aangeeft vandaag te
+  /// menstrueren — gebruikt voor het cyclops-omslag-signaal (LCM: hormonale
+  /// fase kan stemmingsomslagen triggeren).
   static BipolarAnalysis analyzeBipolar({
     required double q1,
     required double q3,
     required double q4,
     required double q5,
+    bool menstruatie = false,
   }) {
     final tags = <BipolarTag>[];
     var bonus = 0.0;
@@ -125,6 +130,14 @@ class MoodAssessmentScorer {
       tags.add(BipolarTag.opposingSignals);
     }
 
+    // ---- MENSTRUATIE-OMSLAG (LCM: hormonale trigger) ----
+    // Menstruatie + afwijkende stemming = mogelijke hormonale omslag.
+    // Geen score-boost (de stemming zelf is al gemeten), alleen het
+    // diagnostische signaal.
+    if (menstruatie && (q1 <= -2 || q1 >= 2)) {
+      tags.add(BipolarTag.menstruationMoodSwing);
+    }
+
     // Dedup-tags (houd ze uniek op id)
     final unique = <String, BipolarTag>{};
     for (final t in tags) {
@@ -151,6 +164,7 @@ class MoodAssessmentScorer {
     required double q3,
     required double q4,
     required double q5,
+    bool menstruatie = false,
   }) {
     final rawBase = rawWeightedScore(
       q1: q1,
@@ -164,6 +178,7 @@ class MoodAssessmentScorer {
       q3: q3,
       q4: q4,
       q5: q5,
+      menstruatie: menstruatie,
     );
     final rawWithBoosts = applyBipolarBoosts(
       raw: rawBase,
@@ -214,6 +229,10 @@ enum BipolarTag {
   opposingSignals(
     'opposingSignals',
     'Tegenstrijdige signalen — controleer handmatig',
+  ),
+  menstruationMoodSwing(
+    'menstruationMoodSwing',
+    'Menstruatie + afwijkende stemming — mogelijke hormonale omslag',
   );
 
   final String id;

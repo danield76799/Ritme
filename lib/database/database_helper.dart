@@ -254,6 +254,7 @@ class DatabaseHelper implements DatabaseRepository {
             q3_energie_detail REAL,
             q4_slaapbehoefte REAL,
             q5_gebeurtenis REAL,
+            menstruatie INTEGER DEFAULT 0,
             berekende_score REAL,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
           )
@@ -261,6 +262,14 @@ class DatabaseHelper implements DatabaseRepository {
         await db.execute(
           'CREATE INDEX IF NOT EXISTS idx_mood_assessment_date ON mood_assessment(date)',
         );
+        // Bestaande v4-tabellen (zonder menstruatie-kolom) upgraden
+        try {
+          await db.execute(
+            'ALTER TABLE mood_assessment ADD COLUMN menstruatie INTEGER DEFAULT 0',
+          );
+        } catch (_) {
+          // Kolom bestaat al
+        }
       } catch (e) {
         // Table may already exist
       }
