@@ -19,11 +19,11 @@ class DatumNavigator extends StatelessWidget {
     final gisteren = vandaag.subtract(const Duration(days: 1));
     
     if (datum.year == vandaag.year && datum.month == vandaag.month && datum.day == vandaag.day) {
-      return 'Vandaag, ${DateFormat('d MMMM').format(datum)}';
+      return 'Vandaag, ${DateFormat('d MMMM', 'nl').format(datum)}';
     } else if (datum.year == gisteren.year && datum.month == gisteren.month && datum.day == gisteren.day) {
-      return 'Gisteren, ${DateFormat('d MMMM').format(datum)}';
+      return 'Gisteren, ${DateFormat('d MMMM', 'nl').format(datum)}';
     } else {
-      return DateFormat('EEEE d MMMM').format(datum);
+      return DateFormat('EEEE d MMMM', 'nl').format(datum);
     }
   }
 
