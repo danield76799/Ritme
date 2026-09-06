@@ -2,7 +2,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/services.dart';
 
-import '../database/database_helper.dart';
+import '../service_locator.dart';
 
 /// Service that handles home screen widget interactions.
 ///
@@ -64,8 +64,6 @@ class WidgetService {
       final now = DateTime.now();
       final today =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-
-      final db = DatabaseHelper.instance;
 
       // Merge-preserving: laad bestaande rij zodat slaap/overige velden
       // blijven staan (upsertDailyLog vervangt de hele rij)
