@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/app_theme.dart';
 import '../screens/login_screen.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -30,6 +31,11 @@ class SplashScreen extends StatelessWidget {
                 child: Image.asset(
                   'assets/logo_icon.png',
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stack) => Icon(
+                    Icons.favorite,
+                    size: 80,
+                    color: AppTheme.primaryTeal,
+                  ),
                 ),
               ),
             ),
