@@ -147,7 +147,9 @@ class RapportGenerator {
         final intake = await db.getMedicationIntake(dateStr);
         for (var m in intake) {
           wIntake++;
-          if (m['aantal_ingenomen'] == 1) wTaken++;
+          final val = m['aantal_ingenomen'];
+          final ingenomen = (val is int && val > 0) || (val is String && (int.tryParse(val) ?? 0) > 0);
+          if (ingenomen) wTaken++;
         }
       }
 
@@ -195,7 +197,41 @@ class RapportGenerator {
 
     buf.writeln();
 
-    // === 3. EPISODES ===
+    // === 3. MEDICATION — genomen dagen
+    if (medicationConfigs.isNotEmpty) {
+      buf.writeln('## 💊 Medicatie — ingenomen dagen');
+      buf.writeln();
+      for (var med in medicationConfigs) {
+        final id = med['id'] as int;
+        final name = med['naam']?.toString() ?? 'Onbekend';
+        final dosis = med['dosering']?.toString() ?? '?';
+        final eenheid = med['eenheid']?.toString() ?? '';
+        final intakes = await db.getMedicationIntakeForMedication(id);
+        final taken = intakes.where((r) {
+          final v = r['aantal_ingenomen'];
+          return (v is int && v > 0) || (v is String && (int.tryParse(v) ?? 0) > 0);
+        }).length;
+        final total = intakes.length;
+        if (total == 0) continue;
+        final pct = (taken * 100 / total).round();
+        buf.writeln('- **$name** $dosis $eenheid: $taken/$total ($pct%)');
+        final sorted = List<Map<String, dynamic>>.from(intakes)
+          ..sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
+        buf.writeln(sorted.map((r) {
+          final dateStr = r['date']?.toString() ?? '?';
+          final ingenomen = () {
+            final v = r['aantal_ingenomen'];
+            if (v is int) return v > 0;
+            if (v is String) return (int.tryParse(v) ?? 0) > 0;
+            return false;
+          }();
+          return '  ${ingenomen ? '✅' : '❌'} $dateStr';
+        }).join('\n'));
+      }
+      buf.writeln();
+    }
+
+    // === 4. EPISODES ===
     final episodes = await db.getEpisodes(limit: 20);
     final periodsInReport = episodes.where((e) {
       try {

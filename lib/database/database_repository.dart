@@ -49,6 +49,7 @@ abstract class DatabaseRepository {
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal);
   Future<int> insertMedicationIntakeMap(Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getMedicationIntake(String date);
+  Future<List<Map<String, dynamic>>> getMedicationIntakeForMedication(int medicationId);
 
   // Life Events
   Future<int> insertLifeEvent(String date, String omschrijving, int invloed);
