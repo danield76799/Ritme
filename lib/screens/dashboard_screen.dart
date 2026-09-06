@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
@@ -39,6 +40,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
   List<Alert> _alerts = [];
+
+  // Dagstatus (vinkjes op de tegels)
+  bool _stemmingGelogd = false;
+  bool _slaapGelogd = false;
+  bool _medicatieGelogd = false;
+  bool _srmGelogd = false;
+  int _dagStreak = 0;
 
   @override
   void initState() {
@@ -79,6 +87,65 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final settings = results[0] as Map<String, dynamic>?;
       final dailyLogs = results[1] as List<Map<String, dynamic>>;
       final weeklyActivities = results[2] as List<Map<String, dynamic>>;
+
+      // ---- Dagstatus vandaag (vinkjes op de tegels) ----
+      final todayStr = endDateStr;
+      final todayLog = dailyLogs.where((l) => l['date'] == todayStr).firstOrNull;
+      final todayActs = weeklyActivities.where((a) => a['date'] == todayStr).toList();
+
+      // Stemming: stemming_hoog aanwezig
+      bool stemmingGelogd = false;
+      if (todayLog != null) {
+        final raw = todayLog['stemming_hoog'];
+        final v = raw is num ? raw.toDouble() : double.tryParse(raw?.toString() ?? '');
+        stemmingGelogd = v != null;
+      }
+      // Slaap: sleep_hours of uren_slaap gevuld
+      bool slaapGelogd = false;
+      if (todayLog != null) {
+        final s1 = todayLog['sleep_hours'];
+        final s2 = todayLog['uren_slaap'];
+        final v1 = s1 is num ? s1.toDouble() : double.tryParse(s1?.toString() ?? '');
+        final v2 = s2 is num ? s2.toDouble() : double.tryParse(s2?.toString() ?? '');
+        slaapGelogd = (v1 != null && v1 > 0) || (v2 != null && v2 > 0);
+      }
+      // Medicatie: minimaal één intake vandaag
+      bool medicatieGelogd = false;
+      try {
+        final intake = await db.getMedicationIntake(todayStr);
+        medicatieGelogd = intake.isNotEmpty;
+      } catch (_) {}
+      // Sociaal Ritme: activiteit met actual_time vandaag
+      bool srmGelogd = todayActs.any((a) {
+        final t = a['actual_time']?.toString() ?? '';
+        return t.isNotEmpty && t != '--:--';
+      });
+
+      // ---- Dagstreak: opeenvolgende dagen met minstens één log ----
+      int streak = 0;
+      for (int i = 0; i < 365; i++) {
+        final d = now.subtract(Duration(days: i));
+        final ds = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+        final hasMood = dailyLogs.any((l) => l['date'] == ds && l['stemming_hoog'] != null);
+        final hasSleep = dailyLogs.any((l) {
+          if (l['date'] != ds) return false;
+          final s1 = l['sleep_hours'];
+          final s2 = l['uren_slaap'];
+          final v1 = s1 is num ? s1.toDouble() : double.tryParse(s1?.toString() ?? '');
+          final v2 = s2 is num ? s2.toDouble() : double.tryParse(s2?.toString() ?? '');
+          return (v1 != null && v1 > 0) || (v2 != null && v2 > 0);
+        });
+        final hasSrm = weeklyActivities.any((a) {
+          if (a['date'] != ds) return false;
+          final t = a['actual_time']?.toString() ?? '';
+          return t.isNotEmpty && t != '--:--';
+        });
+        if (hasMood || hasSleep || hasSrm) {
+          streak++;
+        } else {
+          break;
+        }
+      }
 
       // Sleep score berekenen uit batch logs (geen 7 losse queries)
       double totalSleep = 0;
@@ -133,6 +200,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           _weeklyActivities = weeklyActivities.length;
           _loggedDaysCount = loggedDaysCount;
           _weeklyLogs = dailyLogs;
+          _stemmingGelogd = stemmingGelogd;
+          _slaapGelogd = slaapGelogd;
+          _medicatieGelogd = medicatieGelogd;
+          _srmGelogd = srmGelogd;
+          _dagStreak = streak;
           _lastUpdated = DateTime.now();
           _isLoading = false;
         });
@@ -200,7 +272,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     }
 
     final today = DateTime.now();
-    final dateStr = '${today.day}/${today.month}/${today.year}';
+    final dateStr = DateFormat('EEEE d MMMM', 'nl').format(today);
     final username = _settings?['username']?.toString() ?? 'gebruiker';
     final isDark = theme.brightness == Brightness.dark;
 
@@ -310,6 +382,34 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                         fontSize: 15,
                       ),
                     ),
+                    // Dagstreak-motivatie
+                    if (_dagStreak > 0) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🔥', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 6),
+                            Text(
+                              _dagStreak == 1
+                                  ? AppLocalizations.of(context).streakEenDag
+                                  : AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 18),
                     Row(
                       children: [
@@ -330,11 +430,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 const SizedBox(height: 16),
               ],
 
-              // Today section
+              // Today section + dagstatus-metertje
               Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(children: [
                   Text(AppLocalizations.of(context).vandaag, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  _DagStatusMeter(
+                    gelogd: [_stemmingGelogd, _slaapGelogd, _medicatieGelogd, _srmGelogd].where((b) => b).length,
+                    totaal: 4,
+                  ),
                 ]),
               ),
 
@@ -346,10 +451,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.2,
                 children: [
-                  _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: AppLocalizations.of(context).stemming, route: '/mood'),
-                  _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: AppLocalizations.of(context).activiteitEnSlaap, route: '/activity'),
-                  _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication'),
-                  _buildActionCard(context, icon: Icons.schedule, color: const Color(0xFF9DC09D), title: AppLocalizations.of(context).sociaalRitme, route: '/sociaal-ritme'),
+                  _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: AppLocalizations.of(context).stemming, route: '/mood', done: _stemmingGelogd),
+                  _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: AppLocalizations.of(context).activiteitEnSlaap, route: '/activity', done: _slaapGelogd),
+                  _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _medicatieGelogd),
+                  _buildActionCard(context, icon: Icons.schedule, color: const Color(0xFF9DC09D), title: AppLocalizations.of(context).sociaalRitme, route: '/sociaal-ritme', done: _srmGelogd),
                 ],
               ),
 
@@ -369,7 +474,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 context,
                 icon: Icons.bedtime,
                 title: AppLocalizations.of(context).slaapduurLabel,
-                value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : '-',
+                value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : AppLocalizations.of(context).nogNietGelogdVandaag,
                 subtitle: _loggedDaysCount > 0 ? AppLocalizations.of(context).nachten(_loggedDaysCount) : null,
                 color: const Color(0xFF88B0C7),
                 route: '/sleep-detail',
@@ -379,8 +484,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 context,
                 icon: Icons.schedule,
                 title: AppLocalizations.of(context).srtScore,
-                value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : '-',
-                subtitle: _getSrtLabel(_rhythmStability, context),
+                value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : AppLocalizations.of(context).logVandaagOmTeZien,
+                subtitle: _rhythmStability > 0 ? _getSrtLabel(_rhythmStability, context) : null,
                 color: _getSrtColor(_rhythmStability),
                 route: '/rhythm-detail',
               ),
@@ -389,7 +494,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 context,
                 icon: Icons.local_activity,
                 title: AppLocalizations.of(context).activiteitenDezeWeekLabel,
-                value: _weeklyActivities > 0 ? '$_weeklyActivities' : '-',
+                value: _weeklyActivities > 0 ? '$_weeklyActivities' : AppLocalizations.of(context).nogGeenActiviteitenDezeWeek,
                 color: AppTheme.warning,
                 route: '/activities-detail',
               ),
@@ -433,7 +538,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildActionCard(BuildContext context,
-      {required IconData icon, required Color color, required String title, required String route}) {
+      {required IconData icon, required Color color, required String title, required String route, bool done = false}) {
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: Duration(milliseconds: 400),
@@ -449,13 +554,32 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 28),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: color, size: 28),
+                  ),
+                  // Groen vinkje zodra vandaag gelogd
+                  if (done)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.check_circle, color: AppTheme.success, size: 20),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 12),
               Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15), textAlign: TextAlign.center),
@@ -509,7 +633,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   children: [
                     Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     const SizedBox(height: 4),
-                    Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+                    Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18)),
                     if (subtitle != null) ...[
                       const SizedBox(height: 4),
                       Text(subtitle, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color)),
@@ -578,5 +702,46 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     if (score <= 40) return l10n.matigLabel;
     if (score <= 60) return l10n.goed;
     return l10n.uitstekendLabel;
+  }
+}
+
+/// Compact metertje "x/y gelogd" naast de Vandaag-kop.
+class _DagStatusMeter extends StatelessWidget {
+  final int gelogd;
+  final int totaal;
+
+  const _DagStatusMeter({required this.gelogd, required this.totaal});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final allesKlaar = gelogd >= totaal;
+    final color = allesKlaar ? AppTheme.success : (gelogd > 0 ? AppTheme.warning : Colors.grey.shade400);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            allesKlaar ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 14,
+            color: color,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            l10n.dagStatusMeter(gelogd, totaal),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
