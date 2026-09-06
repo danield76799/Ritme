@@ -765,7 +765,7 @@ class _SliderQuestion extends StatelessWidget {
             value: value,
             min: 0,
             max: 100,
-            divisions: 100,
+            divisions: 10,
             label: value.round().toString(),
             onChanged: onChanged,
           ),
