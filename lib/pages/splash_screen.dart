@@ -14,8 +14,8 @@ class SplashScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 150,
-              height: 150,
+              width: 190,
+              height: 190,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.onPrimary,
                 shape: BoxShape.circle,
@@ -29,7 +29,7 @@ class SplashScreen extends StatelessWidget {
               ),
               child: ClipOval(
                 child: Image.asset(
-                  'assets/logo_icon.png',
+                  'assets/logo_hero.png',
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stack) => Icon(
                     Icons.favorite,
