@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/app_theme.dart';
 import '../screens/login_screen.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -14,8 +13,8 @@ class SplashScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 140,
-              height: 140,
+              width: 150,
+              height: 150,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.onPrimary,
                 shape: BoxShape.circle,
@@ -27,24 +26,11 @@ class SplashScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Icon(
-                    Icons.favorite,
-                    size: 80,
-                    color: AppTheme.primaryTeal,
-                  ),
-                  Positioned(
-                    right: 8,
-                    bottom: 18,
-                    child: Icon(
-                      Icons.monitor_heart,
-                      size: 24,
-                      color: AppTheme.primaryTeal,
-                    ),
-                  ),
-                ],
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/logo_icon.png',
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             SizedBox(height: 24),

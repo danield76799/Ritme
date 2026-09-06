@@ -79,7 +79,7 @@ dev_dependencies:
 # Flutter Native Splash config
 flutter_native_splash:
   color: "#4FB2C1"
-  image: assets/logo.jpg
+  image: assets/logo_splash.png
   android: true
   ios: true
   web: false
@@ -88,7 +88,7 @@ flutter_native_splash:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/logo.jpg"
+  image_path: "assets/logo_icon.png"
   remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
