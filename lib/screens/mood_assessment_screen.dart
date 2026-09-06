@@ -30,18 +30,38 @@ class MoodAssessmentScreen extends StatefulWidget {
 }
 
 class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
-  int _step = 0; // 0..4 = vraag 1..5, 5 = resultaat
+  int _step = 0; // 0..4 = vraag 1..5, 5 = menstruatie (optioneel), 6 = resultaat
   MoodScoreResult? _result; // berekend bij _finish, getoond in resultaat-stap
   double? _q1; // stemming -4..+4
   double _q2Slider = 50; // 0..100 (depressief=0, manisch=100)
   double? _q3; // energie detail -3..+3
   double? _q4; // slaapbehoefte -4..+4
   double? _q5; // gebeurtenis -4..+4
+  bool _menstruatie = false; // vraag 6 (alleen zichtbaar als setting aan)
+  bool _showMenstruatieVraag = false; // uit settings (show_menstruatie)
+
+  int get _resultStep => _showMenstruatieVraag ? 6 : 5;
 
   @override
   void initState() {
     super.initState();
+    _laadSettings();
     _checkAlIngevuld();
+  }
+
+  /// Laadt de show_menstruatie-instelling (bepaalt of vraag 6 getoond wordt).
+  Future<void> _laadSettings() async {
+    try {
+      await ensureInitialized();
+      final settings = await db.getSettings();
+      if (!mounted) return;
+      final raw = settings?['show_menstruatie'];
+      final show = raw == null ||
+          raw == '1' || raw == 1 || raw == 'true' || raw == true;
+      setState(() => _showMenstruatieVraag = show);
+    } catch (e) {
+      debugPrint('MoodAssessment settings load error: $e');
+    }
   }
 
   String _datumLabel(BuildContext context) {
@@ -104,6 +124,8 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
         return _q4 != null;
       case 4:
         return _q5 != null;
+      case 5:
+        return !_showMenstruatieVraag || true; // vraag 6 heeft een default (nee)
       default:
         return false;
     }
@@ -116,7 +138,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
     // zodat een trage/geblokkeerde DB-write de UI nooit blokkeert.
     if (!mounted) return;
     setState(() {
-      _step = 5;
+      _step = _resultStep;
       _result = result;
     });
     // Fire-and-forget: errors worden gelogd, UI is al door.
@@ -134,6 +156,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
         'q3_energie_detail': _q3,
         'q4_slaapbehoefte': _q4,
         'q5_gebeurtenis': _q5,
+        'menstruatie': _showMenstruatieVraag && _menstruatie ? 1 : 0,
         'berekende_score': result.ritmeScore,
         'flags_json': _encodeFlags(result.bipolarTags),
       });
@@ -149,6 +172,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
       q3: _q3!,
       q4: _q4!,
       q5: _q5!,
+      menstruatie: _showMenstruatieVraag && _menstruatie,
     );
   }
 
@@ -171,6 +195,10 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
       // Geen gesplitste stemming via de vragenlijst: laag = hoog.
       log['stemming_laag'] = result.ritmeScore;
       log['gesplitste_stemming'] = 0;
+      // Menstruatie-vlag (alleen als de vraag getoond werd)
+      if (_showMenstruatieVraag) {
+        log['menstruatie'] = _menstruatie ? 1 : 0;
+      }
       await db.upsertDailyLog(log);
     } catch (e) {
       debugPrint('MoodAssessment daily-log save error: $e');
@@ -256,11 +284,11 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
                 ],
               ),
             ),
-            _ProgressBar(step: _step, total: 5),
+            _ProgressBar(step: _step, total: _showMenstruatieVraag ? 6 : 5),
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
-                child: _step == 5
+                child: _step >= 5
                     ? _ResultStep(
                         key: const ValueKey('result'),
                         result: _result,
@@ -290,7 +318,8 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
                       child: ElevatedButton(
                         onPressed: _canProceed()
                             ? () {
-                                if (_step == 4) {
+                                final lastQuestion = _showMenstruatieVraag ? 5 : 4;
+                                if (_step == lastQuestion) {
                                   _finish();
                                 } else {
                                   setState(() => _step += 1);
@@ -298,7 +327,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
                               }
                             : null,
                         child: Text(
-                          _step == 4
+                          _step == (_showMenstruatieVraag ? 5 : 4)
                               ? l10n.stemmingsCheckAfronden
                               : l10n.stemmingsCheckVolgende,
                         ),
@@ -530,6 +559,15 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
           selected: _q5,
           onChanged: (v) => setState(() => _q5 = v),
         );
+      case 5:
+        // Vraag 6: menstruatie (alleen bereikt als _showMenstruatieVraag)
+        return _MenstruatieQuestion(
+          key: const ValueKey('q6'),
+          title: l10n.stemmingsCheckVraag6Titel,
+          subtitle: l10n.stemmingsCheckVraag6Ondertitel,
+          value: _menstruatie,
+          onChanged: (v) => setState(() => _menstruatie = v),
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -708,6 +746,119 @@ class _OptionTile extends StatelessWidget {
   }
 }
 
+class _MenstruatieQuestion extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _MenstruatieQuestion({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: _MenstruatieOption(
+                  label: AppLocalizations.of(context).nee,
+                  icon: Icons.close,
+                  selected: !value,
+                  color: Colors.grey.shade500,
+                  onTap: () => onChanged(false),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _MenstruatieOption(
+                  label: AppLocalizations.of(context).ja,
+                  icon: Icons.check,
+                  selected: value,
+                  color: Colors.pink.shade400,
+                  onTap: () => onChanged(true),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MenstruatieOption extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _MenstruatieOption({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.15) : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? color : Theme.of(context).dividerColor,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 28, color: selected ? color : Theme.of(context).colorScheme.outline),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                color: selected ? color : Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SliderQuestion extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -814,6 +965,8 @@ class _ResultStep extends StatelessWidget {
         return l10n.tagMixedEpisode;
       case BipolarTag.opposingSignals:
         return l10n.tagOpposingSignals;
+      case BipolarTag.menstruationMoodSwing:
+        return l10n.tagMenstruationMoodSwing;
     }
   }
 
@@ -831,6 +984,8 @@ class _ResultStep extends StatelessWidget {
       case BipolarTag.mixedEpisode:
       case BipolarTag.opposingSignals:
         return Colors.deepPurple.shade400;
+      case BipolarTag.menstruationMoodSwing:
+        return Colors.pink.shade400;
     }
   }
 

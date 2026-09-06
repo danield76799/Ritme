@@ -415,13 +415,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
       });
       
       await db.insertSleepLog(_formattedDate, _bedTime!, _wakeTime!, _awakeMinutes);
-      
+
       // Also update daily log with calculated sleep hours and awake minutes
-      await db.upsertDailyLog({
-        'date': _formattedDate,
-        'uren_slaap': sleepHours,
-        'awake_minutes': _awakeMinutes,
-      });
+      // (merge-preserving: upsertDailyLog vervangt de rij — bestaande
+      //  stemming/overige velden moeten blijven staan)
+      final existingLog = await db.getDailyLog(_formattedDate);
+      final dailyLog = existingLog != null ? Map<String, dynamic>.from(existingLog) : <String, dynamic>{};
+      dailyLog['date'] = _formattedDate;
+      dailyLog['uren_slaap'] = sleepHours;
+      dailyLog['awake_minutes'] = _awakeMinutes;
+      await db.upsertDailyLog(dailyLog);
       
       // Also save "Opstaan" activity with wake_time (auto-completed)
       if (_wakeTime != null) {
