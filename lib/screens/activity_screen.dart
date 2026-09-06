@@ -357,16 +357,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
   Future<void> _setAwakeTime() async {
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.grey.shade900,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.grey.shade900,
+          color: Theme.of(context).colorScheme.surface,
           child: Column(
             children: [
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Theme.of(context).textTheme.bodyMedium?.color,
+                color: Theme.of(context).colorScheme.primary,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -860,7 +860,7 @@ class _AwakeTimePicker extends StatelessWidget {
       onSelectedItemChanged: (index) {
         onChanged(index * 15);
       },
-      backgroundColor: Colors.grey.shade900,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       children: List.generate(49, (index) {
         final minutes = index * 15;
         final hours = minutes ~/ 60;
@@ -876,7 +876,7 @@ class _AwakeTimePicker extends StatelessWidget {
         return Center(
           child: Text(
             label,
-            style: TextStyle(color: Theme.of(context).colorScheme.surface, fontSize: 20),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 20),
           ),
         );
       }),
