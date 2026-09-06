@@ -455,6 +455,8 @@
   "stemmingsCheckOptieSlaapNietTot": "Slaap niet tot nauwelijks, terwijl ik wel moe ben",
   "stemmingsCheckSluiten": "Sluiten",
   "stemmingsCheckOpenKnop": "Vragenlijst invullen",
+  "stemmingsCheckAlIngevuld": "Al ingevuld",
+  "gisteren": "Gisteren",
   "stemmingsCheckAnalyseTitel": "Bipolaire analyse",
   "stemmingsCheckAnalyseGeen": "Geen bijzondere patronen gedetecteerd.",
   "stemmingsCheckAnalyseTip": "Deze tags zijn screenings-signalen, geen diagnose. Bespreek met je behandelaar als ze vaak terugkomen.",
