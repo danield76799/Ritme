@@ -119,6 +119,25 @@ class _RapportScreenState extends State<RapportScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              // Kopieer-knop: plak het rapport direct in een chat/AI-app
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: OutlinedButton.icon(
+                  onPressed: _kopieerRapport,
+                  icon: const Icon(Icons.copy, size: 22),
+                  label: Text(
+                    AppLocalizations.of(context).kopieerRapport,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -203,6 +222,24 @@ class _RapportScreenState extends State<RapportScreen> {
       }
     } finally {
       if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  Future<void> _kopieerRapport() async {
+    if (_reportText == null || _reportText!.isEmpty) return;
+    try {
+      await Clipboard.setData(ClipboardData(text: _reportText!));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).samenvattingGekopieerdNaarKlembord)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).konRapportKopieren(e.toString())), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 }

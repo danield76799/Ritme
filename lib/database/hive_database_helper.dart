@@ -997,23 +997,44 @@ class HiveDatabaseHelper implements DatabaseRepository {
         return entry.value['date'] == date;
       }).map((entry) {
         final map = Map<String, dynamic>.from(entry.value);
-        // Ensure id is present
-        if (!map.containsKey('id')) {
-          map['id'] = entry.key;
-        }
-        // Convert medication_id to int if it's a string
+        if (!map.containsKey('id')) map['id'] = entry.key;
         if (map['medication_id'] is String) {
           map['medication_id'] = int.tryParse(map['medication_id']) ?? 0;
         }
-        // Ensure all values are properly typed
-        final cleanMap = <String, dynamic>{};
-        map.forEach((key, value) {
-          cleanMap[key] = value?.toString() ?? value;
-        });
-        return cleanMap;
+        final raw = map['aantal_ingenomen'];
+        if (raw is String) {
+          map['aantal_ingenomen'] = int.tryParse(raw) ?? 0;
+        } else if (raw == null) {
+          map['aantal_ingenomen'] = 0;
+        }
+        return map;
       }).toList();
     } catch (e) {
       AppLogger.error('Error loading medication intake', error: e);
+      return [];
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationIntakeForMedication(int medicationId) async {
+    try {
+      return _medicationIntake.toMap().entries.where((entry) {
+        final v = entry.value['medication_id'];
+        final id = v is int ? v : int.tryParse(v?.toString() ?? '0') ?? 0;
+        return id == medicationId;
+      }).map((entry) {
+        final map = Map<String, dynamic>.from(entry.value);
+        if (!map.containsKey('id')) map['id'] = entry.key;
+        final raw = map['aantal_ingenomen'];
+        if (raw is String) {
+          map['aantal_ingenomen'] = int.tryParse(raw) ?? 0;
+        } else if (raw == null) {
+          map['aantal_ingenomen'] = 0;
+        }
+        return map;
+      }).toList();
+    } catch (e) {
+      AppLogger.error('Error loading medication intake by med', error: e);
       return [];
     }
   }
