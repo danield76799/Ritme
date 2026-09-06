@@ -626,12 +626,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, size: 18, color: taken ? Colors.white : Colors.grey.shade600),
-              const SizedBox(width: 6),
-              Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: fg)),
+              const SizedBox(height: 2),
+              Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg), textAlign: TextAlign.center),
             ],
           ),
         ),
