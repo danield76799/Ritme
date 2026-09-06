@@ -204,31 +204,45 @@ class HiveDatabaseHelper implements DatabaseRepository {
       return Map<String, dynamic>.from(map);
     }).toList();
     
-    // Group by date and keep only the latest entry per date (by id/timestamp)
-    Map<String, Map<String, dynamic>> latestLogsByDate = {};
+    // Group by date and MERGE all entries per date (vragenlijst schrijft
+    // onder date-key, slaap-log onder int-key — samennemen i.p.v. winner
+    // kiezen, anders verdwijnt stemming_hoog uit de dagrij).
+    Map<String, Map<String, dynamic>> mergedLogsByDate = {};
+    int latestNumericId = 0;
     for (var log in logs) {
       final date = log['date']?.toString();
-      if (date != null) {
-        // Keep the entry with the highest id (most recent)
-        // Parse ids as numbers for comparison
-        final currentId = latestLogsByDate[date]?['id'];
-        final newId = log['id'];
-        
-        bool shouldReplace = !latestLogsByDate.containsKey(date);
-        if (!shouldReplace && currentId != null && newId != null) {
-          // Parse as numbers if possible, otherwise compare as strings
-          final currentNum = currentId is num ? currentId.toInt() : int.tryParse(currentId.toString()) ?? 0;
-          final newNum = newId is num ? newId.toInt() : int.tryParse(newId.toString()) ?? 0;
-          shouldReplace = newNum > currentNum;
-        }
-        
-        if (shouldReplace) {
-          latestLogsByDate[date] = log;
-        }
+      if (date == null) continue;
+
+      final existing = mergedLogsByDate[date];
+      if (existing == null) {
+        mergedLogsByDate[date] = log;
+      } else {
+        // Merge: vul ontbrekende velden aan (bestaande niet-null waarden winnen)
+        existing.forEach((k, v) {
+          if (v != null && log[k] == null) log[k] = v;
+        });
+        log.forEach((k, v) {
+          if (v != null && (existing[k] == null)) existing[k] = v;
+        });
+        mergedLogsByDate[date] = existing;
       }
+
+      // Hoogste numerieke id bijhouden (voor 'meest recent'-volgorde)
+      final idNum = log['id'] is num
+          ? (log['id'] as num).toInt()
+          : int.tryParse(log['id']?.toString() ?? '') ?? 0;
+      if (idNum > latestNumericId) latestNumericId = idNum;
     }
-    
-    final groupedLogs = latestLogsByDate.values.toList();
+
+    // Zorg dat elke dagrij het hoogste id draagt (consistentie met oud gedrag)
+    for (var log in mergedLogsByDate.values) {
+      final idNum = log['id'] is num
+          ? (log['id'] as num).toInt()
+          : int.tryParse(log['id'].toString()) ?? 0;
+      if (idNum < latestNumericId) log['id'] = latestNumericId;
+    }
+
+    final groupedLogs = mergedLogsByDate.values.toList();
     groupedLogs.sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
     return groupedLogs;
   }
