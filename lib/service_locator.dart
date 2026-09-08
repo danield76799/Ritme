@@ -14,6 +14,11 @@ export 'database/database_repository.dart';
 
 DatabaseRepository? _db;
 
+/// Set a custom database instance (used in tests and screenshots).
+void setDbForTesting(DatabaseRepository database) {
+  _db = database;
+}
+
 /// Get the database instance (lazy initialization)
 DatabaseRepository get db {
   if (_db == null) {
