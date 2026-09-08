@@ -25,7 +25,6 @@ import 'screens/rapport_screen.dart';
 import 'screens/rhythm_detail_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/sleep_detail_screen.dart';
-import 'screens/sociaal_ritme_meter_screen.dart';
 import 'screens/statistics_screen.dart' show StatistiekenScherm;
 import 'screens/voortekenen_screen.dart';
 import 'screens/weight_screen.dart';
