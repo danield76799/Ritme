@@ -1,0 +1,36 @@
+--- a/lib/screens/login_screen.dart
++++ b/lib/screens/login_screen.dart
+@@ -15,10 +15,6 @@
+ class LoginScreen extends StatefulWidget {
+   const LoginScreen({super.key});
+-
+-  /// Tijdelijke toegangspin voor Play Store review. Later verwijderen.
+-  static const String playStoreReviewPin = '424242';
+-
+   @override
+   State<LoginScreen> createState() => _LoginScreenState();
+ }
+@@ -209,23 +205,6 @@
+         return;
+       }
+ 
+-      // Tijdelijke Play Store review-pin: alleen op toestel zonder echte PIN
+-      // (review-omgeving) wordt deze pin geaccepteerd. Op productie-toestellen
+-      // met een bestaande PIN werkt deze pin NIET.
+-      if (pin == LoginScreen.playStoreReviewPin) {
+-        final pinSet = await db.hasPinSet();
+-        if (!pinSet && mounted) {
+-          Navigator.pushReplacement(
+-            context,
+-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+-          );
+-        } else if (mounted) {
+-          setState(() {
+-            _errorMessage = AppLocalizations.of(context).ongeldigePin;
+-          });
+-        }
+-        return;
+-      }
+-
+       final isValid = await db.validateLoginPin(pin);
+       if (isValid != null) {
