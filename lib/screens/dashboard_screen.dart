@@ -14,7 +14,6 @@ import 'activity_screen.dart';
 import 'medication_screen.dart';
 import 'weight_screen.dart';
 import 'appointments_screen.dart';
-import 'sociaal_ritme_meter_screen.dart';
 import 'voortekenen_screen.dart';
 import 'crisisplan_screen.dart';
 import 'rapport_screen.dart';
@@ -437,8 +436,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   Text(AppLocalizations.of(context).vandaag, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                   const Spacer(),
                   _DagStatusMeter(
-                    gelogd: [_stemmingGelogd, _slaapGelogd, _medicatieGelogd, _srmGelogd].where((b) => b).length,
-                    totaal: 4,
+                    gelogd: [_stemmingGelogd, _slaapGelogd, _medicatieGelogd].where((b) => b).length,
+                    totaal: 3,
                   ),
                 ]),
               ),
@@ -454,7 +453,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: AppLocalizations.of(context).stemming, route: '/mood', done: _stemmingGelogd),
                   _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: AppLocalizations.of(context).activiteitEnSlaap, route: '/activity', done: _slaapGelogd),
                   _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _medicatieGelogd),
-                  _buildActionCard(context, icon: Icons.schedule, color: const Color(0xFF9DC09D), title: AppLocalizations.of(context).sociaalRitme, route: '/sociaal-ritme', done: _srmGelogd),
                 ],
               ),
 
@@ -600,7 +598,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       case '/medication': return MedicationScreen();
       case '/weight': return WeightScreen();
       case '/appointments': return AppointmentsScreen();
-      case '/sociaal-ritme': return SociaalRitmeMeterScreen();
       case '/voortekenen': return VoortekenenScreen();
       case '/crisisplan': return CrisisPlanScreen();
       case '/rapport': return RapportScreen();

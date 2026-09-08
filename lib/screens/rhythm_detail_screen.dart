@@ -284,7 +284,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                     const SizedBox(height: 12),
                     
                     if (_activities.isEmpty)
-                      _buildEmptyState('Geen activiteiten gevonden', 'Voeg SRM activiteiten toe via het Sociaal Ritme scherm.')
+                      _buildEmptyState('Geen activiteiten gevonden', 'Voeg SRM activiteiten toe via het Activiteit & Slaap scherm.'),
                     else
                       ..._activities.map((activity) => _buildActivityItem(activity)),
                   ],
