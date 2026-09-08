@@ -194,7 +194,6 @@ class _RitmeAppState extends State<RitmeApp> {
         '/settings': (context) => SettingsScreen(),
         '/medication-schedule': (context) => MedicationScheduleScreen(),
         '/weight': (context) => WeightScreen(),
-        '/sociaal-ritme': (context) => SociaalRitmeMeterScreen(),
         '/appointments': (context) => AppointmentsScreen(),
         '/statistics': (context) => StatistiekenScherm(),
         '/sleep-detail': (context) => SleepDetailScreen(),
