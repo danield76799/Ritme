@@ -464,7 +464,7 @@
   "tagMenstruationMoodSwing": "Menstruatie + afwijkende stemming — mogelijke hormonale omslag",
   "streakEenDag": "1 dag op rij gelogd",
   "streakMeerdereDagen": "{dagen} dagen op rij gelogd 🔥",
-  "dagStatusMeter": "{gelogd}/{totaal} gelogd",
+  "dagStatusMeter": "{gelogd}/{totaal} ingevuld",
   "nogNietGelogdVandaag": "Nog niet gelogd vandaag",
   "logVandaagOmTeZien": "Log vandaag om te zien",
   "nogGeenActiviteitenDezeWeek": "Nog niets deze week",

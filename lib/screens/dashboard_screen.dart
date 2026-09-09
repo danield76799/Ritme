@@ -453,7 +453,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: AppLocalizations.of(context).stemming, route: '/mood', done: _stemmingGelogd),
                   _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: AppLocalizations.of(context).activiteitEnSlaap, route: '/activity', done: _slaapGelogd),
                   _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _medicatieGelogd),
-                  _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false),
+                  _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false, isAction: true),
                 ],
               ),
 
@@ -537,7 +537,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildActionCard(BuildContext context,
-      {required IconData icon, required Color color, required String title, required String route, bool done = false}) {
+      {required IconData icon, required Color color, required String title, required String route, bool done = false, bool isAction = false}) {
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: Duration(milliseconds: 400),
@@ -576,6 +576,20 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.check_circle, color: AppTheme.success, size: 20),
+                      ),
+                    )
+                  // Actie-tegel (geen registratie): pijltje i.p.v. vinkje
+                  else if (isAction)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.arrow_forward, color: color, size: 18),
                       ),
                     ),
                 ],
