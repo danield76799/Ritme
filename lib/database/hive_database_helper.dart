@@ -19,6 +19,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   static const String _crisisPlanBox = 'crisis_plan';
   static const String _prodromalChecklistBox = 'prodromal_checklist';
   static const String _prodromalLogsBox = 'prodromal_logs';
+  static const String _episodeLogsBox = 'episode_logs';
   static const String _moodAssessmentBox = 'mood_assessment';
 
   HiveDatabaseHelper._init();
@@ -36,6 +37,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_crisisPlanBox);
     await Hive.openBox(_prodromalChecklistBox);
     await Hive.openBox(_prodromalLogsBox);
+    await Hive.openBox(_episodeLogsBox);
     await Hive.openBox(_moodAssessmentBox);
     // Seed default prodromal checklist if empty
     await instance._seedProdromalChecklistIfEmpty();
@@ -55,6 +57,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Box get _crisisPlan => Hive.box(_crisisPlanBox);
   Box get _prodromalChecklist => Hive.box(_prodromalChecklistBox);
   Box get _prodromalLogs => Hive.box(_prodromalLogsBox);
+  Box get _episodeLogs => Hive.box(_episodeLogsBox);
   Box get _moodAssessment => Hive.box(_moodAssessmentBox);
 
   Future<void> _seedProdromalChecklistIfEmpty() async {
@@ -556,6 +559,14 @@ class HiveDatabaseHelper implements DatabaseRepository {
       });
       return cleanMap;
     }).toList();
+    (result['tables'] as Map<String, dynamic>)['episode_logs'] = _episodeLogs.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
     
     return jsonEncode(result);
   }
@@ -693,6 +704,19 @@ class HiveDatabaseHelper implements DatabaseRepository {
         await _prodromalLogs.put(map['id'], cleanMap);
       }
     }
+    if (tables['episode_logs'] != null) {
+      for (var row in tables['episode_logs'] as List) {
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = DateTime.now().millisecondsSinceEpoch % 1000000;
+        }
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _episodeLogs.put(map['id'], cleanMap);
+      }
+    }
   }
 
   @override
@@ -706,6 +730,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await _crisisPlan.clear();
     await _prodromalChecklist.clear();
     await _prodromalLogs.clear();
+    await _episodeLogs.clear();
   }
 
   @override
@@ -1564,24 +1589,70 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<int> insertEpisode(Map<String, dynamic> data) async => 0;
-
-  @override
-  Future<int> updateEpisode(int id, Map<String, dynamic> data) async => 0;
-
-  @override
-  Future<List<Map<String, dynamic>>> getEpisodes({String? type, int limit = 50}) async {
-    return [];
+  Future<int> insertEpisode(Map<String, dynamic> data) async {
+    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final clean = Map<String, dynamic>.from(data);
+    clean['id'] = id;
+    clean.forEach((key, value) {
+      clean[key] = value?.toString() ?? value;
+    });
+    await _episodeLogs.put(id, clean);
+    return id;
   }
 
   @override
-  Future<Map<String, dynamic>?> getActiveEpisode() async => null;
+  Future<int> updateEpisode(int id, Map<String, dynamic> data) async {
+    final existing = _episodeLogs.get(id);
+    if (existing == null) return 0;
+    final merged = Map<String, dynamic>.from(existing);
+    merged.addAll(data);
+    merged['id'] = id;
+    await _episodeLogs.put(id, merged);
+    return 1;
+  }
 
   @override
-  Future<int> endEpisode(int id, String endDate) async => 0;
+  Future<List<Map<String, dynamic>>> getEpisodes({String? type, int limit = 50}) async {
+    var values = _episodeLogs.toMap().values.map((e) => Map<String, dynamic>.from(e)).toList();
+    if (type != null) {
+      values = values.where((e) => e['episode_type'] == type).toList();
+    }
+    values.sort((a, b) {
+      final da = a['start_date']?.toString() ?? '';
+      final db = b['start_date']?.toString() ?? '';
+      return db.compareTo(da);
+    });
+    return values.take(limit).toList();
+  }
 
   @override
-  Future<int> deleteEpisode(int id) async => 0;
+  Future<Map<String, dynamic>?> getActiveEpisode() async {
+    final values = _episodeLogs.toMap().values.map((e) => Map<String, dynamic>.from(e));
+    final active = values.where((e) => e['end_date'] == null).toList();
+    active.sort((a, b) {
+      final da = a['start_date']?.toString() ?? '';
+      final db = b['start_date']?.toString() ?? '';
+      return db.compareTo(da);
+    });
+    return active.isNotEmpty ? active.first : null;
+  }
+
+  @override
+  Future<int> endEpisode(int id, String endDate) async {
+    final existing = _episodeLogs.get(id);
+    if (existing == null) return 0;
+    final merged = Map<String, dynamic>.from(existing);
+    merged['end_date'] = endDate;
+    merged['id'] = id;
+    await _episodeLogs.put(id, merged);
+    return 1;
+  }
+
+  @override
+  Future<int> deleteEpisode(int id) async {
+    await _episodeLogs.delete(id);
+    return 1;
+  }
 
   @override
   Future<int> insertMedicationLevel(Map<String, dynamic> data) async => 0;
