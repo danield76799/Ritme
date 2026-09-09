@@ -16,6 +16,8 @@ class RapportGenerator {
 
     buf.writeln('# Life Chart Methode — Ritme Rapport');
     buf.writeln();
+    buf.writeln('**Dit rapport is bedoeld als ondersteunend overzicht bij de behandeling van een Bipolaire Stoornis.**');
+    buf.writeln();
     buf.writeln('**Periode:** ${_formatNL(startDate)} t/m ${_formatNL(now)}');
     buf.writeln('**Gegenereerd:** ${_formatNL(now)} ${now.hour}:${now.minute.toString().padLeft(2, '0')}');
     buf.writeln();

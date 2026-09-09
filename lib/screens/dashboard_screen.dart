@@ -453,6 +453,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: AppLocalizations.of(context).stemming, route: '/mood', done: _stemmingGelogd),
                   _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: AppLocalizations.of(context).activiteitEnSlaap, route: '/activity', done: _slaapGelogd),
                   _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _medicatieGelogd),
+                  _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false),
                 ],
               ),
 
