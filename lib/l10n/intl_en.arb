@@ -464,7 +464,7 @@
   "tagMenstruationMoodSwing": "Menstruation + altered mood — possible hormonal shift",
   "streakEenDag": "1 day in a row logged",
   "streakMeerdereDagen": "{dagen} days in a row logged 🔥",
-  "dagStatusMeter": "{gelogd}/{totaal} logged",
+  "dagStatusMeter": "{gelogd}/{totaal} filled in",
   "nogNietGelogdVandaag": "Not logged yet today",
   "logVandaagOmTeZien": "Log today to see",
   "nogGeenActiviteitenDezeWeek": "Nothing yet this week",
