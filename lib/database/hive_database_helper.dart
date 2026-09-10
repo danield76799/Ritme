@@ -338,11 +338,27 @@ class HiveDatabaseHelper implements DatabaseRepository {
     
     if (logs.isEmpty) return null;
     
-    final map = Map<String, dynamic>.from(logs.last.value);
-    if (!map.containsKey('id')) {
-      map['id'] = logs.last.key;
+    // Twee soorten rows voor dezelfde datum:
+    //  - date-string row (avond-checkin): bed_time = de bedtijd van DIE avond ✓
+    //  - int-key row (ochtend-checkin insertSleepLog): bed_time = bedtijd van de
+    //    avond ERVÓÓR ✗ — die mag de avond-bedtijd nooit overschrijven.
+    // Kies daarom de date-string row als die bed_time heeft; anders de laatste row.
+    Map<String, dynamic>? best;
+    for (final entry in logs) {
+      final keyIsDate = entry.key is String;
+      final hasBed = entry.value['bed_time'] != null &&
+          entry.value['bed_time'].toString().isNotEmpty;
+      if (keyIsDate && hasBed) {
+        best = Map<String, dynamic>.from(entry.value);
+        if (!best.containsKey('id')) best['id'] = entry.key;
+        return best;
+      }
     }
-    return map;
+    best = Map<String, dynamic>.from(logs.last.value);
+    if (!best.containsKey('id')) {
+      best['id'] = logs.last.key;
+    }
+    return best;
   }
 
   double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
