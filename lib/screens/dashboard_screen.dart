@@ -575,10 +575,44 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final settings = results[0] as Map<String, dynamic>?;
       final dailyLogs = results[1] as List<Map<String, dynamic>>;
       final weeklyActivities = results[2] as List<Map<String, dynamic>>;
+      // Dagstatus voor de geselecteerde datum
+      final selectedDs = ds;
+      final todayLogForDate = dailyLogs.where((l) => l['date'] == selectedDs).firstOrNull;
+      final todayActsForDate = weeklyActivities.where((a) => a['date'] == selectedDs).toList();
+      bool stemmingForDate = false;
+      bool slaapForDate = false;
+      bool medicatieForDate = false;
+      bool srmForDate = false;
+      if (todayLogForDate != null) {
+        final raw = todayLogForDate['stemming_hoog'];
+        if (raw != null) stemmingForDate = true;
+        final s1 = todayLogForDate['sleep_hours'];
+        final s2 = todayLogForDate['uren_slaap'];
+        final v1 = s1 is num ? s1.toDouble() : double.tryParse(s1?.toString() ?? '');
+        final v2 = s2 is num ? s2.toDouble() : double.tryParse(s2?.toString() ?? '');
+        slaapForDate = (v1 != null && v1 > 0) || (v2 != null && v2 > 0);
+      }
+      medicatieForDate = false;
+      try {
+        final intake = await db.getMedicationIntake(selectedDs);
+        medicatieForDate = intake.any((row) {
+          final raw = row['aantal_ingenomen'];
+          final n = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
+          return n > 0;
+        });
+      } catch (_) {}
+      srmForDate = todayActsForDate.any((a) {
+        final t = a['actual_time']?.toString() ?? '';
+        return t.isNotEmpty && t != '--:--';
+      });
       setState(() {
         _settings = settings;
         _dailyLogs = dailyLogs;
         _weeklyActivities = weeklyActivities.length;
+        _stemmingGelogd = stemmingForDate;
+        _slaapGelogd = slaapForDate;
+        _medicatieGelogd = medicatieForDate;
+        _srmGelogd = srmForDate;
       });
     } catch (_) {}
   }
