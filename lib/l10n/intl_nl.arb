@@ -487,5 +487,8 @@
   "tagPositiveLifeEventTrigger": "Positieve gebeurvenis als mogelijke manie-trigger",
   "tagNegativeLifeEventTrigger": "Negatieve gebeurvenis als mogelijke depressie-trigger",
   "tagMixedEpisode": "Mogelijke gemengde episode",
-  "tagOpposingSignals": "Tegenstrijdige signalen — controleer handmatig"
+  "tagOpposingSignals": "Tegenstrijdige signalen — controleer handmatig",
+  "alIngevuldVandaag": "Al ingevuld vandaag",
+  "aanpassen": "Aanpassen",
+  "slaapduur": "Slaapduur"
 }

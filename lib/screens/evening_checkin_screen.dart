@@ -4,7 +4,7 @@ import '../service_locator.dart';
 import '../theme/app_theme.dart';
 import '../utils/logger.dart';
 import '../utils/mood_assessment_scorer.dart';
-import 'morning_checkin_screen.dart' show MoodAssessmentScorerColors;
+import 'morning_checkin_screen.dart' show MoodAssessmentScorerColors, _OverzichtRij;
 
 /// Avond check-in: de terugblik op de dag, vlak voordat je gaat slapen.
 ///
@@ -41,6 +41,18 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
   TimeOfDay? _bedTime;
 
   bool _isSaving = false;
+  bool _bekijkModus = false; // true = overzicht van opgeslagen waarden (read-only)
+
+  // Opgeslagen waarden voor het overzicht
+  double? _opgeslagenQ1;
+  double _opgeslagenQ2Slider = 50;
+  double? _opgeslagenQ3;
+  double? _opgeslagenQ5;
+  TimeOfDay? _opgeslagenEersteContact;
+  TimeOfDay? _opgeslagenWerkHobby;
+  TimeOfDay? _opgeslagenAvondeten;
+  TimeOfDay? _opgeslagenBedTime;
+  int _opgeslagenScore = 0;
 
   static const _totaalStappen = 8;
 
@@ -52,11 +64,79 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
   @override
   void initState() {
     super.initState();
-    _laadSettings();
+    _laadBestaandeData();
   }
 
-  Future<void> _laadSettings() async {
-    // Menstruatie-vraag is verwijderd — geen instellingen meer nodig.
+  /// Bestaande avond check-in van vandaag laden voor de inkijk-modus.
+  Future<void> _laadBestaandeData() async {
+    try {
+      await ensureInitialized();
+      final assessment = await db.getMoodAssessment(_formattedToday);
+      final log = await db.getDailyLog(_formattedToday);
+      final srm = await db.getSrmActivities(_formattedToday);
+
+      if (!mounted) return;
+      double? toDouble(dynamic v) =>
+          v is num ? v.toDouble() : double.tryParse(v?.toString() ?? '');
+
+      final q1 = toDouble(assessment?['q1_stemming']);
+      final q3 = toDouble(assessment?['q3_energie_detail']);
+      final q5 = toDouble(assessment?['q5_gebeurtenis']);
+      final q2 = toDouble(assessment?['q2_energie_slider']);
+      final score = assessment?['berekende_score'];
+
+      TimeOfDay? parseTime(String? s) {
+        if (s == null || !s.contains(':')) return null;
+        final p = s.split(':');
+        return TimeOfDay(hour: int.tryParse(p[0]) ?? 0, minute: int.tryParse(p[1]) ?? 0);
+      }
+      TimeOfDay? srmTijd(String type) {
+        for (final a in srm) {
+          if (a['activity_type']?.toString() == type &&
+              a['actual_time']?.toString().isNotEmpty == true) {
+            return parseTime(a['actual_time'].toString());
+          }
+        }
+        return null;
+      }
+
+      final heeftData = q1 != null && q3 != null;
+      if (heeftData) {
+        setState(() {
+          _bekijkModus = true;
+          _opgeslagenQ1 = q1;
+          _opgeslagenQ3 = q3;
+          _opgeslagenQ5 = q5;
+          if (q2 != null) _opgeslagenQ2Slider = q2;
+          if (assessment?['berekende_score'] is num) {
+            _opgeslagenScore = (assessment!['berekende_score'] as num).toInt();
+          }
+          _opgeslagenEersteContact = srmTijd('Eerste contact');
+          _opgeslagenWerkHobby = srmTijd('Werk / Hobby');
+          _opgeslagenAvondeten = srmTijd('Avondeten');
+          final bed = log?['bed_time']?.toString();
+          _opgeslagenBedTime = parseTime(bed);
+        });
+      }
+    } catch (e) {
+      AppLogger.error('EveningCheckIn: bestaande data laden mislukt', error: e);
+    }
+  }
+
+  /// Start de invulflow pre-filled met de opgeslagen waarden.
+  void _startAanpassen() {
+    setState(() {
+      _bekijkModus = false;
+      _q1 = _opgeslagenQ1;
+      _q2Slider = _opgeslagenQ2Slider;
+      _q3 = _opgeslagenQ3;
+      _q5 = _opgeslagenQ5;
+      _eersteContact = _opgeslagenEersteContact;
+      _werkHobby = _opgeslagenWerkHobby;
+      _avondeten = _opgeslagenAvondeten;
+      _bedTime = _opgeslagenBedTime;
+      _step = 0;
+    });
   }
 
   String _formatTimeOfDay(TimeOfDay t) =>
@@ -224,9 +304,155 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
         foregroundColor: theme.colorScheme.onPrimary,
       ),
       body: SafeArea(
-        child: _step >= _totaalStappen ? _buildKlaar(context) : _buildVraag(context),
+        child: _bekijkModus
+            ? _buildOverzicht(context)
+            : _step >= _totaalStappen
+                ? _buildKlaar(context)
+                : _buildVraag(context),
       ),
     );
+  }
+
+  /// Overzichtsscherm: opgeslagen waarden van vandaag, read-only.
+  Widget _buildOverzicht(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(Icons.nights_stay, size: 56, color: AppTheme.primaryTeal),
+            const SizedBox(height: 12),
+            Text(
+              l10n.avondCheckIn,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              l10n.alIngevuldVandaag,
+              style: TextStyle(fontSize: 13, color: AppTheme.success, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+            if (_opgeslagenScore != 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                '${l10n.stemming}: $_opgeslagenScore',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _opgeslagenScore > 0 ? Colors.orange.shade700 : Colors.blue.shade600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            const SizedBox(height: 24),
+            if (_opgeslagenQ1 != null)
+              _OverzichtRij(
+                icon: Icons.mood,
+                label: l10n.stemmingsCheckVraag1Titel,
+                value: _q1Label(l10n, _opgeslagenQ1!),
+              ),
+            _OverzichtRij(
+              icon: Icons.speed,
+              label: l10n.stemmingsCheckVraag2Titel,
+              value: '${_opgeslagenQ2Slider.round()}',
+            ),
+            if (_opgeslagenQ3 != null)
+              _OverzichtRij(
+                icon: Icons.bolt,
+                label: l10n.stemmingsCheckVraag3Titel,
+                value: _q3Label(l10n, _opgeslagenQ3!),
+              ),
+            if (_opgeslagenQ5 != null)
+              _OverzichtRij(
+                icon: Icons.event,
+                label: l10n.stemmingsCheckVraag5Titel,
+                value: _q5Label(l10n, _opgeslagenQ5!),
+              ),
+            if (_opgeslagenEersteContact != null)
+              _OverzichtRij(
+                icon: Icons.people,
+                label: l10n.avondEersteContact,
+                value: _formatTimeOfDay(_opgeslagenEersteContact!),
+              ),
+            if (_opgeslagenWerkHobby != null)
+              _OverzichtRij(
+                icon: Icons.work,
+                label: l10n.avondWerkHobby,
+                value: _formatTimeOfDay(_opgeslagenWerkHobby!),
+              ),
+            if (_opgeslagenAvondeten != null)
+              _OverzichtRij(
+                icon: Icons.restaurant,
+                label: l10n.avondAvondeten,
+                value: _formatTimeOfDay(_opgeslagenAvondeten!),
+              ),
+            if (_opgeslagenBedTime != null)
+              _OverzichtRij(
+                icon: Icons.bedtime,
+                label: l10n.avondNaarBed,
+                value: _formatTimeOfDay(_opgeslagenBedTime!),
+              ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _startAanpassen,
+              icon: const Icon(Icons.edit),
+              label: Text(l10n.aanpassen),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryTeal,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _q1Label(AppLocalizations l10n, double v) {
+    switch (v.toInt()) {
+      case 4: return l10n.uiterstManisch;
+      case 3: return l10n.ernstigManisch;
+      case 2: return l10n.drukActief;
+      case 1: return l10n.matigManisch;
+      case 0: return l10n.stabielNeutraal;
+      case -1: return l10n.somber;
+      case -2: return l10n.lichtDepressief;
+      case -3: return l10n.matigDepressief;
+      case -4: return l10n.ernstigDepressief;
+      default: return v.toString();
+    }
+  }
+
+  String _q3Label(AppLocalizations l10n, double v) {
+    switch (v.toInt()) {
+      case 3: return l10n.stemmingsCheckOptieEnergieOvermatigNietKalm;
+      case 2: return l10n.stemmingsCheckOptieEnergieOvermatigKalm;
+      case 1: return l10n.stemmingsCheckOptieEnergieMeer;
+      case 0: return l10n.stemmingsCheckOptieEnergieNormaal;
+      case -1: return l10n.stemmingsCheckOptieEnergieEerderMo;
+      case -2: return l10n.stemmingsCheckOptieEnergieBijnaAlles;
+      case -3: return l10n.stemmingsCheckOptieEnergieNiets;
+      default: return v.toString();
+    }
+  }
+
+  String _q5Label(AppLocalizations l10n, double v) {
+    switch (v.toInt()) {
+      case 4: return l10n.stemmingsCheckOptieExtreemPositief;
+      case 3: return l10n.stemmingsCheckOptiePositiefHoog;
+      case 2: return l10n.stemmingsCheckOptiePositiefMatig;
+      case 1: return l10n.stemmingsCheckOptieLichtPositief;
+      case 0: return l10n.stemmingsCheckOptieNeutraal;
+      case -1: return l10n.stemmingsCheckOptieLichtNegatief;
+      case -2: return l10n.stemmingsCheckOptieNegatiefMatig;
+      case -3: return l10n.stemmingsCheckOptieNegatiefHoog;
+      case -4: return l10n.stemmingsCheckOptieExtreemNegatief;
+      default: return v.toString();
+    }
   }
 
   Widget _buildVraag(BuildContext context) {

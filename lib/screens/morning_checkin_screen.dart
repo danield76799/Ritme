@@ -3,7 +3,6 @@ import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../theme/app_theme.dart';
 import '../utils/logger.dart';
-import '../utils/mood_assessment_scorer.dart';
 
 /// Ochtend check-in: 3 korte stappen die bij het opstaan horen.
 ///
@@ -31,6 +30,11 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   double? _q4; // slaapbehoefte -4..+4
   String? _bedTimeYesterday; // uit gisterens slaap-log
   bool _isSaving = false;
+  bool _bekijkModus = false; // true = overzicht van opgeslagen waarden (read-only)
+  TimeOfDay? _opgeslagenWakeTime;
+  int _opgeslagenAwakeMinutes = 0;
+  double? _opgeslagenQ4;
+  String? _opgeslagenBedTime;
 
   String get _formattedToday {
     final d = DateTime.now();
@@ -41,6 +45,72 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   void initState() {
     super.initState();
     _loadBedTimeYesterday();
+    _laadBestaandeData();
+  }
+
+  /// Bestaande check-in van vandaag laden voor de inkijk-modus.
+  /// Als er al data is → overzichtsscherm i.p.v. blanco invulflow.
+  Future<void> _laadBestaandeData() async {
+    try {
+      await ensureInitialized();
+      final log = await db.getDailyLog(_formattedToday);
+      final assessment = await db.getMoodAssessment(_formattedToday);
+      final srm = await db.getSrmActivities(_formattedToday);
+
+      TimeOfDay? wakeTime;
+      int awake = 0;
+      double? q4;
+
+      // Wake time uit SRM "Opstaan"
+      for (final a in srm) {
+        if (a['activity_type']?.toString() == 'Opstaan' &&
+            a['actual_time']?.toString().isNotEmpty == true) {
+          final parts = a['actual_time'].toString().split(':');
+          wakeTime = TimeOfDay(
+            hour: int.tryParse(parts[0]) ?? 0,
+            minute: int.tryParse(parts[1]) ?? 0,
+          );
+          break;
+        }
+      }
+      // Fallback: slaap-log
+      if (wakeTime == null) {
+        final sleep = await db.getSleepLog(_formattedToday);
+        final wake = sleep?['wake_time']?.toString();
+        if (wake != null && wake.contains(':')) {
+          final parts = wake.split(':');
+          wakeTime = TimeOfDay(hour: int.tryParse(parts[0]) ?? 0, minute: int.tryParse(parts[1]) ?? 0);
+        }
+      }
+      final awakeRaw = log?['awake_minutes'];
+      if (awakeRaw is num) awake = awakeRaw.toInt();
+      final q4Raw = assessment?['q4_slaapbehoefte'] ?? log?['q4_slaapbehoefte'];
+      if (q4Raw is num) q4 = q4Raw.toDouble();
+
+      final heeftData = wakeTime != null && q4 != null;
+      if (mounted && heeftData) {
+        setState(() {
+          _bekijkModus = true;
+          _opgeslagenWakeTime = wakeTime;
+          _opgeslagenAwakeMinutes = awake;
+          _opgeslagenQ4 = q4;
+          _opgeslagenBedTime = _bedTimeYesterday;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('MorningCheckIn: bestaande data laden mislukt', error: e);
+    }
+  }
+
+  /// Start de invulflow pre-filled met de opgeslagen waarden.
+  void _startAanpassen() {
+    setState(() {
+      _bekijkModus = false;
+      _wakeTime = _opgeslagenWakeTime;
+      _awakeMinutes = _opgeslagenAwakeMinutes;
+      _q4 = _opgeslagenQ4;
+      _step = 0;
+    });
   }
 
   /// Bedtijd van gisteravond ophalen (uit gisterens slaap-log of daily_log),
@@ -179,9 +249,113 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
         foregroundColor: theme.colorScheme.onPrimary,
       ),
       body: SafeArea(
-        child: _step >= 3 ? _buildKlaar(context) : _buildVraag(context),
+        child: _bekijkModus
+            ? _buildOverzicht(context)
+            : _step >= 3
+                ? _buildKlaar(context)
+                : _buildVraag(context),
       ),
     );
+  }
+
+  /// Overzichtsscherm: opgeslagen waarden van vandaag, read-only,
+  /// met knop om alsnog aan te passen.
+  Widget _buildOverzicht(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final sleepHours = _calculateSleepHoursSaved();
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(Icons.wb_sunny, size: 56, color: AppTheme.primaryTeal),
+            const SizedBox(height: 12),
+            Text(
+              l10n.ochtendCheckIn,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              l10n.alIngevuldVandaag,
+              style: TextStyle(fontSize: 13, color: AppTheme.success, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            _OverzichtRij(
+              icon: Icons.access_time,
+              label: l10n.ochtendHoeLaatOpgestaan,
+              value: _opgeslagenWakeTime != null ? _formatTimeOfDay(_opgeslagenWakeTime!) : '-',
+            ),
+            if (_opgeslagenBedTime != null)
+              _OverzichtRij(
+                icon: Icons.bedtime,
+                label: l10n.avondNaarBed,
+                value: _opgeslagenBedTime!,
+              ),
+            _OverzichtRij(
+              icon: Icons.snooze,
+              label: l10n.wakkerGelegen,
+              value: '$_opgeslagenAwakeMinutes ${l10n.minuten}',
+            ),
+            if (_opgeslagenQ4 != null)
+              _OverzichtRij(
+                icon: Icons.nights_stay,
+                label: l10n.stemmingsCheckVraag4Titel,
+                value: _q4Label(l10n, _opgeslagenQ4!),
+              ),
+            if (sleepHours != null)
+              _OverzichtRij(
+                icon: Icons.hotel,
+                label: l10n.slaapduur,
+                value: '${sleepHours.floor()}u ${((sleepHours - sleepHours.floor()) * 60).round()}m',
+              ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _startAanpassen,
+              icon: const Icon(Icons.edit),
+              label: Text(l10n.aanpassen),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryTeal,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Slaapduur op basis van opgeslagen waarden (voor het overzicht).
+  double? _calculateSleepHoursSaved() {
+    if (_opgeslagenBedTime == null || _opgeslagenWakeTime == null) return null;
+    try {
+      final bedParts = _opgeslagenBedTime!.split(':');
+      final bedMinutes = (int.parse(bedParts[0]) * 60) + int.parse(bedParts[1]);
+      final wakeMinutes = (_opgeslagenWakeTime!.hour * 60) + _opgeslagenWakeTime!.minute;
+      var total = wakeMinutes - bedMinutes - _opgeslagenAwakeMinutes;
+      if (total <= 0) total += 24 * 60;
+      return total / 60.0;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _q4Label(AppLocalizations l10n, double v) {
+    switch (v.toInt()) {
+      case 4: return l10n.stemmingsCheckOptieSlaapGeen;
+      case 3: return l10n.stemmingsCheckOptieSlaapVerminderd;
+      case 2: return l10n.stemmingsCheckOptieSlaap1UurKorter;
+      case 1: return l10n.stemmingsCheckOptieSlaapTot1UurKorter;
+      case 0: return l10n.stemmingsCheckOptieNeutraal;
+      case -1: return l10n.stemmingsCheckOptieSlaapNietZoGoed;
+      case -2: return l10n.stemmingsCheckOptieSlaap12UurEerder;
+      case -3: return l10n.stemmingsCheckOptieSlaapUrenEerder;
+      case -4: return l10n.stemmingsCheckOptieSlaapNietTot;
+      default: return v.toString();
+    }
   }
 
   Widget _buildVraag(BuildContext context) {
@@ -502,5 +676,47 @@ class MoodAssessmentScorerColors {
     if (v <= 2) return const Color(0xFFFF9800);
     if (v <= 3) return const Color(0xFFF57C00);
     return const Color(0xFFE53935);
+  }
+}
+
+/// Eén rij in het overzichtsscherm: icoon + label + waarde.
+class _OverzichtRij extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _OverzichtRij({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppTheme.primaryTeal),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
   }
 }
