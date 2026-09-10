@@ -110,6 +110,40 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
     if (picked == null || !mounted) return;
     setState(() => _geselecteerdeDatum = picked);
     _checkAlIngevuld();
+    _laadBestaandeAntwoorden();
+  }
+
+  /// Laadt bestaande antwoorden voor de geselecteerde datum in het formulier,
+  /// zodat de gebruiker eerder ingevulde gegevens ZIET (en kan aanpassen)
+  /// i.p.v. een leeg formulier met alleen een "al ingevuld"-badge.
+  Future<void> _laadBestaandeAntwoorden() async {
+    try {
+      await ensureInitialized();
+      final existing = await db.getMoodAssessment(_geselecteerdeDatumStr);
+      if (!mounted || existing == null) return;
+      double? toDouble(dynamic v) =>
+          v is num ? v.toDouble() : double.tryParse(v?.toString() ?? '');
+      final q1 = toDouble(existing['q1_stemming']);
+      final q2 = toDouble(existing['q2_energie_slider']);
+      final q3 = toDouble(existing['q3_energie_detail']);
+      final q4 = toDouble(existing['q4_slaapbehoefte']);
+      final q5 = toDouble(existing['q5_gebeurtenis']);
+      final menstruatie = existing['menstruatie'];
+      setState(() {
+        if (q1 != null) _q1 = q1;
+        if (q2 != null) _q2Slider = q2.clamp(0, 100);
+        if (q3 != null) _q3 = q3;
+        if (q4 != null) _q4 = q4;
+        if (q5 != null) _q5 = q5;
+        _menstruatie = menstruatie == 1 ||
+            menstruatie == '1' ||
+            menstruatie == true;
+        // Terug naar stap 1 zodat de ingevulde antwoorden zichtbaar zijn
+        _step = 0;
+      });
+    } catch (e) {
+      debugPrint('MoodAssessment load error: $e');
+    }
   }
 
   bool _canProceed() {
