@@ -126,6 +126,24 @@ class _ActivityScreenState extends State<ActivityScreen> {
             _activiteiten[0]['p_score'] = 3; // Geen target, markeer als OK
           }
         }
+
+        // Pre-fill "Naar bed" activity with bed time from the sleep log —
+        // zelfde koppeling als Opstaan, zodat slaapdata de SRM-kaarten vult.
+        final bedTimeStr = sleepLog['bed_time']?.toString();
+        if (bedTimeStr != null && bedTimeStr.isNotEmpty &&
+            _activiteiten[4]['werkelijke_tijd'] == null) {
+          _activiteiten[4]['werkelijke_tijd'] = _parseTimeOfDay(bedTimeStr);
+          final targetTijd = _activiteiten[4]['richttijd'];
+          final targetTijdStr = targetTijd is TimeOfDay
+              ? '${targetTijd.hour.toString().padLeft(2, '0')}:${targetTijd.minute.toString().padLeft(2, '0')}'
+              : (targetTijd as String?);
+          if (targetTijdStr != null && targetTijdStr != '--:--') {
+            final diff = _berekenTijdVerschil(targetTijdStr, bedTimeStr);
+            _activiteiten[4]['p_score'] = _berekenPScore(diff);
+          } else {
+            _activiteiten[4]['p_score'] = 3; // Geen target, markeer als OK
+          }
+        }
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load activity data', error: e, stackTrace: stackTrace);
@@ -246,6 +264,29 @@ class _ActivityScreenState extends State<ActivityScreen> {
         currentScore = 0;
       }
       
+      // "Opstaan" en "Naar bed" lopen via de Slaap-sectie: als er al
+      // slaapdata is, niet opnieuw vragen maar doorverwijzen. Anders
+      // dubbele invoer voor hetzelfde gegeven.
+      if ((name == 'Opstaan' || name == 'Naar bed') &&
+          (_bedTime != null || _wakeTime != null)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                name == 'Opstaan'
+                    ? AppLocalizations.of(context).opstaanViaSlaapInvoer
+                    : AppLocalizations.of(context).naarBedViaSlaapInvoer,
+              ),
+              backgroundColor: AppTheme.primaryTeal,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
       // For "Opstaan", use wake_time from sleep log if available (skip time picker)
       if (name == 'Opstaan' && _wakeTime != null && _wakeTime!.isNotEmpty) {
         timeStr = _wakeTime!;
@@ -436,6 +477,23 @@ class _ActivityScreenState extends State<ActivityScreen> {
           pScore = _berekenPScore(diff);
         }
         await db.insertSrmActivity(_formattedDate, 'Opstaan', _wakeTime!, pScore, null);
+      }
+
+      // Ook de "Naar bed"-SRM-kaart automatisch koppelen aan de slaap-invoer:
+      // bedtijd hoort 1x ingevoerd te worden (bij Slaap), niet 2x (ook bij SRM).
+      if (_bedTime != null) {
+        final targetTijd = _activiteiten[4]['richttijd'];
+        int pScore = 1; // Default als er geen target is
+        if (targetTijd != null && targetTijd != '--:--') {
+          final targetTijdStr = targetTijd is TimeOfDay
+              ? '${targetTijd.hour.toString().padLeft(2, '0')}:${targetTijd.minute.toString().padLeft(2, '0')}'
+              : (targetTijd as String?);
+          if (targetTijdStr != null && targetTijdStr != '--:--') {
+            final diff = _berekenTijdVerschil(targetTijdStr, _bedTime!);
+            pScore = _berekenPScore(diff);
+          }
+        }
+        await db.insertSrmActivity(_formattedDate, 'Naar bed', _bedTime!, pScore, null);
       }
       
       if (mounted) {

@@ -466,6 +466,8 @@
   "streakMeerdereDagen": "{dagen} dagen op rij gelogd 🔥",
   "dagStatusMeter": "{gelogd}/{totaal} ingevuld",
   "nogNietGelogdVandaag": "Nog niet gelogd vandaag",
+  "opstaanViaSlaapInvoer": "Opstaantijd vul je in bij Slaap — de SRM-kaart vult zich automatisch",
+  "naarBedViaSlaapInvoer": "Bedtijd vul je in bij Slaap — de SRM-kaart vult zich automatisch",
   "logVandaagOmTeZien": "Log vandaag om te zien",
   "nogGeenActiviteitenDezeWeek": "Nog niets deze week",
   "stemmingsCheckAnalyseTitel": "Bipolaire analyse",

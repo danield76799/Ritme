@@ -466,6 +466,8 @@
   "streakMeerdereDagen": "{dagen} days in a row logged 🔥",
   "dagStatusMeter": "{gelogd}/{totaal} filled in",
   "nogNietGelogdVandaag": "Not logged yet today",
+  "opstaanViaSlaapInvoer": "Set your wake-up time under Sleep — the SRM card fills automatically",
+  "naarBedViaSlaapInvoer": "Set your bedtime under Sleep — the SRM card fills automatically",
   "logVandaagOmTeZien": "Log today to see",
   "nogGeenActiviteitenDezeWeek": "Nothing yet this week",
   "stemmingsCheckAnalyseTitel": "Bipolar analysis",
