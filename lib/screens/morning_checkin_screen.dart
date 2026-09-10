@@ -122,7 +122,13 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   Future<void> _loadBedTimeYesterday() async {
     try {
       await ensureInitialized();
-      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      // Bedtijd vóór de GEKOZEN datum (initialDate), niet vóór 'nu'.
+      // Anders wordt bij het aanpassen van een eerdere dag de
+      // bedtijd van gisteren (nu-1) gebruikt en ontbreekt uren_slaap.
+      final refDate = widget.initialDate != null
+          ? DateTime.tryParse(widget.initialDate!) ?? DateTime.now()
+          : DateTime.now();
+      final yesterday = refDate.subtract(const Duration(days: 1));
       final yStr = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
       final log = await db.getSleepLog(yStr);
       final bed = log?['bed_time']?.toString();
@@ -170,14 +176,12 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
 
   Future<void> _finish() async {
     if (_wakeTime == null || _q4 == null || _isSaving) return;
-    setState(() => _isSaving = true);
 
     final wakeStr = _formatTimeOfDay(_wakeTime!);
     final sleepHours = _calculateSleepHours();
 
-    // UI direct door naar klaar-stap; opslag fire-and-forget.
     if (mounted) {
-      setState(() => _step = 3);
+      setState(() => _isSaving = true);
     }
 
     try {
@@ -227,6 +231,14 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       await db.upsertMoodAssessment(assessment);
     } catch (e) {
       AppLogger.error('MorningCheckIn: opslaan mislukt', error: e);
+    }
+
+    // UI pas naar klaar-stap na voltooide opslag (geen race meer).
+    if (mounted) {
+      setState(() {
+        _step = 3;
+        _isSaving = false;
+      });
     }
   }
 

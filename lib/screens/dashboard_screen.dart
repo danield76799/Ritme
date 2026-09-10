@@ -666,7 +666,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.borderRadius)),
       closedColor: Theme.of(context).cardColor,
       openColor: Theme.of(context).scaffoldBackgroundColor,
-      onClosed: (_) => _loadData(),
+      onClosed: (_) {
+        _loadData();
+        // Vinkjes voor de GEKOZEN datum herladen (vandaag of eerdere dag)
+        if (_selectedDate.difference(DateTime.now()).inDays != 0) {
+          _loadDataForDate(_selectedDate);
+        }
+      },
       closedBuilder: (context, openContainer) {
         return InkWell(
           onTap: () => openContainer(),
