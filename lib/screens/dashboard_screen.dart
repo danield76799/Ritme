@@ -727,11 +727,22 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     );
   }
 
+  String? get _initialDateArg {
+    final now = DateTime.now();
+    final diff = _selectedDate.difference(now).inDays;
+    if (diff == 0) return null; // vandaag → geen initialDate (normale flow)
+    return '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+  }
+
   Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
     switch (route) {
       case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/morning-checkin': return MorningCheckInScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/evening-checkin': return EveningCheckInScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/morning-checkin': return MorningCheckInScreen(
+        initialDate: _initialDateArg,
+        onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/evening-checkin': return EveningCheckInScreen(
+        initialDate: _initialDateArg,
+        onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
       case '/activity': return ActivityScreen();
       case '/medication': return MedicationScreen();
       case '/weight': return WeightScreen();
