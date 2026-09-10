@@ -189,8 +189,8 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       });
     }
 
-    // Fire-and-forget opslag
-    _opslaan(result, q4);
+    // Opslaan wachten tot compleet (voor _sluiten → _loadData)
+    await _opslaan(result, q4);
   }
 
   Future<void> _opslaan(MoodScoreResult result, double q4) async {
