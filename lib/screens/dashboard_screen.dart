@@ -10,6 +10,8 @@ import '../utils/logger.dart';
 import '../widgets/weekly_mood_chart.dart';
 import 'login_screen.dart';
 import 'mood_assessment_screen.dart';
+import 'morning_checkin_screen.dart';
+import 'evening_checkin_screen.dart';
 import 'activity_screen.dart';
 import 'medication_screen.dart';
 import 'weight_screen.dart';
@@ -450,8 +452,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.2,
                 children: [
-                  _buildActionCard(context, icon: Icons.sentiment_satisfied_alt, color: const Color(0xFFD4956A), title: AppLocalizations.of(context).stemming, route: '/mood', done: _stemmingGelogd),
-                  _buildActionCard(context, icon: Icons.directions_walk, color: AppTheme.success, title: AppLocalizations.of(context).activiteitEnSlaap, route: '/activity', done: _slaapGelogd),
+                  _buildActionCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', done: _stemmingGelogd || _slaapGelogd),
+                  _buildActionCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', done: _slaapGelogd && _stemmingGelogd ? _stemmingGelogd : false),
                   _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _medicatieGelogd),
                   _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false, isAction: true),
                 ],
@@ -609,6 +611,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
     switch (route) {
       case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/morning-checkin': return MorningCheckInScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/evening-checkin': return EveningCheckInScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
       case '/activity': return ActivityScreen();
       case '/medication': return MedicationScreen();
       case '/weight': return WeightScreen();
