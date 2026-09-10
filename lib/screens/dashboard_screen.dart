@@ -669,7 +669,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       onClosed: (_) => _loadData(),
       closedBuilder: (context, openContainer) {
         return InkWell(
-          onTap: () => Navigator.pushNamed(context, route, arguments: date),
+          onTap: () => openContainer(),
           borderRadius: BorderRadius.circular(AppTheme.borderRadius),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
