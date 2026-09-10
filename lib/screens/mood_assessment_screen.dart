@@ -863,8 +863,6 @@ class _ResultStep extends StatelessWidget {
       case BipolarTag.mixedEpisode:
       case BipolarTag.opposingSignals:
         return Colors.deepPurple.shade400;
-      case BipolarTag.menstruationMoodSwing:
-        return Colors.pink.shade400;
     }
   }
 
