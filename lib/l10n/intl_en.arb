@@ -487,5 +487,8 @@
   "tagPositiveLifeEventTrigger": "Positive event as possible mania trigger",
   "tagNegativeLifeEventTrigger": "Negative event as possible depression trigger",
   "tagMixedEpisode": "Possible mixed episode",
-  "tagOpposingSignals": "Opposing signals — review manually"
+  "tagOpposingSignals": "Opposing signals — review manually",
+  "alIngevuldVandaag": "Already filled in today",
+  "aanpassen": "Edit",
+  "slaapduur": "Sleep duration"
 }
