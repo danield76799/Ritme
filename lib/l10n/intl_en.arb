@@ -490,5 +490,6 @@
   "tagOpposingSignals": "Opposing signals — review manually",
   "alIngevuldVandaag": "Already filled in today",
   "aanpassen": "Edit",
-  "slaapduur": "Sleep duration"
+  "slaapduur": "Sleep duration",
+  "bedtijdVorigeNacht": "Went to bed yesterday at"
 }

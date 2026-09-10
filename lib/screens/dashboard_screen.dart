@@ -114,7 +114,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       bool medicatieGelogd = false;
       try {
         final intake = await db.getMedicationIntake(todayStr);
-        medicatieGelogd = intake.isNotEmpty;
+        // Alleen tellen als er daadwerkelijk iets ingenomen is (aantal > 0).
+        // Een uitgevinkte intake (aantal=0) mag het vinkje niet aan laten staan.
+        medicatieGelogd = intake.any((row) {
+          final raw = row['aantal_ingenomen'];
+          final n = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
+          return n > 0;
+        });
       } catch (_) {}
       // Sociaal Ritme: activiteit met actual_time vandaag
       bool srmGelogd = todayActs.any((a) {

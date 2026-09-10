@@ -292,7 +292,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
             if (_opgeslagenBedTime != null)
               OverzichtRij(
                 icon: Icons.bedtime,
-                label: l10n.avondNaarBed,
+                label: l10n.bedtijdVorigeNacht,
                 value: _opgeslagenBedTime!,
               ),
             OverzichtRij(
