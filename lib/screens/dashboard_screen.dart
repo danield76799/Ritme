@@ -147,7 +147,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           final t = a['actual_time']?.toString() ?? '';
           return t.isNotEmpty && t != '--:--';
         });
-        if (hasMood || hasSleep || hasSrm) {
+        // Ochtendcheckin heeft GEEN 'stemming_hoog' maar wél
+        // uren_slaap/awake_minutes/q4 — dus check ook op
+        // aanwezigheid van elke dagelijkse log-rij (niet alleen stemming).
+        final hasLogEntry = dailyLogs.any((l) => l['date'] == ds);
+        if (hasMood || hasSleep || hasSrm || hasLogEntry) {
           streak++;
         } else {
           break;
