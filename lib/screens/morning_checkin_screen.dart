@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../theme/app_theme.dart';
+import '../widgets/overzicht_rij.dart';
 import '../utils/logger.dart';
 
 /// Ochtend check-in: 3 korte stappen die bij het opstaan horen.
@@ -283,30 +284,30 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            _OverzichtRij(
+            OverzichtRij(
               icon: Icons.access_time,
               label: l10n.ochtendHoeLaatOpgestaan,
               value: _opgeslagenWakeTime != null ? _formatTimeOfDay(_opgeslagenWakeTime!) : '-',
             ),
             if (_opgeslagenBedTime != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.bedtime,
                 label: l10n.avondNaarBed,
                 value: _opgeslagenBedTime!,
               ),
-            _OverzichtRij(
+            OverzichtRij(
               icon: Icons.snooze,
               label: l10n.wakkerGelegen,
               value: '$_opgeslagenAwakeMinutes ${l10n.minuten}',
             ),
             if (_opgeslagenQ4 != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.nights_stay,
                 label: l10n.stemmingsCheckVraag4Titel,
                 value: _q4Label(l10n, _opgeslagenQ4!),
               ),
             if (sleepHours != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.hotel,
                 label: l10n.slaapduur,
                 value: '${sleepHours.floor()}u ${((sleepHours - sleepHours.floor()) * 60).round()}m',
@@ -676,47 +677,5 @@ class MoodAssessmentScorerColors {
     if (v <= 2) return const Color(0xFFFF9800);
     if (v <= 3) return const Color(0xFFF57C00);
     return const Color(0xFFE53935);
-  }
-}
-
-/// Eén rij in het overzichtsscherm: icoon + label + waarde.
-class _OverzichtRij extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _OverzichtRij({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppTheme.primaryTeal),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
-    );
   }
 }
