@@ -114,6 +114,8 @@ class MoodAssessmentScorer {
     }
 
     // ---- GEMENGDE EPISODE ----
+    final maniaSignsHigh = (q1 >= 2) || (q3 >= 2) || (q4 >= 2);
+    final depressionSignsHigh = (q1 <= -2) || (q3 <= -2) || (q4 <= -2);
     if (maniaSignsHigh && depressionSignsHigh) {
       tags.add(BipolarTag.mixedEpisode);
     }

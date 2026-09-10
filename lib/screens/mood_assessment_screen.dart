@@ -846,8 +846,6 @@ class _ResultStep extends StatelessWidget {
         return l10n.tagMixedEpisode;
       case BipolarTag.opposingSignals:
         return l10n.tagOpposingSignals;
-      case BipolarTag.menstruationMoodSwing:
-        return l10n.tagMenstruationMoodSwing;
     }
   }
 

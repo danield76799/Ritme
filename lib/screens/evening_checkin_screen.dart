@@ -124,7 +124,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       assessment['q2_energie_slider'] = _q2Slider;
       assessment['q3_energie_detail'] = _q3;
       assessment['q5_gebeurtenis'] = _q5;
-      assessment['menstruatie'] = _showMenstruatieVraag && _menstruatie ? 1 : 0;
       assessment['berekende_score'] = result.ritmeScore;
       assessment['flags_json'] = result.bipolarTags.map((t) => t.id).join(',');
       await db.upsertMoodAssessment(assessment);
