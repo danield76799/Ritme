@@ -4,7 +4,8 @@ import '../service_locator.dart';
 import '../theme/app_theme.dart';
 import '../utils/logger.dart';
 import '../utils/mood_assessment_scorer.dart';
-import 'morning_checkin_screen.dart' show MoodAssessmentScorerColors, _OverzichtRij;
+import 'morning_checkin_screen.dart' show MoodAssessmentScorerColors;
+import '../widgets/overzicht_rij.dart';
 
 /// Avond check-in: de terugblik op de dag, vlak voordat je gaat slapen.
 ///
@@ -349,48 +350,48 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
             ],
             const SizedBox(height: 24),
             if (_opgeslagenQ1 != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.mood,
                 label: l10n.stemmingsCheckVraag1Titel,
                 value: _q1Label(l10n, _opgeslagenQ1!),
               ),
-            _OverzichtRij(
+            OverzichtRij(
               icon: Icons.speed,
               label: l10n.stemmingsCheckVraag2Titel,
               value: '${_opgeslagenQ2Slider.round()}',
             ),
             if (_opgeslagenQ3 != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.bolt,
                 label: l10n.stemmingsCheckVraag3Titel,
                 value: _q3Label(l10n, _opgeslagenQ3!),
               ),
             if (_opgeslagenQ5 != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.event,
                 label: l10n.stemmingsCheckVraag5Titel,
                 value: _q5Label(l10n, _opgeslagenQ5!),
               ),
             if (_opgeslagenEersteContact != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.people,
                 label: l10n.avondEersteContact,
                 value: _formatTimeOfDay(_opgeslagenEersteContact!),
               ),
             if (_opgeslagenWerkHobby != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.work,
                 label: l10n.avondWerkHobby,
                 value: _formatTimeOfDay(_opgeslagenWerkHobby!),
               ),
             if (_opgeslagenAvondeten != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.restaurant,
                 label: l10n.avondAvondeten,
                 value: _formatTimeOfDay(_opgeslagenAvondeten!),
               ),
             if (_opgeslagenBedTime != null)
-              _OverzichtRij(
+              OverzichtRij(
                 icon: Icons.bedtime,
                 label: l10n.avondNaarBed,
                 value: _formatTimeOfDay(_opgeslagenBedTime!),
