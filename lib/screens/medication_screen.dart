@@ -430,13 +430,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         actions: [
-          IconButton(icon: Icon(Icons.add), onPressed: _showAddMedicationDialog),
+          IconButton(icon: Icon(Icons.add_rounded), tooltip: AppLocalizations.of(context).nieuweMedicatie, onPressed: _showAddMedicationDialog),
           IconButton(
             icon: Icon(Icons.notifications_active_outlined),
             tooltip: AppLocalizations.of(context).notificatiepermissiesControleren,
             onPressed: _checkNotificationPermissions,
           ),
-          IconButton(icon: Icon(Icons.delete_forever, color: Colors.red), onPressed: _resetDatabase),
+          IconButton(icon: Icon(Icons.delete_forever_rounded, color: Colors.red.shade300), tooltip: AppLocalizations.of(context).resetten, onPressed: _resetDatabase),
         ],
       ),
       body: Column(
@@ -484,11 +484,24 @@ class _MedicationScreenState extends State<MedicationScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.medication_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
-          const SizedBox(height: 12),
-          Text(AppLocalizations.of(context).geenMedicatie, style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+          Container(
+            width: 88, height: 88,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            ),
+            child: Icon(Icons.medication_rounded, size: 44, color: Theme.of(context).colorScheme.primary),
+          ),
+          const SizedBox(height: 16),
+          Text(AppLocalizations.of(context).geenMedicatie, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
           const SizedBox(height: 4),
           Text(AppLocalizations.of(context).tikToeVoegen, style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color ?? AppTheme.textMedium)),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: _showAddMedicationDialog,
+            icon: Icon(Icons.add_rounded),
+            label: Text(AppLocalizations.of(context).nieuweMedicatie),
+          ),
         ],
       ),
     );
@@ -513,92 +526,141 @@ class _MedicationScreenState extends State<MedicationScreen> {
     String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
     bool reminderEnabled = (config['reminder_enabled']?.toString() ?? '1') == '1';
     String? reminderTime = config['reminder_time']?.toString();
+    final taken = count > 0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        color: taken
+            ? AppTheme.primaryTeal.withValues(alpha: isDark ? 0.16 : 0.08)
+            : Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: taken
+              ? AppTheme.primaryTeal.withValues(alpha: 0.5)
+              : Theme.of(context).dividerColor,
+          width: taken ? 1.5 : 1,
+        ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 48, height: 48, margin: const EdgeInsets.only(left: 12),
-            decoration: BoxDecoration(color: AppTheme.primaryTeal.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-            child: Icon(Icons.medication, color: AppTheme.primaryTeal, size: 24),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
-                  const SizedBox(height: 2),
-                  Text(dosage, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: InkWell(
-                      onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime ?? '08:00'),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: reminderTime != null
-                              ? (reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.1) : Colors.grey.shade100)
-                              : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: reminderTime != null
-                              ? (reminderEnabled ? AppTheme.primaryTeal.withValues(alpha: 0.4) : Colors.grey.shade300!)
-                              : Colors.grey.shade400),
-                          boxShadow: reminderTime != null && reminderEnabled ? [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))] : [],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Row(
+          children: [
+            // Pill-icoon in zachte cirkel; check-vinkje wanneer ingenomen
+            Container(
+              width: 46, height: 46,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: taken ? AppTheme.primaryTeal : AppTheme.primaryTeal.withValues(alpha: isDark ? 0.2 : 0.12),
+              ),
+              child: taken
+                  ? Icon(Icons.check_rounded, color: isDark ? AppTheme.darkBackground : Colors.white, size: 26)
+                  : Icon(Icons.medication_rounded, color: isDark ? AppTheme.medicalTealLight : AppTheme.primaryTeal, size: 24),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(dosage.trim().isEmpty ? '—' : dosage.trim(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodySmall?.color ?? AppTheme.textMedium)),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(reminderTime != null
-                                ? (reminderEnabled ? Icons.access_time_filled : Icons.notifications_off)
-                                : Icons.access_time,
-                                size: 14,
-                                color: reminderTime != null
-                                    ? (reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400)
-                                    : Colors.grey.shade500),
-                            const SizedBox(width: 6),
-                            Text(
-                              reminderTime ?? AppLocalizations.of(context).stelTijdIn,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: reminderTime != null
-                                    ? (reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade500)
-                                    : Colors.grey.shade600,
-                              ),
+                        const SizedBox(width: 8),
+                        if (reminderTime != null && reminderEnabled)
+                          Icon(Icons.notifications_active_rounded, size: 14, color: Theme.of(context).colorScheme.primary)
+                        else
+                          Icon(Icons.notifications_off_rounded, size: 14, color: Theme.of(context).colorScheme.outline),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Column(
+              children: [
+                // Grote tikbare intake-knop
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _toggleIntake(configId!),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: taken ? AppTheme.primaryTeal : Theme.of(context).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            taken ? Icons.check_rounded : Icons.add_rounded,
+                            size: 18,
+                            color: taken
+                                ? (isDark ? AppTheme.darkBackground : Colors.white)
+                                : Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            taken ? AppLocalizations.of(context).medicatieGenomen : AppLocalizations.of(context).medicatieNietGenomen,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: taken
+                                  ? (isDark ? AppTheme.darkBackground : Colors.white)
+                                  : Theme.of(context).colorScheme.primary,
                             ),
-                            const SizedBox(width: 4),
-                            Icon(Icons.edit_calendar, size: 12, color: reminderTime != null ? (reminderEnabled ? AppTheme.primaryTeal : Colors.grey.shade400) : Colors.grey.shade500),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 6),
+                // Herinnering-tijd (tappable)
+                InkWell(
+                  onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime ?? '08:00'),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(reminderTime != null ? Icons.access_time_rounded : Icons.access_time,
+                            size: 12, color: Theme.of(context).colorScheme.outline),
+                        const SizedBox(width: 4),
+                        Text(
+                          reminderTime ?? AppLocalizations.of(context).stelTijdIn,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: reminderTime != null
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.outline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildIntakeToggleBtn(
-                configId: configId,
-                taken: count > 0,
-              ),
-              const SizedBox(width: 8),
-              _buildDeleteBtn(onPressed: () => _deleteMedication(configId!)),
-            ],
-          ),
-          const SizedBox(width: 8),
-        ],
+            const SizedBox(width: 4),
+            _buildDeleteBtn(onPressed: () => _deleteMedication(configId!)),
+          ],
+        ),
       ),
     );
   }
@@ -650,11 +712,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         child: Container(
-          width: 32, height: 32,
-          decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
-          child: Icon(Icons.delete_outline, size: 18, color: Colors.red[400]),
+          width: 34, height: 34,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.red.withValues(alpha: 0.08),
+          ),
+          child: Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red.shade400),
         ),
       ),
     );
