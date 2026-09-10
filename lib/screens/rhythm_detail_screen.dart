@@ -265,7 +265,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                             ),
                             label: Text(AppLocalizations.of(context).sleutelWaarde(entry.key.toString(), entry.value.toString())),
                             backgroundColor: Colors.white,
-                            side: BorderSide(color: Colors.grey.shade300!),
+                            side: BorderSide(color: Theme.of(context).colorScheme.outline!),
                           );
                         }).toList(),
                       ),
@@ -389,7 +389,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
       ),
       child: Column(
         children: [
-          Icon(Icons.schedule_outlined, size: 48, color: Colors.grey.shade400),
+          Icon(Icons.schedule_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
           SizedBox(height: 16),
           Text(
             title,
@@ -404,7 +404,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
             subtitle,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade500,
+              color: Theme.of(context).colorScheme.outline,
             ),
             textAlign: TextAlign.center,
           ),

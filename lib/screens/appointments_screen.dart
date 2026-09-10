@@ -271,7 +271,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.calendar_today_outlined, size: 48, color: Colors.grey.shade400),
+          Icon(Icons.calendar_today_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
           const SizedBox(height: 12),
           Text(
             AppLocalizations.of(context).geenAfspraken,
@@ -280,7 +280,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           const SizedBox(height: 4),
           Text(
             AppLocalizations.of(context).tikOmAfspraakToeTeVoegen,
-            style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
+            style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color ?? AppTheme.textMedium),
           ),
         ],
       ),
@@ -579,12 +579,12 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
-            color: Colors.black87,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
@@ -707,7 +707,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade400!),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(

@@ -289,11 +289,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
         builder: (context, setDialogState) {
           return Theme(
             data: ThemeData.light().copyWith(
-              dialogBackgroundColor: Colors.white,
-              textTheme: TextTheme(bodyLarge: TextStyle(color: Colors.black)),
+              dialogBackgroundColor: Theme.of(context).colorScheme.surface,
+              textTheme: Theme.of(context).textTheme,
             ),
             child: AlertDialog(
-              title: Text(AppLocalizations.of(context).nieuweMedicatie, style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+              title: Text(AppLocalizations.of(context).nieuweMedicatie, style: Theme.of(context).textTheme.titleMedium),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -304,7 +304,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context).naamBijvLithium,
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onChanged: (v) => name = v,
@@ -319,7 +319,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             decoration: InputDecoration(
                               labelText: AppLocalizations.of(context).dosering,
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -334,7 +334,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             decoration: InputDecoration(
                               labelText: AppLocalizations.of(context).eenheidMgMlStuks,
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
                             ),
@@ -350,7 +350,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     // Herinnering-switch als eigen rij, netjes uitgelijnd
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(AppLocalizations.of(context).herinnering, style: TextStyle(color: Colors.black, fontSize: 16)),
+                      title: Text(AppLocalizations.of(context).herinnering, style: Theme.of(context).textTheme.bodyMedium),
                       value: reminderEnabled,
                       onChanged: (value) => setDialogState(() => reminderEnabled = value),
                       activeColor: AppTheme.primaryTeal,
@@ -370,14 +370,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context).tijdstipHerinnering,
                             filled: true,
-                            fillColor: Colors.grey.shade200,
+                            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           child: Text(
                             reminderTime == null
                               ? AppLocalizations.of(context).selecteerTijdMed
                               : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
-                            style: TextStyle(color: Colors.black, fontSize: 16),
+                            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 16),
                           ),
                         ),
                       ),
@@ -484,11 +484,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.medication_outlined, size: 48, color: Colors.grey.shade400),
+          Icon(Icons.medication_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
           const SizedBox(height: 12),
-          Text(AppLocalizations.of(context).geenMedicatie, style: TextStyle(fontSize: 16, color: Color(0xFF333333))),
+          Text(AppLocalizations.of(context).geenMedicatie, style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
           const SizedBox(height: 4),
-          Text(AppLocalizations.of(context).tikToeVoegen, style: TextStyle(fontSize: 13, color: Color(0xFF555555))),
+          Text(AppLocalizations.of(context).tikToeVoegen, style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color ?? AppTheme.textMedium)),
         ],
       ),
     );
@@ -519,7 +519,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Row(
         children: [
@@ -536,7 +536,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 children: [
                   Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
                   const SizedBox(height: 2),
-                  Text(dosage, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  Text(dosage, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: InkWell(

@@ -227,11 +227,11 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.timeline, size: 64, color: Colors.grey.shade300),
+                  Icon(Icons.timeline, size: 64, color: Theme.of(context).colorScheme.outline),
                   const SizedBox(height: 16),
-                  Text(AppLocalizations.of(context).nogGeenEpisodes, style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+                  Text(AppLocalizations.of(context).nogGeenEpisodes, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 16)),
                   const SizedBox(height: 8),
-                  Text(AppLocalizations.of(context).tikJeEersteEpisode, style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
+                  Text(AppLocalizations.of(context).tikJeEersteEpisode, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 14)),
                 ],
               ),
             )

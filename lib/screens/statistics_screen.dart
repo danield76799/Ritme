@@ -288,7 +288,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                 getTitlesWidget: (value, meta) {
                   return Text(
                     value.toInt().toString(),
-                    style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline),
                   );
                 },
               ),
@@ -379,7 +379,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                 getTitlesWidget: (value, meta) {
                   return Text(
                     value.toInt().toString(),
-                    style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline),
                   );
                 },
               ),
@@ -410,7 +410,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textCharcoal)),
+          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color)),
           SizedBox(height: 16),
           Expanded(child: child),
         ],
@@ -426,9 +426,9 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textCharcoal)),
+          Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color)),
           SizedBox(height: 24),
-          Center(child: Text(AppLocalizations.of(context).nogGeenDataBeschikbaar, style: TextStyle(color: Colors.black))),
+          Center(child: Text(AppLocalizations.of(context).nogGeenDataBeschikbaar, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color))),
           SizedBox(height: 16),
         ],
       ),

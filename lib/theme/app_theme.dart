@@ -249,16 +249,66 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       textTheme: base.textTheme.copyWith(
+        displayLarge: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: darkText, letterSpacing: -0.5),
+        displayMedium: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: darkText, letterSpacing: -0.4),
+        displaySmall: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: darkText),
         headlineLarge: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: darkText),
         headlineMedium: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: darkText),
+        headlineSmall: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: darkText),
         titleLarge: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: darkText),
         titleMedium: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: darkText),
+        titleSmall: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: darkText),
         bodyLarge: const TextStyle(fontSize: 18, color: darkText, height: 1.6),
         bodyMedium: const TextStyle(fontSize: 16, color: darkTextSecondary, height: 1.6),
         bodySmall: const TextStyle(fontSize: 15, color: darkTextSecondary, height: 1.6),
         labelLarge: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: darkText),
         labelMedium: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: darkTextSecondary),
         labelSmall: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: darkTextSecondary),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: medicalTealLight,
+        contentTextStyle: TextStyle(color: darkBackground, fontWeight: FontWeight.w500),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: darkCard,
+        selectedColor: medicalTealLight.withValues(alpha: 0.25),
+        labelStyle: TextStyle(color: darkText),
+        side: BorderSide(color: medicalTealDark),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: medicalTealLight,
+          side: const BorderSide(color: medicalTealLight, width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        ),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          return darkBackground;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return medicalTealLight;
+          return medicalTealLight.withValues(alpha: 0.15);
+        }),
+        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: darkSurface,
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: darkText),
+        contentTextStyle: const TextStyle(fontSize: 15, color: darkText, height: 1.5),
+      ),
+      dividerTheme: DividerThemeData(
+        color: Color(0xFF2E4046),
+        thickness: 1,
+        space: 1,
       ),
     );
   }

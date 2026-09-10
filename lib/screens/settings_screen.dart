@@ -130,7 +130,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
       width: 80,
       height: 180,
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListWheelScrollView.useDelegate(

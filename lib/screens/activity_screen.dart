@@ -850,11 +850,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       Row(
                         children: [
                           if (richtTijd != null) ...[
-                            Icon(Icons.schedule, size: 12, color: Colors.grey.shade400),
+                            Icon(Icons.schedule, size: 12, color: Theme.of(context).colorScheme.outline),
                             const SizedBox(width: 4),
                             Text(
                               _formatTijd(richtTijd),
-                              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.outline),
                             ),
                           ],
                           if (werkTijd != null) ...[
@@ -867,11 +867,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             ),
                           ] else ...[
                             const SizedBox(width: 8),
-                            Icon(Icons.touch_app, size: 12, color: Colors.grey.shade500),
+                            Icon(Icons.touch_app, size: 12, color: Theme.of(context).colorScheme.outline),
                             const SizedBox(width: 4),
                             Text(
                               AppLocalizations.of(context).tikOmTijdInTeStellen,
-                              style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+                              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.outline, fontStyle: FontStyle.italic),
                             ),
                           ],
                         ],
