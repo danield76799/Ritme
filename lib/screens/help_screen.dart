@@ -242,12 +242,10 @@ class _HelpScreenState extends State<HelpScreen> {
                       '• Stel doeltijden in voor je SRM-activiteiten\n'
                       '• Zet notificaties aan voor herinneringen\n'
                       '• Kies tussen licht en donker thema\n'
-                      '• Optionele menstruatie-vraag in- of uitschakelen'
                     : 'Adjust your preferences in the settings screen.\n\n'
                       '• Set target times for your SRM activities\n'
                       '• Enable notifications for reminders\n'
                       '• Choose between light and dark theme\n'
-                      '• Optional menstruation question on/off',
               ),
               const SizedBox(height: 20),
 

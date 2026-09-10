@@ -33,8 +33,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
   double _q2Slider = 50;
   double? _q3;
   double? _q5;
-  bool _menstruatie = false;
-  bool _showMenstruatieVraag = false;
 
   // SRM-tijden
   TimeOfDay? _eersteContact;
@@ -58,16 +56,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
   }
 
   Future<void> _laadSettings() async {
-    try {
-      await ensureInitialized();
-      final settings = await db.getSettings();
-      if (!mounted) return;
-      final raw = settings?['show_menstruatie'];
-      final show = raw == null || raw == '1' || raw == 1 || raw == 'true' || raw == true;
-      setState(() => _showMenstruatieVraag = show);
-    } catch (e) {
-      AppLogger.error('EveningCheckIn: settings laden mislukt', error: e);
-    }
+    // Menstruatie-vraag is verwijderd — geen instellingen meer nodig.
   }
 
   String _formatTimeOfDay(TimeOfDay t) =>
@@ -107,7 +96,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       q3: _q3!,
       q4: q4,
       q5: _q5!,
-      menstruatie: _showMenstruatieVraag && _menstruatie,
     );
 
     if (mounted) {
@@ -148,7 +136,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       log['stemming_hoog'] = result.ritmeScore;
       log['stemming_laag'] = result.ritmeScore;
       log['gesplitste_stemming'] = 0;
-      if (_showMenstruatieVraag) log['menstruatie'] = _menstruatie ? 1 : 0;
       if (_bedTime != null) log['bed_time'] = _formatTimeOfDay(_bedTime!);
       await db.upsertDailyLog(log);
 
