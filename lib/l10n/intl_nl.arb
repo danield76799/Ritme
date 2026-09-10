@@ -491,5 +491,7 @@
   "alIngevuldVandaag": "Al ingevuld vandaag",
   "aanpassen": "Aanpassen",
   "slaapduur": "Slaapduur",
-  "bedtijdVorigeNacht": "Gisteren naar bed om"
+  "bedtijdVorigeNacht": "Gisteren naar bed om",
+  "eergisteren": "Eergisteren",
+  "overmorgen": "Overmorgen"
 }

@@ -19,9 +19,11 @@ import '../widgets/overzicht_rij.dart';
 /// Opslag: mood_assessment (q1/q2/q3/q5 merge), daily_log (stemming + bedtijd),
 /// srm_activities (3 tijden + Naar bed met P-score), sleep-log (bedtijd).
 class EveningCheckInScreen extends StatefulWidget {
-  const EveningCheckInScreen({super.key, this.onClose});
+  const EveningCheckInScreen({super.key, this.onClose, this.initialDate});
 
   final void Function(bool saved)? onClose;
+  /// Optioneel: de datum waarvoor de check-in geldt (standaard vandaag).
+  final String? initialDate;
 
   @override
   State<EveningCheckInScreen> createState() => _EveningCheckInScreenState();
@@ -58,6 +60,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
   static const _totaalStappen = 8;
 
   String get _formattedToday {
+    if (widget.initialDate != null) return widget.initialDate!;
     final d = DateTime.now();
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }

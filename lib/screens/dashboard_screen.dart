@@ -40,6 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   int _loggedDaysCount = 0;
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
+  List<Map<String, dynamic>> _dailyLogs = [];
   List<Alert> _alerts = [];
 
   // Dagstatus (vinkjes op de tegels)
@@ -48,6 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   bool _medicatieGelogd = false;
   bool _srmGelogd = false;
   int _dagStreak = 0;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -441,18 +443,25 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 const SizedBox(height: 16),
               ],
 
-              // Today section + dagstatus-metertje
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(children: [
-                  Text(AppLocalizations.of(context).vandaag, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                  const Spacer(),
-                  _DagStatusMeter(
-                    gelogd: [_stemmingGelogd, _slaapGelogd, _medicatieGelogd].where((b) => b).length,
-                    totaal: 3,
-                  ),
-                ]),
-              ),
+              // Datum-picker + dagstatus-metertje
+              Row(children: [
+                GestureDetector(
+                  onTap: () => _selectDate(context),
+                  child: Row(children: [
+                    Text(
+                      _formatSelectedDate(context),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(Icons.calendar_today, size: 18, color: Theme.of(context).colorScheme.primary),
+                  ]),
+                ),
+                const Spacer(),
+                _DagStatusMeter(
+                  gelogd: [_stemmingGelogd, _slaapGelogd, _medicatieGelogd].where((b) => b).length,
+                  totaal: 3,
+                ),
+              ]),
 
               GridView.count(
                 crossAxisCount: 2,
@@ -462,8 +471,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.2,
                 children: [
-                  _buildActionCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', done: _stemmingGelogd || _slaapGelogd),
-                  _buildActionCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', done: _slaapGelogd && _stemmingGelogd ? _stemmingGelogd : false),
+                  _buildCheckinCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate),
+                  _buildCheckinCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate),
                   _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _medicatieGelogd),
                   _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false, isAction: true),
                 ],
@@ -530,6 +539,71 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     );
   }
 
+  /// DatePicker om eerdere dagen te selecteren voor de check-ins.
+  Future<void> _selectDate(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020, 1, 1),
+      lastDate: DateTime.now(),
+      locale: Localizations.localeOf(context).languageCode == 'nl'
+          ? const Locale('nl', 'NL')
+          : null,
+      helpText: 'Kies datum',
+      cancelText: 'Annuleren',
+      confirmText: 'Bekijken',
+    );
+    if (picked != null && mounted) {
+      setState(() => _selectedDate = picked);
+      _loadDataForDate(picked);
+    }
+  }
+
+  Future<void> _loadDataForDate(DateTime date) async {
+    try {
+      final ds = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final now = DateTime.now();
+      final weekAgo = now.subtract(const Duration(days: 7));
+      final startDateStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
+      final endDateStr = ds;
+      final results = await Future.wait([
+        db.getSettings(),
+        db.getDailyLogsRange(startDateStr, endDateStr),
+        db.getSrmActivitiesRange(startDateStr, endDateStr),
+      ]);
+      if (!mounted) return;
+      final settings = results[0] as Map<String, dynamic>?;
+      final dailyLogs = results[1] as List<Map<String, dynamic>>;
+      final weeklyActivities = results[2] as List<Map<String, dynamic>>;
+      setState(() {
+        _settings = settings;
+        _dailyLogs = dailyLogs;
+        _weeklyActivities = weeklyActivities.length;
+      });
+    } catch (_) {}
+  }
+
+  String _formatSelectedDate(BuildContext context) {
+    final now = DateTime.now();
+    final diff = _selectedDate.difference(now).inDays;
+    final locale = Localizations.localeOf(context).languageCode;
+    if (diff == 0) return locale == 'nl' ? 'Vandaag' : 'Today';
+    if (diff == -1) return locale == 'nl' ? 'Gisteren' : 'Yesterday';
+    if (diff == -2) return locale == 'nl' ? 'Eergisteren' : 'Day before yesterday';
+    if (diff > 0) return locale == 'nl' ? 'Overmorgen' : 'Tomorrow';
+    final fmt = DateFormat('d MMMM', locale);
+    return fmt.format(_selectedDate);
+  }
+
+  Widget _buildCheckinCard(BuildContext context,
+      {required IconData icon, required Color color, required String title,
+       required String route, DateTime? date}) {
+    final ds = '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final hasLog = _dailyLogs.any((l) => l['date'] == ds);
+    return _buildActionCard(context,
+        icon: icon, color: color, title: title, route: route, done: hasLog);
+  }
+
   Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -549,7 +623,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildActionCard(BuildContext context,
-      {required IconData icon, required Color color, required String title, required String route, bool done = false, bool isAction = false}) {
+      {required IconData icon, required Color color, required String title, required String route, bool done = false, bool isAction = false, DateTime? date}) {
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: Duration(milliseconds: 400),
@@ -560,7 +634,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       onClosed: (_) => _loadData(),
       closedBuilder: (context, openContainer) {
         return InkWell(
-          onTap: openContainer,
+          onTap: () => Navigator.pushNamed(context, route, arguments: date),
           borderRadius: BorderRadius.circular(AppTheme.borderRadius),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
