@@ -35,9 +35,13 @@ class OverzichtRij extends StatelessWidget {
               style: const TextStyle(fontSize: 14),
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
