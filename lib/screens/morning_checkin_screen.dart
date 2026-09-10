@@ -16,9 +16,11 @@ import '../utils/logger.dart';
 ///  - daily_log merge-preserving: uren_slaap, awake_minutes, q4
 ///  - SRM "Opstaan" met P-score tegen de doeltijd
 class MorningCheckInScreen extends StatefulWidget {
-  const MorningCheckInScreen({super.key, this.onClose});
+  const MorningCheckInScreen({super.key, this.onClose, this.initialDate});
 
   final void Function(bool saved)? onClose;
+  /// Optioneel: de datum waarvoor de check-in geldt (standaard vandaag).
+  final String? initialDate;
 
   @override
   State<MorningCheckInScreen> createState() => _MorningCheckInScreenState();
@@ -38,6 +40,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   String? _opgeslagenBedTime;
 
   String get _formattedToday {
+    if (widget.initialDate != null) return widget.initialDate!;
     final d = DateTime.now();
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }

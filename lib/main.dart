@@ -189,8 +189,12 @@ class _RitmeAppState extends State<RitmeApp> {
       home: SplashScreenWrapper(),
       routes: {
         '/mood': (context) => MoodAssessmentScreen(),
-        '/morning-checkin': (context) => MorningCheckInScreen(),
-        '/evening-checkin': (context) => EveningCheckInScreen(),
+        '/morning-checkin': (context) => MorningCheckInScreen(
+          initialDate: ModalRoute.of(context)!.settings.arguments as String?,
+        ),
+        '/evening-checkin': (context) => EveningCheckInScreen(
+          initialDate: ModalRoute.of(context)!.settings.arguments as String?,
+        ),
         '/activity': (context) => ActivityScreen(),
         '/medication': (context) => MedicationScreen(),
         '/database-debug': (context) => DatabaseDebugScreen(),

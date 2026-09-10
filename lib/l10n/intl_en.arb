@@ -491,5 +491,7 @@
   "alIngevuldVandaag": "Already filled in today",
   "aanpassen": "Edit",
   "slaapduur": "Sleep duration",
-  "bedtijdVorigeNacht": "Went to bed yesterday at"
+  "bedtijdVorigeNacht": "Went to bed yesterday at",
+  "eergisteren": "Day before yesterday",
+  "overmorgen": "Tomorrow"
 }
