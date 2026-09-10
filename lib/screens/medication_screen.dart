@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
@@ -137,7 +138,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
           AppLogger.error('Notification scheduling failed', error: notifError);
         }
       }
-      _loadData();
+      // Forceer een synchrone refresh zodat de nieuwe medicatie (incl. eenheid)
+      // zichtbaar is voordat het dialoogvenster volledig sluit.
+      if (mounted) _loadData();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadData();
+      });
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add medication', error: e, stackTrace: stackTrace);
     }
