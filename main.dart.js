@@ -128248,67 +128248,68 @@ if(n.c!=null)n.F(new A.aRJ(n))
 p=4
 s=7
 return A.j(A.m7(),$async$m7)
-case 7:s=n.w!=null?8:9
-break
-case 8:a1=$.aM
+case 7:a1=$.aM
 if(a1==null)A.I(A.T(u.O))
-a2=n.gmX()
-a3=n.w
-a3.toString
-s=10
-return A.j(a1.BA(a2,a3,m,n.f),$async$m7)
-case 10:case 9:a1=$.aM
-if(a1==null)A.I(A.T(u.O))
-s=11
-return A.j(a1.pb(n.gmX()),$async$m7)
-case 11:k=b2
-a1=t.N
-a2=t.z
-j=k!=null?A.cZ(k,a1,a2):A.E(a1,a2)
-J.bk(j,"date",n.gmX())
-if(l!=null)J.bk(j,"uren_slaap",l)
-J.bk(j,"awake_minutes",n.f)
-J.bk(j,"q4_slaapbehoefte",n.r)
-a3=$.aM
-if(a3==null)A.I(A.T(u.O))
-s=12
-return A.j(a3.ia(j),$async$m7)
-case 12:a3=$.aM
-if(a3==null)A.I(A.T(u.O))
-s=13
-return A.j(a3.fY(0),$async$m7)
-case 13:i=b2
-a3=i
-if(a3==null)a4=null
-else{a3=J.y(a3,"target_opstaan")
-a4=a3==null?null:J.ab(a3)}h=a4
-g=1
-if(h!=null&&h.length!==0&&h!=="--:--"){f=A.b(h.split(":"),t.s)
-a3=A.bG(J.y(f,0),null)
+s=8
+return A.j(a1.fY(0),$async$m7)
+case 8:k=b2
+a1=k
+if(a1==null)a2=null
+else{a1=J.y(a1,"target_opstaan")
+a2=a1==null?null:J.ab(a1)}j=a2
+i=1
+if(j!=null&&j.length!==0&&j!=="--:--"){h=A.b(j.split(":"),t.s)
+a1=A.bG(J.y(h,0),null)
+if(a1==null)a1=0
+a3=A.bG(J.y(h,1),null)
 if(a3==null)a3=0
-a5=A.bG(J.y(f,1),null)
-if(a5==null)a5=0
-e=a3*60+a5
-a5=n.e
-d=a5.a*60+a5.b
-c=Math.abs(d-e)
-if(c<=15)a6=5
-else if(c<=30)a6=4
-else{if(c<=45)a3=3
-else a3=c<=60?2:1
-a6=a3}g=a6}a3=$.aM
-if(a3==null)A.I(A.T(u.O))
-a5=n.gmX()
-a7=g
-a8=h!=null&&h!=="--:--"?h:null
+g=a1*60+a3
+a3=n.e
+f=a3.a*60+a3.b
+e=Math.abs(f-g)
+if(e<=15)a4=5
+else if(e<=30)a4=4
+else{if(e<=45)a1=3
+else a1=e<=60?2:1
+a4=a1}i=a4}s=n.w!=null?9:10
+break
+case 9:a1=$.aM
+if(a1==null)A.I(A.T(u.O))
+a3=n.gmX()
+a5=n.w
+a5.toString
+s=11
+return A.j(a1.BA(a3,a5,m,n.f),$async$m7)
+case 11:case 10:a1=$.aM
+if(a1==null)A.I(A.T(u.O))
+s=12
+return A.j(a1.pb(n.gmX()),$async$m7)
+case 12:d=b2
+a1=t.N
+a3=t.z
+c=d!=null?A.cZ(d,a1,a3):A.E(a1,a3)
+J.bk(c,"date",n.gmX())
+if(l!=null)J.bk(c,"uren_slaap",l)
+J.bk(c,"awake_minutes",n.f)
+J.bk(c,"q4_slaapbehoefte",n.r)
+J.bk(c,"stemming_hoog",i*2)
+a5=$.aM
+if(a5==null)A.I(A.T(u.O))
+s=13
+return A.j(a5.ia(c),$async$m7)
+case 13:a5=$.aM
+if(a5==null)A.I(A.T(u.O))
+a6=n.gmX()
+a7=i
+a8=j!=null&&j!=="--:--"?j:null
 s=14
-return A.j(a3.qI(a5,"Opstaan",m,a7,null,a8),$async$m7)
-case 14:a3=$.aM
-if(a3==null)A.I(A.T(u.O))
+return A.j(a5.qI(a6,"Opstaan",m,a7,null,a8),$async$m7)
+case 14:a5=$.aM
+if(a5==null)A.I(A.T(u.O))
 s=15
-return A.j(a3.nI(n.gmX()),$async$m7)
+return A.j(a5.nI(n.gmX()),$async$m7)
 case 15:b=b2
-a=b!=null?A.cZ(b,a1,a2):A.E(a1,a2)
+a=b!=null?A.cZ(b,a1,a3):A.E(a1,a3)
 J.bk(a,"date",n.gmX())
 J.bk(a,"q4_slaapbehoefte",n.r)
 a1=$.aM
