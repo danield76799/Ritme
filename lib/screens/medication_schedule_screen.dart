@@ -73,7 +73,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           const SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -91,16 +91,16 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.schedule_outlined, size: 48, color: Colors.grey.shade400),
+          Icon(Icons.schedule_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
           const SizedBox(height: 12),
           Text(
             AppLocalizations.of(context).geenSchemaIngesteld,
-            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
           ),
           const SizedBox(height: 4),
           Text(
             AppLocalizations.of(context).voegMedicatieschemaToe,
-            style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
+            style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color ?? AppTheme.textMedium),
           ),
         ],
       ),

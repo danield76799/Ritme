@@ -198,7 +198,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     Container(
                       padding: EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -520,7 +520,7 @@ class _HelpScreenState extends State<HelpScreen> {
             points,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade500,
+              color: Theme.of(context).colorScheme.outline,
               fontWeight: FontWeight.w500,
             ),
           ),

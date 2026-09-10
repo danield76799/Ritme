@@ -462,7 +462,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                       child: Text(count.toString(), style: TextStyle(color: count > 5 ? Colors.red : Colors.orange.shade800, fontWeight: FontWeight.bold)),
                     ),
                     title: Text(item['date'] as String),
-                    subtitle: Text(AppLocalizations.of(context).voortekenen, style: TextStyle(color: Colors.black)),
+                    subtitle: Text(AppLocalizations.of(context).voortekenen, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)),
                   );
                 },
               );

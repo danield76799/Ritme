@@ -58,7 +58,7 @@ class _RapportScreenState extends State<RapportScreen> {
             const SizedBox(height: 24),
 
             // Period selector
-            Text(AppLocalizations.of(context).periode, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
+            Text(AppLocalizations.of(context).periode, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -144,7 +144,7 @@ class _RapportScreenState extends State<RapportScreen> {
                 children: [
                   Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryTeal, borderRadius: BorderRadius.circular(2))),
                   SizedBox(width: 12),
-                  Text(AppLocalizations.of(context).voorbeeld, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
+                  Text(AppLocalizations.of(context).voorbeeld, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
                 ],
               ),
               SizedBox(height: 12),

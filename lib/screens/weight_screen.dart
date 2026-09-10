@@ -404,11 +404,11 @@ class _WeightScreenState extends State<WeightScreen> {
                       Center(
                         child: Column(
                           children: [
-                            Icon(Icons.monitor_weight_outlined, size: 64, color: Colors.grey.shade300),
+                            Icon(Icons.monitor_weight_outlined, size: 64, color: Theme.of(context).colorScheme.outline),
                             const SizedBox(height: 16),
                             Text(
                               AppLocalizations.of(context).nogGeenGewichtGelogd,
-                              style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                              style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 16),
                             ),
                           ],
                         ),
@@ -484,7 +484,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                     DateFormat('d MMM yyyy').format(date),
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Colors.grey.shade500,
+                                      color: Theme.of(context).colorScheme.outline,
                                     ),
                                   ),
                                 ],

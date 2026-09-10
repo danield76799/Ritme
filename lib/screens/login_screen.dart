@@ -573,7 +573,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 24),
                             Text(
                               AppLocalizations.of(context).ofWord,
-                              style: TextStyle(color: Colors.grey.shade500),
+                              style: TextStyle(color: Theme.of(context).colorScheme.outline),
                             ),
                             const SizedBox(height: 24),
                           ],

@@ -405,7 +405,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
       ),
       child: Column(
         children: [
-          Icon(Icons.nightlight_outlined, size: 48, color: Colors.grey.shade400),
+          Icon(Icons.nightlight_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
           SizedBox(height: 16),
           Text(
             title,
@@ -420,7 +420,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             subtitle,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade500,
+              color: Theme.of(context).colorScheme.outline,
             ),
             textAlign: TextAlign.center,
           ),

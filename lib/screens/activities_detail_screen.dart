@@ -411,7 +411,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200!, width: 1),
+          bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
         ),
       ),
       child: Row(
@@ -467,7 +467,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
       ),
       child: Column(
         children: [
-          Icon(Icons.event_busy_outlined, size: 48, color: Colors.grey.shade400),
+          Icon(Icons.event_busy_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
           SizedBox(height: 16),
           Text(
             title,
@@ -482,7 +482,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
             subtitle,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade500,
+              color: Theme.of(context).colorScheme.outline,
             ),
             textAlign: TextAlign.center,
           ),
