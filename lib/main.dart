@@ -21,6 +21,8 @@ import 'screens/help_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/medication_screen.dart';
 import 'screens/mood_assessment_screen.dart';
+import 'screens/morning_checkin_screen.dart';
+import 'screens/evening_checkin_screen.dart';
 import 'screens/rapport_screen.dart';
 import 'screens/rhythm_detail_screen.dart';
 import 'screens/settings_screen.dart';
@@ -187,6 +189,8 @@ class _RitmeAppState extends State<RitmeApp> {
       home: SplashScreenWrapper(),
       routes: {
         '/mood': (context) => MoodAssessmentScreen(),
+        '/morning-checkin': (context) => MorningCheckInScreen(),
+        '/evening-checkin': (context) => EveningCheckInScreen(),
         '/activity': (context) => ActivityScreen(),
         '/medication': (context) => MedicationScreen(),
         '/database-debug': (context) => DatabaseDebugScreen(),
