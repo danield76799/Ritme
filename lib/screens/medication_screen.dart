@@ -565,7 +565,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal),
+                    ),
                     const SizedBox(height: 3),
                     Row(
                       children: [
@@ -597,7 +602,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     onTap: () => _toggleIntake(configId!),
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                       decoration: BoxDecoration(
                         color: taken ? AppTheme.primaryTeal : Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
@@ -607,7 +612,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         children: [
                           Icon(
                             taken ? Icons.check_rounded : Icons.add_rounded,
-                            size: 18,
+                            size: 17,
                             color: taken
                                 ? (isDark ? AppTheme.darkBackground : Colors.white)
                                 : Theme.of(context).colorScheme.primary,
@@ -616,7 +621,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           Text(
                             taken ? AppLocalizations.of(context).medicatieGenomen : AppLocalizations.of(context).medicatieNietGenomen,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: taken
                                   ? (isDark ? AppTheme.darkBackground : Colors.white)
