@@ -177,7 +177,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   Map<String, dynamic>? _settings;
-  bool _showMenstruatie = true;
   bool _isLoading = true;
   String? _errorMessage;
   ThemeMode _themeMode = ThemeMode.system;
@@ -208,7 +207,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final appState = RitmeApp.of(context);
       setState(() {
         _settings = settings;
-        _showMenstruatie = settings?['show_menstruatie'] == '1' || settings?['show_menstruatie'] == 1 || settings?['show_menstruatie'] == 'true' || settings?['show_menstruatie'] == null;
         _isLoading = false;
         // Sync huidige thema-modus van de app
         if (appState != null) _themeMode = appState.themeMode;
@@ -362,25 +360,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildTimeField(AppLocalizations.of(context).avondeten, 'target_eten'),
           SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).weergave),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(AppLocalizations.of(context).toonMenstruatieTracking,
-              style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color)),
-            subtitle: Text(AppLocalizations.of(context).zetAlsJe,
-              style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
-            value: _showMenstruatie,
-            onChanged: (value) {
-              setState(() {
-                _showMenstruatie = value;
-                _settings ??= {};
-                _settings!['show_menstruatie'] = value ? '1' : '0';
-              });
-              // Sla direct op zodat het meteen effect heeft
-              _saveSettings();
-            },
-            activeColor: AppTheme.primaryTeal,
-          ),
-          const SizedBox(height: 12),
           _buildThemeSelector(),
           const SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).notificaties),

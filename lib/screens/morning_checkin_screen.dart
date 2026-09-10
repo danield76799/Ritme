@@ -146,7 +146,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       await db.insertSrmActivity(_formattedToday, 'Opstaan', wakeStr, pScore, null,
           targetTime: (targetStr != null && targetStr != '--:--') ? targetStr : null);
 
-      // 4. mood_assessment updaten (merge: alleen q4 + menstruatie-veld laten staan)
+      // 4. mood_assessment updaten (merge: alleen q4 behouden)
       final existingAssessment = await db.getMoodAssessment(_formattedToday);
       final assessment = existingAssessment != null
           ? Map<String, dynamic>.from(existingAssessment)
