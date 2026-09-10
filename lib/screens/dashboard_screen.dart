@@ -212,6 +212,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           _rhythmStability = stability;
           _weeklyActivities = weeklyActivities.length;
           _loggedDaysCount = loggedDaysCount;
+          _dailyLogs = dailyLogs;
           _weeklyLogs = dailyLogs;
           _stemmingGelogd = stemmingGelogd;
           _slaapGelogd = slaapGelogd;
