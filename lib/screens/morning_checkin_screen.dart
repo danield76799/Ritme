@@ -183,22 +183,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     try {
       await ensureInitialized();
 
-      // 1. Slaap-log vullen/actualiseren: bedtijd van gisteren behouden,
-      //    opstaantijd + wakker-minuten van nu. Merge-preserving!
-      if (_bedTimeYesterday != null) {
-        await db.insertSleepLog(_formattedToday, _bedTimeYesterday!, wakeStr, _awakeMinutes);
-      }
-
-      // 2. daily_log merge-preserving bijwerken (q4 + slaap)
-      final existing = await db.getDailyLog(_formattedToday);
-      final log = existing != null ? Map<String, dynamic>.from(existing) : <String, dynamic>{};
-      log['date'] = _formattedToday;
-      if (sleepHours != null) log['uren_slaap'] = sleepHours;
-      log['awake_minutes'] = _awakeMinutes;
-      log['q4_slaapbehoefte'] = _q4;
-      await db.upsertDailyLog(log);
-
-      // 3. SRM "Opstaan" met P-score tegen de doeltijd
+      // Bereken P-score (voor stemming_hoog in daily_log)
       final settings = await db.getSettings();
       final targetStr = settings?['target_opstaan']?.toString();
       int pScore = 1;
@@ -207,16 +192,28 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
         final targetMinutes = (int.tryParse(tParts[0]) ?? 0) * 60 + (int.tryParse(tParts[1]) ?? 0);
         final wakeMinutes = (_wakeTime!.hour * 60) + _wakeTime!.minute;
         final diff = (wakeMinutes - targetMinutes).abs();
-        pScore = diff <= 15
-            ? 5
-            : diff <= 30
-                ? 4
-                : diff <= 45
-                    ? 3
-                    : diff <= 60
-                        ? 2
-                        : 1;
+        pScore = diff <= 15 ? 5 : diff <= 30 ? 4 : diff <= 45 ? 3 : diff <= 60 ? 2 : 1;
       }
+
+      // 1. Slaap-log vullen/actualiseren: bedtijd van gisteren behouden,
+      //    opstaantijd + wakker-minuten van nu. Merge-preserving!
+      if (_bedTimeYesterday != null) {
+        await db.insertSleepLog(_formattedToday, _bedTimeYesterday!, wakeStr, _awakeMinutes);
+      }
+
+      // 2. daily_log merge-preserving bijwerken (q4 + slaap + stemming)
+      final existing = await db.getDailyLog(_formattedToday);
+      final log = existing != null ? Map<String, dynamic>.from(existing) : <String, dynamic>{};
+      log['date'] = _formattedToday;
+      if (sleepHours != null) log['uren_slaap'] = sleepHours;
+      log['awake_minutes'] = _awakeMinutes;
+      log['q4_slaapbehoefte'] = _q4;
+      // stemming_hoog: P-score (1-5) geschaald naar 0-10,
+      // zodat de dagstatus-kaarten het groene vinkje tonen.
+      log['stemming_hoog'] = pScore * 2;
+      await db.upsertDailyLog(log);
+
+      // 3. SRM "Opstaan" met P-score tegen de doeltijd
       await db.insertSrmActivity(_formattedToday, 'Opstaan', wakeStr, pScore, null,
           targetTime: (targetStr != null && targetStr != '--:--') ? targetStr : null);
 
