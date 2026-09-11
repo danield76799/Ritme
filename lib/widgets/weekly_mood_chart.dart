@@ -190,8 +190,11 @@ class WeeklyMoodChart extends StatelessWidget {
                       reservedSize: 30,
                       interval: 1,
                       getTitlesWidget: (value, meta) {
+                        // Alleen bij integer posities tonen (half-integers
+                        // als 0.5, 1.5 etc. moeten geen label tonen — anders
+                        // wordt dezelfde datum meerdere keren weergegeven).
+                        if (value % 1 != 0) return const Text('');
                         final index = value.toInt();
-                        // Only show title for exact data point indices, and only if we have that title
                         if (index >= 0 && index < titles.length) {
                           return Padding(
                             padding: EdgeInsets.only(top: 8.0),
