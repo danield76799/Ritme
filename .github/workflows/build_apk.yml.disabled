@@ -1,9 +1,9 @@
-name: Build Android APK (Ritme)
+name: Build Android APK
 
 on:
-  push:
-    branches: [ main, master ]
   workflow_dispatch:
+  push:
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -13,79 +13,76 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Setup Flutter 3.24.5
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.24.5'
-        channel: 'stable'
-    
-    - name: Setup Java 17
+
+    - name: Setup Java
       uses: actions/setup-java@v4
       with:
         java-version: '17'
-        distribution: 'temurin'
-    
-    - name: Flutter Info
-      run: |
-        flutter --version
-        flutter doctor -v
-    
-    - name: Get Dependencies
+        distribution: 'zulu'
+        cache: 'gradle'
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.41.9'
+        channel: 'stable'
+
+    - name: Get dependencies
       run: flutter pub get
-    
-    - name: Build APK (with fallback)
-      run: |
-        # Try build, capture ALL output
-        flutter build apk --release 2>&1 | tee build_output.log || true
-        
-        # Check if APK was created despite any errors
-        echo "=== Checking for APK ==="
-        find build -name "*.apk" -type f 2>/dev/null
-        
-        # If APK exists, we're good
-        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-          echo "✅ APK found at flutter-apk/app-release.apk"
-          cp build/app/outputs/flutter-apk/app-release.apk app-release.apk
-          exit 0
-        fi
-        
-        if [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
-          echo "✅ APK found at apk/release/app-release.apk"
-          cp build/app/outputs/apk/release/app-release.apk app-release.apk
-          exit 0
-        fi
-        
-        # No APK - show error and fail
-        echo "❌ No APK found. Build output:"
-        cat build_output.log
-        exit 1
-    
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: ritme-apk
-        path: app-release.apk
-        if-no-files-found: ignore
-    
-    - name: Create Release
-      if: github.ref == 'refs/heads/main' && always()
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: v1.3.4-build${{ github.run_number }}
-        name: Ritme v1.3.4 (Build ${{ github.run_number }})
-        files: app-release.apk
-        body: |
-          ## Ritme v1.3.4 Build ${{ github.run_number }}
-          
-          **Build:** ${{ github.run_number }}  
-          **Commit:** ${{ github.sha }}
-          
-          **Wijzigingen:**
-          - Workflow verbeterd voor betrouwbaardere builds
-          - Flutter 3.24.5 gebruikt
-          
-          **Let op:** Automatische build.
+
+    - name: Setup signing config
       env:
-        GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      run: |
+        echo "$KEYSTORE_BASE64" | base64 -d > android/app/release-keystore.jks
+        cat > android/key.properties << EOF
+        storePassword=$KEYSTORE_PASSWORD
+        keyPassword=$KEY_PASSWORD
+        keyAlias=$KEY_ALIAS
+        storeFile=release-keystore.jks
+        EOF
+
+    - name: Build APK (split per ABI)
+      run: flutter build apk --release --split-per-abi
+
+    - name: Verify APK signatures
+      run: |
+        BUILD_TOOLS_DIR=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 1 -type d | sort -V | tail -1)
+        for apk in build/app/outputs/flutter-apk/*-release.apk; do
+          echo "Verifying $apk"
+          $BUILD_TOOLS_DIR/apksigner verify -v "$apk"
+        done
+
+    - name: Upload arm64-v8a APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: ritme-arm64-v8a-apk
+        path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+        retention-days: 30
+
+    - name: Upload armeabi-v7a APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: ritme-armeabi-v7a-apk
+        path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+        retention-days: 30
+
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+        tag_name: apk-v${{ github.run_number }}
+        name: Ritme APK v${{ github.run_number }}
+        body: |
+          Ritme Android APKs
+
+          - `app-arm64-v8a-release.apk` - Modern phones (recommended)
+          - `app-armeabi-v7a-release.apk` - Older phones
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
