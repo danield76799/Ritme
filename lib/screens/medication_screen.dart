@@ -285,15 +285,16 @@ class _MedicationScreenState extends State<MedicationScreen> {
     bool reminderEnabled = true;
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          return Theme(
-            data: ThemeData.light().copyWith(
-              dialogBackgroundColor: Theme.of(context).colorScheme.surface,
-              textTheme: Theme.of(context).textTheme,
-            ),
-            child: AlertDialog(
-              title: Text(AppLocalizations.of(context).nieuweMedicatie, style: Theme.of(context).textTheme.titleMedium),
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        final textColor = cs.onSurface;
+        final labelColor = cs.onSurfaceVariant;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: cs.surface,
+              surfaceTintColor: Colors.transparent,
+              title: Text(AppLocalizations.of(context).nieuweMedicatie, style: TextStyle(color: textColor)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -301,11 +302,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   children: [
                     // Naam
                     TextField(
+                      style: TextStyle(color: textColor),
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context).naamBijvLithium,
+                        labelStyle: TextStyle(color: labelColor),
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        fillColor: cs.surfaceContainerHighest,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
                       ),
                       onChanged: (v) => name = v,
                     ),
@@ -316,11 +320,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       children: [
                         Expanded(
                           child: TextField(
+                            style: TextStyle(color: textColor),
                             decoration: InputDecoration(
                               labelText: AppLocalizations.of(context).dosering,
+                              labelStyle: TextStyle(color: labelColor),
                               filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              fillColor: cs.surfaceContainerHighest,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
                             ),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             onChanged: (v) => dosage = double.tryParse(v.replaceAll(',', '.')) ?? 0,
@@ -330,16 +337,20 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         SizedBox(
                           width: 96,
                           child: DropdownButtonFormField<String>(
+                            style: TextStyle(color: textColor),
+                            dropdownColor: cs.surface,
                             initialValue: unit,
                             decoration: InputDecoration(
                               labelText: AppLocalizations.of(context).eenheidMgMlStuks,
+                              labelStyle: TextStyle(color: labelColor),
                               filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              fillColor: cs.surfaceContainerHighest,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
                             ),
                             items: ['mg', 'ml', 'stuks', 'µg', 'IE']
-                                .map((u) => DropdownMenuItem(value: u, child: Text(u, style: const TextStyle(fontSize: 15))))
+                                .map((u) => DropdownMenuItem(value: u, child: Text(u, style: TextStyle(color: textColor, fontSize: 15))))
                                 .toList(),
                             onChanged: (v) => setDialogState(() => unit = v ?? 'mg'),
                           ),
@@ -350,7 +361,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     // Herinnering-switch als eigen rij, netjes uitgelijnd
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(AppLocalizations.of(context).herinnering, style: Theme.of(context).textTheme.bodyMedium),
+                      title: Text(AppLocalizations.of(context).herinnering, style: TextStyle(color: textColor)),
                       value: reminderEnabled,
                       onChanged: (value) => setDialogState(() => reminderEnabled = value),
                       activeColor: AppTheme.primaryTeal,
@@ -369,15 +380,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         child: InputDecorator(
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context).tijdstipHerinnering,
+                            labelStyle: TextStyle(color: labelColor),
                             filled: true,
-                            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            fillColor: cs.surfaceContainerHighest,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: cs.outline)),
                           ),
                           child: Text(
                             reminderTime == null
                               ? AppLocalizations.of(context).selecteerTijdMed
                               : '${reminderTime!.hour.toString().padLeft(2, '0')}:${reminderTime!.minute.toString().padLeft(2, '0')}',
-                            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 16),
+                            style: TextStyle(color: textColor, fontSize: 16),
                           ),
                         ),
                       ),
@@ -385,8 +398,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context).annuleer)),
+                TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context).annuleer, style: TextStyle(color: cs.primary))),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: cs.primary, foregroundColor: cs.onPrimary),
                   onPressed: () {
                     if (name.isNotEmpty) {
                       _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime);
@@ -396,10 +410,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   child: Text(AppLocalizations.of(context).opslaan),
                 ),
               ],
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
