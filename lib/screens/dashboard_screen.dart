@@ -319,7 +319,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             onSelected: (value) async {
               switch (value) {
                 case 0: Navigator.pushNamed(context, '/statistics'); break;
-                case 1: Navigator.pushNamed(context, '/episodes'); break;
                 case 2: Navigator.pushNamed(context, '/weight'); break;
                 case 3: Navigator.pushNamed(context, '/appointments'); break;
                 case 4: Navigator.pushNamed(context, '/voortekenen'); break;
@@ -330,7 +329,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             },
             itemBuilder: (context) => [
               PopupMenuItem(value: 0, child: ListTile(leading: Icon(Icons.bar_chart), title: Text(AppLocalizations.of(context).statistieken), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.timeline), title: Text(AppLocalizations.of(context).episodes), contentPadding: EdgeInsets.zero, dense: true)),
               const PopupMenuDivider(),
               PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.monitor_weight), title: Text(AppLocalizations.of(context).gewicht), contentPadding: EdgeInsets.zero, dense: true)),
               PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.calendar_today), title: Text(AppLocalizations.of(context).afspraken), contentPadding: EdgeInsets.zero, dense: true)),
@@ -476,6 +474,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _checkinTypes.contains('medicatie')),
                   _buildActionCard(context, icon: Icons.menu_book, color: const Color(0xFF7FB89C), title: AppLocalizations.of(context).dagboek, route: '/dagboek', done: _checkinTypes.contains('dagboek')),
                   _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false, isAction: true),
+                  _buildActionCard(context, icon: Icons.calendar_today, color: const Color(0xFFD4A8B4), title: AppLocalizations.of(context).afspraken, route: '/appointments', done: false, isAction: true),
                 ],
               ),
 
