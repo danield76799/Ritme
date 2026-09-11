@@ -1129,6 +1129,32 @@ class HiveDatabaseHelper implements DatabaseRepository {
     }
   }
 
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationIntakeRange(String startDate, String endDate) async {
+    try {
+      return _medicationIntake.toMap().entries.where((entry) {
+        final d = entry.value['date']?.toString() ?? '';
+        return d.compareTo(startDate) >= 0 && d.compareTo(endDate) <= 0;
+      }).map((entry) {
+        final map = Map<String, dynamic>.from(entry.value);
+        if (!map.containsKey('id')) map['id'] = entry.key;
+        if (map['medication_id'] is String) {
+          map['medication_id'] = int.tryParse(map['medication_id']) ?? 0;
+        }
+        final raw = map['aantal_ingenomen'];
+        if (raw is String) {
+          map['aantal_ingenomen'] = int.tryParse(raw) ?? 0;
+        } else if (raw == null) {
+          map['aantal_ingenomen'] = 0;
+        }
+        return map;
+      }).toList();
+    } catch (e) {
+      AppLogger.error('Error loading medication intake range', error: e);
+      return [];
+    }
+  }
+
   // ===================
   // LIFE EVENTS
   // ===================
