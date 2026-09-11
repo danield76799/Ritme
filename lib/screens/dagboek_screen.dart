@@ -4,9 +4,7 @@ import '../service_locator.dart';
 import '../theme/app_theme.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../utils/logger.dart';
-import 'dart:io';
 import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Dagboek-scherm: dagelijkse check-in met 5-sterren score en notities.
 /// Ondersteunt backfill (eerdere dagen aanpassen) via initialDate.
@@ -146,16 +144,12 @@ class _DagboekScreenState extends State<DagboekScreen> {
         buffer.writeln('---\n');
       }
 
-      final dir = await getTemporaryDirectory();
-      final path = '${dir.path}/dagboek_export.md';
-      final file = File(path);
-      await file.writeAsString(buffer.toString());
-
       if (!mounted) return;
-      await Share.shareXFiles(
-        [XFile(path)],
+      // Delen als TEKST (niet als .md-bestand) zodat WhatsApp/Gemini het
+      // direct als leesbare tekst tonen in plaats van een bestandsbijlage.
+      await Share.share(
+        buffer.toString(),
         subject: 'Dagboek Export',
-        text: 'Mijn dagboek van de afgelopen weken.',
       );
     } catch (e) {
       AppLogger.error('Dagboek: exporteren mislukt', error: e);
