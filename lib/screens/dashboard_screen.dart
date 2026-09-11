@@ -155,10 +155,18 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         // Medicatie: ingenomen?
         if (medDates.contains(ds)) dayTypes.add('medicatie');
         
-        // Avond: SRM activiteiten met avond-types?
+        // Avond: SRM activiteiten met avond-types, maar ALLEEN afgerond (actual_time + p_score ingevuld)
         final dayActs = weeklyActivities.where((a) => a['date'] == ds).toList();
         final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
-        if (dayActs.any((a) => avondTypes.contains(a['activity_type']?.toString() ?? ''))) {
+        final avondDone = dayActs.any((a) {
+          if (!avondTypes.contains(a['activity_type']?.toString() ?? '')) return false;
+          final t = a['actual_time'];
+          final p = a['p_score'];
+          final hasTime = t != null && t.toString().isNotEmpty;
+          final hasScore = p != null;
+          return hasTime && hasScore;
+        });
+        if (avondDone) {
           dayTypes.add('avond');
         }
         
