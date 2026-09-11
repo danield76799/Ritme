@@ -123,9 +123,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
       // Dagstreak — tellen vanaf vandaag achterwaarts (max 14 dagen); een dag telt als er minimaal 1 check-in type is (ochtend/avond/medicatie)
       // Haal eerst alle data op voor de lookback-periode
-      final twoWeeksAgo = now.subtract(const Duration(days: 14));
-      final twoWeeksAgoStr = '${twoWeeksAgo.year}-${twoWeeksAgo.month.toString().padLeft(2, '0')}-${twoWeeksAgo.day.toString().padLeft(2, '0')}';
-      final allMedicationIntake = await db.getMedicationIntakeRange(twoWeeksAgoStr, endDateStr);
+      final streakLookback = now.subtract(const Duration(days: 14));
+      final streakLookbackStr = '${streakLookback.year}-${streakLookback.month.toString().padLeft(2, '0')}-${streakLookback.day.toString().padLeft(2, '0')}';
+      final allMedicationIntake = await db.getMedicationIntakeRange(streakLookbackStr, endDateStr);
       final medDates = <String>{};
       for (final row in allMedicationIntake) {
         final raw = row['aantal_ingenomen'];
