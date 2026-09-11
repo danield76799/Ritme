@@ -588,6 +588,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
       });
       return cleanMap;
     }).toList();
+    (result['tables'] as Map<String, dynamic>)['mood_assessment'] = _moodAssessment.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
+    (result['tables'] as Map<String, dynamic>)['dagboek'] = _dagboekBox.toMap().values.map((e) {
+      final map = Map<String, dynamic>.from(e);
+      final cleanMap = <String, dynamic>{};
+      map.forEach((key, value) {
+        cleanMap[key] = value?.toString() ?? value;
+      });
+      return cleanMap;
+    }).toList();
     
     return jsonEncode(result);
   }
@@ -738,6 +754,32 @@ class HiveDatabaseHelper implements DatabaseRepository {
         await _episodeLogs.put(map['id'], cleanMap);
       }
     }
+    if (tables['mood_assessment'] != null) {
+      for (var row in tables['mood_assessment'] as List) {
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = map['date'] ?? DateTime.now().millisecondsSinceEpoch % 1000000;
+        }
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _moodAssessment.put(map['id'], cleanMap);
+      }
+    }
+    if (tables['dagboek'] != null) {
+      for (var row in tables['dagboek'] as List) {
+        final map = Map<String, dynamic>.from(row);
+        if (!map.containsKey('id')) {
+          map['id'] = map['date'] ?? DateTime.now().millisecondsSinceEpoch % 1000000;
+        }
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value?.toString() ?? value;
+        });
+        await _dagboekBox.put(map['id'], cleanMap);
+      }
+    }
   }
 
   @override
@@ -752,6 +794,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await _prodromalChecklist.clear();
     await _prodromalLogs.clear();
     await _episodeLogs.clear();
+    await _moodAssessment.clear();
+    await _dagboekBox.clear();
   }
 
   @override
