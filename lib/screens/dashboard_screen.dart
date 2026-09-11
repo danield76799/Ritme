@@ -410,15 +410,18 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   ]),
                 ),
                 const Spacer(),
-                if (_dagStreak > 0) ...[
-                  _buildStreakChip(),
-                  const SizedBox(width: 8),
-                ],
                 _DagStatusMeter(
                   gelogd: _checkinTypes.length,
                   totaal: 4,
                 ),
               ]),
+              if (_dagStreak > 0) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: _buildStreakChip(),
+                ),
+              ],
 
               GridView.count(
                 crossAxisCount: 2,
