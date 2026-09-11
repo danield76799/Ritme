@@ -121,13 +121,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       });
       if (hasAvond) checkinTypesToday.add('avond');
 
-      // Dagstreak — tellen vanaf vandaag achterwaarts; een dag telt als er minimaal 1 check-in type is
+      // Dagstreak — tellen vanaf vandaag achterwaarts; een dag telt als er minimaal 1 check-in type is (ochtend/avond/medicatie)
       int streak = 0;
       for (int i = 0; i < 365; i++) {
         final d = now.subtract(Duration(days: i));
         final ds = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
         final dayTypes = <String>{};
         
+        // Ochtend: slaap gelogd?
         final dayLog = dailyLogs.where((l) => l['date'] == ds).firstOrNull;
         if (dayLog != null) {
           final s = dayLog['uren_slaap'];
@@ -139,6 +140,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             dayTypes.add('ochtend');
           }
         }
+        
+        // Medicatie: ingenomen?
         try {
           final intake = await db.getMedicationIntake(ds);
           final hasMed = intake.any((row) {
@@ -148,10 +151,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           });
           if (hasMed) dayTypes.add('medicatie');
         } catch (_) {}
-        try {
-          final dagboek = await db.getDagboek(ds);
-          if (dagboek != null) dayTypes.add('dagboek');
-        } catch (_) {}
+        
+        // Avond: SRM activiteiten met avond-types?
         final dayActs = weeklyActivities.where((a) => a['date'] == ds).toList();
         final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
         if (dayActs.any((a) => avondTypes.contains(a['activity_type']?.toString() ?? ''))) {
