@@ -114,4 +114,9 @@ abstract class DatabaseRepository {
   Future<int> upsertMoodAssessment(Map<String, dynamic> data);
   Future<Map<String, dynamic>?> getMoodAssessment(String date);
   Future<List<Map<String, dynamic>>> getMoodAssessmentRange(String startDate, String endDate);
+
+  // ---- DAGBOEK (daily journal) ----
+  Future<int> upsertDagboek(Map<String, dynamic> data);
+  Future<Map<String, dynamic>?> getDagboek(String date);
+  Future<List<Map<String, dynamic>>> getDagboekRange(String startDate, String endDate);
 }

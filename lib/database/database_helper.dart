@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -273,6 +273,22 @@ class DatabaseHelper implements DatabaseRepository {
       } catch (e) {
         // Table may already exist
       }
+    }
+    if (oldVersion < 5) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS dagboek (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL UNIQUE,
+            score REAL,
+            tekst TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_dagboek_date ON dagboek(date)',
+        );
+      } catch (_) {}
     }
   }
 
@@ -1172,6 +1188,45 @@ class DatabaseHelper implements DatabaseRepository {
     final db = await database;
     return await db.query(
       'mood_assessment',
+      where: 'date BETWEEN ? AND ?',
+      whereArgs: [startDate, endDate],
+      orderBy: 'date ASC',
+    );
+  }
+
+  // ---- DAGBOEK (daily journal) ----
+
+  @override
+  Future<int> upsertDagboek(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert(
+      'dagboek',
+      data,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getDagboek(String date) async {
+    final db = await database;
+    final results = await db.query(
+      'dagboek',
+      where: 'date = ?',
+      whereArgs: [date],
+      limit: 1,
+    );
+    if (results.isEmpty) return null;
+    return results.first;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDagboekRange(
+    String startDate,
+    String endDate,
+  ) async {
+    final db = await database;
+    return await db.query(
+      'dagboek',
       where: 'date BETWEEN ? AND ?',
       whereArgs: [startDate, endDate],
       orderBy: 'date ASC',

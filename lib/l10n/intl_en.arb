@@ -493,5 +493,18 @@
   "slaapduur": "Sleep duration",
   "bedtijdVorigeNacht": "Went to bed yesterday at",
   "eergisteren": "Day before yesterday",
-  "overmorgen": "Tomorrow"
+  "overmorgen": "Tomorrow",
+  "dagboek": "Journal",
+  "dagboekVraag": "How are you doing today?",
+  "dagboekZeerGoed": "Very good",
+  "dagboekGoed": "Good",
+  "dagboekNeutraal": "Neutral",
+  "dagboekSlecht": "Bad",
+  "dagboekZeerSlecht": "Very bad",
+  "dagboekTekstPlaceholder": "Write something about your day...",
+  "dagboekOpslaan": "Save",
+  "dagboekAnnuleren": "Cancel",
+  "dagboekAlIngevuld": "Already filled in today",
+  "dagboekAanpassen": "Edit",
+  "dagboekWoordenTellen": "{count}/250 words"
 }

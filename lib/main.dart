@@ -20,6 +20,7 @@ import 'screens/episodes_screen.dart';
 import 'screens/help_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/medication_screen.dart';
+import 'screens/dagboek_screen.dart';
 import 'screens/mood_assessment_screen.dart';
 import 'screens/morning_checkin_screen.dart';
 import 'screens/evening_checkin_screen.dart';
@@ -189,6 +190,9 @@ class _RitmeAppState extends State<RitmeApp> {
       home: SplashScreenWrapper(),
       routes: {
         '/mood': (context) => MoodAssessmentScreen(),
+        '/dagboek': (context) => DagboekScreen(
+          initialDate: ModalRoute.of(context)?.settings.arguments as String?,
+        ),
         '/morning-checkin': (context) => MorningCheckInScreen(
           initialDate: ModalRoute.of(context)!.settings.arguments as String?,
         ),

@@ -21,6 +21,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   static const String _prodromalLogsBox = 'prodromal_logs';
   static const String _episodeLogsBox = 'episode_logs';
   static const String _moodAssessmentBox = 'mood_assessment';
+  static const String _dagboekBoxName = 'daily_dagboek';
 
   HiveDatabaseHelper._init();
 
@@ -38,11 +39,14 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_prodromalChecklistBox);
     await Hive.openBox(_prodromalLogsBox);
     await Hive.openBox(_episodeLogsBox);
+    await Hive.openBox(_dagboekBoxName);
     await Hive.openBox(_moodAssessmentBox);
     // Seed default prodromal checklist if empty
-    await instance._seedProdromalChecklistIfEmpty();
+    final h = HiveDatabaseHelper.instance;
+    await h._seedProdromalChecklistIfEmpty();
     // Migreer oude p_scores (eenmalig)
-    await instance.migrateOldPScores();
+    final h2 = HiveDatabaseHelper.instance;
+    await h2.migrateOldPScores();
   }
 
   Box get _settings => Hive.box(_settingsBox);
@@ -59,6 +63,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Box get _prodromalLogs => Hive.box(_prodromalLogsBox);
   Box get _episodeLogs => Hive.box(_episodeLogsBox);
   Box get _moodAssessment => Hive.box(_moodAssessmentBox);
+  Box get _dagboekBox => Hive.box(_dagboekBoxName);
 
   Future<void> _seedProdromalChecklistIfEmpty() async {
     if (_prodromalChecklist.isNotEmpty) return;
@@ -1708,6 +1713,41 @@ class HiveDatabaseHelper implements DatabaseRepository {
       final date = key.toString();
       if (date.compareTo(startDate) >= 0 && date.compareTo(endDate) <= 0) {
         results.add(Map<String, dynamic>.from(_moodAssessment.get(key) as Map));
+      }
+    }
+    results.sort(
+      (a, b) => (a['date'] as String).compareTo(b['date'] as String),
+    );
+    return results;
+  }
+
+  // ---- DAGBOEK (daily journal) ----
+
+  @override
+  Future<int> upsertDagboek(Map<String, dynamic> data) async {
+    final date = data['date'] as String;
+    data['id'] = date;
+    await _dagboekBox.put(date, data);
+    return 1;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getDagboek(String date) async {
+    final value = _dagboekBox.get(date);
+    if (value == null) return null;
+    return Map<String, dynamic>.from(value as Map);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDagboekRange(
+    String startDate,
+    String endDate,
+  ) async {
+    final results = <Map<String, dynamic>>[];
+    for (final key in _dagboekBox.keys) {
+      final date = key.toString();
+      if (date.compareTo(startDate) >= 0 && date.compareTo(endDate) <= 0) {
+        results.add(Map<String, dynamic>.from(_dagboekBox.get(key) as Map));
       }
     }
     results.sort(

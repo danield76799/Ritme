@@ -493,5 +493,18 @@
   "slaapduur": "Slaapduur",
   "bedtijdVorigeNacht": "Gisteren naar bed om",
   "eergisteren": "Eergisteren",
-  "overmorgen": "Overmorgen"
+  "overmorgen": "Overmorgen",
+  "dagboek": "Dagboek",
+  "dagboekVraag": "Hoe gaat het met jou vandaag?",
+  "dagboekZeerGoed": "Zeer goed",
+  "dagboekGoed": "Goed",
+  "dagboekNeutraal": "Neutraal",
+  "dagboekSlecht": "Slecht",
+  "dagboekZeerSlecht": "Zeer slecht",
+  "dagboekTekstPlaceholder": "Schrijf hier wat over je dag...",
+  "dagboekOpslaan": "Opslaan",
+  "dagboekAnnuleren": "Annuleren",
+  "dagboekAlIngevuld": "Al ingevuld vandaag",
+  "dagboekAanpassen": "Aanpassen",
+  "dagboekWoordenTellen": "{count}/250 woorden"
 }
