@@ -41,14 +41,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
   List<Map<String, dynamic>> _dailyLogs = [];
+  Set<String> _checkinTypes = {};
   List<Map<String, dynamic>> _srmActivitiesList = [];
   List<Alert> _alerts = [];
 
-  // Dagstatus (vinkjes op de tegels)
-  bool _stemmingGelogd = false;
-  bool _slaapGelogd = false;
-  bool _medicatieGelogd = false;
-  bool _srmGelogd = false;
+
   int _dagStreak = 0;
   DateTime _selectedDate = DateTime.now();
 
@@ -97,39 +94,36 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final todayLog = dailyLogs.where((l) => l['date'] == todayStr).firstOrNull;
       final todayActs = weeklyActivities.where((a) => a['date'] == todayStr).toList();
 
-      // Stemming: stemming_hoog aanwezig
-      bool stemmingGelogd = false;
+      // ---- Checkin-types bepalen (voor vinkjes + meter) ----
+      final checkinTypesToday = <String>{};
       if (todayLog != null) {
-        final raw = todayLog['stemming_hoog'];
-        final v = raw is num ? raw.toDouble() : double.tryParse(raw?.toString() ?? '');
-        stemmingGelogd = v != null;
+        // Ochtend: slaap/q4 ingevuld
+        final s = todayLog['uren_slaap'];
+        final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
+        final a = todayLog['awake_minutes'];
+        final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
+        final q = todayLog['q4_slaapbehoefte'];
+        if ((sNum != null && sNum > 0) || (aNum > 0) || q != null) {
+          checkinTypesToday.add('ochtend');
+        }
       }
-      // Slaap: sleep_hours of uren_slaap gevuld
-      bool slaapGelogd = false;
-      if (todayLog != null) {
-        final s1 = todayLog['sleep_hours'];
-        final s2 = todayLog['uren_slaap'];
-        final v1 = s1 is num ? s1.toDouble() : double.tryParse(s1?.toString() ?? '');
-        final v2 = s2 is num ? s2.toDouble() : double.tryParse(s2?.toString() ?? '');
-        slaapGelogd = (v1 != null && v1 > 0) || (v2 != null && v2 > 0);
-      }
-      // Medicatie: minimaal één intake vandaag
-      bool medicatieGelogd = false;
+      // Medicatie: minimaal één intake vandaag met aantal_ingenomen > 0
       try {
         final intake = await db.getMedicationIntake(todayStr);
-        // Alleen tellen als er daadwerkelijk iets ingenomen is (aantal > 0).
-        // Een uitgevinkte intake (aantal=0) mag het vinkje niet aan laten staan.
-        medicatieGelogd = intake.any((row) {
+        final hasMed = intake.any((row) {
           final raw = row['aantal_ingenomen'];
           final n = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
           return n > 0;
         });
+        if (hasMed) checkinTypesToday.add('medicatie');
       } catch (_) {}
-      // Sociaal Ritme: activiteit met actual_time vandaag
-      bool srmGelogd = todayActs.any((a) {
-        final t = a['actual_time']?.toString() ?? '';
-        return t.isNotEmpty && t != '--:--';
+      // Avond: SRM-activiteiten 'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'
+      final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
+      final hasAvond = todayActs.any((a) {
+        final type = a['activity_type']?.toString() ?? '';
+        return avondTypes.contains(type);
       });
+      if (hasAvond) checkinTypesToday.add('avond');
 
       // ---- Dagstreak: opeenvolgende dagen met minstens één log ----
       int streak = 0;
@@ -216,10 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           _dailyLogs = dailyLogs;
           _srmActivitiesList = weeklyActivities;
           _weeklyLogs = dailyLogs;
-          _stemmingGelogd = stemmingGelogd;
-          _slaapGelogd = slaapGelogd;
-          _medicatieGelogd = medicatieGelogd;
-          _srmGelogd = srmGelogd;
+          _checkinTypes = checkinTypesToday;
           _dagStreak = streak;
           _lastUpdated = DateTime.now();
           _isLoading = false;
@@ -461,7 +452,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 ),
                 const Spacer(),
                 _DagStatusMeter(
-                  gelogd: [_stemmingGelogd, _slaapGelogd, _medicatieGelogd].where((b) => b).length,
+                  gelogd: _checkinTypes.length,
                   totaal: 3,
                 ),
               ]),
@@ -476,7 +467,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 children: [
                   _buildCheckinCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate, isOchtend: true),
                   _buildCheckinCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate, isOchtend: false),
-                  _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _medicatieGelogd),
+                  _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _checkinTypes.contains('medicatie')),
                   _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false, isAction: true),
                 ],
               ),
@@ -582,41 +573,39 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final selectedDs = ds;
       final todayLogForDate = dailyLogs.where((l) => l['date'] == selectedDs).firstOrNull;
       final todayActsForDate = weeklyActivities.where((a) => a['date'] == selectedDs).toList();
-      bool stemmingForDate = false;
-      bool slaapForDate = false;
-      bool medicatieForDate = false;
-      bool srmForDate = false;
+      // Checkin-types voor de geselecteerde datum
+      final checkinTypesForDate = <String>{};
       if (todayLogForDate != null) {
-        final raw = todayLogForDate['stemming_hoog'];
-        if (raw != null) stemmingForDate = true;
-        final s1 = todayLogForDate['sleep_hours'];
-        final s2 = todayLogForDate['uren_slaap'];
-        final v1 = s1 is num ? s1.toDouble() : double.tryParse(s1?.toString() ?? '');
-        final v2 = s2 is num ? s2.toDouble() : double.tryParse(s2?.toString() ?? '');
-        slaapForDate = (v1 != null && v1 > 0) || (v2 != null && v2 > 0);
+        final s = todayLogForDate['uren_slaap'];
+        final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
+        final a = todayLogForDate['awake_minutes'];
+        final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
+        final q = todayLogForDate['q4_slaapbehoefte'];
+        if ((sNum != null && sNum > 0) || (aNum > 0) || q != null) {
+          checkinTypesForDate.add('ochtend');
+        }
       }
-      medicatieForDate = false;
       try {
         final intake = await db.getMedicationIntake(selectedDs);
-        medicatieForDate = intake.any((row) {
+        final hasMed = intake.any((row) {
           final raw = row['aantal_ingenomen'];
           final n = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
           return n > 0;
         });
+        if (hasMed) checkinTypesForDate.add('medicatie');
       } catch (_) {}
-      srmForDate = todayActsForDate.any((a) {
-        final t = a['actual_time']?.toString() ?? '';
-        return t.isNotEmpty && t != '--:--';
+      final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
+      final hasAvond = todayActsForDate.any((a) {
+        final type = a['activity_type']?.toString() ?? '';
+        return avondTypes.contains(type);
       });
+      if (hasAvond) checkinTypesForDate.add('avond');
       setState(() {
         _settings = settings;
         _dailyLogs = dailyLogs;
         _srmActivitiesList = weeklyActivities;
         _weeklyActivities = weeklyActivities.length;
-        _stemmingGelogd = stemmingForDate;
-        _slaapGelogd = slaapForDate;
-        _medicatieGelogd = medicatieForDate;
-        _srmGelogd = srmForDate;
+        _checkinTypes = checkinTypesForDate;
       });
     } catch (_) {}
   }
