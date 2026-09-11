@@ -121,9 +121,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       });
       if (hasAvond) checkinTypesToday.add('avond');
 
-      // Dagstreak — tellen vanaf vandaag achterwaarts; een dag telt als er minimaal 1 check-in type is (ochtend/avond/medicatie)
+      // Dagstreak — tellen vanaf vandaag achterwaarts (max 14 dagen); een dag telt als er minimaal 1 check-in type is (ochtend/avond/medicatie)
       int streak = 0;
-      for (int i = 0; i < 365; i++) {
+      for (int i = 0; i < 14; i++) {
         final d = now.subtract(Duration(days: i));
         final ds = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
         final dayTypes = <String>{};
