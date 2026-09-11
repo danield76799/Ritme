@@ -36279,8 +36279,8 @@ s=21
 break
 case 18:s=2
 break
-case 21:a1=["settings","daily_logs","srm_activities","medication_config","medication_intake","medication_schedule","life_events","weight_logs","medical_appointments"]
-for(a2=t.C,a3=0;a3<9;++a3){f=a1[a3]
+case 21:a1=["settings","daily_logs","srm_activities","medication_config","medication_intake","medication_schedule","life_events","weight_logs","medical_appointments","daily_dagboek"]
+for(a2=t.C,a3=0;a3<10;++a3){f=a1[a3]
 try{a4=$.c1()
 if(!a4.b.aF(0,f.toLowerCase())){A.cQ().$1("BackupService: box "+A.n(f)+" not open, skipping")
 continue}e=a2.a(a4.by(f,!1,a6))
