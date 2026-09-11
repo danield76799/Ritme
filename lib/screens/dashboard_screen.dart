@@ -121,27 +121,44 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       });
       if (hasAvond) checkinTypesToday.add('avond');
 
-      // Dagstreak
+      // Dagstreak — tellen vanaf vandaag achterwaarts; een dag telt als er minimaal 1 check-in type is
       int streak = 0;
       for (int i = 0; i < 365; i++) {
         final d = now.subtract(Duration(days: i));
         final ds = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-        final hasMood = dailyLogs.any((l) => l['date'] == ds && l['stemming_hoog'] != null);
-        final hasSleep = dailyLogs.any((l) {
-          if (l['date'] != ds) return false;
-          final s1 = l['sleep_hours'];
-          final s2 = l['uren_slaap'];
-          final v1 = s1 is num ? s1.toDouble() : double.tryParse(s1?.toString() ?? '');
-          final v2 = s2 is num ? s2.toDouble() : double.tryParse(s2?.toString() ?? '');
-          return (v1 != null && v1 > 0) || (v2 != null && v2 > 0);
-        });
-        final hasSrm = weeklyActivities.any((a) {
-          if (a['date'] != ds) return false;
-          final t = a['actual_time']?.toString() ?? '';
-          return t.isNotEmpty && t != '--:--';
-        });
-        final hasLogEntry = dailyLogs.any((l) => l['date'] == ds);
-        if (hasMood || hasSleep || hasSrm || hasLogEntry) {
+        final dayTypes = <String>{};
+        
+        final dayLog = dailyLogs.where((l) => l['date'] == ds).firstOrNull;
+        if (dayLog != null) {
+          final s = dayLog['uren_slaap'];
+          final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
+          final a = dayLog['awake_minutes'];
+          final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
+          final q = dayLog['q4_slaapbehoefte'];
+          if ((sNum != null && sNum > 0) || (aNum > 0) || q != null) {
+            dayTypes.add('ochtend');
+          }
+        }
+        try {
+          final intake = await db.getMedicationIntake(ds);
+          final hasMed = intake.any((row) {
+            final raw = row['aantal_ingenomen'];
+            final n = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
+            return n > 0;
+          });
+          if (hasMed) dayTypes.add('medicatie');
+        } catch (_) {}
+        try {
+          final dagboek = await db.getDagboek(ds);
+          if (dagboek != null) dayTypes.add('dagboek');
+        } catch (_) {}
+        final dayActs = weeklyActivities.where((a) => a['date'] == ds).toList();
+        final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
+        if (dayActs.any((a) => avondTypes.contains(a['activity_type']?.toString() ?? ''))) {
+          dayTypes.add('avond');
+        }
+        
+        if (dayTypes.isNotEmpty) {
           streak++;
         } else {
           break;
