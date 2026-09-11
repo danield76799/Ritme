@@ -1232,4 +1232,15 @@ class DatabaseHelper implements DatabaseRepository {
       orderBy: 'date ASC',
     );
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationIntakeRange(String startDate, String endDate) async {
+    final db = await database;
+    return await db.query(
+      'medication_intake',
+      where: 'date BETWEEN ? AND ?',
+      whereArgs: [startDate, endDate],
+      orderBy: 'date ASC',
+    );
+  }
 }

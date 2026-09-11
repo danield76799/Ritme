@@ -72,8 +72,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Future<void> _loadData() async {
     try {
       final now = DateTime.now();
-      final weekAgo = now.subtract(const Duration(days: 7));
-      final startDateStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
+      final twoWeeksAgo = now.subtract(const Duration(days: 14));
+      final startDateStr = '${twoWeeksAgo.year}-${twoWeeksAgo.month.toString().padLeft(2, '0')}-${twoWeeksAgo.day.toString().padLeft(2, '0')}';
       final endDateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
       final results = await Future.wait([
@@ -122,6 +122,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       if (hasAvond) checkinTypesToday.add('avond');
 
       // Dagstreak — tellen vanaf vandaag achterwaarts (max 14 dagen); een dag telt als er minimaal 1 check-in type is (ochtend/avond/medicatie)
+      // Haal eerst alle data op voor de lookback-periode
+      final twoWeeksAgo = now.subtract(const Duration(days: 14));
+      final twoWeeksAgoStr = '${twoWeeksAgo.year}-${twoWeeksAgo.month.toString().padLeft(2, '0')}-${twoWeeksAgo.day.toString().padLeft(2, '0')}';
+      final allMedicationIntake = await db.getMedicationIntakeRange(twoWeeksAgoStr, endDateStr);
+      final medDates = <String>{};
+      for (final row in allMedicationIntake) {
+        final raw = row['aantal_ingenomen'];
+        final n = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
+        if (n > 0) medDates.add(row['date']?.toString() ?? '');
+      }
+
       int streak = 0;
       for (int i = 0; i < 14; i++) {
         final d = now.subtract(Duration(days: i));
@@ -142,15 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         }
         
         // Medicatie: ingenomen?
-        try {
-          final intake = await db.getMedicationIntake(ds);
-          final hasMed = intake.any((row) {
-            final raw = row['aantal_ingenomen'];
-            final n = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
-            return n > 0;
-          });
-          if (hasMed) dayTypes.add('medicatie');
-        } catch (_) {}
+        if (medDates.contains(ds)) dayTypes.add('medicatie');
         
         // Avond: SRM activiteiten met avond-types?
         final dayActs = weeklyActivities.where((a) => a['date'] == ds).toList();
