@@ -484,6 +484,11 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
               color: _getStemmingColor(1),
             ),
             _ChoiceOption(
+              label: l10n.stemmingsCheckOptieSlaapEvenGoed,
+              value: 0,
+              color: _getStemmingColor(0),
+            ),
+            _ChoiceOption(
               label: l10n.stemmingsCheckOptieSlaapNietZoGoed,
               value: -1,
               color: _getStemmingColor(-1),
