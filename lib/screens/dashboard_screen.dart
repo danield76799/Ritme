@@ -328,7 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         onRefresh: _loadData,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -422,11 +422,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
               GridView.count(
                 crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.2,
+                childAspectRatio: 1.35,
                 children: [
                   _buildCheckinCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate, isOchtend: true),
                   _buildCheckinCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate, isOchtend: false),
@@ -449,44 +449,49 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               ),
               const SizedBox(height: 12),
 
-              // Slaapduur-kaart met context + "je sliep"
               _buildMetricCard(
                 context,
                 icon: Icons.bedtime,
                 title: AppLocalizations.of(context).slaapduurLabel,
                 value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
                 emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
-                subtitle: _sleepQuality > 0 && _loggedDaysCount > 0
-                    ? AppLocalizations.of(context).jeSliepGemiddeld(_formatHours(_sleepQuality), _loggedDaysCount)
-                    : null,
+                subtitle: null,
                 emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
                 color: const Color(0xFF88B0C7),
                 route: '/sleep-detail',
                 isEmpty: _sleepQuality <= 0,
               ),
               const SizedBox(height: 10),
-              // SRT-score
-              _buildMetricCard(
-                context,
-                icon: Icons.schedule,
-                title: AppLocalizations.of(context).srtScore,
-                value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : null,
-                emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
-                subtitle: _rhythmStability > 0 ? _getSrtLabel(_rhythmStability, context) : null,
-                emptyHint: AppLocalizations.of(context).srtTooltip,
-                color: _getSrtColor(_rhythmStability),
-                route: '/rhythm-detail',
-                isEmpty: _rhythmStability <= 0,
-              ),
-              const SizedBox(height: 10),
-              // Activiteiten met progress-bar
-              _buildActivityMetricCard(
-                context,
-                icon: Icons.local_activity,
-                title: AppLocalizations.of(context).activiteitenDezeWeekLabel,
-                value: _weeklyActivities,
-                color: AppTheme.warning,
-                route: '/activities-detail',
+              // SRT-score + Activiteiten naast elkaar
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildMetricCard(
+                      context,
+                      icon: Icons.schedule,
+                      title: AppLocalizations.of(context).srtScore,
+                      value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : null,
+                      emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
+                      subtitle: _rhythmStability > 0 ? _getSrtLabel(_rhythmStability, context) : null,
+                      emptyHint: AppLocalizations.of(context).srtTooltip,
+                      color: _getSrtColor(_rhythmStability),
+                      route: '/rhythm-detail',
+                      isEmpty: _rhythmStability <= 0,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildActivityMetricCard(
+                      context,
+                      icon: Icons.local_activity,
+                      title: AppLocalizations.of(context).activiteitenDezeWeekLabel,
+                      value: _weeklyActivities,
+                      color: AppTheme.warning,
+                      route: '/activities-detail',
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 24),
