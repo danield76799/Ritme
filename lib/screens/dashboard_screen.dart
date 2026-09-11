@@ -22,7 +22,6 @@ import 'crisisplan_screen.dart';
 import 'rapport_screen.dart';
 import '../generated/l10n/app_localizations.dart';
 
-// Add enum for AlertSeverity
 enum AlertSeverity { high, medium }
 
 class DashboardScreen extends StatefulWidget {
@@ -45,7 +44,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Set<String> _checkinTypes = {};
   List<Map<String, dynamic>> _srmActivitiesList = [];
   List<Alert> _alerts = [];
-
 
   int _dagStreak = 0;
   DateTime _selectedDate = DateTime.now();
@@ -71,7 +69,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     }
   }
 
-  /// Geoptimaliseerde data laad: batch queries, parallel, geen dubbele calls
   Future<void> _loadData() async {
     try {
       final now = DateTime.now();
@@ -79,7 +76,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final startDateStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
       final endDateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-      // Alle data parallel ophalen in 3 batch queries (was: 14+ queries)
       final results = await Future.wait([
         db.getSettings(),
         db.getDailyLogsRange(startDateStr, endDateStr),
@@ -90,15 +86,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final dailyLogs = results[1] as List<Map<String, dynamic>>;
       final weeklyActivities = results[2] as List<Map<String, dynamic>>;
 
-      // ---- Dagstatus vandaag (vinkjes op de tegels) ----
       final todayStr = endDateStr;
       final todayLog = dailyLogs.where((l) => l['date'] == todayStr).firstOrNull;
       final todayActs = weeklyActivities.where((a) => a['date'] == todayStr).toList();
 
-      // ---- Checkin-types bepalen (voor vinkjes + meter) ----
       final checkinTypesToday = <String>{};
       if (todayLog != null) {
-        // Ochtend: slaap/q4 ingevuld
         final s = todayLog['uren_slaap'];
         final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
         final a = todayLog['awake_minutes'];
@@ -108,7 +101,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           checkinTypesToday.add('ochtend');
         }
       }
-      // Medicatie: minimaal één intake vandaag met aantal_ingenomen > 0
       try {
         final intake = await db.getMedicationIntake(todayStr);
         final hasMed = intake.any((row) {
@@ -118,12 +110,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         });
         if (hasMed) checkinTypesToday.add('medicatie');
       } catch (_) {}
-      // Dagboek: entry bestaat voor vandaag
       try {
         final dagboek = await db.getDagboek(todayStr);
         if (dagboek != null) checkinTypesToday.add('dagboek');
       } catch (_) {}
-      // Avond: SRM-activiteiten 'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'
       final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
       final hasAvond = todayActs.any((a) {
         final type = a['activity_type']?.toString() ?? '';
@@ -131,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       });
       if (hasAvond) checkinTypesToday.add('avond');
 
-      // ---- Dagstreak: opeenvolgende dagen met minstens één log ----
+      // Dagstreak
       int streak = 0;
       for (int i = 0; i < 365; i++) {
         final d = now.subtract(Duration(days: i));
@@ -150,9 +140,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           final t = a['actual_time']?.toString() ?? '';
           return t.isNotEmpty && t != '--:--';
         });
-        // Ochtendcheckin heeft GEEN 'stemming_hoog' maar wél
-        // uren_slaap/awake_minutes/q4 — dus check ook op
-        // aanwezigheid van elke dagelijkse log-rij (niet alleen stemming).
         final hasLogEntry = dailyLogs.any((l) => l['date'] == ds);
         if (hasMood || hasSleep || hasSrm || hasLogEntry) {
           streak++;
@@ -161,7 +148,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         }
       }
 
-      // Sleep score berekenen uit batch logs (geen 7 losse queries)
       double totalSleep = 0;
       int sleepCount = 0;
       int loggedDaysCount = 0;
@@ -171,7 +157,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         final dateStr = log['date']?.toString();
         if (dateStr == null) continue;
 
-        // Slaap uitlezen: eerst sleep_hours, fallback uren_slaap
         final rawSleep = log['sleep_hours'];
         final rawUren = log['uren_slaap'];
         double? sleep;
@@ -190,7 +175,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       }
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
 
-      // SRT stabiliteit uit batch activiteiten (geen 7 losse queries)
       double totalPScore = 0;
       int totalActivities = 0;
       for (final activity in weeklyActivities) {
@@ -223,7 +207,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         });
       }
 
-      // Alerts async in de achtergrond
       BipolarAlertService.instance.runAllChecks().then((alerts) {
         if (mounted) setState(() => _alerts = alerts);
       });
@@ -349,10 +332,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Greeting card
+              // Greeting card - compacter
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(24),
+                padding: EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: isDark
                       ? LinearGradient(
@@ -393,35 +376,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                         fontSize: 15,
                       ),
                     ),
-                    // Dagstreak-motivatie
-                    if (_dagStreak > 0) ...[
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🔥', style: TextStyle(fontSize: 13)),
-                            const SizedBox(width: 6),
-                            Text(
-                              _dagStreak == 1
-                                  ? AppLocalizations.of(context).streakEenDag
-                                  : AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         _buildTimeChip(Icons.wb_sunny_outlined, AppLocalizations.of(context).opstaan, _settings?['target_opstaan'] ?? '08:00', isDark),
@@ -433,7 +388,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               // Alerts
               if (_alerts.isNotEmpty) ...[
@@ -441,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 const SizedBox(height: 16),
               ],
 
-              // Datum-picker + dagstatus-metertje
+              // Datum-picker + dagstatus-metertje + streak-chip
               Row(children: [
                 GestureDetector(
                   onTap: () => _selectDate(context),
@@ -455,6 +410,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   ]),
                 ),
                 const Spacer(),
+                if (_dagStreak > 0) ...[
+                  _buildStreakChip(),
+                  const SizedBox(width: 8),
+                ],
                 _DagStatusMeter(
                   gelogd: _checkinTypes.length,
                   totaal: 4,
@@ -478,7 +437,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 ],
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               Row(
                 children: [
@@ -488,38 +447,49 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     Text(_formatLastUpdated(context), style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
+              // Slaapduur-kaart met context + "je sliep"
               _buildMetricCard(
                 context,
                 icon: Icons.bedtime,
                 title: AppLocalizations.of(context).slaapduurLabel,
-                value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : AppLocalizations.of(context).nogNietGelogdVandaag,
-                subtitle: _loggedDaysCount > 0 ? AppLocalizations.of(context).nachten(_loggedDaysCount) : null,
+                value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
+                emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
+                subtitle: _sleepQuality > 0 && _loggedDaysCount > 0
+                    ? AppLocalizations.of(context).jeSliepGemiddeld(_formatHours(_sleepQuality), _loggedDaysCount)
+                    : null,
+                emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
                 color: const Color(0xFF88B0C7),
                 route: '/sleep-detail',
+                isEmpty: _sleepQuality <= 0,
               ),
               const SizedBox(height: 10),
+              // SRT-score
               _buildMetricCard(
                 context,
                 icon: Icons.schedule,
                 title: AppLocalizations.of(context).srtScore,
-                value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : AppLocalizations.of(context).logVandaagOmTeZien,
+                value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : null,
+                emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
                 subtitle: _rhythmStability > 0 ? _getSrtLabel(_rhythmStability, context) : null,
+                emptyHint: AppLocalizations.of(context).srtTooltip,
                 color: _getSrtColor(_rhythmStability),
                 route: '/rhythm-detail',
+                isEmpty: _rhythmStability <= 0,
               ),
               const SizedBox(height: 10),
-              _buildMetricCard(
+              // Activiteiten met progress-bar
+              _buildActivityMetricCard(
                 context,
                 icon: Icons.local_activity,
                 title: AppLocalizations.of(context).activiteitenDezeWeekLabel,
-                value: _weeklyActivities > 0 ? '$_weeklyActivities' : AppLocalizations.of(context).nogGeenActiviteitenDezeWeek,
+                value: _weeklyActivities,
                 color: AppTheme.warning,
                 route: '/activities-detail',
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               Row(children: [
                 Text(AppLocalizations.of(context).stemmingTrend, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
@@ -539,7 +509,33 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     );
   }
 
-  /// DatePicker om eerdere dagen te selecteren voor de check-ins.
+  Widget _buildStreakChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('🔥', style: TextStyle(fontSize: 13)),
+          const SizedBox(width: 5),
+          Text(
+            _dagStreak == 1
+                ? AppLocalizations.of(context).streakEenDag
+                : AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.orange.shade700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
@@ -575,11 +571,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final settings = results[0] as Map<String, dynamic>?;
       final dailyLogs = results[1] as List<Map<String, dynamic>>;
       final weeklyActivities = results[2] as List<Map<String, dynamic>>;
-      // Dagstatus voor de geselecteerde datum
       final selectedDs = ds;
       final todayLogForDate = dailyLogs.where((l) => l['date'] == selectedDs).firstOrNull;
       final todayActsForDate = weeklyActivities.where((a) => a['date'] == selectedDs).toList();
-      // Checkin-types voor de geselecteerde datum
       final checkinTypesForDate = <String>{};
       if (todayLogForDate != null) {
         final s = todayLogForDate['uren_slaap'];
@@ -600,7 +594,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         });
         if (hasMed) checkinTypesForDate.add('medicatie');
       } catch (_) {}
-      // Dagboek: entry bestaat voor de geselecteerde datum
       try {
         final dagboek = await db.getDagboek(selectedDs);
         if (dagboek != null) checkinTypesForDate.add('dagboek');
@@ -637,9 +630,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       {required IconData icon, required Color color, required String title,
        required String route, DateTime? date, bool isOchtend = false}) {
     final ds = '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    // Per checkin-type specifieke criteria:
-    // - Ochtend: slaap/q4 ingevuld (uren_slaap of awake_minutes of q4_slaapbehoefte)
-    // - Avond: SRM-activiteiten van de avond-checkin (excl. 'Opstaan' = ochtend)
     bool hasLog;
     if (isOchtend) {
       hasLog = _dailyLogs.any((l) {
@@ -652,9 +642,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         return (sNum != null && sNum > 0) || (aNum > 0) || q != null;
       });
     } else {
-      // Avond checkin schrijft SRM-activiteiten 'Eerste contact', 'Werk / Hobby',
-      // 'Avondeten', 'Naar bed' — maar NIET 'Opstaan' (die is van de ochtend).
-      // De ochtendcheckin schrijft ook 'stemming_hoog', dus dat is geen discriminator.
       final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
       hasLog = _srmActivitiesList.any((a) {
         if (a['date'] != ds) return false;
@@ -695,7 +682,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       openColor: Theme.of(context).scaffoldBackgroundColor,
       onClosed: (_) {
         _loadData();
-        // Vinkjes voor de GEKOZEN datum herladen (vandaag of eerdere dag)
         if (_selectedDate.difference(DateTime.now()).inDays != 0) {
           _loadDataForDate(_selectedDate);
         }
@@ -718,7 +704,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     ),
                     child: Icon(icon, color: color, size: 28),
                   ),
-                  // Groen vinkje zodra vandaag gelogd
                   if (done)
                     Positioned(
                       right: -4,
@@ -732,7 +717,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                         child: Icon(Icons.check_circle, color: AppTheme.success, size: 20),
                       ),
                     )
-                  // Actie-tegel (geen registratie): pijltje i.p.v. vinkje
                   else if (isAction)
                     Positioned(
                       right: -4,
@@ -760,36 +744,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     );
   }
 
-  String? get _initialDateArg {
-    final now = DateTime.now();
-    final diff = _selectedDate.difference(now).inDays;
-    if (diff == 0) return null; // vandaag → geen initialDate (normale flow)
-    return '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
-  }
-
-  Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
-    switch (route) {
-      case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/dagboek': return DagboekScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/morning-checkin': return MorningCheckInScreen(
-        initialDate: _initialDateArg,
-        onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/evening-checkin': return EveningCheckInScreen(
-        initialDate: _initialDateArg,
-        onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/activity': return ActivityScreen();
-      case '/medication': return MedicationScreen();
-      case '/weight': return WeightScreen();
-      case '/appointments': return AppointmentsScreen();
-      case '/voortekenen': return VoortekenenScreen();
-      case '/crisisplan': return CrisisPlanScreen();
-      case '/rapport': return RapportScreen();
-      default: return SizedBox.shrink();
-    }
-  }
-
   Widget _buildMetricCard(BuildContext context,
-      {required IconData icon, required String title, required String value, String? subtitle, required Color color, required String route}) {
+      {required IconData icon,
+      required String title,
+      required String? value,
+      String? emptyValue,
+      String? subtitle,
+      String? emptyHint,
+      required Color color,
+      required String route,
+      bool isEmpty = false}) {
     final theme = Theme.of(context);
     return Material(
       color: theme.cardColor,
@@ -813,11 +777,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   children: [
                     Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     const SizedBox(height: 4),
-                    Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18)),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 4),
-                      Text(subtitle, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color)),
-                    ],
+                    if (isEmpty && emptyHint != null)
+                      Text(emptyHint, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7)))
+                    else if (subtitle != null)
+                      Text(subtitle, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85))),
+                    if (value != null)
+                      Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
+                    else if (emptyValue != null)
+                      Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6))),
                   ],
                 ),
               ),
@@ -826,6 +793,94 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         ),
       ),
     );
+  }
+
+  Widget _buildActivityMetricCard(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required int value,
+      required Color color,
+      required String route}) {
+    final theme = Theme.of(context);
+    final isEmpty = value <= 0;
+    return Material(
+      color: theme.cardColor,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(context, route),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    const SizedBox(height: 6),
+                    if (isEmpty)
+                      Text(AppLocalizations.of(context).nogGeenActiviteitenDezeWeek, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7)))
+                    else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: (value / 5).clamp(0.0, 1.0),
+                                backgroundColor: color.withValues(alpha: 0.2),
+                                valueColor: AlwaysStoppedAnimation(color),
+                                minHeight: 6,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text('$value/5', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String? get _initialDateArg {
+    final now = DateTime.now();
+    final diff = _selectedDate.difference(now).inDays;
+    if (diff == 0) return null;
+    return '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+  }
+
+  Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
+    switch (route) {
+      case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/dagboek': return DagboekScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/morning-checkin': return MorningCheckInScreen(
+        initialDate: _initialDateArg,
+        onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/evening-checkin': return EveningCheckInScreen(
+        initialDate: _initialDateArg,
+        onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/activity': return ActivityScreen();
+      case '/medication': return MedicationScreen();
+      case '/weight': return WeightScreen();
+      case '/appointments': return AppointmentsScreen();
+      case '/voortekenen': return VoortekenenScreen();
+      case '/crisisplan': return CrisisPlanScreen();
+      case '/rapport': return RapportScreen();
+      default: return SizedBox.shrink();
+    }
   }
 
   Widget _buildAlertCard(Alert alert, ThemeData theme) {
@@ -885,7 +940,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 }
 
-/// Compact metertje "x/y gelogd" naast de Vandaag-kop.
 class _DagStatusMeter extends StatelessWidget {
   final int gelogd;
   final int totaal;
