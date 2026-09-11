@@ -70,6 +70,7 @@ class BackupService {
       'life_events',
       'weight_logs',
       'medical_appointments',
+      'daily_dagboek',
     ];
 
     for (final boxName in boxNames) {
