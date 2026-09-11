@@ -41,6 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
   List<Map<String, dynamic>> _dailyLogs = [];
+  List<Map<String, dynamic>> _srmActivitiesList = [];
   List<Alert> _alerts = [];
 
   // Dagstatus (vinkjes op de tegels)
@@ -213,6 +214,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           _weeklyActivities = weeklyActivities.length;
           _loggedDaysCount = loggedDaysCount;
           _dailyLogs = dailyLogs;
+          _srmActivitiesList = weeklyActivities;
           _weeklyLogs = dailyLogs;
           _stemmingGelogd = stemmingGelogd;
           _slaapGelogd = slaapGelogd;
@@ -472,8 +474,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.2,
                 children: [
-                  _buildCheckinCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate),
-                  _buildCheckinCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate),
+                  _buildCheckinCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate, isOchtend: true),
+                  _buildCheckinCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate, isOchtend: false),
                   _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _medicatieGelogd),
                   _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false, isAction: true),
                 ],
@@ -609,6 +611,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       setState(() {
         _settings = settings;
         _dailyLogs = dailyLogs;
+        _srmActivitiesList = weeklyActivities;
         _weeklyActivities = weeklyActivities.length;
         _stemmingGelogd = stemmingForDate;
         _slaapGelogd = slaapForDate;
@@ -632,9 +635,33 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   Widget _buildCheckinCard(BuildContext context,
       {required IconData icon, required Color color, required String title,
-       required String route, DateTime? date}) {
+       required String route, DateTime? date, bool isOchtend = false}) {
     final ds = '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    final hasLog = _dailyLogs.any((l) => l['date'] == ds);
+    // Per checkin-type specifieke criteria:
+    // - Ochtend: slaap/q4 ingevuld (uren_slaap of awake_minutes of q4_slaapbehoefte)
+    // - Avond: SRM-activiteiten van de avond-checkin (excl. 'Opstaan' = ochtend)
+    bool hasLog;
+    if (isOchtend) {
+      hasLog = _dailyLogs.any((l) {
+        if (l['date'] != ds) return false;
+        final s = l['uren_slaap'];
+        final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
+        final a = l['awake_minutes'];
+        final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
+        final q = l['q4_slaapbehoefte'];
+        return (sNum != null && sNum > 0) || (aNum > 0) || q != null;
+      });
+    } else {
+      // Avond checkin schrijft SRM-activiteiten 'Eerste contact', 'Werk / Hobby',
+      // 'Avondeten', 'Naar bed' — maar NIET 'Opstaan' (die is van de ochtend).
+      // De ochtendcheckin schrijft ook 'stemming_hoog', dus dat is geen discriminator.
+      final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
+      hasLog = _srmActivitiesList.any((a) {
+        if (a['date'] != ds) return false;
+        final type = a['activity_type']?.toString() ?? '';
+        return avondTypes.contains(type);
+      });
+    }
     return _buildActionCard(context,
         icon: icon, color: color, title: title, route: route, done: hasLog);
   }
