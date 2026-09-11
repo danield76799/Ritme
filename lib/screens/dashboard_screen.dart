@@ -12,6 +12,7 @@ import 'login_screen.dart';
 import 'mood_assessment_screen.dart';
 import 'morning_checkin_screen.dart';
 import 'evening_checkin_screen.dart';
+import 'dagboek_screen.dart';
 import 'activity_screen.dart';
 import 'medication_screen.dart';
 import 'weight_screen.dart';
@@ -116,6 +117,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           return n > 0;
         });
         if (hasMed) checkinTypesToday.add('medicatie');
+      } catch (_) {}
+      // Dagboek: entry bestaat voor vandaag
+      try {
+        final dagboek = await db.getDagboek(todayStr);
+        if (dagboek != null) checkinTypesToday.add('dagboek');
       } catch (_) {}
       // Avond: SRM-activiteiten 'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'
       final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
@@ -453,7 +459,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 const Spacer(),
                 _DagStatusMeter(
                   gelogd: _checkinTypes.length,
-                  totaal: 3,
+                  totaal: 4,
                 ),
               ]),
 
@@ -468,6 +474,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   _buildCheckinCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate, isOchtend: true),
                   _buildCheckinCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate, isOchtend: false),
                   _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _checkinTypes.contains('medicatie')),
+                  _buildActionCard(context, icon: Icons.menu_book, color: const Color(0xFF7FB89C), title: AppLocalizations.of(context).dagboek, route: '/dagboek', done: _checkinTypes.contains('dagboek')),
                   _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false, isAction: true),
                 ],
               ),
@@ -593,6 +600,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           return n > 0;
         });
         if (hasMed) checkinTypesForDate.add('medicatie');
+      } catch (_) {}
+      // Dagboek: entry bestaat voor de geselecteerde datum
+      try {
+        final dagboek = await db.getDagboek(selectedDs);
+        if (dagboek != null) checkinTypesForDate.add('dagboek');
       } catch (_) {}
       final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
       final hasAvond = todayActsForDate.any((a) {
@@ -759,6 +771,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
     switch (route) {
       case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/dagboek': return DagboekScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
       case '/morning-checkin': return MorningCheckInScreen(
         initialDate: _initialDateArg,
         onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
