@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'package:fl_chart/fl_chart.dart';
-// import 'package:pdf/pdf.dart';
-// import 'package:pdf/widgets.dart' as pw;
-// import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -15,9 +15,6 @@ class StatistiekenScherm extends StatefulWidget {
 }
 
 class _StatistiekenSchermState extends State<StatistiekenScherm> {
-
-
-
 
   List<Map<String, dynamic>> _logs = [];
   bool _isLoading = true;
@@ -133,66 +130,199 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   }
 
   Future<void> _genereerEnDeelPdf() async {
-    // PDF functionaliteit tijdelijk uitgeschakeld wegens dependency conflict
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context).pdfExportTijdelijkBeschikbaar),
-        backgroundColor: Colors.orange,
-      ),
-    );
-  }
-  
-  // PDF helper functies tijdelijk uitgeschakeld
-  /*
-  pw.Widget _buildKpiRow(String label, String value) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Text(
-            label,
-            style: pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
-          ),
-          pw.Text(
-            value,
-            style: pw.TextStyle(
-              fontSize: 14,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.grey800,
+    try {
+      final l10n = AppLocalizations.of(context);
+      
+      // Determine date range
+      String dateStart = '';
+      String dateEnd = '';
+      if (_logs.isNotEmpty) {
+        dateEnd = _logs.first['date']?.toString() ?? '';
+        dateStart = _logs.last['date']?.toString() ?? '';
+      }
+      
+      // Build PDF
+      final pdf = pw.Document();
+      final theme = Theme.of(context);
+      
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          header: (pw.Context ctx) {
+            return pw.Container(
+              alignment: pw.Alignment.centerRight,
+              margin: const pw.EdgeInsets.only(bottom: 20),
+              child: pw.Text(
+                l10n.pdfReportTitle,
+                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.teal800),
+              ),
+            );
+          },
+          footer: (pw.Context ctx) {
+            return pw.Container(
+              alignment: pw.Alignment.centerRight,
+              margin: const pw.EdgeInsets.only(top: 10),
+              child: pw.Text(
+                'Page ${ctx.pageNumber} of ${ctx.pagesCount}',
+                style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+              ),
+            );
+          },
+          build: (pw.Context ctx) => [
+            // Summary box
+            pw.Container(
+              padding: const pw.EdgeInsets.all(16),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.teal200),
+                borderRadius: pw.BorderRadius.circular(8),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('${l10n.pdfGenerated}: ${DateTime.now().toString().substring(0, 16)}', style: const pw.TextStyle(fontSize: 10)),
+                  pw.SizedBox(height: 4),
+                  if (dateStart.isNotEmpty)
+                    pw.Text('${l10n.pdfPeriod}: $dateStart → $dateEnd (${_logs.length} ${l10n.pdfDays})', style: const pw.TextStyle(fontSize: 10)),
+                  pw.SizedBox(height: 12),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildKpiColumn(l10n.pdfAverageMood, _gemStemming.toStringAsFixed(1), PdfColors.orange800),
+                      _buildKpiColumn(l10n.pdfAverageSleep, _formatHours(_gemSlaap), PdfColors.blue800),
+                      _buildKpiColumn(l10n.pdfTotalActivities, '$_aantalActiviteiten', PdfColors.green800),
+                    ],
+                  ),
+                ],
+              ),
             ),
+            
+            pw.SizedBox(height: 24),
+            
+            // Mood chart data table
+            if (_logs.any((l) => l['stemming_hoog'] != null)) ...[
+              pw.Text(l10n.pdfMoodChart, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 8),
+              pw.Table(
+                border: pw.TableBorder.all(color: PdfColors.grey300),
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(color: PdfColors.teal50),
+                    children: [
+                      _buildTableHeader('Date'),
+                      _buildTableHeader('Mood'),
+                    ],
+                  ),
+                  ..._logs.where((l) => l['stemming_hoog'] != null).take(14).map((log) {
+                    final raw = log['stemming_hoog'];
+                    double val = 0;
+                    if (raw is num) val = raw.toDouble();
+                    else if (raw is String) val = double.tryParse(raw) ?? 0;
+                    if (val > 10) val = ((val / 100) * 10 - 5).clamp(-5.0, 5.0);
+                    else val = val.clamp(-5.0, 5.0);
+                    return pw.TableRow(
+                      children: [
+                        _buildTableCell(log['date']?.toString() ?? '-'),
+                        _buildTableCell(val.toStringAsFixed(1)),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+            ],
+            
+            pw.SizedBox(height: 24),
+            
+            // Sleep chart data table
+            if (_logs.any((l) => l['sleep_hours'] != null || l['uren_slaap'] != null)) ...[
+              pw.Text(l10n.pdfSleepChart, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 8),
+              pw.Table(
+                border: pw.TableBorder.all(color: PdfColors.grey300),
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(color: PdfColors.teal50),
+                    children: [
+                      _buildTableHeader('Date'),
+                      _buildTableHeader('Hours'),
+                    ],
+                  ),
+                  ..._logs.where((l) => (l['sleep_hours'] != null && (l['sleep_hours'] is num ? l['sleep_hours'] > 0 : double.tryParse(l['sleep_hours']?.toString() ?? '0')! > 0)) || 
+                                        (l['uren_slaap'] != null && (l['uren_slaap'] is num ? l['uren_slaap'] > 0 : double.tryParse(l['uren_slaap']?.toString() ?? '0')! > 0))).take(14).map((log) {
+                    double? sleepVal;
+                    if (log['sleep_hours'] != null) {
+                      final raw = log['sleep_hours'];
+                      if (raw is num) sleepVal = raw.toDouble();
+                      else if (raw is String) sleepVal = double.tryParse(raw);
+                    }
+                    if (sleepVal == null && log['uren_slaap'] != null) {
+                      final raw = log['uren_slaap'];
+                      if (raw is num) sleepVal = raw.toDouble();
+                      else if (raw is String) sleepVal = double.tryParse(raw);
+                    }
+                    return pw.TableRow(
+                      children: [
+                        _buildTableCell(log['date']?.toString() ?? '-'),
+                        _buildTableCell(sleepVal != null ? sleepVal.toStringAsFixed(1) : '-'),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+            ],
+            
+            pw.SizedBox(height: 24),
+            pw.Text(
+              'This report is generated by Ritme — a bipolar disorder management app.',
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+            ),
+          ],
+        ),
+      );
+
+      // Print / share PDF
+      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+      
+    } catch (e, stack) {
+      AppLogger.error('PDF generation failed', error: e, stackTrace: stack);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF error: $e'),
+            backgroundColor: Colors.red,
           ),
-        ],
-      ),
+        );
+      }
+    }
+  }
+
+  pw.Widget _buildKpiColumn(String label, String value, PdfColor color) {
+    return pw.Column(
+      children: [
+        pw.Text(value, style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: color)),
+        pw.SizedBox(height: 2),
+        pw.Text(label, style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
+      ],
     );
   }
-  
+
   pw.Widget _buildTableHeader(String text) {
     return pw.Padding(
-      padding: pw.EdgeInsets.all(8),
+      padding: const pw.EdgeInsets.all(6),
       child: pw.Text(
         text,
-        style: pw.TextStyle(
-          fontWeight: pw.FontWeight.bold,
-          color: PdfColors.white,
-          fontSize: 11,
-        ),
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.teal800),
         textAlign: pw.TextAlign.center,
       ),
     );
   }
-  
+
   pw.Widget _buildTableCell(String text) {
     return pw.Padding(
-      padding: pw.EdgeInsets.all(8),
-      child: pw.Text(
-        text,
-        style: pw.TextStyle(fontSize: 10, color: PdfColors.grey800),
-        textAlign: pw.TextAlign.center,
-      ),
+      padding: const pw.EdgeInsets.all(6),
+      child: pw.Text(text, style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey800), textAlign: pw.TextAlign.center),
     );
   }
-  */
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +377,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
 
   // --- LIFE CHART: STEMMING (Lijngrafiek) ---
   Widget _bouwStemmingGrafiek() {
-    if (_logs.isEmpty) return _bouwLegePlaceholder('Stemming');
+    if (_logs.isEmpty) return _bouwLegePlaceholder(AppLocalizations.of(context).stemmingGrafiekTitel);
 
     List<FlSpot> spots = [];
     for (int i = 0; i < _logs.length; i++) {
@@ -270,7 +400,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       }
     }
 
-    if (spots.isEmpty) return _bouwLegePlaceholder('Stemming');
+    if (spots.isEmpty) return _bouwLegePlaceholder(AppLocalizations.of(context).stemmingGrafiekTitel);
 
     return _bouwGrafiekKaart(
       titel: AppLocalizations.of(context).stemmingGrafiekTitel,
@@ -343,7 +473,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
 
   // --- SLAAP (Staafgrafiek) ---
   Widget _bouwSlaapGrafiek() {
-    if (_logs.isEmpty) return _bouwLegePlaceholder('Slaap (uren)');
+    if (_logs.isEmpty) return _bouwLegePlaceholder(AppLocalizations.of(context).slaapGrafiekTitel);
 
     List<BarChartGroupData> barGroups = [];
     int dataCount = 0;
@@ -377,7 +507,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       }
     }
 
-    if (barGroups.isEmpty) return _bouwLegePlaceholder('Slaap (uren)');
+    if (barGroups.isEmpty) return _bouwLegePlaceholder(AppLocalizations.of(context).slaapGrafiekTitel);
 
     return _bouwGrafiekKaart(
       titel: AppLocalizations.of(context).slaapGrafiekTitel,
@@ -404,7 +534,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
               showTitles: true,
               reservedSize: 22,
               getTitlesWidget: (value, meta) {
-                final index = (value * 10).toInt();
+                final index = value.toInt();
                 if (index >= 0 && index < _logs.length) {
                   final dateStr = _logs[index]['date'] as String? ?? '';
                   if (dateStr.length >= 10) {
@@ -451,22 +581,38 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
   Widget _bouwLegePlaceholder(String titel) {
     return Container(
       width: double.infinity,
+      height: 160,
       padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 4))],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(titel, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color)),
-          SizedBox(height: 24),
-          Center(child: Text(AppLocalizations.of(context).nogGeenDataBeschikbaar, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color))),
           SizedBox(height: 16),
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.bar_chart, size: 32, color: Theme.of(context).colorScheme.outline),
+                  SizedBox(height: 8),
+                  Text(AppLocalizations.of(context).geenDataBeschikbaar, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 14)),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _bouwKpiKaart(String waarde, String label, Color accentKleur) {
+  Widget _bouwKpiKaart(String value, String label, Color color) {
     return Container(
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
@@ -475,13 +621,11 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(waarde, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: accentKleur)),
+          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: color)),
           SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black), textAlign: TextAlign.center),
+          Text(label, style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color), textAlign: TextAlign.center),
         ],
       ),
     );
   }
 }
-
-
