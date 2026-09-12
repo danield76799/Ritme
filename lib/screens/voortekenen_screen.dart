@@ -99,11 +99,11 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
   String _categoryLabel(String category) {
     switch (category) {
       case 'manie':
-        return '⚠️ Manie/hypomanie';
+        return AppLocalizations.of(context).manieHypomanie;
       case 'depressie':
         return '🔵 Depressie';
       case 'gemengd':
-        return '🟡 Gemengd/stress';
+        return AppLocalizations.of(context).gemengdStress;
       default:
         return category;
     }
@@ -251,7 +251,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Je hebt nog geen voortekenen ingevuld voor vandaag. Wil je de gegevens van $_lastDate kopiëren als startpunt?',
+                      AppLocalizations.of(context).kopieerVorigeDag(_lastDate ?? ''),
                       style: TextStyle(color: Colors.blue.shade800, fontSize: 13),
                     ),
                     SizedBox(height: 12),

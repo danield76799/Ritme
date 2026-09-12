@@ -207,7 +207,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                '${_totalCount} days this week',
+                                AppLocalizations.of(context).dagen(_totalCount),
                                 style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -385,7 +385,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${day['count']} activiteiten',
+                    AppLocalizations.of(context).activiteitenCount(day['count']),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.surface,
                       fontSize: 12,

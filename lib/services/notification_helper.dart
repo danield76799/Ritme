@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../utils/notif_strings.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -272,7 +273,7 @@ class NotificationHelper {
         presentSound: true,
       );
 
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );
@@ -321,7 +322,7 @@ class NotificationHelper {
         presentSound: true,
       );
 
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );
@@ -400,13 +401,13 @@ class NotificationHelper {
       final localTzName = now.timeZoneName;
       AppLogger.info('Scheduling $medicationName for ${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} (device tz=$localTzName, offset=${now.timeZoneOffset})');
 
-      final dayNames = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
+      final dayNames = NotifStrings.dayNames;
       final daysStr = days.map((d) => dayNames[d - 1]).join(', ');
 
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         'medication_reminders',
-        'Medicatie Herinneringen',
-        channelDescription: 'Herinneringen voor medicatie inname',
+        NotifStrings.medicationReminders,
+        channelDescription: NotifStrings.medicationRemindersDesc,
         importance: Importance.max,
         priority: Priority.max,
         showWhen: true,
@@ -415,11 +416,11 @@ class NotificationHelper {
         category: AndroidNotificationCategory.reminder,
         visibility: NotificationVisibility.public,
         fullScreenIntent: true,
-        ticker: 'Medicatie herinnering',
+        ticker: NotifStrings.medicationReminder,
         actions: [
-          AndroidNotificationAction('taken', '✅ Ingenomen'),
-          AndroidNotificationAction('skip', '⏭ Sla over'),
-          AndroidNotificationAction('snooze', '⏳ Snooze (15m)'),
+          AndroidNotificationAction('taken', NotifStrings.taken),
+          AndroidNotificationAction('skip', NotifStrings.skip),
+          AndroidNotificationAction('snooze', NotifStrings.snooze),
         ],
       );
       const iosDetails = DarwinNotificationDetails(
@@ -449,7 +450,7 @@ class NotificationHelper {
         await _notifications.zonedSchedule(
           notificationId,
           '💊 $medicationName',
-          'Tijd om je medicatie in te nemen! ($daysStr)',
+          NotifStrings.timeToTakeMedication(daysStr),
           scheduledDate,
           details,
           androidScheduleMode: canScheduleExact
@@ -474,7 +475,7 @@ class NotificationHelper {
           await _notifications.zonedSchedule(
             dayNotificationId,
             '💊 $medicationName',
-            'Tijd om je medicatie in te nemen! ($daysStr)',
+            NotifStrings.timeToTakeMedication(daysStr),
             scheduledDate,
             details,
             androidScheduleMode: canScheduleExact
@@ -574,10 +575,10 @@ class NotificationHelper {
 
       final notificationId = (appointmentId * 100) % 100000;
 
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         'appointment_reminders',
-        'Afspraak herinneringen',
-        channelDescription: 'Herinneringen voor medische afspraken',
+        NotifStrings.appointmentReminders,
+        channelDescription: NotifStrings.appointmentRemindersDesc,
         importance: Importance.high,
         priority: Priority.high,
         showWhen: true,
@@ -586,7 +587,7 @@ class NotificationHelper {
         actions: [
           AndroidNotificationAction(
             'open',
-            'Openen',
+            NotifStrings.open,
             showsUserInterface: false,
           ),
         ],
@@ -599,15 +600,15 @@ class NotificationHelper {
         categoryIdentifier: 'appointment',
       );
 
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );
 
       await _notifications.zonedSchedule(
         notificationId,
-        '📅 Afspraak herinnering',
-        '$title${doctorName.isNotEmpty ? ' met $doctorName' : ''} over $reminderDays dag${reminderDays > 1 ? 'en' : ''}',
+        NotifStrings.appointmentReminder,
+        NotifStrings.appointmentBody(title, doctorName, reminderDays),
         reminderDateTime,
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -680,13 +681,13 @@ class NotificationHelper {
           // Reschedule a one-time notification for 15 mins from now
           await _notifications.zonedSchedule(
             (medicationId % 90000) + 10000,
-            '💊 Herinnering',
-            'Tijd om je medicatie in te nemen! (Snoozed)',
+            NotifStrings.medicationReminderShort,
+            NotifStrings.timeToTakeMedicationSnoozed(),
             tz.TZDateTime.now(tz.local).add(const Duration(minutes: 15)),
-            const NotificationDetails(
+            NotificationDetails(
               android: AndroidNotificationDetails(
                 'medication_reminders',
-                'Medicatie Herinneringen',
+                NotifStrings.medicationReminders,
                 importance: Importance.max,
                 priority: Priority.max,
               ),

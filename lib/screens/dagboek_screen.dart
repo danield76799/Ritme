@@ -128,8 +128,8 @@ class _DagboekScreenState extends State<DagboekScreen> {
       if (dagboeken.isEmpty) return;
 
       final buffer = StringBuffer();
-      buffer.writeln('# Dagboek Export');
-      buffer.writeln(' Gegenereerd op ${DateFormat('d MMMM yyyy', 'nl').format(now)}\n');
+      buffer.writeln('# ${AppLocalizations.of(context).dagboekExportTitel}');
+      buffer.writeln(' ${AppLocalizations.of(context).gegenereerdOp} ${DateFormat('d MMMM yyyy', Localizations.localeOf(context).toString()).format(now)}\n');
 
       for (final dagboek in dagboeken.reversed) {
         final date = dagboek['date'] as String? ?? '';
@@ -158,11 +158,11 @@ class _DagboekScreenState extends State<DagboekScreen> {
 
   String _scoreLabel(int score) {
     switch (score) {
-      case 1: return '★☆☆☆☆ Zeer slecht';
-      case 2: return '★★☆☆☆ Slecht';
-      case 3: return '★★★☆☆ Neutraal';
-      case 4: return '★★★★☆ Goed';
-      case 5: return '★★★★★ Zeer goed';
+      case 1: return '★☆☆☆☆ ' + AppLocalizations.of(context).zeerSlecht;
+      case 2: return '★★☆☆☆ ' + AppLocalizations.of(context).slecht;
+      case 3: return '★★★☆☆ ' + AppLocalizations.of(context).neutraal;
+      case 4: return '★★★★☆ ' + AppLocalizations.of(context).goed;
+      case 5: return '★★★★★ ' + AppLocalizations.of(context).zeerGoed;
       default: return '';
     }
   }

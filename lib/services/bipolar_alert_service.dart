@@ -1,4 +1,5 @@
 import '../service_locator.dart';
+import '../utils/notif_strings.dart';
 
 /// Service for detecting patterns and generating alerts for bipolar disorder
 class BipolarAlertService {
@@ -55,8 +56,8 @@ class BipolarAlertService {
       if (isDecrease && lastNightSleep < 6 && deviation > 30) {
         return SleepAlert(
           type: 'slaap_afname',
-          title: '⚠️ Slaapwaarschuwing',
-          message: 'Je sliep ${lastNightSleep.toStringAsFixed(1)}u — dat is ${deviation.toStringAsFixed(0)}% minder dan je gemiddelde van ${baseline.toStringAsFixed(1)}u. Verminderde slaap is een belangrijk voorteken van manie.',
+          title: NotifStrings.sleepWarning,
+          message: NotifStrings.sleepWarningBody(lastNightSleep, deviation.toStringAsFixed(0), baseline),
           severity: 'high',
         );
       }
@@ -65,8 +66,8 @@ class BipolarAlertService {
       if (isDecrease && lastNightSleep < 7 && deviation > 20) {
         return SleepAlert(
           type: 'slaap_afname_mild',
-          title: '💤 Minder slaap',
-          message: 'Je sliep ${lastNightSleep.toStringAsFixed(1)}u, ${deviation.toStringAsFixed(0)}% onder je gemiddelde. Houd je stemming extra in de gaten vandaag.',
+          title: NotifStrings.lessSleep,
+          message: NotifStrings.lessSleepBody(lastNightSleep, deviation.toStringAsFixed(0)),
           severity: 'medium',
         );
       }
@@ -75,8 +76,8 @@ class BipolarAlertService {
       if (!isDecrease && lastNightSleep > baseline * 1.5 && lastNightSleep > 10) {
         return SleepAlert(
           type: 'slaap_toename',
-          title: '🔵 Veel slaap',
-          message: 'Je sliep ${lastNightSleep.toStringAsFixed(1)}u — veel meer dan normaal (${baseline.toStringAsFixed(1)}u). Dit kan een teken zijn van depressie.',
+          title: NotifStrings.muchSleep,
+          message: NotifStrings.muchSleepBody(lastNightSleep, baseline),
           severity: 'medium',
         );
       }
@@ -146,7 +147,7 @@ class BipolarAlertService {
         return SRTAlert(
           type: 'srt_daling',
           title: '📉 Ritme verstoord',
-          message: 'Je dagelijkse ritme (SRT score) is gedaald. Sociale ritme verstoring kan episodes uitlokken. Probeer je vaste tijden weer op te pakken.',
+          message: NotifStrings.srtDropped,
           severity: 'medium',
         );
       }
@@ -172,7 +173,7 @@ class BipolarAlertService {
         return ProdromalAlert(
           type: 'voortekenen_hoog',
           title: '⚠️ Veel voortekenen',
-          message: 'Je hebt in 3 dagen $totalWarnings voortekenen gerapporteerd. Overweeg je crisisplan te raadplegen.',
+          message: NotifStrings.warningCount3Days(totalWarnings, true),
           severity: 'high',
         );
       }
@@ -181,7 +182,7 @@ class BipolarAlertService {
         return ProdromalAlert(
           type: 'voortekenen_matig',
           title: '📋 Voortekenen aanwezig',
-          message: 'Je rapporteert $totalWarnings voortekenen in 3 dagen. Blijf monitoren.',
+          message: NotifStrings.warningCount3Days(totalWarnings, false),
           severity: 'medium',
         );
       }

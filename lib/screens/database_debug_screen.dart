@@ -272,16 +272,16 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Datum: $date',
+                              AppLocalizations.of(context).datumLabel + ': $date',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 8),
-                            _buildDataRow('Stemming:', stemming),
+                            _buildDataRow(AppLocalizations.of(context).stemmingLabel + ':', stemming),
                             _buildDataRow('Sleep Hours:', sleepHours, isSleep: true),
-                            _buildDataRow('Uren Slaap:', urenSlaap, isSleep: true),
+                            _buildDataRow(AppLocalizations.of(context).slaapUrenLabel + ':', urenSlaap, isSleep: true),
                             _buildDataRow('Awake Minutes:', awakeMinutes),
                           ],
                         ),

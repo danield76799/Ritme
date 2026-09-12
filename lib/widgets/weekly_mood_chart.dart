@@ -159,8 +159,8 @@ class WeeklyMoodChart extends StatelessWidget {
         children: [
           Text(
             recentLogs.length == 1 
-                ? 'Stemming Trend (1 dag)'
-                : 'Stemming Trend (${recentLogs.length} dagen)',
+                ? AppLocalizations.of(context).stemmingTrendDag
+                : AppLocalizations.of(context).stemmingTrendDagen(recentLogs.length),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.onSurface,
