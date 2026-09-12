@@ -162,7 +162,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                     // Sleep chart
                     if (_sleepData.isNotEmpty) ...[
                       Text(
-                        'Slaap per dag (laatste 7 dagen)',
+                      AppLocalizations.of(context).slaapPerDagLaatste7Dagen,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -373,7 +373,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$quality (${awakeMinutes}m wakker)',
+                  '$quality (${awakeMinutes}m ${AppLocalizations.of(context).slaapLogAwakeMin})',
                   style: TextStyle(
                     fontSize: 14,
                     color: qualityColor,
