@@ -66,7 +66,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isNotEmpty) { subtitle = lines[i].trim(); break; }
     }
-    return [title, subtitle.isNotEmpty ? subtitle : 'Tap to edit', true];
+    return [title, subtitle.isNotEmpty ? subtitle : AppLocalizations.of(context).tapToEdit, true];
   }
 
   void _editSection(Map<String, dynamic> section) {

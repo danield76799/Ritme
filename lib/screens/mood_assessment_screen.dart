@@ -599,7 +599,10 @@ class _ProgressBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Stap ${step.clamp(0, total) + (step < 5 ? 1 : 0)} / $total',
+            AppLocalizations.of(context).stapXvanY(
+              step.clamp(0, total) + (step < 5 ? 1 : 0),
+              total,
+            ),
             style: const TextStyle(fontSize: 12),
           ),
           const SizedBox(height: 4),

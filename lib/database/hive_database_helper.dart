@@ -26,6 +26,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   HiveDatabaseHelper._init();
 
   static Future<void> init() async {
+    if (Hive.isBoxOpen(_settingsBox)) return; // Already initialized
     await Hive.openBox(_settingsBox);
     await Hive.openBox(_dailyLogsBox);
     await Hive.openBox(_srmActivitiesBox);

@@ -116,7 +116,8 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
   }
 
   String _dayName(int weekday) {
-    final days = ['', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+    final l10n = AppLocalizations.of(context);
+    final days = ['', l10n.dagMa, l10n.dagDi, l10n.dagWo, l10n.dagDo, l10n.dagVr, l10n.dagZa, l10n.dagZo];
     return days[weekday];
   }
 
@@ -128,7 +129,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(
-          'Slaap Details (Netto)',
+          AppLocalizations.of(context).slaapDetailsNetto,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(

@@ -533,5 +533,19 @@
   "watHelptTitle": "💚 Wat mij helpt",
   "watHelptHint": "Bijv.: wandelen, muziek, douchen, praten met partner/vriend...",
   "slaapPerDagLaatste7Dagen": "Slaap per dag (laatste 7 dagen)",
-  "slaapLogAwakeMin": "wakker"
+  "slaapLogAwakeMin": "wakker",
+  "dagboekExport": "Dagboek Export",
+  "exporterenDelen": "Exporteren & delen",
+  "stapXvanY": "Stap {step} van {total}",
+  "genereerRapportDesc": "Genereer een Life Chart Methode (LCM) rapport voor je behandelaar. Bevat stemming, slaap, medicatie, episodes en voortekenen.",
+  "tapToEdit": "Tik om te bewerken",
+  "dagMa": "Ma",
+  "dagDi": "Di",
+  "dagWo": "Wo",
+  "dagDo": "Do",
+  "dagVr": "Vr",
+  "dagZa": "Za",
+  "dagZo": "Zo",
+  "slaapDetailsNetto": "Slaap Details (Netto)",
+  "backupHerstel": "Backup & Herstel"
 }
