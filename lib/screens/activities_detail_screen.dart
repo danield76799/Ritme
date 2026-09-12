@@ -207,7 +207,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                AppLocalizations.of(context).totaleActiviteitenDezeWeek,
+                                '${_totalCount} days this week',
                                 style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
