@@ -273,7 +273,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     if (spots.isEmpty) return _bouwLegePlaceholder('Stemming');
 
     return _bouwGrafiekKaart(
-      titel: 'Stemming (-5 tot +5)',
+      titel: AppLocalizations.of(context).stemmingGrafiekTitel,
       child: LineChart(
         LineChartData(
           minY: -5,
@@ -380,7 +380,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     if (barGroups.isEmpty) return _bouwLegePlaceholder('Slaap (uren)');
 
     return _bouwGrafiekKaart(
-      titel: 'Slaap (uren)',
+      titel: AppLocalizations.of(context).slaapGrafiekTitel,
       child: BarChart(
         BarChartData(
           maxY: 12,

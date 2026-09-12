@@ -163,7 +163,7 @@
   "labelEnTijd": "{label} {time}",
   "sleutelWaarde": "{key}: {value}",
   "datumEnTijdOptioneel": "{date} {time}",
-  "omTijd": "at {time}",
+  "omTijd": "At {time}",
   "schaalMin5": "-5 😞",
   "schaalNul": "0",
   "schaalPlus5": "+5 😄",
@@ -547,5 +547,13 @@
   "dagZa": "Sat",
   "dagZo": "Sun",
   "slaapDetailsNetto": "Sleep Details (Net)",
-  "backupHerstel": "Backup & Restore"
+  "backupHerstel": "Backup & Restore",
+  "stemmingGrafiekTitel": "Mood (-5 to +5)",
+  "slaapGrafiekTitel": "Sleep (hours)",
+  "activiteitenDezeWeekRhythm": "Activities this week",
+  "geenActiviteitenGevonden": "No activities found",
+  "voegSrmActiviteitenToe": "Add SRM activities via the Activity & Sleep screen.",
+  "geenDatum": "No date",
+  "geenActiviteit": "No activity",
+  "punten": "points"
 }
