@@ -26,17 +26,18 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
 
   Future<void> _loadData() async {
     try {
+      final l10n = AppLocalizations.of(context);
       final now = DateTime.now();
       final weekAgo = now.subtract(const Duration(days: 7));
       
       // Haal settings op voor target times
       final settings = await db.getSettings();
       final targetTimes = {
-        'Opstaan': settings?['target_opstaan']?.toString(),
-        'Eerste contact': settings?['target_contact']?.toString(),
-        'Werk / Hobby': settings?['target_werk']?.toString(),
-        'Avondeten': settings?['target_eten']?.toString(),
-        'Naar bed': settings?['target_slapen']?.toString(),
+        l10n!.rhythmOpstaan: settings?['target_opstaan']?.toString(),
+        l10n.rhythmEersteContact: settings?['target_contact']?.toString(),
+        l10n.rhythmWerkHobby: settings?['target_werk']?.toString(),
+        l10n.rhythmAvondeten: settings?['target_eten']?.toString(),
+        l10n.rhythmNaarBed: settings?['target_slapen']?.toString(),
       };
       
       List<Map<String, dynamic>> allActivities = [];
@@ -68,7 +69,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
           
           allActivities.add({
             'date': checkDateStr,
-            'day': _dayName(checkDate.weekday),
+            'day': _dayName(context, checkDate.weekday),
             'type': type,
             'p_score': pScore,
             'actual_time': actualTime ?? '-',
@@ -121,8 +122,9 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
     return 1;
   }
 
-  String _dayName(int weekday) {
-    const days = ['', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+  String _dayName(BuildContext context, int weekday) {
+    final l10n = AppLocalizations.of(context);
+    final days = ['', l10n!.dagMa, l10n.dagDi, l10n.dagWo, l10n.dagDo, l10n.dagVr, l10n.dagZa, l10n.dagZo];
     return days[weekday];
   }
 
@@ -245,7 +247,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                     // Activity type breakdown
                     if (_activityTypeCounts.isNotEmpty) ...[
                       Text(
-                        'Activiteit types',
+                        AppLocalizations.of(context).rhythmActiviteitTypes,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -274,7 +276,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                     
                     // Activities list
                     Text(
-                      'Activiteiten deze week',
+                      AppLocalizations.of(context).rhythmActiviteitenDezeWeek,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -341,7 +343,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  '${activity['day']} • Daadwerkelijk: ${activity['actual_time']}',
+                  '${activity['day']} • ${AppLocalizations.of(context).rhythmDaadwerkelijk}: ${activity['actual_time']}',
                   style: TextStyle(
                     fontSize: 13,
                     color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -350,7 +352,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                 if (activity['target_time'] != '-') ...[
                   const SizedBox(height: 2),
                   Text(
-                    'Target: ${activity['target_time']}',
+                    AppLocalizations.of(context).rhythmTarget + ': ${activity['target_time']}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade400,
