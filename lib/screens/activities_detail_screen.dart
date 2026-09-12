@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/activity_type_l10n.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../generated/l10n/app_localizations.dart';
@@ -260,7 +261,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                                       SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
-                                          entry.key,
+                                          entry.key.localizedActivityType(AppLocalizations.of(context)),
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,
@@ -427,7 +428,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activity['type'],
+                  (activity['type']?.toString() ?? '').localizedActivityType(AppLocalizations.of(context)),
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 14,

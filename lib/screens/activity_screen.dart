@@ -35,11 +35,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
     super.didChangeDependencies();
     final l10n = AppLocalizations.of(context);
     _activiteiten = [
-      {'dbType': 'opstaan', 'naam': l10n.rhythmOpstaan, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
-      {'dbType': 'eerste contact', 'naam': l10n.rhythmEersteContact, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
-      {'dbType': 'werk / hobby', 'naam': l10n.rhythmWerkHobby, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
-      {'dbType': 'avondeten', 'naam': l10n.rhythmAvondeten, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
-      {'dbType': 'naar bed', 'naam': l10n.rhythmNaarBed, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
+      {'dbType': 'Opstaan', 'naam': l10n.rhythmOpstaan, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
+      {'dbType': 'Eerste contact', 'naam': l10n.rhythmEersteContact, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
+      {'dbType': 'Werk / Hobby', 'naam': l10n.rhythmWerkHobby, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
+      {'dbType': 'Avondeten', 'naam': l10n.rhythmAvondeten, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
+      {'dbType': 'Naar bed', 'naam': l10n.rhythmNaarBed, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
     ];
   }
 
@@ -195,11 +195,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
       _calculatedSleepHours = null;
       final l10n = AppLocalizations.of(context);
       _activiteiten = [
-        {'dbType': 'opstaan', 'naam': l10n.rhythmOpstaan, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
-        {'dbType': 'eerste contact', 'naam': l10n.rhythmEersteContact, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
-        {'dbType': 'werk / hobby', 'naam': l10n.rhythmWerkHobby, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
-        {'dbType': 'avondeten', 'naam': l10n.rhythmAvondeten, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
-        {'dbType': 'naar bed', 'naam': l10n.rhythmNaarBed, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
+        {'dbType': 'Opstaan', 'naam': l10n.rhythmOpstaan, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
+        {'dbType': 'Eerste contact', 'naam': l10n.rhythmEersteContact, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
+        {'dbType': 'Werk / Hobby', 'naam': l10n.rhythmWerkHobby, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
+        {'dbType': 'Avondeten', 'naam': l10n.rhythmAvondeten, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
+        {'dbType': 'Naar bed', 'naam': l10n.rhythmNaarBed, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
       ];
     });
     _loadData();
@@ -259,7 +259,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
   Future<void> _toggleActivity(int index) async {
     try {
       final activity = _activiteiten[index];
-      String name = activity['naam'];
+      // DB operations and comparisons use the stable Dutch `dbType` key;
+      // `naam` is only the localized display label.
+      final String name = activity['dbType']?.toString() ?? activity['naam'].toString();
       
       String timeStr;
       int currentScore;
