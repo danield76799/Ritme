@@ -33972,46 +33972,51 @@ A.yy(a)
 if(b!==s.a.get(a))throw A.h(A.jl("Platform interfaces must not be implemented with `implements`"))},
 awp:function awp(){},
 UM:function UM(){},
-fW(){var s=0,r=A.w(t.H),q,p,o
+fW(){var s=0,r=A.w(t.H),q,p,o,n
 var $async$fW=A.x(function(a,b){if(a===1)return A.t(b,r)
-for(;;)switch(s){case 0:p=$.c1()
-o=t.z
+for(;;)switch(s){case 0:o=$.c1()
+n=t.z
 s=2
-return A.j(p.i3("settings",o),$async$fW)
+return A.j(o.i3("settings",n),$async$fW)
 case 2:s=3
-return A.j(p.i3("daily_logs",o),$async$fW)
+return A.j(o.i3("daily_logs",n),$async$fW)
 case 3:s=4
-return A.j(p.i3("srm_activities",o),$async$fW)
+return A.j(o.i3("srm_activities",n),$async$fW)
 case 4:s=5
-return A.j(p.i3("medication_config",o),$async$fW)
+return A.j(o.i3("medication_config",n),$async$fW)
 case 5:s=6
-return A.j(p.i3("medication_intake",o),$async$fW)
+return A.j(o.i3("medication_intake",n),$async$fW)
 case 6:s=7
-return A.j(p.i3("medication_schedule",o),$async$fW)
+return A.j(o.i3("medication_schedule",n),$async$fW)
 case 7:s=8
-return A.j(p.i3("life_events",o),$async$fW)
+return A.j(o.i3("life_events",n),$async$fW)
 case 8:s=9
-return A.j(p.i3("weight_logs",o),$async$fW)
+return A.j(o.i3("weight_logs",n),$async$fW)
 case 9:s=10
-return A.j(p.i3("medical_appointments",o),$async$fW)
+return A.j(o.i3("medical_appointments",n),$async$fW)
 case 10:s=11
-return A.j(p.i3("crisis_plan",o),$async$fW)
+return A.j(o.i3("crisis_plan",n),$async$fW)
 case 11:s=12
-return A.j(p.i3("prodromal_checklist",o),$async$fW)
+return A.j(o.i3("prodromal_checklist",n),$async$fW)
 case 12:s=13
-return A.j(p.i3("prodromal_logs",o),$async$fW)
+return A.j(o.i3("prodromal_logs",n),$async$fW)
 case 13:s=14
-return A.j(p.i3("episode_logs",o),$async$fW)
-case 14:s=15
-return A.j(p.i3("daily_dagboek",o),$async$fW)
-case 15:s=16
-return A.j(p.i3("mood_assessment",o),$async$fW)
-case 16:q=$.b58()
-s=17
-return A.j(q.FX(),$async$fW)
-case 17:s=18
-return A.j(q.Je(),$async$fW)
-case 18:return A.u(null,r)}})
+return A.j(o.i3("episode_logs",n),$async$fW)
+case 14:q=o.b
+s=!q.aF(0,"daily_dagboek".toLowerCase())?15:16
+break
+case 15:s=17
+return A.j(o.i3("daily_dagboek",n),$async$fW)
+case 17:case 16:s=!q.aF(0,"mood_assessment".toLowerCase())?18:19
+break
+case 18:s=20
+return A.j(o.i3("mood_assessment",n),$async$fW)
+case 20:case 19:p=$.b58()
+s=21
+return A.j(p.FX(),$async$fW)
+case 21:s=22
+return A.j(p.Je(),$async$fW)
+case 22:return A.u(null,r)}})
 return A.v($async$fW,r)},
 Ww:function Ww(){},
 apL:function apL(a){this.a=a},
