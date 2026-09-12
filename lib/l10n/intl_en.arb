@@ -531,5 +531,7 @@
   "medicatieNoodTitle": "💊 Medication emergency plan",
   "medicatieNoodHint": "E.g. which medication to adjust for mania/depression...",
   "watHelptTitle": "💚 What helps me",
-  "watHelptHint": "E.g. walking, music, showering, talking with partner/friend..."
+  "watHelptHint": "E.g. walking, music, showering, talking with partner/friend...",
+  "slaapPerDagLaatste7Dagen": "Sleep per day (last 7 days)",
+  "slaapLogAwakeMin": "awake"
 }

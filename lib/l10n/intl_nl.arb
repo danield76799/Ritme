@@ -531,5 +531,7 @@
   "medicatieNoodTitle": "💊 Medicatie noodgevalplan",
   "medicatieNoodHint": "Bijv. welke medicatie aanpassen bij manie/depressie...",
   "watHelptTitle": "💚 Wat mij helpt",
-  "watHelptHint": "Bijv.: wandelen, muziek, douchen, praten met partner/vriend..."
+  "watHelptHint": "Bijv.: wandelen, muziek, douchen, praten met partner/vriend...",
+  "slaapPerDagLaatste7Dagen": "Slaap per dag (laatste 7 dagen)",
+  "slaapLogAwakeMin": "wakker"
 }
