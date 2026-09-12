@@ -565,5 +565,6 @@
   "pdfMoodChart": "Mood Chart",
   "pdfSleepChart": "Sleep Chart",
   "pdfDateRange": "Date Range",
-  "pdfDays": "days"
+  "pdfDays": "days",
+  "datumFormaatLabel": "Date (DD-MM-YYYY) *"
 }
