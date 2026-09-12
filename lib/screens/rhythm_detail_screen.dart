@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/activity_type_l10n.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../generated/l10n/app_localizations.dart';
@@ -287,7 +288,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                               size: 18,
                               color: AppTheme.primaryTeal,
                             ),
-                            label: Text('${_activityTypeLabel(context, entry.key.toString())}: ${entry.value.toString()}'),
+                            label: Text('${entry.key.toString().localizedActivityType(AppLocalizations.of(context))}: ${entry.value.toString()}'),
                             backgroundColor: Colors.white,
                             side: BorderSide(color: Theme.of(context).colorScheme.outline!),
                           );
@@ -356,7 +357,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _activityTypeLabel(context, activity['type']?.toString() ?? ''),
+                  (activity['type']?.toString() ?? '').localizedActivityType(AppLocalizations.of(context)),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
