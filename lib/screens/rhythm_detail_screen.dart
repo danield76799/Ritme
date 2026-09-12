@@ -255,7 +255,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            '$_onTimeCount van $_totalActivities activiteiten op tijd',
+                            AppLocalizations.of(context).activiteitenOpTijd(_onTimeCount, _totalActivities),
                             style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                               fontSize: 14,
                             ),
