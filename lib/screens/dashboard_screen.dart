@@ -203,6 +203,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       }
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
 
+      // Count unique days with activities (not total activities)
+      final uniqueDays = <String>{};
+      for (final activity in weeklyActivities) {
+        final date = activity['date']?.toString();
+        if (date != null && date.isNotEmpty) uniqueDays.add(date);
+      }
+      final int daysWithActivities = uniqueDays.length;
+
       double totalPScore = 0;
       int totalActivities = 0;
       for (final activity in weeklyActivities) {
@@ -223,7 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           _settings = settings;
           _sleepQuality = avgSleep;
           _rhythmStability = stability;
-          _weeklyActivities = weeklyActivities.length;
+          _weeklyActivities = daysWithActivities;
           _loggedDaysCount = loggedDaysCount;
           _dailyLogs = dailyLogs;
           _srmActivitiesList = weeklyActivities;
@@ -644,7 +652,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         _settings = settings;
         _dailyLogs = dailyLogs;
         _srmActivitiesList = weeklyActivities;
-        _weeklyActivities = weeklyActivities.length;
+        final uniqueDays = <String>{};
+        for (final activity in weeklyActivities) {
+          final date = activity['date']?.toString();
+          if (date != null && date.isNotEmpty) uniqueDays.add(date);
+        }
+        _weeklyActivities = uniqueDays.length;
         _checkinTypes = checkinTypesForDate;
       });
     } catch (_) {}
