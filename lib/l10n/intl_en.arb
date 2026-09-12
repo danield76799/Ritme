@@ -555,5 +555,15 @@
   "voegSrmActiviteitenToe": "Add SRM activities via the Activity & Sleep screen.",
   "geenDatum": "No date",
   "geenActiviteit": "No activity",
-  "punten": "points"
+  "punten": "points",
+  "pdfReportTitle": "Ritme Statistics Report",
+  "pdfPeriod": "Period",
+  "pdfGenerated": "Generated",
+  "pdfAverageMood": "Average Mood",
+  "pdfAverageSleep": "Average Sleep",
+  "pdfTotalActivities": "Total Activities",
+  "pdfMoodChart": "Mood Chart",
+  "pdfSleepChart": "Sleep Chart",
+  "pdfDateRange": "Date Range",
+  "pdfDays": "days"
 }

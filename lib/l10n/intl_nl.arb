@@ -555,5 +555,15 @@
   "voegSrmActiviteitenToe": "Voeg SRM activiteiten toe via het Activiteit & Slaap scherm.",
   "geenDatum": "Geen datum",
   "geenActiviteit": "Geen activiteit",
-  "punten": "punten"
+  "punten": "punten",
+  "pdfReportTitle": "Ritme Statistieken Rapport",
+  "pdfPeriod": "Periode",
+  "pdfGenerated": "Gegenereerd",
+  "pdfAverageMood": "Gemiddelde Stemming",
+  "pdfAverageSleep": "Gemiddelde Slaap",
+  "pdfTotalActivities": "Totaal Activiteiten",
+  "pdfMoodChart": "Stemming Grafiek",
+  "pdfSleepChart": "Slaap Grafiek",
+  "pdfDateRange": "Datum Bereik",
+  "pdfDays": "dagen"
 }
