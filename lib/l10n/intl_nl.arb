@@ -623,5 +623,8 @@
   "periode2Weken": "2 weken",
   "periode1Week": "1 week",
   "backupShareSubject": "Ritme Backup",
-  "backupShareText": "Hier is mijn Ritme app backup. Bewaar deze veilig!"
+  "backupShareText": "Hier is mijn Ritme app backup. Bewaar deze veilig!",
+  "slaapUrenMinuten": "{h}u {m}m slaap",
+  "slaapUren": "{h}u slaap",
+  "slaapMinuten": "{m}m slaap"
 }
