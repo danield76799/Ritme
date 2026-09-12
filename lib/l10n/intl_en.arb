@@ -533,5 +533,19 @@
   "watHelptTitle": "💚 What helps me",
   "watHelptHint": "E.g. walking, music, showering, talking with partner/friend...",
   "slaapPerDagLaatste7Dagen": "Sleep per day (last 7 days)",
-  "slaapLogAwakeMin": "awake"
+  "slaapLogAwakeMin": "awake",
+  "dagboekExport": "Diary Export",
+  "exporterenDelen": "Export & share",
+  "stapXvanY": "Step {step} of {total}",
+  "genereerRapportDesc": "Generate a Life Chart Method (LCM) report for your practitioner. Includes mood, sleep, medication, episodes and warning signs.",
+  "tapToEdit": "Tap to edit",
+  "dagMa": "Mon",
+  "dagDi": "Tue",
+  "dagWo": "Wed",
+  "dagDo": "Thu",
+  "dagVr": "Fri",
+  "dagZa": "Sat",
+  "dagZo": "Sun",
+  "slaapDetailsNetto": "Sleep Details (Net)",
+  "backupHerstel": "Backup & Restore"
 }

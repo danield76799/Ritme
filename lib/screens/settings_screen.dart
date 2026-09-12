@@ -422,7 +422,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          _buildSectionHeader('Backup & Herstel'),
+          _buildSectionHeader(AppLocalizations.of(context).backupHerstel),
           _buildBackupButtons(),
           const SizedBox(height: 32),
           _buildSectionHeader(AppLocalizations.of(context).overige),

@@ -48,7 +48,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   SizedBox(width: 14),
                   Expanded(
                     child: Text(
-                      'Genereer een Life Chart Methode (LCM) rapport voor je behandelaar. Bevat stemming, slaap, medicatie, episodes en voortekenen.',
+                      AppLocalizations.of(context).genereerRapportDesc,
                       style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal, fontSize: 13),
                     ),
                   ),

@@ -149,7 +149,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
       // direct als leesbare tekst tonen in plaats van een bestandsbijlage.
       await Share.share(
         buffer.toString(),
-        subject: 'Dagboek Export',
+        subject: AppLocalizations.of(context).dagboekExport,
       );
     } catch (e) {
       AppLogger.error('Dagboek: exporteren mislukt', error: e);
@@ -190,7 +190,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
           IconButton(
             icon: Icon(Icons.ios_share, color: theme.colorScheme.onPrimary),
             onPressed: _exporteren,
-            tooltip: 'Exporteren & delen',
+            tooltip: AppLocalizations.of(context).exporterenDelen,
           ),
         ],
       ),
