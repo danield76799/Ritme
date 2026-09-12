@@ -261,7 +261,6 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         } else {
           stemming = 0.0;
         }
-        // Converteer naar -5 tot +5 schaal
         if (stemming > 10) {
           stemming = ((stemming / 100) * 10 - 5).clamp(-5.0, 5.0);
         } else {
@@ -295,7 +294,23 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
             ),
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              getTitlesWidget: (value, meta) {
+                final index = value.toInt();
+                if (index >= 0 && index < _logs.length) {
+                  final dateStr = _logs[index]['date'] as String? ?? '';
+                  if (dateStr.length >= 10) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text('${dateStr.substring(8)}/${dateStr.substring(5, 7)}', style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+                    );
+                  }
+                }
+                return const Text('');
+              },
+            )),
           ),
           borderData: FlBorderData(show: false),
           lineBarsData: [
@@ -335,7 +350,6 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     for (int i = 0; i < _logs.length; i++) {
       double? slaapUren;
       
-      // Check sleep_hours first
       if (_logs[i]['sleep_hours'] != null) {
         dynamic rawSleep = _logs[i]['sleep_hours'];
         if (rawSleep is num) slaapUren = rawSleep.toDouble();
@@ -386,7 +400,23 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
             ),
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              getTitlesWidget: (value, meta) {
+                final index = (value * 10).toInt();
+                if (index >= 0 && index < _logs.length) {
+                  final dateStr = _logs[index]['date'] as String? ?? '';
+                  if (dateStr.length >= 10) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text('${dateStr.substring(8)}/${dateStr.substring(5, 7)}', style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+                    );
+                  }
+                }
+                return const Text('');
+              },
+            )),
           ),
           borderData: FlBorderData(show: false),
           barGroups: barGroups,
