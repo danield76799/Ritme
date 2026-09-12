@@ -572,5 +572,15 @@
   "srtScoreFormula": "SRT Score = (Average P-Score / 5) × 100%",
   "srtScoreInterpretatie": "SRT Score Interpretatie",
   "ritmeStabiliteit": "Ritme Stabiliteit",
-  "stabiliteitScore": "Stabiliteit Score"
+  "stabiliteitScore": "Stabiliteit Score",
+  "rhythmOpstaan": "Opstaan",
+  "rhythmEersteContact": "Eerste contact",
+  "rhythmWerkHobby": "Werk / Hobby",
+  "rhythmAvondeten": "Avondeten",
+  "rhythmNaarBed": "Naar bed",
+  "rhythmActiviteitTypes": "Activiteit types",
+  "rhythmActiviteitenDezeWeek": "Activiteiten deze week",
+  "rhythmTarget": "Target",
+  "rhythmActiviteit": "Activiteit",
+  "rhythmDaadwerkelijk": "Daadwerkelijk"
 }
