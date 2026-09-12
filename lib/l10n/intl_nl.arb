@@ -515,5 +515,21 @@
   "dagboekAnnuleren": "Annuleren",
   "dagboekAlIngevuld": "Al ingevuld vandaag",
   "dagboekAanpassen": "Aanpassen",
-  "dagboekWoordenTellen": "{count}/250 woorden"
+  "dagboekWoordenTellen": "{count}/250 woorden",
+  "manieVroegTitle": "⚠️ Bij eerste tekenen van manie/hypomanie",
+  "manieVroegHint": "Bijv.: contact opgenomen met behandelaar, medicatie ophogen, prikkels vermijden...",
+  "manieErnstigTitle": "🚨 Ernstige manie (noodgeval)",
+  "manieErnstigHint": "Bijv.: crisislijn, contactpersoon, naar de Eerste Hulp...",
+  "depressieVroegTitle": "🔵 Bij eerste tekenen van depressie",
+  "depressieVroegHint": "Bijv.: dagelijkse structuur behouden, kleine doelen stellen, sociaal actief blijven...",
+  "depressieErnstigTitle": "🚨 Ernstige depressie / suïcidale gedachten",
+  "depressieErnstigHint": "Bijv.: bel 113, crisislijn, vertrouwenspersoon, blijf niet alleen...",
+  "gemengdTitle": "🟡 Gemengde episode",
+  "gemengdHint": "Bijv.: voorzichtig zijn met medicatie, geen impulsieve beslissingen...",
+  "contactenTitle": "📞 Belangrijke contacten",
+  "contactenHint": "Bijv.: behandelaar, partner, crisislijn, 113...",
+  "medicatieNoodTitle": "💊 Medicatie noodgevalplan",
+  "medicatieNoodHint": "Bijv. welke medicatie aanpassen bij manie/depressie...",
+  "watHelptTitle": "💚 Wat mij helpt",
+  "watHelptHint": "Bijv.: wandelen, muziek, douchen, praten met partner/vriend..."
 }

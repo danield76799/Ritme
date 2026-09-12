@@ -515,5 +515,21 @@
   "dagboekAnnuleren": "Cancel",
   "dagboekAlIngevuld": "Already filled in today",
   "dagboekAanpassen": "Edit",
-  "dagboekWoordenTellen": "{count}/250 words"
+  "dagboekWoordenTellen": "{count}/250 words",
+  "manieVroegTitle": "⚠️ At first signs of mania/hypomania",
+  "manieVroegHint": "E.g. contact your therapist, adjust medication, reduce stimulation...",
+  "manieErnstigTitle": "🚨 Severe mania (emergency)",
+  "manieErnstigHint": "E.g. crisis line, contact person, go to ER...",
+  "depressieVroegTitle": "🔵 At first signs of depression",
+  "depressieVroegHint": "E.g. keep daily structure, set small goals, stay socially active...",
+  "depressieErnstigTitle": "🚨 Severe depression / suicidal thoughts",
+  "depressieErnstigHint": "E.g. call 113, crisis line, trusted person, don't stay alone...",
+  "gemengdTitle": "🟡 Mixed episode",
+  "gemengdHint": "E.g. be extra careful with medication, no impulsive decisions...",
+  "contactenTitle": "📞 Important contacts",
+  "contactenHint": "E.g. therapist, partner, crisis line, 113...",
+  "medicatieNoodTitle": "💊 Medication emergency plan",
+  "medicatieNoodHint": "E.g. which medication to adjust for mania/depression...",
+  "watHelptTitle": "💚 What helps me",
+  "watHelptHint": "E.g. walking, music, showering, talking with partner/friend..."
 }

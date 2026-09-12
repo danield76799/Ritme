@@ -260,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   String _getGreeting(String name) {
     final hour = DateTime.now().hour;
-    if (hour < 6) return 'Goedenacht, $name';
+    if (hour < 6) return AppLocalizations.of(context).greetingNight + ', $name';
     if (hour < 12) return AppLocalizations.of(context).greetingMorning + ', $name';
     if (hour < 18) return AppLocalizations.of(context).greetingAfternoon + ', $name';
     return AppLocalizations.of(context).greetingEvening + ', $name';
