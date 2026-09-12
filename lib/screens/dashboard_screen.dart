@@ -146,8 +146,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
           final a = dayLog['awake_minutes'];
           final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
-          final q = dayLog['q4_slaapbehoefte'];
-          if ((sNum != null && sNum > 0) || (aNum > 0) || q != null) {
+          if ((sNum != null && sNum > 0) || aNum > 0) {
             dayTypes.add('ochtend');
           }
         }
