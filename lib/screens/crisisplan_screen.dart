@@ -14,14 +14,14 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
   bool _isLoading = true;
 
   final _defaultSections = [
-    {'section': 'manie_vroeg', 'title': '⚠️ Bij eerste tekenen van manie/hypomanie', 'hint': 'Bijv: contact opnemen met behandelaar, medicatie ophogen, prikkels vermijden...'},
-    {'section': 'manie_ernstig', 'title': '🚨 Bij ernstige manie (noodsituatie)', 'hint': 'Bijv: crisisdienst bellen, contactpersoon waarschuwen, naar SEH gaan...'},
-    {'section': 'depressie_vroeg', 'title': '🔵 Bij eerste tekenen van depressie', 'hint': 'Bijv: dagstructuur vasthouden, kleine doelen stellen, sociale contacten...'},
-    {'section': 'depressie_ernstig', 'title': '🚨 Bij ernstige depressie / suïcidale gedachten', 'hint': 'Bijv: 113 bellen, crisisdienst, vertrouwenspersoon, niet alleen blijven...'},
-    {'section': 'gemengd', 'title': '🟡 Bij gemengde episode', 'hint': 'Bijv: extra voorzichtig met medicatie, geen impulsieve beslissingen...'},
-    {'section': 'contacten', 'title': '📞 Belangrijke contacten', 'hint': 'Bijv: behandelaar, partner, crisisdienst, 113...'},
-    {'section': 'medicatie_nood', 'title': '💊 Medicatie noodplan', 'hint': 'Bijv: welke medicatie ophogen bij manie/depressie...'},
-    {'section': 'wat_helpt', 'title': '💚 Wat helpt mij', 'hint': 'Bijv: wandelen, muziek, douchen, met vriend(in) praten...'},
+    {'section': 'manie_vroeg', 'title': '⚠️ At first signs of mania/hypomania', 'hint': 'E.g. contact your therapist, adjust medication, reduce stimulation...'},
+    {'section': 'manie_ernstig', 'title': '🚨 Severe mania (emergency)', 'hint': 'E.g. crisis line, contact person, go to ER...'},
+    {'section': 'depressie_vroeg', 'title': '🔵 At first signs of depression', 'hint': 'E.g. keep daily structure, set small goals, stay socially active...'},
+    {'section': 'depressie_ernstig', 'title': '🚨 Severe depression / suicidal thoughts', 'hint': 'E.g. call 113, crisis line, trusted person, dont stay alone...'},
+    {'section': 'gemengd', 'title': '🟡 Mixed episode', 'hint': 'E.g. be extra careful with medication, no impulsive decisions...'},
+    {'section': 'contacten', 'title': '📞 Important contacts', 'hint': 'E.g. therapist, partner, crisis line, 113...'},
+    {'section': 'medicatie_nood', 'title': '💊 Medication emergency plan', 'hint': 'E.g. which medication to adjust for mania/depression...'},
+    {'section': 'wat_helpt', 'title': '💚 What helps me', 'hint': 'E.g. walking, music, showering, talking with partner/friend...'},
   ];
 
   @override
@@ -66,7 +66,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isNotEmpty) { subtitle = lines[i].trim(); break; }
     }
-    return [title, subtitle.isNotEmpty ? subtitle : 'Tik om te bewerken', true];
+    return [title, subtitle.isNotEmpty ? subtitle : 'Tap to edit', true];
   }
 
   void _editSection(Map<String, dynamic> section) {
@@ -91,7 +91,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2)))),
               SizedBox(height: 16),
-              Text(isCustom ? AppLocalizations.of(context).bewerkEigenSectie : displayTitle, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+              Text(isCustom ? AppLocalizations.of(context).eigenSectie : displayTitle, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
               if (isCustom) Padding(padding: const EdgeInsets.only(top: 4), child: Text(AppLocalizations.of(context).tipEersteRegel, style: TextStyle(fontSize: 12, color: Colors.grey))),
               const SizedBox(height: 16),
               Expanded(
@@ -107,7 +107,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade700 : Colors.grey.shade300, width: 1)),
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2)),
-                    hintText: isCustom ? 'Titel\n\nBeschrijving...' : AppLocalizations.of(context).schrijfHierJePlan,
+                    hintText: isCustom ? 'Title\nDescription...' : AppLocalizations.of(context).schrijfHierJePlan,
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.all(16),
                   ),
@@ -119,7 +119,6 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
-                    // Update op basis van section key - dit werkt altijd
                     await db.updateCrisisPlanSectionBySection(sectionKey, {'content': controller.text});
                     _loadData();
                     if (mounted) Navigator.pop(ctx);
