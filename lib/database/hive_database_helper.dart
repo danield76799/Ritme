@@ -39,8 +39,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await Hive.openBox(_prodromalChecklistBox);
     await Hive.openBox(_prodromalLogsBox);
     await Hive.openBox(_episodeLogsBox);
-    await Hive.openBox(_dagboekBoxName);
-    await Hive.openBox(_moodAssessmentBox);
+    if (!Hive.isBoxOpen(_dagboekBoxName)) await Hive.openBox(_dagboekBoxName);
+    if (!Hive.isBoxOpen(_moodAssessmentBox)) await Hive.openBox(_moodAssessmentBox);
     // Seed default prodromal checklist if empty
     final h = HiveDatabaseHelper.instance;
     await h._seedProdromalChecklistIfEmpty();
