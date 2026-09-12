@@ -609,5 +609,19 @@
   "stemmingLabel": "Mood",
   "slaapUrenLabel": "Sleep hours",
   "dagboekExportTitel": "Diary Export",
-  "gegenereerdOp": "Generated on"
+  "gegenereerdOp": "Generated on",
+  "checkDagelijksVoortekenen": "Check your early warning signs daily. With 4+ signs in one category: consult your practitioner.",
+  "dailyReminders": "Daily Reminders",
+  "dailyRemindersDesc": "Daily reminders for rituals",
+  "testNotification": "🧪 Test Notification",
+  "testNotificationBody": "If you see this, notifications work!",
+  "testNotifications": "Test Notifications",
+  "testNotificationsDesc": "Test notifications for verifying settings",
+  "periodeJaar": "1 year",
+  "periode3Maanden": "3 months",
+  "periode30Dagen": "30 days",
+  "periode2Weken": "2 weeks",
+  "periode1Week": "1 week",
+  "backupShareSubject": "Ritme Backup",
+  "backupShareText": "Here is my Ritme app backup. Keep it safe!"
 }

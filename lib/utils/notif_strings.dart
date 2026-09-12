@@ -18,6 +18,15 @@ class NotifStrings {
   static String get snooze => _nl ? '⏳ Snooze (15m)' : '⏳ Snooze (15m)';
   static String get open => _nl ? 'Openen' : 'Open';
   static String get medicationReminderShort => _nl ? '💊 Herinnering' : '💊 Reminder';
+  static String get dailyReminders => _nl ? 'Dagelijkse Herinneringen' : 'Daily Reminders';
+  static String get dailyRemindersDesc => _nl ? 'Dagelijkse herinneringen voor ritualen' : 'Daily reminders for rituals';
+  static String get testNotification => _nl ? '🧪 Test Notificatie' : '🧪 Test Notification';
+  static String get testNotificationBody => _nl ? 'Als je dit ziet, werken notificaties!' : 'If you see this, notifications work!';
+  static String get testNotifications => _nl ? 'Test Notificaties' : 'Test Notifications';
+  static String get testNotificationsDesc => _nl ? 'Test notificaties voor verifieren van instellingen' : 'Test notifications for verifying settings';
+  static String get backupSubject => 'Ritme Backup';
+  static String get backupText => _nl ? 'Hier is mijn Ritme app backup. Bewaar deze veilig!' : 'Here is my Ritme app backup. Keep it safe!';
+
   static List<String> get dayNames => _nl
       ? ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo']
       : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/bipolar_tag_l10n.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../theme/app_theme.dart';
@@ -768,7 +769,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Chip(
                     label: Text(
-                      tag.label,
+                      tag.localizedLabel(l10n),
                       style: const TextStyle(fontSize: 12),
                     ),
                     backgroundColor: MoodAssessmentScorerColors.slaapbehoefteColor(0).withValues(alpha: 0.1),

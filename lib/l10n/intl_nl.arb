@@ -609,5 +609,19 @@
   "stemmingLabel": "Stemming",
   "slaapUrenLabel": "Uren slaap",
   "dagboekExportTitel": "Dagboek Export",
-  "gegenereerdOp": "Gegenereerd op"
+  "gegenereerdOp": "Gegenereerd op",
+  "checkDagelijksVoortekenen": "Check dagelijks je voortekenen. Bij 4+ signalen in één categorie: overleg met je behandelaar.",
+  "dailyReminders": "Dagelijkse Herinneringen",
+  "dailyRemindersDesc": "Dagelijkse herinneringen voor ritualen",
+  "testNotification": "🧪 Test Notificatie",
+  "testNotificationBody": "Als je dit ziet, werken notificaties!",
+  "testNotifications": "Test Notificaties",
+  "testNotificationsDesc": "Test notificaties voor verifieren van instellingen",
+  "periodeJaar": "1 jaar",
+  "periode3Maanden": "3 maanden",
+  "periode30Dagen": "30 dagen",
+  "periode2Weken": "2 weken",
+  "periode1Week": "1 week",
+  "backupShareSubject": "Ritme Backup",
+  "backupShareText": "Hier is mijn Ritme app backup. Bewaar deze veilig!"
 }
