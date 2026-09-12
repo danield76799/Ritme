@@ -149,6 +149,28 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
     }
   }
 
+  String _activityTypeLabel(BuildContext context, String type) {
+    final l10n = AppLocalizations.of(context);
+    switch (type.toLowerCase()) {
+      case 'opstaan':
+        return l10n.rhythmOpstaan;
+      case 'slapen':
+      case 'naar bed':
+        return l10n.rhythmNaarBed;
+      case 'eten':
+      case 'maaltijd':
+        return l10n.rhythmAvondeten;
+      case 'werk':
+      case 'werken':
+        return l10n.rhythmWerkHobby;
+      case 'sociaal contact':
+      case 'contact':
+        return l10n.rhythmEersteContact;
+      default:
+        return type;
+    }
+  }
+
   Color _getPScoreColor(int score) {
     if (score >= 5) return Colors.green;
     if (score >= 3) return AppTheme.primaryTeal;
@@ -265,7 +287,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                               size: 18,
                               color: AppTheme.primaryTeal,
                             ),
-                            label: Text(AppLocalizations.of(context).sleutelWaarde(entry.key.toString(), entry.value.toString())),
+                            label: Text('${_activityTypeLabel(context, entry.key.toString())}: ${entry.value.toString()}'),
                             backgroundColor: Colors.white,
                             side: BorderSide(color: Theme.of(context).colorScheme.outline!),
                           );
@@ -334,7 +356,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activity['type'],
+                  _activityTypeLabel(context, activity['type']?.toString() ?? ''),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
