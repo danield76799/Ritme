@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import '../generated/l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class HelpScreen extends StatefulWidget {
@@ -142,25 +143,13 @@ class _HelpScreenState extends State<HelpScreen> {
 
               _buildSection(
                 icon: Icons.schedule,
-                title: _isDutch ? 'SRT Score begrijpen' : 'Understanding SRT Score',
-                description: _isDutch
-                    ? 'De Social Rhythm Metric (SRT) meet je dagelijkse regelmaat.\n\n'
-                      '• Score wordt berekend uit je SRM-activiteiten\n'
-                      '• Hogere score = stabieler dagelijks ritme\n'
-                      '• Doel: consistente tijden voor slapen, opstaan, eten en sociale contacten\n'
-                      '• Regelmatigheid helpt je biologische klok stabiliseren\n'
-                      '• Dit kan bijdragen aan een betere stemming'
-                    : 'The Social Rhythm Metric (SRT) measures your daily regularity.\n\n'
-                      '• Score is calculated from your SRM activities\n'
-                      '• Higher score = more stable daily rhythm\n'
-                      '• Goal: consistent times for sleep, wake up, meals and social contact\n'
-                      '• Regularity helps stabilize your biological clock\n'
-                      '• This can contribute to better mood',
+                title: AppLocalizations.of(context).srtScoreBegrijpen,
+                description: AppLocalizations.of(context).srtScoreDesc,
               ),
               const SizedBox(height: 20),
 
               _buildDetailCard(
-                title: _isDutch ? 'SRT Score Interpretatie' : 'SRT Score Interpretation',
+                title: AppLocalizations.of(context).srtScoreInterpretatie,
                 children: [
                   _buildScoreRange(range: '80-100%', color: Colors.green, label: _isDutch ? 'Uitstekend stabiel' : 'Excellent stability', action: '✅ ${_isDutch ? 'Blijf zo doorgaan' : 'Keep it up'}'),
                   _buildScoreRange(range: '60-79%', color: Colors.lightGreen, label: _isDutch ? 'Goed, kleine variaties' : 'Good, small variations', action: '✅ ${_isDutch ? 'Acceptabel' : 'Acceptable'}'),
@@ -202,7 +191,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'SRT Score = (Average P-Score / 5) × 100%',
+                        AppLocalizations.of(context).srtScoreFormula,
                         style: TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 14,
