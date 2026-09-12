@@ -28,13 +28,20 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return '${_geselecteerdeDatum.year}-${_geselecteerdeDatum.month.toString().padLeft(2, '0')}-${_geselecteerdeDatum.day.toString().padLeft(2, '0')}';
   }
 
-  List<Map<String, dynamic>> _activiteiten = [
-    {'naam': 'Opstaan', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
-    {'naam': 'Eerste contact', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
-    {'naam': 'Werk / Hobby', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
-    {'naam': 'Avondeten', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
-    {'naam': 'Naar bed', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
-  ];
+  late List<Map<String, dynamic>> _activiteiten;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final l10n = AppLocalizations.of(context);
+    _activiteiten = [
+      {'dbType': 'opstaan', 'naam': l10n.rhythmOpstaan, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
+      {'dbType': 'eerste contact', 'naam': l10n.rhythmEersteContact, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
+      {'dbType': 'werk / hobby', 'naam': l10n.rhythmWerkHobby, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
+      {'dbType': 'avondeten', 'naam': l10n.rhythmAvondeten, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
+      {'dbType': 'naar bed', 'naam': l10n.rhythmNaarBed, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
+    ];
+  }
 
   @override
   void initState() {
@@ -63,7 +70,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final activities = await db.getSrmActivities(_formattedDate);
 
       for (var activity in activities) {
-        final index = _activiteiten.indexWhere((a) => a['naam'] == activity['activity_type']);
+        final index = _activiteiten.indexWhere((a) => a['dbType'] == activity['activity_type']);
         if (index != -1) {
           _activiteiten[index]['werkelijke_tijd'] = _parseTimeOfDay(activity['actual_time']?.toString());
           dynamic rawPScore = activity['p_score'];
@@ -186,12 +193,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
       _wakeTime = null;
       _awakeMinutes = 0;
       _calculatedSleepHours = null;
+      final l10n = AppLocalizations.of(context);
       _activiteiten = [
-        {'naam': 'Opstaan', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
-        {'naam': 'Eerste contact', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
-        {'naam': 'Werk / Hobby', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
-        {'naam': 'Avondeten', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
-        {'naam': 'Naar bed', 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
+        {'dbType': 'opstaan', 'naam': l10n.rhythmOpstaan, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.wb_sunny_outlined},
+        {'dbType': 'eerste contact', 'naam': l10n.rhythmEersteContact, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.person_outline},
+        {'dbType': 'werk / hobby', 'naam': l10n.rhythmWerkHobby, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.work_outline},
+        {'dbType': 'avondeten', 'naam': l10n.rhythmAvondeten, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.restaurant_outlined},
+        {'dbType': 'naar bed', 'naam': l10n.rhythmNaarBed, 'richttijd': null, 'werkelijke_tijd': null, 'p_score': 0, 'icoon': Icons.bedtime_outlined},
       ];
     });
     _loadData();
