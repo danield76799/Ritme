@@ -565,5 +565,6 @@
   "pdfMoodChart": "Stemming Grafiek",
   "pdfSleepChart": "Slaap Grafiek",
   "pdfDateRange": "Datum Bereik",
-  "pdfDays": "dagen"
+  "pdfDays": "dagen",
+  "datumFormaatLabel": "Datum (DD-MM-YYYY) *"
 }

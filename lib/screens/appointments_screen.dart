@@ -649,7 +649,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Datum (DD-MM-YYYY) *',
+                    AppLocalizations.of(context).datumFormaatLabel,
                     style: TextStyle(
                       color: field.errorText != null ? Colors.red : Colors.grey.shade700,
                       fontSize: 14,
