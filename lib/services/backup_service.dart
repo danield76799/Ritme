@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../utils/notif_strings.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
@@ -165,7 +166,7 @@ class BackupService {
     await Share.shareXFiles(
       [XFile(filePath)],
       subject: 'Ritme Backup ${DateTime.now().toString().split(' ')[0]}',
-      text: 'Hier is mijn Ritme app backup. Bewaar deze veilig!',
+      text: NotifStrings.backupText,
     );
   }
 

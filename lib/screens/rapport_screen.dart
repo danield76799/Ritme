@@ -64,7 +64,8 @@ class _RapportScreenState extends State<RapportScreen> {
               spacing: 8,
               children: [7, 14, 30, 90, 365].map((days) {
                 final isSelected = _selectedDays == days;
-                final label = days == 365 ? '1 jaar' : days == 90 ? '3 maanden' : days == 30 ? '30 dagen' : days == 14 ? '2 weken' : '1 week';
+                final l10n = AppLocalizations.of(context);
+                final label = days == 365 ? l10n.periodeJaar : days == 90 ? l10n.periode3Maanden : days == 30 ? l10n.periode30Dagen : days == 14 ? l10n.periode2Weken : l10n.periode1Week;
                 return ChoiceChip(
                   label: Text(label),
                   selected: isSelected,

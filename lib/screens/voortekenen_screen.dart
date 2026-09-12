@@ -217,7 +217,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Check dagelijks je voortekenen. Bij 4+ signalen in één categorie: overleg met je behandelaar.',
+                      AppLocalizations.of(context).checkDagelijksVoortekenen,
                       style: TextStyle(color: Colors.orange.shade900, fontSize: 13),
                     ),
                   ),

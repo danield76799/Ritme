@@ -4,6 +4,7 @@ import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../theme/app_theme.dart';
 import '../utils/mood_assessment_scorer.dart';
+import '../utils/bipolar_tag_l10n.dart';
 
 /// 5-staps vragenlijst die een stemming-score berekent op basis van gewogen
 /// antwoorden, de stemming direct wegschrijft naar de daily log, en de
@@ -834,29 +835,6 @@ class _ResultStep extends StatelessWidget {
     required this.onContinue,
   });
 
-  String _tagLabel(BipolarTag tag, AppLocalizations l10n) {
-    switch (tag) {
-      case BipolarTag.maniaShift:
-        return l10n.tagManiaShift;
-      case BipolarTag.probableMania:
-        return l10n.tagProbableMania;
-      case BipolarTag.sleepReductionAlone:
-        return l10n.tagSleepReductionAlone;
-      case BipolarTag.depressionShift:
-        return l10n.tagDepressionShift;
-      case BipolarTag.probableDepression:
-        return l10n.tagProbableDepression;
-      case BipolarTag.positiveLifeEventTrigger:
-        return l10n.tagPositiveLifeEventTrigger;
-      case BipolarTag.negativeLifeEventTrigger:
-        return l10n.tagNegativeLifeEventTrigger;
-      case BipolarTag.mixedEpisode:
-        return l10n.tagMixedEpisode;
-      case BipolarTag.opposingSignals:
-        return l10n.tagOpposingSignals;
-    }
-  }
-
   Color _tagColor(BipolarTag tag, ThemeData theme) {
     switch (tag) {
       case BipolarTag.maniaShift:
@@ -961,7 +939,7 @@ class _ResultStep extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _tagLabel(tag, l10n),
+                              tag.localizedLabel(l10n),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: color,

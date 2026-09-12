@@ -256,10 +256,10 @@ class NotificationHelper {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
       }
 
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         'daily_reminders',
-        'Dagelijkse Herinneringen',
-        channelDescription: 'Dagelijkse herinneringen voor ritualen',
+        NotifStrings.dailyReminders,
+        channelDescription: NotifStrings.dailyRemindersDesc,
         importance: Importance.high,
         priority: Priority.high,
         showWhen: true,
@@ -341,8 +341,8 @@ class NotificationHelper {
 
   Future<void> showTestNotification() async {
     await showImmediateNotification(
-      title: '🧪 Test Notificatie',
-      body: 'Als je dit ziet, werken notificaties!',
+      title: NotifStrings.testNotification,
+      body: NotifStrings.testNotificationBody,
     );
   }
 
@@ -357,9 +357,9 @@ class NotificationHelper {
         scheduledTime = scheduledTime.add(const Duration(days: 1));
       }
 
-      const androidDetails = AndroidNotificationDetails(
-        'test_notifications', 'Test Notificaties',
-        channelDescription: 'Test notificaties voor verifieren van instellingen',
+      final androidDetails = AndroidNotificationDetails(
+        'test_notifications', NotifStrings.testNotifications,
+        channelDescription: NotifStrings.testNotificationsDesc,
         importance: Importance.high, priority: Priority.high,
         showWhen: true, enableVibration: true, playSound: true,
       );
