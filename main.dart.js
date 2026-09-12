@@ -124702,162 +124702,161 @@ s.Q2()},
 l(){$.af.jb(this)
 this.aR()},
 ts(a){if(a===B.dZ)this.m7()},
-m7(){var s=0,r=A.w(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,f0,f1,f2,f3,f4,f5,f6,f7,f8,f9
-var $async$m7=A.x(function(g0,g1){if(g0===1){p.push(g1)
+m7(){var s=0,r=A.w(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,f0,f1,f2,f3,f4,f5,f6,f7,f8
+var $async$m7=A.x(function(f9,g0){if(f9===1){p.push(g0)
 s=q}for(;;)switch(s){case 0:q=3
-e5={}
+e4={}
 n=new A.be(Date.now(),0,!1)
 m=n.h8(-12096e8)
 l=""+A.c2(m)+"-"+B.d.b6(B.e.j(A.c8(m)),2,"0")+"-"+B.d.b6(B.e.j(A.cZ(m)),2,"0")
 k=""+A.c2(n)+"-"+B.d.b6(B.e.j(A.c8(n)),2,"0")+"-"+B.d.b6(B.e.j(A.cZ(n)),2,"0")
+e5=$.aK
+if(e5==null)A.I(A.T(u.O))
+e5=e5.fY(0)
 e6=$.aK
 if(e6==null)A.I(A.T(u.O))
-e6=e6.fY(0)
+e6=e6.yb(l,k)
 e7=$.aK
 if(e7==null)A.I(A.T(u.O))
-e7=e7.yb(l,k)
-e8=$.aK
-if(e8==null)A.I(A.T(u.O))
 s=6
-return A.j(A.kf(A.b([e6,e7,e8.CV(l,k)],t.Y_),t.X),$async$m7)
-case 6:j=g1
+return A.j(A.kf(A.b([e5,e6,e7.CV(l,k)],t.Y_),t.X),$async$m7)
+case 6:j=g0
 i=t.nA.a(J.y(j,0))
-e6=t.F
-h=e6.a(J.y(j,1))
-g=e6.a(J.y(j,2))
+e5=t.F
+h=e5.a(J.y(j,1))
+g=e5.a(J.y(j,2))
 f=k
 e=A.G4(J.l_(h,new A.aKn(f)))
-e6=J.l_(g,new A.aKo(f))
-e9=A.a6(e6,e6.$ti.h("r.E"))
-d=e9
-e6=t.N
-c=A.b5(e6)
+e5=J.l_(g,new A.aKo(f))
+e8=A.a6(e5,e5.$ti.h("r.E"))
+d=e8
+e5=t.N
+c=A.b5(e5)
 if(e!=null){b=J.y(e,"uren_slaap")
-if(typeof b=="number")f0=b
-else{e7=b
-e7=e7==null?null:J.ab(e7)
-f0=A.dG(e7==null?"":e7)}a=f0
+if(typeof b=="number")e9=b
+else{e6=b
+e6=e6==null?null:J.ab(e6)
+e9=A.dG(e6==null?"":e6)}a=e9
 a0=J.y(e,"awake_minutes")
-if(typeof a0=="number")f1=B.c.cH(a0)
-else{e7=a0
-e7=e7==null?null:J.ab(e7)
-e7=A.bm(e7==null?"":e7,null)
-f1=e7==null?0:e7}a1=f1
+if(typeof a0=="number")f0=B.c.cH(a0)
+else{e6=a0
+e6=e6==null?null:J.ab(e6)
+e6=A.bm(e6==null?"":e6,null)
+f0=e6==null?0:e6}a1=f0
 a2=J.y(e,"q4_slaapbehoefte")
 if(a!=null&&a>0||a1>0||a2!=null)J.dz(c,"ochtend")}q=8
-e7=$.aK
-if(e7==null)A.I(A.T(u.O))
+e6=$.aK
+if(e6==null)A.I(A.T(u.O))
 s=11
-return A.j(e7.uE(f),$async$m7)
-case 11:a3=g1
+return A.j(e6.uE(f),$async$m7)
+case 11:a3=g0
 a4=J.nE(a3,new A.aKp())
 if(a4)J.dz(c,"medicatie")
 q=3
 s=10
 break
 case 8:q=7
-f7=p.pop()
+f6=p.pop()
 s=10
 break
 case 7:s=3
 break
 case 10:q=13
-e7=$.aK
-if(e7==null)A.I(A.T(u.O))
+e6=$.aK
+if(e6==null)A.I(A.T(u.O))
 s=16
-return A.j(e7.ya(f),$async$m7)
-case 16:a5=g1
+return A.j(e6.ya(f),$async$m7)
+case 16:a5=g0
 if(a5!=null)J.dz(c,"dagboek")
 q=3
 s=15
 break
 case 13:q=12
-f8=p.pop()
+f7=p.pop()
 s=15
 break
 case 12:s=3
 break
-case 15:a6=A.cE(["Eerste contact","Werk / Hobby","Avondeten","Naar bed"],e6)
+case 15:a6=A.cE(["Eerste contact","Werk / Hobby","Avondeten","Naar bed"],e5)
 a7=J.nE(d,new A.aKq(a6))
 if(a7)J.dz(c,"avond")
 a8=n.h8(-12096e8)
 a9=""+A.c2(a8)+"-"+B.d.b6(B.e.j(A.c8(a8)),2,"0")+"-"+B.d.b6(B.e.j(A.cZ(a8)),2,"0")
-e7=$.aK
-if(e7==null)A.I(A.T(u.O))
+e6=$.aK
+if(e6==null)A.I(A.T(u.O))
 s=17
-return A.j(e7.Lo(a9,k),$async$m7)
-case 17:b0=g1
-b1=A.b5(e6)
-for(e7=J.b8(b0);e7.v();){b2=e7.gP(e7)
+return A.j(e6.Lo(a9,k),$async$m7)
+case 17:b0=g0
+b1=A.b5(e5)
+for(e6=J.b8(b0);e6.v();){b2=e6.gP(e6)
 b3=J.y(b2,"aantal_ingenomen")
-if(A.cl(b3))f3=b3
-else{e8=b3
-e8=e8==null?null:J.ab(e8)
-e8=A.bm(e8==null?"":e8,null)
-f3=e8==null?0:e8}b4=f3
-if(b4>0){e8=J.y(b2,"date")
-e8=e8==null?null:J.ab(e8)
-if(e8==null)e8=""
-J.dz(b1,e8)}}e5.a=0
+if(A.cl(b3))f2=b3
+else{e7=b3
+e7=e7==null?null:J.ab(e7)
+e7=A.bm(e7==null?"":e7,null)
+f2=e7==null?0:e7}b4=f2
+if(b4>0){e7=J.y(b2,"date")
+e7=e7==null?null:J.ab(e7)
+if(e7==null)e7=""
+J.dz(b1,e7)}}e4.a=0
 for(b5=0;b5<14;++b5){b6=n.h8(0-864e8*b5)
 b7=""+A.c2(b6)+"-"+B.d.b6(B.e.j(A.c8(b6)),2,"0")+"-"+B.d.b6(B.e.j(A.cZ(b6)),2,"0")
-b8=A.b5(e6)
+b8=A.b5(e5)
 b9=A.G4(J.l_(h,new A.aKr(b7)))
 if(b9!=null){c0=J.y(b9,"uren_slaap")
 if(typeof c0=="number")a=c0
-else{e7=c0
-e7=e7==null?null:J.ab(e7)
-a=A.dG(e7==null?"":e7)}c1=a
+else{e6=c0
+e6=e6==null?null:J.ab(e6)
+a=A.dG(e6==null?"":e6)}c1=a
 c2=J.y(b9,"awake_minutes")
 if(typeof c2=="number")a1=B.c.cH(c2)
-else{e7=c2
-e7=e7==null?null:J.ab(e7)
-e7=A.bm(e7==null?"":e7,null)
-a1=e7==null?0:e7}c3=a1
-c4=J.y(b9,"q4_slaapbehoefte")
-if(c1!=null&&c1>0||c3>0||c4!=null)J.dz(b8,"ochtend")}if(J.xu(b1,b7))J.dz(b8,"medicatie")
-e7=J.l_(g,new A.aKs(b7))
-f4=A.a6(e7,e7.$ti.h("r.E"))
-c5=f4
-c6=A.cE(["Eerste contact","Werk / Hobby","Avondeten","Naar bed"],e6)
-c7=J.nE(c5,new A.aKt(c6))
-if(c7)J.dz(b8,"avond")
-if(b8.a!==0)++e5.a
-else break}c8=0
-c9=0
-e5.b=0
-d0=A.E(e6,t.i)
-for(e6=J.b8(h);e6.v();){d1=e6.gP(e6)
-e7=J.y(d1,"date")
-d2=e7==null?null:J.ab(e7)
-if(d2==null)continue
-d3=J.y(d1,"sleep_hours")
-d4=J.y(d1,"uren_slaap")
-d5=null
-if(d3!=null)d5=typeof d3=="number"?d3:A.dG(J.ab(d3))
-if(d5==null||d5<=0){if(typeof d4=="number")f5=d4
-else{e7=d4
-e7=e7==null?null:J.ab(e7)
-f5=A.dG(e7==null?"":e7)}d5=f5}if(d5!=null&&d5>0&&!J.fO(d0,d2)){J.bg(d0,d2,d5);++e5.b
-c8+=d5;++c9}}d6=c9>0?c8/c9:0
+else{e6=c2
+e6=e6==null?null:J.ab(e6)
+e6=A.bm(e6==null?"":e6,null)
+a1=e6==null?0:e6}c3=a1
+if(c1!=null&&c1>0||c3>0)J.dz(b8,"ochtend")}if(J.xu(b1,b7))J.dz(b8,"medicatie")
+e6=J.l_(g,new A.aKs(b7))
+f3=A.a6(e6,e6.$ti.h("r.E"))
+c4=f3
+c5=A.cE(["Eerste contact","Werk / Hobby","Avondeten","Naar bed"],e5)
+c6=J.nE(c4,new A.aKt(c5))
+if(c6)J.dz(b8,"avond")
+if(b8.a!==0)++e4.a
+else break}c7=0
+c8=0
+e4.b=0
+c9=A.E(e5,t.i)
+for(e5=J.b8(h);e5.v();){d0=e5.gP(e5)
+e6=J.y(d0,"date")
+d1=e6==null?null:J.ab(e6)
+if(d1==null)continue
+d2=J.y(d0,"sleep_hours")
+d3=J.y(d0,"uren_slaap")
+d4=null
+if(d2!=null)d4=typeof d2=="number"?d2:A.dG(J.ab(d2))
+if(d4==null||d4<=0){if(typeof d3=="number")f4=d3
+else{e6=d3
+e6=e6==null?null:J.ab(e6)
+f4=A.dG(e6==null?"":e6)}d4=f4}if(d4!=null&&d4>0&&!J.fO(c9,d1)){J.bg(c9,d1,d4);++e4.b
+c7+=d4;++c8}}d5=c8>0?c7/c8:0
+d6=0
 d7=0
-d8=0
-for(e6=J.b8(g);e6.v();){d9=e6.gP(e6)
-e0=J.y(d9,"actual_time")
-e1=J.y(d9,"p_score")
-if(e0!=null&&e1!=null){if(A.cl(e1))f6=e1
-else{e7=A.bm(J.ab(e1),null)
-f6=e7==null?0:e7}e2=f6
-if(e2>0){d7+=e2;++d8}}}e3=d8>0?d7/d8/5*100:0
-if(o.c!=null)o.F(new A.aKu(e5,o,i,d6,e3,g,h,c))
+for(e5=J.b8(g);e5.v();){d8=e5.gP(e5)
+d9=J.y(d8,"actual_time")
+e0=J.y(d8,"p_score")
+if(d9!=null&&e0!=null){if(A.cl(e0))f5=e0
+else{e6=A.bm(J.ab(e0),null)
+f5=e6==null?0:e6}e1=f5
+if(e1>0){d6+=e1;++d7}}}e2=d7>0?d6/d7/5*100:0
+if(o.c!=null)o.F(new A.aKu(e4,o,i,d5,e2,g,h,c))
 $.bef().xI().cs(0,new A.aKv(o),t.a)
 q=1
 s=5
 break
 case 3:q=2
-f9=p.pop()
-e4=A.ac(f9)
-A.d1("Dashboard _loadData error",e4,null)
+f8=p.pop()
+e3=A.ac(f8)
+A.d1("Dashboard _loadData error",e3,null)
 if(o.c!=null)o.F(new A.aKw(o))
 s=5
 break
