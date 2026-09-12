@@ -209,9 +209,9 @@ class NotificationHelper {
             final cvalue = cid is int ? cid : int.tryParse(cid.toString());
             return cvalue == medicationId;
           },
-          orElse: () => {'naam': 'Medicatie'},
+          orElse: () => {'naam': NotifStrings.medication},
         );
-        final name = config['naam']?.toString() ?? 'Medicatie';
+        final name = config['naam']?.toString() ?? NotifStrings.medication;
         final days = daysOfWeekRaw?.split(',').map((s) => int.tryParse(s.trim())).whereType<int>().toList() ??
             [1, 2, 3, 4, 5, 6, 7];
 

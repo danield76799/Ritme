@@ -245,7 +245,7 @@ class RapportGenerator {
     }).toList();
 
     if (periodsInReport.isNotEmpty) {
-      buf.writeln('## 🏥 Episodes');
+      buf.writeln('## ${s.episodesTitle}');
       buf.writeln();
       for (var ep in periodsInReport) {
         final type = s.episodeLabel(ep['episode_type'] as String);
