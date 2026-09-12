@@ -353,13 +353,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
-  String _formatSleepDuration(double hours) {
+  String _formatSleepDuration(BuildContext context, double hours) {
+    final l10n = AppLocalizations.of(context);
     final totalMinutes = (hours * 60).round();
     final h = totalMinutes ~/ 60;
     final m = totalMinutes % 60;
-    if (h > 0 && m > 0) return '${h}u ${m}m slaap';
-    if (h > 0) return '${h}u slaap';
-    return '${m}m slaap';
+    if (h > 0 && m > 0) return l10n.slaapUrenMinuten(h, m);
+    if (h > 0) return l10n.slaapUren(h);
+    return l10n.slaapMinuten(m);
   }
 
 
@@ -507,7 +508,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).slaapduurMetUren(_formatSleepDuration(sleepHours))),
+            content: Text(AppLocalizations.of(context).slaapduurMetUren(_formatSleepDuration(context, sleepHours))),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -652,7 +653,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   Icon(Icons.nights_stay, color: AppTheme.primaryTeal),
                   const SizedBox(width: 8),
                   Text(
-                    _formatSleepDuration(_calculatedSleepHours!),
+                    _formatSleepDuration(context, _calculatedSleepHours!),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
