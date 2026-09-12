@@ -583,7 +583,7 @@
   "rhythmTarget": "Target",
   "rhythmActiviteit": "Activity",
   "rhythmDaadwerkelijk": "Actual",
-  "activiteitenOpTijd": "{onTime} van {total} activities on time",
+  "activiteitenOpTijd": "{onTime} of {total} activities on time",
   "kiesDatum": "Pick date",
   "bekijken": "View",
   "wijzigHerinnertijdVoor": "Change reminder time for {name}",
