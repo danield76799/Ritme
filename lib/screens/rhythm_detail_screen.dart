@@ -170,7 +170,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(
-          'Ritme Stabiliteit',
+          AppLocalizations.of(context).ritmeStabiliteit,
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
@@ -214,7 +214,7 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
                       child: Column(
                         children: [
                           Text(
-                            'Stabiliteit Score',
+                            AppLocalizations.of(context).stabiliteitScore,
                             style: TextStyle(color: Theme.of(context).colorScheme.onPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,

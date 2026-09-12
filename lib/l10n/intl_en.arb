@@ -570,5 +570,7 @@
   "srtScoreBegrijpen": "Understanding SRT Score",
   "srtScoreDesc": "The Social Rhythm Metric (SRT) measures your daily regularity.\n\n• Score is calculated from your SRM activities\n• Higher score = more stable daily rhythm\n• Goal: consistent times for sleep, wake up, meals and social contact\n• Regularity helps stabilize your biological clock\n• This can contribute to better mood",
   "srtScoreFormula": "SRT Score = (Average P-Score / 5) × 100%",
-  "srtScoreInterpretatie": "SRT Score Interpretation"
+  "srtScoreInterpretatie": "SRT Score Interpretation",
+  "ritmeStabiliteit": "Rhythm Stability",
+  "stabiliteitScore": "Stability Score"
 }
