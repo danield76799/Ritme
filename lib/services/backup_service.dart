@@ -28,14 +28,24 @@ class BackupService {
       debugPrint('BackupService: error exporting SQLite daily_logs - $e');
     }
 
+    // Export appointments from Hive (not SQLite)
     try {
-      final appointments = await _db.getMedicalAppointments();
-      if (appointments.isNotEmpty) {
-        export['data']['sqlite_appointments'] = appointments;
-        debugPrint('BackupService: exported ${appointments.length} appointments from SQLite');
+      if (Hive.isBoxOpen('medical_appointments')) {
+        final box = Hive.box('medical_appointments');
+        final appointments = <Map<String, dynamic>>[];
+        for (final key in box.keys) {
+          final value = box.get(key);
+          if (value != null) {
+            appointments.add(Map<String, dynamic>.from(value));
+          }
+        }
+        if (appointments.isNotEmpty) {
+          export['data']['medical_appointments'] = appointments;
+          debugPrint('BackupService: exported ${appointments.length} appointments from Hive');
+        }
       }
     } catch (e) {
-      debugPrint('BackupService: error exporting SQLite appointments - $e');
+      debugPrint('BackupService: error exporting Hive appointments - $e');
     }
 
     try {
@@ -188,13 +198,18 @@ class BackupService {
       }
     }
 
-    if (boxesData.containsKey('sqlite_appointments')) {
+    // Restore appointments from Hive
+    if (boxesData.containsKey('medical_appointments')) {
       try {
-        final appointments = boxesData['sqlite_appointments'] as List<dynamic>;
-        for (final appt in appointments) {
-          await _db.insertMedicalAppointment(appt as Map<String, dynamic>);
+        if (Hive.isBoxOpen('medical_appointments')) {
+          final box = Hive.box('medical_appointments');
+          final appointments = boxesData['medical_appointments'] as List<dynamic>;
+          await box.clear();
+          for (final appt in appointments) {
+            await box.put(appt['id'], appt);
+          }
+          debugPrint('BackupService: restored ${appointments.length} appointments to Hive');
         }
-        debugPrint('BackupService: restored ${appointments.length} appointments');
       } catch (e) {
         debugPrint('BackupService: error restoring appointments - $e');
       }
