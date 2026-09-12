@@ -163,7 +163,7 @@
   "labelEnTijd": "{label} {time}",
   "sleutelWaarde": "{key}: {value}",
   "datumEnTijdOptioneel": "{date} {time}",
-  "omTijd": "om {time}",
+  "omTijd": "Om {time}",
   "schaalMin5": "-5 😞",
   "schaalNul": "0",
   "schaalPlus5": "+5 😄",
@@ -547,5 +547,13 @@
   "dagZa": "Za",
   "dagZo": "Zo",
   "slaapDetailsNetto": "Slaap Details (Netto)",
-  "backupHerstel": "Backup & Herstel"
+  "backupHerstel": "Backup & Herstel",
+  "stemmingGrafiekTitel": "Stemming (-5 tot +5)",
+  "slaapGrafiekTitel": "Slaap (uren)",
+  "activiteitenDezeWeekRhythm": "Activiteiten deze week",
+  "geenActiviteitenGevonden": "Geen activiteiten gevonden",
+  "voegSrmActiviteitenToe": "Voeg SRM activiteiten toe via het Activiteit & Slaap scherm.",
+  "geenDatum": "Geen datum",
+  "geenActiviteit": "Geen activiteit",
+  "punten": "punten"
 }

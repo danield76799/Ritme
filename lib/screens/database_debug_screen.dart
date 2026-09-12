@@ -248,7 +248,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                     itemCount: _logs.length,
                     itemBuilder: (context, index) {
                       final log = _logs[index];
-                      final date = log['date']?.toString() ?? 'Geen datum';
+                      final date = log['date']?.toString() ?? AppLocalizations.of(context).geenDatum;
                       final stemming = log['stemming_hoog']?.toString() ?? '-';
                       final sleepHours = log['sleep_hours']?.toString() ?? '-';
                       final urenSlaap = log['uren_slaap']?.toString() ?? '-';

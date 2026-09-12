@@ -45,7 +45,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
         if (dayActivities.isNotEmpty) {
           List<Map<String, dynamic>> acts = [];
           for (var activity in dayActivities) {
-            final type = activity['activity_type']?.toString() ?? 'Onbekend';
+            final type = activity['activity_type']?.toString() ?? AppLocalizations.of(context).onbekend;
             acts.add({
               'type': type,
               'actual_time': activity['actual_time']?.toString() ?? '-',
@@ -436,7 +436,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                 ),
                 if (activity['actual_time'] != '-')
                   Text(
-                    'Om ${activity['actual_time']}',
+                    AppLocalizations.of(context).omTijd(activity['actual_time']),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).textTheme.bodyMedium?.color,

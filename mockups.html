@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ritme App Mockups</title>
+<style>
+:root {
+  --teal: #4FB2C1;
+  --teal-dark: #3A8A96;
+  --teal-light: #7AC8D3;
+  --charcoal: #222222;
+  --medium: #444444;
+  --bg: #F7F9FA;
+  --surface: #FFFFFF;
+  --divider: #E8ECEF;
+  --dark-bg: #0F1A1D;
+  --dark-surface: #1A2B30;
+  --dark-card: #223236;
+  --dark-text: #F0F5F7;
+  --dark-secondary: #B8C5C8;
+  --success: #2E7D32;
+  --warning: #ED6C02;
+  --error: #D32F2F;
+  --radius: 16px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  background: #f0f2f5;
+  padding: 40px 20px;
+  color: var(--charcoal);
+}
+
+h1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--charcoal);
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--medium);
+  margin-bottom: 40px;
+  font-size: 15px;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: 2px solid var(--teal);
+  background: white;
+  color: var(--teal);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.btn:hover, .btn.active {
+  background: var(--teal);
+  color: white;
+}
+
+.screens {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, max(350px));
+  gap: 40px;
+  justify-content: center;
+}
+
+.screen-group {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.screen-group h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--teal-dark);
+  margin-bottom: 6px;
+}
+
+.screen-group .desc {
+  font-size: 13px;
+  color: var(--medium);
+  margin-bottom: 20px;
+}
+
+.phone {
+  width: 280px;
+  height: 570px;
+  border-radius: 32px;
+  overflow: hidden;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  border: 8px solid #1a1a1a;
+}
+
+.phone.light { background: var(--bg); }
+.phone.dark { background: var(--dark-bg); }
+
+.status-bar {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  position: relative;
+}
+
+.phone.light .status-bar { background: var(--teal); color: white; }
+.phone.dark .status-bar { background: var(--dark-surface); color: var(--dark-text); }
+
+.status-bar .notch {
+  width: 80px;
+  height: 18px;
+  background: #1a1a1a;
+  border-radius: 10px;
+  position: absolute;
+  top: 5px;
+}
+
+.time { z-index: 1; }
+
+.app-bar {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.phone.light .app-bar { background: var(--teal); color: white; }
+.phone.dark .app-bar { background: var(--dark-surface); color: var(--dark-text); }
+
+.app-bar .title { font-weight: 700; font-size: 16px; }
+.app-bar .icon { font-size: 18px; }
+
+.content {
+  padding: 12px;
+  height: calc(100% - 80px);
+  overflow-y: auto;
+}
+
+/* Dashboard tiles */
+.tile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tile {
+  border-radius: var(--radius);
+  padding: 14px;
+  min-height: 80px;
+}
+
+.phone.light .tile { background: var(--surface); box-shadow: var(--shadow); }
+.phone.dark .tile { background: var(--dark-card); }
+
+.tile .label { font-size: 11px; font-weight: 500; margin-bottom: 4px; opacity: 0.7; }
+.tile .value { font-size: 22px; font-weight: 700; }
+.tile .sub { font-size: 11px; opacity: 0.6; margin-top: 2px; }
+
+.greeting {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.phone.light .greeting { color: var(--charcoal); }
+.phone.dark .greeting { color: var(--dark-text); }
+
+.date-label {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 14px;
+}
+
+.streak {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.phone.light .streak { background: var(--teal); color: white; }
+.phone.dark .streak { background: var(--teal); color: white; }
+
+.streak .fire { font-size: 20px; }
+.streak .text { font-size: 13px; font-weight: 600; }
+
+/* Mood Check-in */
+.step-indicator {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.step-dot {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  opacity: 0.3;
+}
+
+.phone.light .step-dot { background: var(--teal); }
+.phone.dark .step-dot { background: var(--teal-light); }
+
+.step-dot.active { opacity: 1; }
+
+.question-card {
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.phone.light .question-card { background: var(--surface); box-shadow: var(--shadow); }
+.phone.dark .question-card { background: var(--dark-card); }
+
+.question-card .q-num { font-size: 11px; color: var(--teal); font-weight: 600; margin-bottom: 6px; }
+.question-card .q-text { font-size: 14px; font-weight: 600; line-height: 1.4; margin-bottom: 10px; }
+
+.phone.light .question-card .q-text { color: var(--charcoal); }
+.phone.dark .question-card .q-text { color: var(--dark-text); }
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  position: relative;
+}
+
+.phone.light .slider-track { background: var(--divider); }
+.phone.dark .slider-track { background: #2E4046; }
+
+.slider-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--teal);
+  border-radius: 50%;
+  position: absolute;
+  top: -6px;
+  left: 40%;
+  box-shadow: 0 2px 6px rgba(79,178,193,0.4);
+}
+
+.slider-label { font-size: 12px; opacity: 0.5; }
+
+/* Sleep Log */
+.chart-container {
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone.light .chart-container { background: var(--surface); box-shadow: var(--shadow); }
+.phone.dark .chart-container { background: var(--dark-card); }
+
+.chart-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+
+.phone.light .chart-title { color: var(--charcoal); }
+.phone.dark .chart-title { color: var(--dark-text); }
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex: 1;
+  gap: 6px;
+}
+
+.bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+}
+
+.bar-teal { background: var(--teal); }
+.bar-dark { background: var(--teal-dark); }
+
+.bar-label { font-size: 9px; margin-top: 4px; opacity: 0.6; }
+
+.sleep-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+
+.phone.light .sleep-entry { background: var(--surface); box-shadow: var(--shadow); }
+.phone.dark .sleep-entry { background: var(--dark-card); }
+
+.sleep-entry .icon { font-size: 22px; }
+.sleep-entry .details { flex: 1; }
+.sleep-entry .details .top { font-size: 13px; font-weight: 600; }
+.sleep-entry .details .bottom { font-size: 11px; opacity: 0.6; }
+.sleep-entry .hours { font-size: 18px; font-weight: 700; color: var(--teal); }
+
+/* Variants */
+.variant-a .tile-grid { grid-template-columns: 1fr 1fr; }
+
+.variant-b .tile-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+.variant-b .tile { padding: 10px; min-height: 65px; }
+.variant-b .tile .value { font-size: 18px; }
+.variant-b .tile .label { font-size: 10px; }
+
+.variant-c .tile-grid { grid-template-columns: 1fr; }
+.variant-c .tile { display: flex; align-items: center; gap: 12px; min-height: 56px; }
+.variant-c .tile .label { font-size: 12px; }
+.variant-c .tile .value { font-size: 18px; }
+
+.nav-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 12px;
+  border-top: 1px solid transparent;
+}
+
+.phone.light .nav-bar { background: var(--surface); border-color: var(--divider); }
+.phone.dark .nav-bar { background: var(--dark-surface); border-color: #2E4046; }
+
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: 0.4; }
+.nav-item.active { opacity: 1; }
+.nav-item .nav-icon { font-size: 18px; }
+.nav-item .nav-label { font-size: 9px; font-weight: 500; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.5;
+  margin-bottom: 8px;
+  margin-top: 4px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.badge-teal { background: var(--teal); color: white; }
+.badge-light { background: rgba(79,178,193,0.15); color: var(--teal); }
+</style>
+</head>
+<body>
+
+<h1>📱 Ritme App Mockups</h1>
+<p class="subtitle">3 kernschermen × 3 varianten — Medical Teal brand system</p>
+
+<div class="controls">
+  <button class="btn active" onclick="setTheme('light')">☀️ Light</button>
+  <button class="btn" onclick="setTheme('dark')">🌙 Dark</button>
+</div>
+
+<div class="screens" id="screensContainer">
+
+<!-- DASHBOARD -->
+<div class="screen-group">
+  <h2>🏠 Dashboard</h2>
+  <p class="desc">Monitor surface — glanceable state, 4 tiles + streak + date</p>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, 280px); gap: 20px; justify-content: center;">
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">A — Conservative (current)</p>
+      <div class="phone light variant-a" id="dash-a">
+        <div class="status-bar"><span class="time">9:41</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">🏠 Dashboard</span><span class="icon">⋯</span></div>
+        <div class="content">
+          <div class="greeting">Good morning, Daan</div>
+          <div class="date-label">Friday 12 September</div>
+          <div class="streak"><span class="fire">🔥</span><span class="text">7-day streak</span></div>
+          <div class="tile-grid">
+            <div class="tile"><div class="label">😊 Mood</div><div class="value">+2</div><div class="sub">Slightly elevated</div></div>
+            <div class="tile"><div class="label">😴 Sleep</div><div class="value">7.5h</div><div class="sub">Good quality</div></div>
+            <div class="tile"><div class="label">🏃 Activities</div><div class="value">4/5</div><div class="sub">5 days</div></div>
+            <div class="tile"><div class="label">💊 Medication</div><div class="value">✓</div><div class="sub">All taken</div></div>
+          </div>
+        </div>
+        <div class="nav-bar"><div class="nav-item active"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></div><div class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Stats</span></div><div class="nav-item"><span class="nav-icon">💊</span><span class="nav-label">Meds</span></div><div class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></div></div>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">B — Strong-fit (compact)</p>
+      <div class="phone light variant-b" id="dash-b">
+        <div class="status-bar"><span class="time">9:41</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">🏠 Ritme</span><span class="icon">🔔</span></div>
+        <div class="content">
+          <div class="greeting" style="font-size:15px;">Good morning, Daan</div>
+          <div class="date-label" style="font-size:11px; margin-bottom:10px;">Fri 12 Sep</div>
+          <div class="streak" style="padding:8px 12px;"><span class="fire">🔥</span><span class="text" style="font-size:12px;">7-day streak</span></div>
+          <div class="tile-grid" style="margin-top:10px;">
+            <div class="tile"><div class="label">😊</div><div class="value">+2</div><div class="sub" style="font-size:10px;">Slightly up</div></div>
+            <div class="tile"><div class="label">😴</div><div class="value">7.5h</div><div class="sub" style="font-size:10px;">Good</div></div>
+            <div class="tile"><div class="label">🏃</div><div class="value">4/5</div><div class="sub" style="font-size:10px;">5 days</div></div>
+            <div class="tile"><div class="label">💊</div><div class="value">✓</div><div class="sub" style="font-size:10px;">All done</div></div>
+          </div>
+          <div class="section-label" style="margin-top:14px;">Today</div>
+          <div class="sleep-entry" style="padding:8px 12px;"><span class="icon">🌅</span><div class="details"><div class="top" style="font-size:12px;">Morning check-in</div><div class="bottom" style="font-size:10px;">Completed 07:30</div></div></div>
+        </div>
+        <div class="nav-bar"><div class="nav-item active"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></div><div class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Stats</span></div><div class="nav-item"><span class="nav-icon">💊</span><span class="nav-label">Meds</span></div><div class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></div></div>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">C — Divergent (list)</p>
+      <div class="phone light variant-c" id="dash-c">
+        <div class="status-bar"><span class="time">9:41</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">🏠 Ritme</span><span class="icon">⚙️</span></div>
+        <div class="content">
+          <div class="greeting" style="font-size:16px;">Good morning, Daan</div>
+          <div class="date-label" style="font-size:11px; margin-bottom:12px;">Friday 12 September</div>
+          <div class="streak" style="padding:8px 12px; margin-bottom:14px;"><span class="fire">🔥</span><span class="text" style="font-size:12px;">7-day streak</span></div>
+          <div class="tile-grid">
+            <div class="tile"><span style="font-size:24px;">😊</span><div><div class="value">+2</div><div class="label" style="font-size:11px;">Mood · Slightly elevated</div></div></div>
+            <div class="tile"><span style="font-size:24px;">😴</span><div><div class="value">7.5h</div><div class="label" style="font-size:11px;">Sleep · Good quality</div></div></div>
+            <div class="tile"><span style="font-size:24px;">🏃</span><div><div class="value">4/5</div><div class="label" style="font-size:11px;">Activities · 5 days</div></div></div>
+            <div class="tile"><span style="font-size:24px;">💊</span><div><div class="value">✓</div><div class="label" style="font-size:11px;">Medication · All taken</div></div></div>
+          </div>
+        </div>
+        <div class="nav-bar"><div class="nav-item active"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></div><div class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Stats</span></div><div class="nav-item"><span class="nav-icon">💊</span><span class="nav-label">Meds</span></div><div class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MORNING CHECK-IN -->
+<div class="screen-group">
+  <h2>🌅 Morning Check-in</h2>
+  <p class="desc">Configure surface — progressive form, clear save state</p>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, 280px); gap: 20px; justify-content: center;">
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">A — Conservative (current)</p>
+      <div class="phone light" id="morn-a">
+        <div class="status-bar"><span class="time">7:30</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">🌅 Morning check-in</span><span class="icon">✕</span></div>
+        <div class="content">
+          <div class="step-indicator"><div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+          <div class="question-card"><div class="q-num">Question 1/4</div><div class="q-text">What time did you wake up?</div><div style="font-size:24px; font-weight:700; color:var(--teal); text-align:center; padding:10px 0;">07:30</div></div>
+          <div class="question-card"><div class="q-num">Question 2/4</div><div class="q-text">How many minutes were you lying awake?</div><div style="font-size:24px; font-weight:700; color:var(--teal); text-align:center; padding:10px 0;">5 min</div></div>
+          <div style="text-align:center; margin-top:20px;"><div class="badge badge-teal" style="font-size:14px; padding:10px 24px; border-radius:12px;">Next →</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">B — Strong-fit (slider)</p>
+      <div class="phone light" id="morn-b">
+        <div class="status-bar"><span class="time">7:30</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">🌅 Morning check-in</span><span class="icon">⋯</span></div>
+        <div class="content">
+          <div class="step-indicator"><div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+          <div class="question-card"><div class="q-num">Question 1/4</div><div class="q-text">How did you sleep?</div><div class="slider-row"><span class="slider-label">😴</span><div class="slider-track"><div class="slider-thumb"></div></div><span class="slider-label">😊</span></div></div>
+          <div class="question-card"><div class="q-num">Question 2/4</div><div class="q-text">Energy level</div><div class="slider-row"><span class="slider-label">Low</span><div class="slider-track"><div class="slider-thumb" style="left:55%;"></div></div><span class="slider-label">High</span></div></div>
+          <div style="text-align:center; margin-top:20px;"><div class="badge badge-teal" style="font-size:14px; padding:10px 24px; border-radius:12px;">Save Save & Continue Continue</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">C — Divergent (cards)</p>
+      <div class="phone light" id="morn-c">
+        <div class="status-bar"><span class="time">7:30</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">🌅 Check-in</span><span class="icon">✕</span></div>
+        <div class="content">
+          <div class="step-indicator"><div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+          <div class="question-card"><div class="q-num">Question 1/4</div><div class="q-text">How was your sleep?</div><div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px;"><div style="text-align:center; padding:10px; border-radius:12px; background:rgba(79,178,193,0.1);">😴<br><span style="font-size:10px;">Poor</span></div><div style="text-align:center; padding:10px; border-radius:12px; background:var(--teal); color:white;"><span style="font-size:18px;">😊</span><br><span style="font-size:10px;">Good</span></div><div style="text-align:center; padding:10px; border-radius:12px; background:rgba(79,178,193,0.1);">🤩<br><span style="font-size:10px;">Great</span></div></div></div>
+          <div style="text-align:center; margin-top:20px;"><div class="badge badge-teal" style="font-size:14px; padding:10px 24px; border-radius:12px;">Continue →</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLEEP LOG -->
+<div class="screen-group">
+  <h2>😴 Sleep Log</h2>
+  <p class="desc">Monitor surface — bar chart + entry list</p>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, 280px); gap: 20px; justify-content: center;">
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">A — Conservative (current)</p>
+      <div class="phone light" id="sleep-a">
+        <div class="status-bar"><span class="time">9:41</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">😴 Sleep Details</span><span class="icon">+</span></div>
+        <div class="content">
+          <div class="chart-container">
+            <div class="chart-title">Sleep per day (last 7 days)</div>
+            <div class="bars">
+              <div class="bar-wrap"><div class="bar bar-teal" style="height:70%;"></div><span class="bar-label">Ma</span></div>
+              <div class="bar-wrap"><div class="bar bar-dark" style="height:55%;"></div><span class="bar-label">Di</span></div>
+              <div class="bar-wrap"><div class="bar bar-teal" style="height:80%;"></div><span class="bar-label">Wo</span></div>
+              <div class="bar-wrap"><div class="bar bar-dark" style="height:65%;"></div><span class="bar-label">Do</span></div>
+              <div class="bar-wrap"><div class="bar bar-teal" style="height:90%;"></div><span class="bar-label">Vr</span></div>
+              <div class="bar-wrap"><div class="bar bar-dark" style="height:85%;"></div><span class="bar-label">Za</span></div>
+              <div class="bar-wrap"><div class="bar bar-teal" style="height:75%;"></div><span class="bar-label">Zo</span></div>
+            </div>
+          </div>
+          <div class="section-label">Recent entries</div>
+          <div class="sleep-entry"><span class="icon">😴</span><div class="details"><div class="top">Today</div><div class="bottom">7h 30m · Good</div></div><div class="hours">7.5h</div></div>
+          <div class="sleep-entry"><span class="icon">😴</span><div class="details"><div class="top">Yesterday</div><div class="bottom">8h 15m · Excellent</div></div><div class="hours">8.2h</div></div>
+          <div class="sleep-entry"><span class="icon">😴</span><div class="details"><div class="top">Thu, 11 Sep</div><div class="bottom">6h 45m · Fair</div></div><div class="hours">6.8h</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">B — Strong-fit (compact)</p>
+      <div class="phone light" id="sleep-b">
+        <div class="status-bar"><span class="time">9:41</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">😴 Sleep Log</span><span class="icon">📊</span></div>
+        <div class="content">
+          <div class="chart-container" style="height:140px; padding:10px;">
+            <div class="chart-title" style="font-size:12px;">Last 7 days</div>
+            <div class="bars">
+              <div class="bar-wrap"><div class="bar bar-teal" style="height:65%;"></div><span class="bar-label">M</span></div>
+              <div class="bar-wrap"><div class="bar bar-dark" style="height:50%;"></div><span class="bar-label">T</span></div>
+              <div class="bar-wrap"><div class="bar bar-teal" style="height:75%;"></div><span class="bar-label">W</span></div>
+              <div class="bar-wrap"><div class="bar bar-dark" style="height:60%;"></div><span class="bar-label">T</span></div>
+              <div class="bar-wrap"><div class="bar bar-teal" style="height:85%;"></div><span class="bar-label">F</span></div>
+              <div class="bar-wrap"><div class="bar bar-dark" style="height:80%;"></div><span class="bar-label">S</span></div>
+              <div class="bar-wrap"><div class="bar bar-teal" style="height:70%;"></div><span class="bar-label">S</span></div>
+            </div>
+          </div>
+          <div class="section-label">Today</div>
+          <div class="sleep-entry" style="padding:8px 12px;"><span class="icon">🌙</span><div class="details"><div class="top" style="font-size:12px;">Bedtime</div><div class="bottom" style="font-size:10px;">23:15</div></div><div class="hours" style="font-size:16px;">→</div></div>
+          <div class="sleep-entry" style="padding:8px 12px;"><span class="icon">🌅</span><div class="details"><div class="top" style="font-size:12px;">Wake time</div><div class="bottom" style="font-size:10px;">07:30</div></div><div class="hours" style="font-size:16px;">→</div></div>
+          <div class="sleep-entry" style="padding:8px 12px;"><span class="icon">⏱️</span><div class="details"><div class="top" style="font-size:12px;">Awake</div><div class="bottom" style="font-size:10px;">5 minutes</div></div><div class="hours" style="font-size:16px;">→</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px; font-weight:600; color:var(--medium); margin-bottom:10px;">C — Divergent (full-bleed)</p>
+      <div class="phone light" id="sleep-c">
+        <div class="status-bar"><span class="time">9:41</span><span class="notch"></span></div>
+        <div class="app-bar"><span class="title">😴 Sleep</span><span class="icon">⚙️</span></div>
+        <div class="content" style="padding:0;">
+          <div style="background:var(--teal); padding:20px 16px; color:white; text-align:center;">
+            <div style="font-size:13px; opacity:0.8;">Tonight</div>
+            <div style="font-size:36px; font-weight:700; margin:4px 0;">7h 30m</div>
+            <div style="font-size:12px; opacity:0.8;">Average · Bed 23:15 → Wake 07:30</div>
+          </div>
+          <div style="padding:12px;">
+            <div class="chart-container" style="height:140px; padding:10px;">
+              <div class="chart-title" style="font-size:12px;">Last 7 days</div>
+              <div class="bars">
+                <div class="bar-wrap"><div class="bar bar-teal" style="height:65%;"></div><span class="bar-label">M</span></div>
+                <div class="bar-wrap"><div class="bar bar-dark" style="height:50%;"></div><span class="bar-label">T</span></div>
+                <div class="bar-wrap"><div class="bar bar-teal" style="height:75%;"></div><span class="bar-label">W</span></div>
+                <div class="bar-wrap"><div class="bar bar-dark" style="height:60%;"></div><span class="bar-label">T</span></div>
+                <div class="bar-wrap"><div class="bar bar-teal" style="height:85%;"></div><span class="bar-label">F</span></div>
+                <div class="bar-wrap"><div class="bar bar-dark" style="height:80%;"></div><span class="bar-label">S</span></div>
+                <div class="bar-wrap"><div class="bar bar-teal" style="height:70%;"></div><span class="bar-label">S</span></div>
+              </div>
+            </div>
+            <div class="sleep-entry" style="padding:8px 12px;"><span class="icon">😊</span><div class="details"><div class="top" style="font-size:12px;">Quality</div><div class="bottom" style="font-size:10px;">Good — 5m awake</div></div><div class="hours" style="font-size:14px;">8.5/10</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function setTheme(theme) {
+  const phones = document.querySelectorAll('.phone');
+  phones.forEach(p => {
+    p.classList.remove('light', 'dark');
+    p.classList.add(theme);
+  });
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// Check system preference
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  setTheme('dark');
+  document.querySelectorAll('.btn')[1].classList.add('active');
+  document.querySelectorAll('.btn')[0].classList.remove('active');
+}
+</script>
+</body>
+</html>
