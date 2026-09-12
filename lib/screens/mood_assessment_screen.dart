@@ -49,7 +49,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
   String _datumLabel(BuildContext context) {
     final now = DateTime.now();
     final d = _geselecteerdeDatum;
-    final fmt = DateFormat('d MMM', 'nl');
+    final fmt = DateFormat('d MMM', Localizations.localeOf(context).toString());
     if (d.year == now.year && d.month == now.month && d.day == now.day) {
       return AppLocalizations.of(context).vandaag;
     }

@@ -1,4 +1,5 @@
 import '../service_locator.dart';
+import 'rapport_strings.dart';
 
 /// Generates comprehensive reports for bipolar disorder management
 /// Life Chart Method (LCM) style for healthcare providers
@@ -7,19 +8,20 @@ class RapportGenerator {
   RapportGenerator._();
 
   /// Generate a full Life Chart Method (LCM) report as markdown
-  Future<String> generateLCMReport({int days = 30}) async {
+  Future<String> generateLCMReport({int days = 30, String? localeCode}) async {
+    final s = localeCode != null ? RapportStrings.withLocale(localeCode) : RapportStrings();
     final now = DateTime.now();
     final startDate = now.subtract(Duration(days: days));
     final startStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
 
     final buf = StringBuffer();
 
-    buf.writeln('# Life Chart Methode — Ritme Rapport');
+    buf.writeln(s.lifeChartTitle);
     buf.writeln();
-    buf.writeln('**Dit rapport is bedoeld als ondersteunend overzicht bij de behandeling van een Bipolaire Stoornis.**');
+    buf.writeln(s.disclaimer);
     buf.writeln();
-    buf.writeln('**Periode:** ${_formatNL(startDate)} t/m ${_formatNL(now)}');
-    buf.writeln('**Gegenereerd:** ${_formatNL(now)} ${now.hour}:${now.minute.toString().padLeft(2, '0')}');
+    buf.writeln('${s.period} ${_formatNL(startDate)} ${s.to} ${_formatNL(now)}');
+    buf.writeln('${s.generated} ${_formatNL(now)} ${now.hour}:${now.minute.toString().padLeft(2, '0')}');
     buf.writeln();
 
     // Settings
@@ -59,22 +61,22 @@ class RapportGenerator {
         }
       }
 
-      buf.writeln('## 🧠 Stemmingscheck (5 vragen) — $nQ1 invulmomenten');
+      buf.writeln('## ${s.moodCheckTitle} — $nQ1 ${s.intakeMoments}');
       buf.writeln();
-      buf.writeln('| Metriek | Gemiddelde |');
+      buf.writeln('| ${s.metric} | ${s.average} |');
       buf.writeln('|---------|-----------|');
-      if (nQ1 > 0) buf.writeln('| **Stemming** (−4..+4) | ${_fmt(sumQ1 / nQ1)} |');
-      if (nQ2 > 0) buf.writeln('| **Energie** (0..100; 100=manisch) | ${_fmt(sumQ2 / nQ2)} |');
-      if (nQ3 > 0) buf.writeln('| **Energie-niveau** (−3..+3) | ${_fmt(sumQ3 / nQ3)} |');
-      if (nQ4 > 0) buf.writeln('| **Slaapbehoefte** (−4..+4) | ${_fmt(sumQ4 / nQ4)} |');
-      if (nQ5 > 0) buf.writeln('| **Belangrijke gebeurtenis** (−4..+4) | ${_fmt(sumQ5 / nQ5)} |');
-      if (nRaw > 0) buf.writeln('| **Berekende stemming** (−5..+5) | ${_fmt(sumRaw / nRaw)} |');
+      if (nQ1 > 0) buf.writeln('| **${s.mood}** (−4..+4) | ${_fmt(sumQ1 / nQ1)} |');
+      if (nQ2 > 0) buf.writeln('| **${s.energy}** (0..100) | ${_fmt(sumQ2 / nQ2)} |');
+      if (nQ3 > 0) buf.writeln('| **${s.energyLevel}** (−3..+3) | ${_fmt(sumQ3 / nQ3)} |');
+      if (nQ4 > 0) buf.writeln('| **${s.sleepNeed}** (−4..+4) | ${_fmt(sumQ4 / nQ4)} |');
+      if (nQ5 > 0) buf.writeln('| **${s.importantEvent}** (−4..+4) | ${_fmt(sumQ5 / nQ5)} |');
+      if (nRaw > 0) buf.writeln('| **${s.calculatedMood}** (−5..+5) | ${_fmt(sumRaw / nRaw)} |');
       buf.writeln();
 
       // Bipolaire analyse-signalen (alleen als er signalen zijn)
       final signalLines = <String>[];
       for (final entry in flagCounts.entries) {
-        final label = _flagLabel(entry.key);
+        final label = s.flagLabel(entry.key);
         if (label == null) continue;
         final pct = (entry.value * 100 / assessments.length).round();
         signalLines.add('- **$label**: ${entry.value}× (${pct}%)');
@@ -102,9 +104,9 @@ class RapportGenerator {
     int takenCount = 0;
     int intakeCount = 0;
 
-    buf.writeln('## 📊 Weekoverzicht');
+    buf.writeln('## ${s.weeklyOverview}');
     buf.writeln();
-    buf.writeln('| Week | Gem. stemming | Gem. slaap | Gem. P-Score | Medicatie |');
+    buf.writeln('| ${s.week} | ${s.avgMood} | ${s.avgSleep} | ${s.avgPScore} | ${s.medication} |');
     buf.writeln('|------|--------------|-----------|-------------|-----------|');
 
     // Loop per week (nieuwste week eerst)
@@ -160,7 +162,7 @@ class RapportGenerator {
 
       final weekLabel = '${weekStart.day}/${weekStart.month} – ${weekEnd.day}/${weekEnd.month}';
       final moodStr = wMoodN > 0 ? (wMood / wMoodN).toStringAsFixed(1) : '-';
-      final sleepStr = wSleepN > 0 ? '${_formatUren(wSleep / wSleepN)}' : '-';
+      final sleepStr = wSleepN > 0 ? '${s.formatHours(wSleep / wSleepN)}' : '-';
       final pStr = wPN > 0 ? (wP / wPN).toStringAsFixed(1) : '-';
       final medStr = wIntake > 0 ? '$wTaken/$wIntake' : '-';
       buf.writeln('| $weekLabel | $moodStr | $sleepStr | $pStr | $medStr |');
@@ -183,25 +185,25 @@ class RapportGenerator {
     buf.writeln();
     buf.writeln('| Metriek | Waarde |');
     buf.writeln('|---------|--------|');
-    buf.writeln('| **Dagen met data** | ${moodCount} |');
-    if (moodCount > 0) buf.writeln('| **Gem. stemming** | ${(totalMood / moodCount).toStringAsFixed(1)} (-5 tot +5) |');
+    buf.writeln('| **${s.daysWithData}** | ${moodCount} |');
+    if (moodCount > 0) buf.writeln('| **${s.avgMoodLong}** | ${(totalMood / moodCount).toStringAsFixed(1)} (-5 ${s.to} +5) |');
     if (sleepCount > 0) {
-      buf.writeln('| **Gem. slaapduur** | ${_formatUren(totalSleep / sleepCount)} |');
+      buf.writeln('| **${s.avgSleepDuration}** | ${s.formatHours(totalSleep / sleepCount)} |');
     }
     if (pScoreDays > 0) {
       final avgP = totalPScore / pScoreDays;
-      buf.writeln('| **Gem. P-Score** | ${avgP.toStringAsFixed(1)} / 5 (SRT: ${(avgP / 5 * 100).round()}%) |');
+      buf.writeln('| **${s.avgPScore}** | ${avgP.toStringAsFixed(1)} / 5 (SRT: ${(avgP / 5 * 100).round()}%) |');
     }
     if (intakeCount > 0) {
       final pct = (takenCount * 100 / intakeCount).round();
-      buf.writeln('| **Medicatie-trouw** | $takenCount/$intakeCount ingenomen ($pct%) |');
+      buf.writeln('| **${s.medicationAdherence}** | $takenCount/$intakeCount ${s.taken} ($pct%) |');
     }
 
     buf.writeln();
 
     // === 3. MEDICATION — genomen dagen
     if (medicationConfigs.isNotEmpty) {
-      buf.writeln('## 💊 Medicatie — ingenomen dagen');
+      buf.writeln('## ${s.medTakenDays}');
       buf.writeln();
       for (var med in medicationConfigs) {
         final id = med['id'] as int;
@@ -246,7 +248,7 @@ class RapportGenerator {
       buf.writeln('## 🏥 Episodes');
       buf.writeln();
       for (var ep in periodsInReport) {
-        final type = _episodeLabel(ep['episode_type'] as String);
+        final type = s.episodeLabel(ep['episode_type'] as String);
         final start = ep['start_date'];
         final end = ep['end_date'] ?? 'loopt nog';
         buf.writeln('- **$type**: ${_formatDateStr(start)} — ${_formatDateStr(end)}');
@@ -256,14 +258,14 @@ class RapportGenerator {
 
     // === 4. MEDICATION ===
     if (medicationConfigs.isNotEmpty) {
-      buf.writeln('## 💊 Medicatie');
+      buf.writeln('## ${s.med}');
       buf.writeln();
       for (var med in medicationConfigs) {
         buf.writeln('- **${med['naam']}**: ${med['dosering'] ?? '?'} ${med['eenheid'] ?? ''}');
         // Latest blood level
         final level = await db.getLatestMedicationLevel(med['id'] as int);
         if (level != null && level['bloedspiegel'] != null) {
-          buf.writeln('  - Laatste bloedspiegel: ${level['bloedspiegel']} ${level['eenheid'] ?? 'mmol/L'} (${_formatDateStr(level['date'] as String)})');
+          buf.writeln('  - ${s.lastBloodLevel}: ${level['bloedspiegel']} ${level['eenheid'] ?? 'mmol/L'} (${_formatDateStr(level['date'] as String)})');
         }
       }
       buf.writeln();
@@ -274,14 +276,14 @@ class RapportGenerator {
     if (recentWarnings.isNotEmpty) {
       final totalWarnings = recentWarnings.fold<int>(0, (sum, d) => sum + (d['warning_count'] as int? ?? 0));
       if (totalWarnings > 0) {
-        buf.writeln('## ⚠️ Voortekenen');
+        buf.writeln('## ${s.warnings}');
         buf.writeln();
-        buf.writeln('Totaal voortekenen in periode: **$totalWarnings**');
+        buf.writeln(s.totalWarnings(totalWarnings));
         buf.writeln();
         for (var day in recentWarnings) {
           final count = day['warning_count'] as int? ?? 0;
           if (count > 0) {
-            buf.writeln('- ${day['date']}: $count voortekenen');
+            buf.writeln('- ${day['date']}: ${s.warningsCount(count)}');
           }
         }
         buf.writeln();
@@ -292,17 +294,17 @@ class RapportGenerator {
     final crisisPlan = await db.getCrisisPlan();
     final filledPlans = crisisPlan.where((s) => (s['content'] as String?)?.isNotEmpty == true).toList();
     if (filledPlans.isNotEmpty) {
-      buf.writeln('## 🚨 Crisisplan');
+      buf.writeln('## ${s.crisisPlan}');
       buf.writeln();
       for (var section in filledPlans) {
-        buf.writeln('### ${_sectionTitle(section['section'] as String)}');
+        buf.writeln('### ${s.sectionTitle(section['section'] as String)}');
         buf.writeln(section['content']);
         buf.writeln();
       }
     }
 
     buf.writeln('---');
-    buf.writeln('*Rapport gegenereerd door Ritme — SRT Tracker*');
+    buf.writeln(s.footer);
 
     return buf.toString();
   }
@@ -371,14 +373,6 @@ class RapportGenerator {
     }
   }
 
-  String _formatUren(double uren) {
-    final min = (uren * 60).round();
-    final h = min ~/ 60;
-    final m = min % 60;
-    if (m == 0) return '${h}u';
-    return '${h}u ${m}m';
-  }
-
   double? _extractDouble(dynamic val) {
     if (val == null) return null;
     if (val is num) return val.toDouble();
@@ -386,47 +380,5 @@ class RapportGenerator {
     return null;
   }
 
-  String _episodeLabel(String type) {
-    switch (type) {
-      case 'hypomanie': return 'Hypomanie';
-      case 'manie': return 'Manie';
-      case 'depressie': return 'Depressie';
-      case 'gemengd': return 'Gemengd';
-      case 'euthym': return 'Stabiel';
-      default: return type;
-    }
-  }
-
   String _fmt(double v) => v.toStringAsFixed(1);
-
-  /// NL-labels voor de bipolaire analyse-flags (zelfde namen als de
-  /// BipolarTag-enum in mood_assessment_scorer.dart).
-  String? _flagLabel(String id) {
-    switch (id) {
-      case 'maniaShift': return 'Mogelijke manische shift';
-      case 'probableMania': return 'Waarschijnlijke manie (triade)';
-      case 'sleepReductionAlone': return 'Verminderde slaapbehoefte (vroeg manie-signaal)';
-      case 'depressionShift': return 'Mogelijke depressieve shift';
-      case 'probableDepression': return 'Waarschijnlijke depressie (triade)';
-      case 'positiveLifeEventTrigger': return 'Positieve gebeurtenis als manie-trigger';
-      case 'negativeLifeEventTrigger': return 'Negatieve gebeurtenis als depressie-trigger';
-      case 'mixedEpisode': return 'Mogelijke gemengde episode';
-      case 'opposingSignals': return 'Tegenstrijdige signalen';
-      default: return null; // onbekende flag overslaan
-    }
-  }
-
-  String _sectionTitle(String section) {
-    switch (section) {
-      case 'manie_vroeg': return 'Bij eerste tekenen van manie';
-      case 'manie_ernstig': return 'Bij ernstige manie';
-      case 'depressie_vroeg': return 'Bij eerste tekenen van depressie';
-      case 'depressie_ernstig': return 'Bij ernstige depressie';
-      case 'gemengd': return 'Bij gemengde episode';
-      case 'contacten': return 'Belangrijke contacten';
-      case 'medicatie_nood': return 'Medicatie noodplan';
-      case 'wat_helpt': return 'Wat helpt mij';
-      default: return section;
-    }
-  }
 }

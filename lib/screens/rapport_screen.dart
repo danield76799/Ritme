@@ -176,7 +176,7 @@ class _RapportScreenState extends State<RapportScreen> {
     setState(() => _isGenerating = true);
 
     try {
-      final report = await RapportGenerator.instance.generateLCMReport(days: _selectedDays);
+      final report = await RapportGenerator.instance.generateLCMReport(days: _selectedDays, localeCode: Localizations.localeOf(context).languageCode);
       if (!mounted) return;
       setState(() {
         _reportText = report;
