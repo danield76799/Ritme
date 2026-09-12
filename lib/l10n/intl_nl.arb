@@ -582,5 +582,6 @@
   "rhythmActiviteitenDezeWeek": "Activiteiten deze week",
   "rhythmTarget": "Target",
   "rhythmActiviteit": "Activiteit",
-  "rhythmDaadwerkelijk": "Daadwerkelijk"
+  "rhythmDaadwerkelijk": "Daadwerkelijk",
+  "activiteitenOpTijd": "{onTime} van {total} activiteiten op tijd"
 }
