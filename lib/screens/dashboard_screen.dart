@@ -589,8 +589,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       locale: Localizations.localeOf(context).languageCode == 'nl'
           ? const Locale('nl', 'NL')
           : null,
-      helpText: 'Kies datum',
-      cancelText: 'Annuleren',
+      helpText: AppLocalizations.of(context).kiesDatum,
+      cancelText: AppLocalizations.of(context).annuleren,
       confirmText: 'Bekijken',
     );
     if (picked != null && mounted) {

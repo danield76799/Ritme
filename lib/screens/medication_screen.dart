@@ -200,7 +200,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     final picked = await showTimePicker(
       context: context,
       initialTime: reminderTime,
-      helpText: 'Wijzig herinnertijd voor $name',
+      helpText: AppLocalizations.of(context).wijzigHerinnertijdVoor(name),
     );
     if (picked != null) {
       final newTimeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
