@@ -8,6 +8,7 @@ import '../services/notification_helper.dart';
 import '../services/bipolar_alert_service.dart';
 import '../utils/logger.dart';
 import '../widgets/weekly_mood_chart.dart';
+import '../widgets/metric_card_shell.dart';
 import '../widgets/tile_accent.dart';
 import 'login_screen.dart';
 import 'mood_assessment_screen.dart';
@@ -792,42 +793,24 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       required String route,
       bool isEmpty = false}) {
     final theme = Theme.of(context);
-    return Material(
-      color: theme.cardColor,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(context, route),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                    const SizedBox(height: 4),
-                    if (isEmpty && emptyHint != null)
-                      Text(emptyHint, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
-                    else if (subtitle != null)
-                      Text(subtitle, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color)),
-                    if (value != null)
-                      Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
-                    else if (emptyValue != null)
-                      Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+    return MetricCardShell(
+      icon: icon,
+      color: color,
+      onTap: () => Navigator.pushNamed(context, route),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+          const SizedBox(height: 4),
+          if (isEmpty && emptyHint != null)
+            Text(emptyHint, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
+          else if (subtitle != null)
+            Text(subtitle, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color)),
+          if (value != null)
+            Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
+          else if (emptyValue != null)
+            Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
+        ],
       ),
     );
   }
@@ -838,56 +821,38 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       required int value,
       required Color color,
       required String route}) {
-    final theme = Theme.of(context);
     final isEmpty = value <= 0;
-    return Material(
-      color: theme.cardColor,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(context, route),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                    const SizedBox(height: 6),
-                    if (isEmpty)
-                      Text(AppLocalizations.of(context).nogGeenActiviteitenDezeWeek, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
-                    else
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: (value / 5).clamp(0.0, 1.0),
-                                backgroundColor: color.withValues(alpha: 0.2),
-                                valueColor: AlwaysStoppedAnimation(color),
-                                minHeight: 6,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text('$value/5', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-                        ],
-                      ),
-                  ],
+    return MetricCardShell(
+      icon: icon,
+      color: color,
+      onTap: () => Navigator.pushNamed(context, route),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+          const SizedBox(height: 6),
+          if (isEmpty)
+            Text(AppLocalizations.of(context).nogGeenActiviteitenDezeWeek,
+                style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: (value / 5).clamp(0.0, 1.0),
+                      backgroundColor: color.withValues(alpha: 0.2),
+                      valueColor: AlwaysStoppedAnimation(color),
+                      minHeight: 6,
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
+                const SizedBox(width: 10),
+                Text('$value/5', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+              ],
+            ),
+        ],
       ),
     );
   }
