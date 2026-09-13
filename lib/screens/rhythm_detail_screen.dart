@@ -41,7 +41,6 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
 
   Future<void> _loadData() async {
     try {
-      final l10n = AppLocalizations.of(context);
       final now = DateTime.now();
 
       // Doeltijden staan onder vaste settings-keys. De lookup moet op de
