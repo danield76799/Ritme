@@ -31,6 +31,29 @@ class AppTheme {
   static double borderRadius = 16.0;
   static double largeRadius = 24.0;
 
+  /// Consistente horizontale schermpadding. Gebruik dit voor zowel de AppBar
+  /// (`titleSpacing`) als de body, zodat de titel exact boven de kaarten en het
+  /// grid uitlijnt. Flutters AppBar-default is toevallig ook 16
+  /// (`NavigationToolbar.kMiddleSpacing`), maar expliciet vastpinnen voorkomt
+  /// dat een themawijziging de uitlijning stil breekt.
+  static const double screenPadding = 16.0;
+
+  /// Secundaire tekstkleur die WCAG AA (>=4.5:1) haalt op zowel de pagina-
+  /// achtergrond als op de kaarten. Gebruik dit i.p.v. `withValues(alpha: 0.6)`
+  /// op tekst: #B8C5C8 op 60% gedimd zakt naar 3.7:1 en is dan onleesbaar.
+  static Color secondaryText(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkTextSecondary : textMedium;
+
+  /// Succes-tint met >=3:1 contrast tegen de onderliggende kaart.
+  /// Het donkere #2E7D32 haalt maar 2.6:1 op de donkere kaart (#223236).
+  static Color successOn(Brightness brightness) =>
+      brightness == Brightness.dark ? const Color(0xFF4CAF50) : success;
+
+  /// Amber voor de streak-chip. `orange.shade700` haalt 3.6:1 op de chip en
+  /// zakt daarmee onder de AA-norm; deze tinten halen 5.9:1 resp. 7.5:1.
+  static Color streakText(Brightness brightness) =>
+      brightness == Brightness.dark ? const Color(0xFFFFB74D) : const Color(0xFF8A5A00);
+
   static ThemeData get lightTheme {
     final base = ThemeData.light(useMaterial3: true);
     return base.copyWith(

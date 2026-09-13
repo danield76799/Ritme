@@ -8,6 +8,7 @@ import '../services/notification_helper.dart';
 import '../services/bipolar_alert_service.dart';
 import '../utils/logger.dart';
 import '../widgets/weekly_mood_chart.dart';
+import '../widgets/tile_accent.dart';
 import 'login_screen.dart';
 import 'mood_assessment_screen.dart';
 import 'morning_checkin_screen.dart';
@@ -313,6 +314,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        // Zelfde offset als de body-padding, zodat "Ritme" exact boven de
+        // welkomstkaart en het grid uitlijnt.
+        titleSpacing: AppTheme.screenPadding,
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
         title: Text(
           'Ritme',
@@ -364,7 +368,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         onRefresh: _loadData,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: const EdgeInsets.fromLTRB(
+              AppTheme.screenPadding, 8, AppTheme.screenPadding, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -467,12 +472,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.35,
                 children: [
-                  _buildCheckinCard(context, icon: Icons.wb_sunny, color: const Color(0xFFF2C879), title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate, isOchtend: true),
-                  _buildCheckinCard(context, icon: Icons.nights_stay, color: const Color(0xFF8A7FBF), title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate, isOchtend: false),
-                  _buildActionCard(context, icon: Icons.medication, color: const Color(0xFFB4A8D4), title: AppLocalizations.of(context).medicatie, route: '/medication', done: _checkinTypes.contains('medicatie')),
-                  _buildActionCard(context, icon: Icons.menu_book, color: const Color(0xFF7FB89C), title: AppLocalizations.of(context).dagboek, route: '/dagboek', done: _checkinTypes.contains('dagboek')),
-                  _buildActionCard(context, icon: Icons.description, color: const Color(0xFF8FB8C9), title: AppLocalizations.of(context).rapport, route: '/rapport', done: false, isAction: true),
-                  _buildActionCard(context, icon: Icons.calendar_today, color: const Color(0xFFD4A8B4), title: AppLocalizations.of(context).afspraken, route: '/appointments', done: false, isAction: true),
+                  _buildCheckinCard(context, icon: Icons.wb_sunny, accent: TileAccent.morning, title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate, isOchtend: true),
+                  _buildCheckinCard(context, icon: Icons.nights_stay, accent: TileAccent.evening, title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate, isOchtend: false),
+                  _buildActionCard(context, icon: Icons.medication, accent: TileAccent.medication, title: AppLocalizations.of(context).medicatie, route: '/medication', isCompleted: _checkinTypes.contains('medicatie')),
+                  _buildActionCard(context, icon: Icons.menu_book, accent: TileAccent.journal, title: AppLocalizations.of(context).dagboek, route: '/dagboek', isCompleted: _checkinTypes.contains('dagboek')),
+                  _buildActionCard(context, icon: Icons.description, accent: TileAccent.report, title: AppLocalizations.of(context).rapport, route: '/rapport'),
+                  _buildActionCard(context, icon: Icons.calendar_today, accent: TileAccent.appointments, title: AppLocalizations.of(context).afspraken, route: '/appointments'),
                 ],
               ),
 
@@ -483,7 +488,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   Text(AppLocalizations.of(context).overzicht, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                   const Spacer(),
                   if (_lastUpdated != null)
-                    Text(_formatLastUpdated(context), style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
+                    Text(_formatLastUpdated(context),
+                        style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context))),
                 ],
               ),
               const SizedBox(height: 12),
@@ -572,7 +578,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.orange.shade700,
+              // orange.shade700 haalde maar 3.6:1 op de chip; deze tint 7.5:1.
+              color: AppTheme.streakText(Theme.of(context).brightness),
             ),
           ),
         ],
@@ -676,7 +683,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildCheckinCard(BuildContext context,
-      {required IconData icon, required Color color, required String title,
+      {required IconData icon, required TileAccent accent, required String title,
        required String route, DateTime? date, bool isOchtend = false}) {
     final ds = '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     bool hasLog;
@@ -699,7 +706,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       });
     }
     return _buildActionCard(context,
-        icon: icon, color: color, title: title, route: route, done: hasLog);
+        icon: icon, accent: accent, title: title, route: route, isCompleted: hasLog);
   }
 
   Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
@@ -720,8 +727,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     );
   }
 
+  /// Bouwt een dashboardtegel.
+  ///
+  /// [isCompleted] toont het groene vinkje + accentrand en correspondeert met de
+  /// teller bovenaan ("X/4 ingevuld"). Navigatie-tegels (Rapport, Afspraken)
+  /// krijgen géén eigen pijl meer — alle tegels blijven zo visueel uniform.
   Widget _buildActionCard(BuildContext context,
-      {required IconData icon, required Color color, required String title, required String route, bool done = false, bool isAction = false, DateTime? date}) {
+      {required IconData icon,
+      required TileAccent accent,
+      required String title,
+      required String route,
+      bool isCompleted = false}) {
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: Duration(milliseconds: 400),
@@ -742,44 +758,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, color: color, size: 28),
-                  ),
-                  if (done)
-                    Positioned(
-                      right: -4,
-                      top: -4,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.check_circle, color: AppTheme.success, size: 20),
-                      ),
-                    )
-                  else if (isAction)
-                    Positioned(
-                      right: -4,
-                      top: -4,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.arrow_forward, color: color, size: 18),
-                      ),
-                    ),
-                ],
+              TileIconBadge(
+                icon: icon,
+                accent: accent,
+                size: 60,
+                iconSize: 28,
+                isCompleted: isCompleted,
               ),
               const SizedBox(height: 12),
               Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15), textAlign: TextAlign.center),
@@ -827,13 +811,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     const SizedBox(height: 4),
                     if (isEmpty && emptyHint != null)
-                      Text(emptyHint, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7)))
+                      Text(emptyHint, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
                     else if (subtitle != null)
-                      Text(subtitle, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85))),
+                      Text(subtitle, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color)),
                     if (value != null)
                       Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
                     else if (emptyValue != null)
-                      Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6))),
+                      Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
                   ],
                 ),
               ),
@@ -875,7 +859,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     const SizedBox(height: 6),
                     if (isEmpty)
-                      Text(AppLocalizations.of(context).nogGeenActiviteitenDezeWeek, style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7)))
+                      Text(AppLocalizations.of(context).nogGeenActiviteitenDezeWeek, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
                     else
                       Row(
                         children: [
@@ -997,9 +981,16 @@ class _DagStatusMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final allesKlaar = gelogd >= totaal;
-    final color = allesKlaar ? AppTheme.success : (gelogd > 0 ? AppTheme.warning : Colors.grey.shade400);
+    final brightness = theme.brightness;
+    // #ED6C02 haalt 4.94:1 op de chip; in dark mode is #FFB74D ruimer (6.7:1).
+    final color = allesKlaar
+        ? AppTheme.successOn(brightness)
+        : (gelogd > 0
+            ? (brightness == Brightness.dark ? const Color(0xFFFFB74D) : AppTheme.warning)
+            : AppTheme.secondaryText(context));
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
