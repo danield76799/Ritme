@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/activity_icon.dart';
 import '../utils/activity_type_l10n.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
@@ -111,26 +112,9 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
     }
   }
 
-  IconData _getActivityIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'opstaan':
-        return Icons.wb_sunny_outlined;
-      case 'slapen':
-      case 'naar bed':
-        return Icons.nightlight_round;
-      case 'eten':
-      case 'maaltijd':
-        return Icons.restaurant;
-      case 'werk':
-      case 'werken':
-        return Icons.work_outline;
-      case 'sociaal contact':
-      case 'contact':
-        return Icons.people_outline;
-      default:
-        return Icons.schedule;
-    }
-  }
+  // Icoon komt uit de gedeelde helper: de lokale kopie miste de varianten
+  // 'avondeten', 'eerste contact' en 'werk / hobby'.
+  IconData _getActivityIcon(String type) => activityTypeIcon(type);
 
   Color _getPScoreColor(int score) {
     if (score >= 5) return Colors.green;
