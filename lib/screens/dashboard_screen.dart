@@ -38,7 +38,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   bool _isLoading = true;
   double _sleepQuality = 0.0;
   double _rhythmStability = 0.0;
-  int _weeklyActivities = 0;
   int _loggedDaysCount = 0;
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
@@ -205,24 +204,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       }
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
 
-      // Aantal DAGEN met activiteiten in de laatste 7 dagen.
-      //
-      // De query hierboven haalt 14 dagen op (de streak-lookback en de trend
-      // hebben die langere reeks nodig), maar deze kaart gaat over één week.
-      // Zonder de ondergrens van 7 dagen telde hij dagen uit het hele bereik
-      // en kon de teller boven de 7 uitkomen.
-      final uniqueDays = <String>{};
-      final weekGrens = now.subtract(const Duration(days: 6));
-      final weekGrensStr =
-          '${weekGrens.year}-${weekGrens.month.toString().padLeft(2, '0')}-${weekGrens.day.toString().padLeft(2, '0')}';
-      for (final activity in weeklyActivities) {
-        final date = activity['date']?.toString();
-        if (date == null || date.isEmpty) continue;
-        // ISO-datums sorteren lexicografisch, dus stringvergelijking volstaat.
-        if (date.compareTo(weekGrensStr) >= 0) uniqueDays.add(date);
-      }
-      final int daysWithActivities = uniqueDays.length;
-
       double totalPScore = 0;
       int totalActivities = 0;
       for (final activity in weeklyActivities) {
@@ -243,9 +224,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           _settings = settings;
           _sleepQuality = avgSleep;
           _rhythmStability = stability;
-          // Harde bovengrens: de kaart toont "{n}/7 dagen", dus een waarde
-          // boven 7 zou de belofte van het label breken.
-          _weeklyActivities = daysWithActivities.clamp(0, 7);
           _loggedDaysCount = loggedDaysCount;
           _dailyLogs = dailyLogs;
           _srmActivitiesList = weeklyActivities;
@@ -524,36 +502,20 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 isEmpty: _sleepQuality <= 0,
               ),
               const SizedBox(height: 10),
-              // SRT-score + Activiteiten naast elkaar
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _buildMetricCard(
-                      context,
-                      icon: Icons.schedule,
-                      title: AppLocalizations.of(context).srtScore,
-                      value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : null,
-                      emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
-                      subtitle: _rhythmStability > 0 ? _getSrtLabel(_rhythmStability, context) : null,
-                      emptyHint: AppLocalizations.of(context).srtTooltip,
-                      color: _getSrtColor(_rhythmStability),
-                      route: '/rhythm-detail',
-                      isEmpty: _rhythmStability <= 0,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _buildActivityMetricCard(
-                      context,
-                      icon: Icons.local_activity,
-                      title: AppLocalizations.of(context).activiteitenDezeWeekLabel,
-                      value: _weeklyActivities,
-                      color: AppTheme.warning,
-                      route: '/activities-detail',
-                    ),
-                  ),
-                ],
+              // SRT Score staat op volle breedte: de SRT-berekening ís de
+              // activiteiten-op-tijd-score, dus een aparte activiteitentegel
+              // ernaast was een dubbeling met een eigen, afwijkende telling.
+              _buildMetricCard(
+                context,
+                icon: Icons.schedule,
+                title: AppLocalizations.of(context).srtScore,
+                value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : null,
+                emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
+                subtitle: _rhythmStability > 0 ? _getSrtLabel(_rhythmStability, context) : null,
+                emptyHint: AppLocalizations.of(context).srtTooltip,
+                color: _getSrtColor(_rhythmStability),
+                route: '/rhythm-detail',
+                isEmpty: _rhythmStability <= 0,
               ),
 
               const SizedBox(height: 24),
@@ -677,12 +639,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         _settings = settings;
         _dailyLogs = dailyLogs;
         _srmActivitiesList = weeklyActivities;
-        final uniqueDays = <String>{};
-        for (final activity in weeklyActivities) {
-          final date = activity['date']?.toString();
-          if (date != null && date.isNotEmpty) uniqueDays.add(date);
-        }
-        _weeklyActivities = uniqueDays.length.clamp(0, 7);
         _checkinTypes = checkinTypesForDate;
       });
     } catch (_) {}
@@ -823,53 +779,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
           else if (emptyValue != null)
             Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActivityMetricCard(BuildContext context,
-      {required IconData icon,
-      required String title,
-      required int value,
-      required Color color,
-      required String route}) {
-    final isEmpty = value <= 0;
-    return MetricCardShell(
-      icon: icon,
-      color: color,
-      onTap: () => Navigator.pushNamed(context, route),
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-          const SizedBox(height: 6),
-          if (isEmpty)
-            Text(AppLocalizations.of(context).nogGeenActiviteitenDezeWeek,
-                style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      // Voortgang over de 7 dagen van de week — niet over het
-                      // aantal activiteitstypes. De oude deler 5 hoorde bij de
-                      // vijf activiteitstypes, maar de teller telt dagen, dus
-                      // "8/5" kon ontstaan.
-                      value: (value / 7).clamp(0.0, 1.0),
-                      backgroundColor: color.withValues(alpha: 0.2),
-                      valueColor: AlwaysStoppedAnimation(color),
-                      minHeight: 6,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(AppLocalizations.of(context).activiteitDagenVan7(value),
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-              ],
-            ),
         ],
       ),
     );

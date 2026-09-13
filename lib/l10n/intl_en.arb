@@ -303,7 +303,6 @@
   "zojuistBijgewerkt": "Just updated",
   "activiteitEnSlaap": "Activity",
   "slaapduurLabel": "Sleep duration",
-  "activiteitenDezeWeekLabel": "Days with activities",
   "matigLabel": "Moderate",
   "uitstekendLabel": "Excellent",
   "minutenGeleden": "{n, plural, =1{1 minute ago} other{{n} minutes ago}}",
@@ -484,7 +483,6 @@
   "greetingNight": "Good night",
   "minuten": "minutes",
   "logVandaagOmTeZien": "Log today to see",
-  "nogGeenActiviteitenDezeWeek": "Nothing yet this week",
   "stemmingsCheckAnalyseTitel": "Bipolar analysis",
   "stemmingsCheckAnalyseGeen": "No unusual patterns detected.",
   "stemmingsCheckAnalyseTip": "These tags are screening signals, not a diagnosis. Discuss with your practitioner if they keep coming back.",
@@ -691,14 +689,6 @@
     "placeholders": {
       "naam": {
         "type": "String"
-      }
-    }
-  },
-  "activiteitDagenVan7": "{dagen}/7 days",
-  "@activiteitDagenVan7": {
-    "placeholders": {
-      "dagen": {
-        "type": "int"
       }
     }
   }
