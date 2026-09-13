@@ -373,8 +373,26 @@ class NotificationHelper {
         details,
         payload: payload,
       );
-    } catch (e) {
-      debugPrint('Immediate notification error: $e');
+
+      // Controleer of het icoon er echt is. R8/shrinkResources kan het
+      // notificatie-icoon uit de bundle gooien (het wordt alleen via een
+      // string aangeduid, niet vanuit XML), en dan mislukt een notificatie
+      // ZONDER foutmelding: de aanroep hierboven slaagt gewoon. Zonder deze
+      // controle meldt de app "verstuurd" terwijl er niets verschijnt.
+      final androidImpl = _notifications.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      final enabled = await androidImpl?.areNotificationsEnabled();
+      if (enabled == false) {
+        AppLogger.warning(
+            'Notificatie verstuurd, maar meldingen staan UIT voor deze app '
+            '(systeeminstelling). De gebruiker ziet nu niets.');
+      }
+    } catch (e, stackTrace) {
+      // Niet stil inslikken: de aanroeper moet kunnen tonen dat het mislukte.
+      // Eerder stond hier alleen een debugPrint, waardoor een echte fout
+      // onzichtbaar bleef en de UI 'verstuurd' meldde.
+      AppLogger.error('Immediate notification error', error: e, stackTrace: stackTrace);
+      rethrow;
     }
   }
 
