@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -156,7 +155,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                 style: TextStyle(
                   fontSize: isSelected ? 28 : 20,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? AppTheme.primaryTeal : Colors.black54,
+                  color: isSelected ? Theme.of(context).colorScheme.primary : Colors.black54,
                 ),
               ),
             );
@@ -312,7 +311,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _buildSettingsForm(),
@@ -645,7 +644,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        trailing: Icon(Icons.access_time, color: AppTheme.primaryTeal),
+        trailing: Icon(Icons.access_time, color: Theme.of(context).colorScheme.primary),
         onTap: () => _showTimePicker(label, key),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

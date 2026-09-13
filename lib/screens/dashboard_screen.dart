@@ -301,7 +301,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
     final today = DateTime.now();
     final dateStr = DateFormat('EEEE d MMMM', Localizations.localeOf(context).toString().split('_').first).format(today);
-    final username = _settings?['username']?.toString() ?? 'gebruiker';
+    final username = _settings?['username']?.toString() ??
+        AppLocalizations.of(context).gebruikerFallback;
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
@@ -577,7 +578,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           : null,
       helpText: AppLocalizations.of(context).kiesDatum,
       cancelText: AppLocalizations.of(context).annuleren,
-      confirmText: 'Bekijken',
+      confirmText: AppLocalizations.of(context).bekijken,
     );
     if (picked != null && mounted) {
       setState(() => _selectedDate = picked);
@@ -845,7 +846,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           Text(alert.message, style: TextStyle(fontSize: 14)),
           const SizedBox(height: 8),
           Text(
-            'Geregistreerd op: ${DateTime.now().toLocal().toString().split(' ')[0]}',
+            AppLocalizations.of(context).geregistreerdOp(
+                DateTime.now().toLocal().toString().split(' ')[0]),
             style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
           ),
         ],
@@ -857,7 +859,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     if (score <= 20) return AppTheme.error;
     if (score <= 40) return AppTheme.warning;
     if (score <= 60) return AppTheme.success;
-    return AppTheme.primaryTeal;
+    return Theme.of(context).colorScheme.primary;
   }
 
   String _getSrtLabel(double score, BuildContext context) {

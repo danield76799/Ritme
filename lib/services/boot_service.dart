@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/services.dart';
 
-import '../database/database_helper.dart';
 import 'notification_helper.dart';
 
 /// Service that reschedules all medication reminders after device reboot.

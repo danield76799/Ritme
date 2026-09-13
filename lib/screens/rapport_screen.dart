@@ -28,7 +28,7 @@ class _RapportScreenState extends State<RapportScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(AppLocalizations.of(context).rapport, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -39,12 +39,12 @@ class _RapportScreenState extends State<RapportScreen> {
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.description_outlined, color: AppTheme.primaryTeal, size: 32),
+                  Icon(Icons.description_outlined, color: Theme.of(context).colorScheme.primary, size: 32),
                   SizedBox(width: 14),
                   Expanded(
                     child: Text(
@@ -69,7 +69,7 @@ class _RapportScreenState extends State<RapportScreen> {
                 return ChoiceChip(
                   label: Text(label),
                   selected: isSelected,
-                  selectedColor: AppTheme.primaryTeal,
+                  selectedColor: Theme.of(context).colorScheme.primary,
                   onSelected: (val) => setState(() => _selectedDays = days),
                 );
               }).toList(),
@@ -143,7 +143,7 @@ class _RapportScreenState extends State<RapportScreen> {
               const SizedBox(height: 24),
               Row(
                 children: [
-                  Container(width: 4, height: 24, decoration: BoxDecoration(color: AppTheme.primaryTeal, borderRadius: BorderRadius.circular(2))),
+                  Container(width: 4, height: 24, decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(2))),
                   SizedBox(width: 12),
                   Text(AppLocalizations.of(context).voorbeeld, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal)),
                 ],

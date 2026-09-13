@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
-import '../theme/app_theme.dart';
 import '../utils/mood_assessment_scorer.dart';
 import '../utils/bipolar_tag_l10n.dart';
 
@@ -867,7 +866,7 @@ class _ResultStep extends StatelessWidget {
           Icon(
             Icons.check_circle_outline,
             size: 96,
-            color: AppTheme.primaryTeal,
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 16),
           Text(

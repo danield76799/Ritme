@@ -308,7 +308,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(Icons.wb_sunny, size: 56, color: AppTheme.primaryTeal),
+            Icon(Icons.wb_sunny, size: 56, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 12),
             Text(
               l10n.ochtendCheckIn,
@@ -355,7 +355,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
               icon: const Icon(Icons.edit),
               label: Text(l10n.aanpassen),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
@@ -499,7 +499,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.wb_sunny, size: 56, color: AppTheme.primaryTeal),
+            Icon(Icons.wb_sunny, size: 56, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 16),
             Text(
               l10n.ochtendHoeLaatOpgestaan,
@@ -535,7 +535,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.bedtime, size: 56, color: AppTheme.primaryTeal),
+            Icon(Icons.bedtime, size: 56, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 16),
             Text(
               l10n.wakkerGelegen,
@@ -649,7 +649,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                 ),
                 style: TextStyle(
                   fontSize: 16,
-                  color: AppTheme.primaryTeal,
+                  color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
@@ -659,7 +659,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
             ElevatedButton(
               onPressed: _sluiten,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               child: Text(l10n.stemmingsCheckSuccesDoorNaar),

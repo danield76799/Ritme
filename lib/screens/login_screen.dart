@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
@@ -269,7 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.fingerprint, color: AppTheme.primaryTeal),
+            Icon(Icons.fingerprint, color: Theme.of(context).colorScheme.primary),
             SizedBox(width: 8),
             Text(AppLocalizations.of(context).biometrieActiveren),
           ],
@@ -302,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
             child: Text(
               AppLocalizations.of(context).activeren,
               style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
@@ -342,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
               child: Text(AppLocalizations.of(context).biometrieVerplichtBevestigen,
                   style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
             ),
@@ -384,7 +383,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
             child: Text(AppLocalizations.of(context).jaInschakelen, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
@@ -505,9 +504,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.favorite, size: 64, color: AppTheme.primaryTeal),
+                    Icon(Icons.favorite, size: 64, color: Theme.of(context).colorScheme.primary),
                     SizedBox(height: 16),
-                    Text(AppLocalizations.of(context).laden, style: TextStyle(fontSize: 18, color: AppTheme.primaryTeal)),
+                    Text(AppLocalizations.of(context).laden, style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary)),
                   ],
                 ),
               ),
@@ -533,7 +532,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryTeal,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -561,11 +560,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                foregroundColor: AppTheme.primaryTeal,
+                                foregroundColor: Theme.of(context).colorScheme.primary,
                                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: AppTheme.primaryTeal),
+                                  side: BorderSide(color: Theme.of(context).colorScheme.primary),
                                 ),
                               ),
                             ),
@@ -584,10 +583,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.only(bottom: 16),
                           child: TextButton.icon(
                             onPressed: () => _showEnableBiometricManuallyDialog(),
-                            icon: Icon(Icons.fingerprint, color: AppTheme.primaryTeal),
+                            icon: Icon(Icons.fingerprint, color: Theme.of(context).colorScheme.primary),
                             label: Text(
                               AppLocalizations.of(context).biometrieActiveren,
-                              style: TextStyle(color: AppTheme.primaryTeal),
+                              style: TextStyle(color: Theme.of(context).colorScheme.primary),
                             ),
                           ),
                         ),
@@ -613,7 +612,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: AppTheme.primaryTeal,
+                                    color: Theme.of(context).colorScheme.primary,
                                     width: 2,
                                   ),
                                 ),

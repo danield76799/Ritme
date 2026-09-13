@@ -107,7 +107,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 title: Text(AppLocalizations.of(context).nogBezig),
                 value: isActive,
                 onChanged: (val) => setModalState(() => isActive = val),
-                activeThumbColor: AppTheme.primaryTeal,
+                activeThumbColor: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(height: 16),
 
@@ -205,7 +205,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text(AppLocalizations.of(context).episodes, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
-        body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
+        body: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
       );
     }
 
@@ -215,12 +215,12 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(AppLocalizations.of(context).episodes, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEpisode,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: _episodes.isEmpty
           ? Center(
@@ -266,7 +266,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-                            child: Text('actief', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold)),
+                            child: Text(AppLocalizations.of(context).actiefLabel, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ],

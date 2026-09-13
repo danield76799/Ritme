@@ -68,7 +68,7 @@ class WeeklyMoodChart extends StatelessWidget {
               Icon(
                 Icons.trending_up,
                 size: 48,
-                color: AppTheme.primaryTeal.withValues(alpha: 0.5),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
               ),
               SizedBox(height: 12),
               Text(
@@ -232,7 +232,7 @@ class WeeklyMoodChart extends StatelessWidget {
                   LineChartBarData(
                     spots: spots,
                     isCurved: true,
-                    color: AppTheme.primaryTeal,
+                    color: Theme.of(context).colorScheme.primary,
                     barWidth: 4,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
@@ -252,8 +252,8 @@ class WeeklyMoodChart extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppTheme.primaryTeal.withAlpha(100),
-                          AppTheme.primaryTeal.withAlpha(10),
+                          Theme.of(context).colorScheme.primary.withAlpha(100),
+                          Theme.of(context).colorScheme.primary.withAlpha(10),
                         ],
                       ),
                     ),

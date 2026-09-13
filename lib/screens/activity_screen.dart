@@ -287,7 +287,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     ? AppLocalizations.of(context).opstaanViaSlaapInvoer
                     : AppLocalizations.of(context).naarBedViaSlaapInvoer,
               ),
-              backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               duration: const Duration(seconds: 2),
@@ -569,7 +569,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+                ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
                 : _errorMessage != null
                     ? _buildErrorState()
                     : ListView(
@@ -605,7 +605,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             width: 4,
             height: 24,
             decoration: BoxDecoration(
-              color: AppTheme.primaryTeal,
+              color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -646,20 +646,20 @@ class _ActivityScreenState extends State<ActivityScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.nights_stay, color: AppTheme.primaryTeal),
+                  Icon(Icons.nights_stay, color: Theme.of(context).colorScheme.primary),
                   const SizedBox(width: 8),
                   Text(
                     _formatSleepDuration(context, _calculatedSleepHours!),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryTeal,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
@@ -718,10 +718,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.05) : Colors.grey.shade50,
+          color: hasValue ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.05) : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: hasValue ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade300!,
+            color: hasValue ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3) : Colors.grey.shade300!,
             width: 1.5,
           ),
         ),
@@ -730,10 +730,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
             Container(
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: hasValue ? AppTheme.primaryTeal : Colors.grey.shade400,
+                // Accent als achtergrond met een icoon erop: gebruik de
+                // brightness-aware teal, anders haalt wit op #4FB2C1 maar
+                // 2.48:1 in light mode.
+                color: hasValue
+                    ? AppTheme.accentOn(Theme.of(context).brightness)
+                    : Colors.grey.shade600,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, size: 18, color: Colors.white),
+              child: Icon(icon, size: 18,
+                  color: Theme.of(context).colorScheme.onPrimary),
             ),
             SizedBox(width: 12),
             Expanded(
@@ -819,7 +825,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDone ? AppTheme.primaryTeal.withValues(alpha: 0.3) : Colors.grey.shade100,
+          color: isDone ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3) : Colors.grey.shade100,
         ),
       ),
       child: Material(
@@ -835,7 +841,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isDone ? AppTheme.primaryTeal : Colors.grey.shade100,
+                    color: isDone ? Theme.of(context).colorScheme.primary : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -870,11 +876,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           ],
                           if (werkTijd != null) ...[
                             const SizedBox(width: 8),
-                            Icon(Icons.check_circle, size: 12, color: AppTheme.primaryTeal),
+                            Icon(Icons.check_circle, size: 12, color: Theme.of(context).colorScheme.primary),
                             const SizedBox(width: 4),
                             Text(
                               _formatTijd(werkTijd),
-                              style: TextStyle(fontSize: 11, color: AppTheme.primaryTeal, fontWeight: FontWeight.w500),
+                              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
                             ),
                           ] else ...[
                             const SizedBox(width: 8),

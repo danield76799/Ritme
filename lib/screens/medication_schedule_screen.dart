@@ -55,7 +55,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _schedules.isEmpty
@@ -129,10 +129,10 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(Icons.access_time, color: AppTheme.primaryTeal),
+          child: Icon(Icons.access_time, color: Theme.of(context).colorScheme.primary),
         ),
         title: Text(AppLocalizations.of(context).herinnering2(time), style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(AppLocalizations.of(context).dagen(days)),

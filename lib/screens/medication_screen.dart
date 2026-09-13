@@ -364,7 +364,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       title: Text(AppLocalizations.of(context).herinnering, style: TextStyle(color: textColor)),
                       value: reminderEnabled,
                       onChanged: (value) => setDialogState(() => reminderEnabled = value),
-                      activeColor: AppTheme.primaryTeal,
+                      activeColor: Theme.of(context).colorScheme.primary,
                     ),
                     if (reminderEnabled)
                       InkWell(
@@ -461,7 +461,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+                ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
                 : _errorMessage != null
                     ? _buildErrorState()
                     : _configs.isEmpty
@@ -548,12 +548,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: taken
-            ? AppTheme.primaryTeal.withValues(alpha: isDark ? 0.16 : 0.08)
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: isDark ? 0.16 : 0.08)
             : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: taken
-              ? AppTheme.primaryTeal.withValues(alpha: 0.5)
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)
               : Theme.of(context).dividerColor,
           width: taken ? 1.5 : 1,
         ),
@@ -567,11 +567,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
               width: 46, height: 46,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: taken ? AppTheme.primaryTeal : AppTheme.primaryTeal.withValues(alpha: isDark ? 0.2 : 0.12),
+                color: taken ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.primary.withValues(alpha: isDark ? 0.2 : 0.12),
               ),
               child: taken
                   ? Icon(Icons.check_rounded, color: isDark ? AppTheme.darkBackground : Colors.white, size: 26)
-                  : Icon(Icons.medication_rounded, color: isDark ? AppTheme.medicalTealLight : AppTheme.primaryTeal, size: 24),
+                  : Icon(Icons.medication_rounded, color: isDark ? AppTheme.medicalTealLight : Theme.of(context).colorScheme.primary, size: 24),
             ),
             Expanded(
               child: Padding(
@@ -618,7 +618,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                       decoration: BoxDecoration(
-                        color: taken ? AppTheme.primaryTeal : Theme.of(context).colorScheme.surfaceContainerHighest,
+                        color: taken ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -692,7 +692,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         borderRadius: BorderRadius.circular(8),
         child: Container(
           width: 32, height: 32,
-          decoration: BoxDecoration(color: isPrimary ? AppTheme.primaryTeal : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: isPrimary ? Theme.of(context).colorScheme.primary : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
           child: Icon(icon, size: 18, color: isPrimary ? Colors.white : Colors.black),
         ),
       ),
@@ -703,7 +703,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     final l10n = AppLocalizations.of(context);
     final label = taken ? l10n.medicatieGenomen : l10n.medicatieNietGenomen;
     final icon = taken ? Icons.check_circle : Icons.add_circle_outline;
-    final bg = taken ? AppTheme.primaryTeal : Colors.grey.shade100;
+    final bg = taken ? Theme.of(context).colorScheme.primary : Colors.grey.shade100;
     final fg = taken ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal;
     return Material(
       color: Colors.transparent,

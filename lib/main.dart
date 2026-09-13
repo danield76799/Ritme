@@ -78,7 +78,14 @@ void main() async {
           body: Center(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Text('Ritme kon niet starten.\n\nFout: $e\n\nHerinstalleer of reboot de app.'),
+              // Deze tekst staat BUITEN de RitmeApp, dus er is geen
+              // AppLocalizations beschikbaar. Daarom bewust tweetalig: de
+              // gebruiker ziet in elk geval zijn eigen taal erbij.
+              child: Text(
+                'Ritme kon niet starten / could not start.\n\n'
+                'Fout / error: $e\n\n'
+                'Herinstalleer of reboot de app / reinstall or reboot.',
+              ),
             ),
           ),
         ),

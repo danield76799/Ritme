@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../generated/l10n/app_localizations.dart';
 
@@ -199,7 +198,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: Theme.of(context).colorScheme.onPrimary),
             onPressed: _loadData,
           ),
         ],
