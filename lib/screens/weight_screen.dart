@@ -300,12 +300,12 @@ class _WeightScreenState extends State<WeightScreen> {
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -355,12 +355,12 @@ class _WeightScreenState extends State<WeightScreen> {
                               LineChartBarData(
                                 spots: _getChartData(),
                                 isCurved: true,
-                                color: AppTheme.primaryTeal,
+                                color: Theme.of(context).colorScheme.primary,
                                 barWidth: 3,
                                 dotData: FlDotData(show: true),
                                 belowBarData: BarAreaData(
                                   show: true,
-                                  color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                                 ),
                               ),
                             ],
@@ -383,7 +383,7 @@ class _WeightScreenState extends State<WeightScreen> {
                           width: 4,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryTeal,
+                            color: Theme.of(context).colorScheme.primary,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -428,8 +428,10 @@ class _WeightScreenState extends State<WeightScreen> {
                             background: Container(
                               alignment: Alignment.centerRight,
                               padding: EdgeInsets.only(right: 20),
-                              color: Colors.red,
-                              child: Icon(Icons.delete, color: Colors.white),
+                              // AppTheme.error (#D32F2F) geeft wit 4.98:1;
+                              // Colors.red (#F44336) maar 3.36:1.
+                              color: AppTheme.error,
+                              child: const Icon(Icons.delete, color: Colors.white),
                             ),
                             onDismissed: (_) => _deleteWeightLog(log['id']),
                             child: Container(
@@ -451,10 +453,10 @@ class _WeightScreenState extends State<WeightScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Icon(Icons.monitor_weight, color: AppTheme.primaryTeal),
+                                    child: Icon(Icons.monitor_weight, color: Theme.of(context).colorScheme.primary),
                                   ),
                                   SizedBox(width: 16),
                                   Expanded(
@@ -500,7 +502,7 @@ class _WeightScreenState extends State<WeightScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addWeightLog,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        icon: Icon(Icons.add, color: Colors.white),
+        icon: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
         label: Text(
           _weightLogs.any((log) => log['date'] == DateFormat('yyyy-MM-dd').format(_selectedDate))
             ? AppLocalizations.of(context).gewichtBewerken
@@ -535,14 +537,14 @@ class _WeightScreenState extends State<WeightScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryTeal, AppTheme.primaryTeal.withValues(alpha: 0.8)],
+          colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryTeal.withValues(alpha: 0.3),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: Offset(0, 6),
           ),

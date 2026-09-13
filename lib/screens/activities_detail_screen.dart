@@ -118,7 +118,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
 
   Color _getPScoreColor(int score) {
     if (score >= 5) return Colors.green;
-    if (score >= 3) return AppTheme.primaryTeal;
+    if (score >= 3) return Theme.of(context).colorScheme.primary;
     if (score >= 1) return Colors.orange;
     return Colors.redAccent;
   }
@@ -135,17 +135,17 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : _errorMessage != null
               ? _buildErrorState()
               : RefreshIndicator(
                   onRefresh: () => _loadData(context),
-                  color: AppTheme.primaryTeal,
+                  color: Theme.of(context).colorScheme.primary,
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
@@ -159,8 +159,8 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                AppTheme.primaryTeal,
-                                AppTheme.primaryTeal.withValues(alpha: 0.8),
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -168,7 +168,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryTeal.withValues(alpha: 0.3),
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: Offset(0, 6),
                               ),
@@ -239,7 +239,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                                     children: [
                                       Icon(
                                         _getActivityIcon(entry.key),
-                                        color: AppTheme.primaryTeal,
+                                        color: Theme.of(context).colorScheme.primary,
                                         size: 20,
                                       ),
                                       SizedBox(width: 12),
@@ -341,7 +341,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
           Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
@@ -366,7 +366,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryTeal,
+                    color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

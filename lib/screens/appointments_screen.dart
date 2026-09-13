@@ -229,7 +229,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : _errorMessage != null
               ? _buildErrorWidget()
               : _appointments.isEmpty
@@ -238,7 +238,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addAppointment,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        icon: Icon(Icons.add, color: Colors.white),
+        icon: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
         label: Text(AppLocalizations.of(context).nieuweAfspraak, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
       ),
     );
@@ -327,10 +327,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(Icons.calendar_today, color: AppTheme.primaryTeal),
+                      child: Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
                     ),
                     SizedBox(width: 12),
                     Expanded(
@@ -452,7 +452,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           data: Theme.of(context).copyWith(
             brightness: Brightness.light,
             colorScheme: ColorScheme.light(
-              primary: AppTheme.primaryTeal,
+              primary: Theme.of(context).colorScheme.primary,
               surface: Colors.white,
             ),
           ),
@@ -595,7 +595,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppTheme.primaryTeal, width: 2),
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
           ),
         ),
       ),
@@ -620,7 +620,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               return Theme(
                 data: Theme.of(context).copyWith(
                   colorScheme: ColorScheme.light(
-                    primary: AppTheme.primaryTeal,
+                    primary: Theme.of(context).colorScheme.primary,
                     surface: Colors.white,
                   ),
                 ),
@@ -689,7 +689,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: ColorScheme.light(
-                  primary: AppTheme.primaryTeal,
+                  primary: Theme.of(context).colorScheme.primary,
                   surface: Colors.white,
                 ),
               ),

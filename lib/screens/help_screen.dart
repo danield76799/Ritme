@@ -35,16 +35,16 @@ class _HelpScreenState extends State<HelpScreen> {
         elevation: 0,
         title: Text(
           _isDutch ? 'Gebruiksaanwijzing' : 'User Guide',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           TextButton.icon(
             onPressed: _toggleLanguage,
-            icon: Icon(Icons.language, color: Colors.white),
+            icon: Icon(Icons.language, color: Theme.of(context).colorScheme.onPrimary),
             label: Text(
               _isDutch ? 'EN' : 'NL',
               style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.bold),
@@ -87,7 +87,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 children: [
                   _buildScaleItem(color: Colors.indigo.shade900, label: _isDutch ? '−5: Uiterst depressief' : '−5: Extremely depressed'),
                   _buildScaleItem(color: Colors.indigo.shade400, label: _isDutch ? '−3: Matig depressief' : '−3: Moderately depressed'),
-                  _buildScaleItem(color: AppTheme.primaryTeal, label: '0: ${_isDutch ? 'Neutraal' : 'Neutral'}'),
+                  _buildScaleItem(color: Theme.of(context).colorScheme.primary, label: '0: ${_isDutch ? 'Neutraal' : 'Neutral'}'),
                   _buildScaleItem(color: Colors.orange.shade700, label: _isDutch ? '+3: Matig manisch' : '+3: Moderately manic'),
                   _buildScaleItem(color: Colors.red.shade600, label: _isDutch ? '+5: Uiterst manisch' : '+5: Extremely manic'),
                 ],
@@ -277,7 +277,7 @@ class _HelpScreenState extends State<HelpScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.security, color: AppTheme.primaryTeal),
+                        Icon(Icons.security, color: Theme.of(context).colorScheme.primary),
                         SizedBox(width: 8),
                         Text(
                           _isDutch ? 'Privacy & Beveiliging' : 'Privacy & Security',
@@ -322,17 +322,17 @@ class _HelpScreenState extends State<HelpScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primaryTeal.withValues(alpha: 0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
         children: [
           Icon(
             Icons.info_outline,
-            color: AppTheme.primaryTeal,
+            color: Theme.of(context).colorScheme.primary,
             size: 32,
           ),
           SizedBox(height: 12),
@@ -384,12 +384,12 @@ class _HelpScreenState extends State<HelpScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.primaryTeal.withValues(alpha: 0.1),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
-              color: AppTheme.primaryTeal,
+              color: Theme.of(context).colorScheme.primary,
               size: 24,
             ),
           ),

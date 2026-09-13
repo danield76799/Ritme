@@ -154,7 +154,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: (manieCount > 3 || depressieCount > 3) ? Colors.orange : AppTheme.primaryTeal,
+            backgroundColor: (manieCount > 3 || depressieCount > 3) ? Colors.orange : Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 4),
           ),
         );
@@ -177,7 +177,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text(AppLocalizations.of(context).voortekenen2, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
-        body: Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal)),
+        body: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
       );
     }
 
@@ -189,11 +189,11 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         title: Text(AppLocalizations.of(context).voortekenen2, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        leading: IconButton(icon: Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
         actions: [
           TextButton.icon(
             onPressed: () => _showHistory(context),
-            icon: Icon(Icons.history, color: Colors.white),
+            icon: Icon(Icons.history, color: Theme.of(context).colorScheme.onPrimary),
             label: Text(AppLocalizations.of(context).historie, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
@@ -429,7 +429,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
               });
               Navigator.pop(ctx);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryTeal),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
             child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],

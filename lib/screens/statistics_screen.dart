@@ -4,7 +4,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
 import '../generated/l10n/app_localizations.dart';
@@ -288,7 +287,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('PDF error: $e'),
+            content: Text(AppLocalizations.of(context).pdfFout('$e')),
             backgroundColor: Colors.red,
           ),
         );
@@ -342,7 +341,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(16.0),

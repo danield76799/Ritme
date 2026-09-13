@@ -9,6 +9,15 @@ class AppTheme {
   static const Color primaryTeal = medicalTeal;  // legacy alias
   static const Color medicalTealDark = Color(0xFF3A8A96);
   static const Color medicalTealLight = Color(0xFF7AC8D3);
+
+  /// Accent-teal voor gebruik OP een lichte achtergrond (light mode).
+  ///
+  /// [medicalTeal] (#4FB2C1) haalt op wit maar 2.48:1 — onder de WCAG-norm,
+  /// terwijl hij op de donkere kaart (#223236) ruim 5.37:1 haalt. Eén tint kan
+  /// dus niet beide modes dekken: deze variant haalt 4.95:1 op wit én 4.95:1
+  /// met witte tekst erop, zodat hij zowel als icoon-, tekst- als knopkleur
+  /// werkt. Gebruik daarom nooit [medicalTeal] direct op een licht oppervlak.
+  static const Color medicalTealDeep = Color(0xFF2F7A85);
   static const Color textCharcoal = Color(0xFF222222);
   static const Color textMedium = Color(0xFF444444);
   static const Color backgroundColor = Color(0xFFF7F9FA);
@@ -44,6 +53,19 @@ class AppTheme {
   static Color secondaryText(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkTextSecondary : textMedium;
 
+  /// Accent-teal die in BEIDE modes leesbaar is.
+  ///
+  /// #4FB2C1 werkt alleen op donker (5.37:1) en #2F7A85 alleen op licht
+  /// (4.95:1). Deze helper kiest de juiste variant, zodat een icoon of link
+  /// nooit ongemerkt onder de contrastnorm zakt. Gebruik dit in plaats van
+  /// [medicalTeal]/[primaryTeal] wanneer de ondergrond per thema wisselt
+  /// (kaarten, scaffold, knoppen).
+  static Color accent(BuildContext context) =>
+      accentOn(Theme.of(context).brightness);
+
+  static Color accentOn(Brightness brightness) =>
+      brightness == Brightness.dark ? medicalTealLight : medicalTealDeep;
+
   /// Succes-tint met >=3:1 contrast tegen de onderliggende kaart.
   /// Het donkere #2E7D32 haalt maar 2.6:1 op de donkere kaart (#223236).
   static Color successOn(Brightness brightness) =>
@@ -59,7 +81,11 @@ class AppTheme {
     return base.copyWith(
       brightness: Brightness.light,
       colorScheme: ColorScheme.light(
-        primary: medicalTeal,
+        // Light mode gebruikt de donkere teal (#2F7A85): met #4FB2C1 haalde
+        // witte AppBar-tekst maar 2.48:1 en teal accenttekst op wit ook 2.48:1.
+        // #2F7A85 haalt 4.95:1 met witte tekst erop EN 4.95:1 als accenttekst
+        // op wit, dus titel, icoon, link en knop zijn in één keer in orde.
+        primary: medicalTealDeep,
         onPrimary: Colors.white,
         secondary: medicalTealDark,
         onSecondary: Colors.white,
@@ -72,7 +98,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         centerTitle: false,
-        backgroundColor: medicalTeal,
+        backgroundColor: medicalTealDeep,
         foregroundColor: Colors.white,
         titleTextStyle: TextStyle(
           fontSize: 20,
@@ -87,7 +113,7 @@ class AppTheme {
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: medicalTeal,
+        backgroundColor: medicalTealDeep,
         foregroundColor: Colors.white,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -96,7 +122,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: medicalTeal,
+          backgroundColor: medicalTealDeep,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -107,8 +133,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: medicalTeal,
-          side: const BorderSide(color: medicalTeal, width: 1.5),
+          foregroundColor: medicalTealDeep,
+          side: const BorderSide(color: medicalTealDeep, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -117,7 +143,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: medicalTeal,
+          foregroundColor: medicalTealDeep,
         ),
       ),
       cardTheme: CardThemeData(
@@ -346,8 +372,14 @@ class AppTheme {
   ];
 
   // Brand gradient (teal)
+  /// Gradient van de begroetingskaart in LIGHT mode.
+  ///
+  /// De kaart gebruikt `onSurface` als tekstkleur, in light mode dus #222222.
+  /// Met de oude [medicalTeal] -> [medicalTealDark] zakte de datumregel
+  /// (15sp, 85% opacity) naar 3.31:1. Deze lichtere teal-paar houdt de
+  /// merkidentiteit en haalt >=4.9:1 op beide uiteinden.
   static LinearGradient get brandGradient => LinearGradient(
-    colors: [medicalTeal, medicalTealDark],
+    colors: [medicalTealLight, medicalTeal],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

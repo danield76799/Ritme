@@ -133,15 +133,15 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : RefreshIndicator(
               onRefresh: _loadData,
-              color: AppTheme.primaryTeal,
+              color: Theme.of(context).colorScheme.primary,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
@@ -246,7 +246,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                                   BarChartRodData(
                                     toY: entry.value['sleep'].toDouble(),
                                     color: entry.value['sleep'] >= 7 
-                                        ? AppTheme.primaryTeal 
+                                        ? Theme.of(context).colorScheme.primary 
                                         : entry.value['sleep'] >= 5 
                                             ? Colors.orange 
                                             : Colors.redAccent,
@@ -301,7 +301,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppTheme.primaryTeal, size: 24),
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
           SizedBox(height: 8),
           Text(
             value,
@@ -329,7 +329,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
     final sleep = entry['sleep'] as double;
     final awakeMinutes = entry['awakeMinutes'] as int? ?? 0;
     final quality = sleep >= 8 ? l10n.uitstekendLabel : sleep >= 6 ? l10n.goed : sleep >= 5 ? l10n.matigLabel : l10n.slecht;
-    final qualityColor = sleep >= 8 ? AppTheme.primaryTeal : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
+    final qualityColor = sleep >= 8 ? Theme.of(context).colorScheme.primary : sleep >= 6 ? Colors.green : sleep >= 5 ? Colors.orange : Colors.redAccent;
 
     return Container(
       margin: EdgeInsets.only(bottom: 12),

@@ -691,5 +691,23 @@
         "type": "String"
       }
     }
+  },
+  "geregistreerdOp": "Recorded on: {datum}",
+  "@geregistreerdOp": {
+    "placeholders": {
+      "datum": {
+        "type": "String"
+      }
+    }
+  },
+  "actiefLabel": "active",
+  "gebruikerFallback": "user",
+  "pdfFout": "PDF error: {fout}",
+  "@pdfFout": {
+    "placeholders": {
+      "fout": {
+        "type": "String"
+      }
+    }
   }
 }

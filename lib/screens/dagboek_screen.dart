@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
-import '../theme/app_theme.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../utils/logger.dart';
 import 'package:share_plus/share_plus.dart';
@@ -209,7 +208,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Icon(Icons.menu_book, size: 64, color: AppTheme.primaryTeal),
+          Icon(Icons.menu_book, size: 64, color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: 16),
           Text(
             _formattedToday,
@@ -273,7 +272,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
           const SizedBox(height: 8),
           Text(
             _score > 0 ? _sterTekst(_score, l10n) : '',
-            style: const TextStyle(fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
+            style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
           ),
           const SizedBox(height: 32),
           TextField(
@@ -292,7 +291,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
             child: ElevatedButton(
               onPressed: _score > 0 && !_isSaving ? _opslaan : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),

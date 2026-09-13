@@ -328,7 +328,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(Icons.nights_stay, size: 56, color: AppTheme.primaryTeal),
+            Icon(Icons.nights_stay, size: 56, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 12),
             Text(
               l10n.avondCheckIn,
@@ -406,7 +406,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
               icon: const Icon(Icons.edit),
               label: Text(l10n.aanpassen),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
@@ -467,7 +467,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
         LinearProgressIndicator(
           value: (_step + 1) / _totaalStappen,
           backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryTeal),
+          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
         ),
         Expanded(
           child: Center(
@@ -501,7 +501,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryTeal,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                   ),
                   child: Text(
@@ -531,7 +531,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.bolt, size: 56, color: AppTheme.primaryTeal),
+            Icon(Icons.bolt, size: 56, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 16),
             Text(l10n.stemmingsCheckVraag2Titel,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
@@ -627,7 +627,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 56, color: AppTheme.primaryTeal),
+        Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 16),
         Text(
           titel,
@@ -669,7 +669,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 56, color: AppTheme.primaryTeal),
+        Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 16),
         Text(
           titel,
@@ -750,7 +750,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.nights_stay, size: 64, color: AppTheme.primaryTeal),
+            Icon(Icons.nights_stay, size: 64, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 16),
             Text(
               l10n.avondCheckInKlaar,
@@ -781,7 +781,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
             ElevatedButton(
               onPressed: _sluiten,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryTeal,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               child: Text(l10n.stemmingsCheckSuccesDoorNaar),
