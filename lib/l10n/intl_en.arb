@@ -653,5 +653,45 @@
         "type": "int"
       }
     }
+  },
+  "stabiliteitTrendChip": "{verschil} vs. last week",
+  "@stabiliteitTrendChip": {
+    "placeholders": {
+      "verschil": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingNightMetNaam": "Good night, {naam}",
+  "@greetingNightMetNaam": {
+    "placeholders": {
+      "naam": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingMorningMetNaam": "Good morning, {naam}",
+  "@greetingMorningMetNaam": {
+    "placeholders": {
+      "naam": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingAfternoonMetNaam": "Good afternoon, {naam}",
+  "@greetingAfternoonMetNaam": {
+    "placeholders": {
+      "naam": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingEveningMetNaam": "Good evening, {naam}",
+  "@greetingEveningMetNaam": {
+    "placeholders": {
+      "naam": {
+        "type": "String"
+      }
+    }
   }
 }

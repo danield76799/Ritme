@@ -268,11 +268,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   String _getGreeting(String name) {
+    final l10n = AppLocalizations.of(context);
     final hour = DateTime.now().hour;
-    if (hour < 6) return AppLocalizations.of(context).greetingNight + ', $name';
-    if (hour < 12) return AppLocalizations.of(context).greetingMorning + ', $name';
-    if (hour < 18) return AppLocalizations.of(context).greetingAfternoon + ', $name';
-    return AppLocalizations.of(context).greetingEvening + ', $name';
+    // Begroeting + naam als één vertaalbare string: NL schrijft "Goedemiddag
+    // Daan" zonder komma, EN "Good afternoon, Daan" met. De komma hoort dus
+    // in de vertaling, niet in de code.
+    if (hour < 6) return l10n.greetingNightMetNaam(name);
+    if (hour < 12) return l10n.greetingMorningMetNaam(name);
+    if (hour < 18) return l10n.greetingAfternoonMetNaam(name);
+    return l10n.greetingEveningMetNaam(name);
   }
 
   String _formatLastUpdated(BuildContext context) {
