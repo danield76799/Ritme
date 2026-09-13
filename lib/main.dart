@@ -63,6 +63,7 @@ void main() async {
       AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled (exactAlarm=$permissionsOk)');
       final recovered = await BootService.rescheduleIfEmpty();
       if (recovered > 0) AppLogger.info('Recovered $recovered reminders after empty pending queue');
+      await NotificationHelper.instance.rescheduleCheckinReminders();
       await WidgetService.initialize();
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         try { await WorkManagerService.initialize(); } catch (e, stackTrace) { AppLogger.error('WorkManager initialization failed (non-fatal)', error: e, stackTrace: stackTrace); }

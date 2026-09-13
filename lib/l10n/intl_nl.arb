@@ -709,5 +709,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "checkinHerinneringenTitel": "Check-in herinneringen",
+  "checkinHerinneringenUitleg": "Krijg een melding wanneer je je ochtend- of avond check-in nog moet invullen. Is de check-in van gisteren nog niet gedaan, dan staat dat er ook bij.",
+  "ochtendHerinnering": "Ochtend herinnering",
+  "avondHerinnering": "Avond herinnering",
+  "herinneringTijd": "Tijd",
+  "testCheckinNotificatie": "Test check-in melding"
 }

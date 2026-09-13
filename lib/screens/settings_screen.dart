@@ -264,7 +264,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _showTimePicker(String label, String key) async {
+  Future<void> _showTimePicker(String label, String key,
+      {Future<void> Function(String tijd)? onSaved}) async {
     // Parse current time or use default
     TimeOfDay currentTime;
     if (_settings?[key] != null) {
@@ -297,6 +298,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _settings ??= {};
         _settings![key] = timeString;
       });
+      // Check-in tijden worden direct weggeschreven én gepland; de
+      // slaapschema-tijden gaan pas bij "Opslaan" naar de DB en hebben geen
+      // callback. De waarde gaat mee zodat de aanroeper hem kan persisteren —
+      // anders leest de planner de oude tijd terug uit de DB.
+      if (onSaved != null) await onSaved(timeString);
     }
   }
 
@@ -362,6 +368,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildThemeSelector(),
           const SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).notificaties),
+          _buildCheckinReminders(),
+          const SizedBox(height: 12),
           _buildActionButton(
                         AppLocalizations.of(context).testNotificatieNu,
             () async {
@@ -376,6 +384,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
+                  );
+                }
+              }
+            },
+          ),
+          _buildActionButton(
+            AppLocalizations.of(context).testCheckinNotificatie,
+            () async {
+              try {
+                // Toont eenmalig hoe de check-in melding eruitziet, inclusief
+                // de 'gisteren nog niet ingevuld'-regel als die van toepassing
+                // is — zo kan de gebruiker het effect meteen beoordelen.
+                await NotificationHelper.instance.showCheckinPreview();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(AppLocalizations.of(context).testNotificatieVerstuurd),
+                        backgroundColor: AppTheme.success),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: AppTheme.error),
                   );
                 }
               }
@@ -513,6 +545,120 @@ class _SettingsScreenState extends State<SettingsScreen> {
           },
         ),
       ],
+    );
+  }
+
+  /// Leest een instelling als bool met fallback.
+  bool _settingBool(String key, {bool fallback = true}) {
+    final v = _settings?[key];
+    if (v == null) return fallback;
+    final s = v.toString().toLowerCase();
+    if (s == '1' || s == 'true') return true;
+    if (s == '0' || s == 'false') return false;
+    return fallback;
+  }
+
+  /// Schrijft een instelling direct weg (zonder op "Opslaan" te wachten) en
+  /// plant de herinneringen opnieuw. Zo hoort de gebruiker meteen resultaat,
+  /// en blijft de planning in sync met wat er in beeld staat.
+  Future<void> _setCheckinSetting(String key, Object value) async {
+    try {
+      final existing = await db.getSettings();
+      final merged = Map<String, dynamic>.from(existing ?? {});
+      merged[key] = value;
+      await db.updateSettingsMap(merged);
+      if (mounted) setState(() => _settings = merged);
+      await NotificationHelper.instance.rescheduleCheckinReminders();
+      if (mounted) _showSuccess(AppLocalizations.of(context).instellingenOpgeslagen);
+    } catch (e, stackTrace) {
+      AppLogger.error('Check-in instelling opslaan mislukt', error: e, stackTrace: stackTrace);
+      if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
+    }
+  }
+
+  /// Twee rijen: aan/uit + tijd per check-in.
+  Widget _buildCheckinReminders() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).checkinHerinneringenUitleg,
+          style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color),
+        ),
+        const SizedBox(height: 12),
+        _buildCheckinRow(
+          label: AppLocalizations.of(context).ochtendHerinnering,
+          icon: Icons.wb_sunny_outlined,
+          aanKey: 'notif_ochtend_aan',
+          tijdKey: 'notif_ochtend_tijd',
+          defaultTijd: NotificationHelper.defaultOchtendTijd,
+        ),
+        const SizedBox(height: 8),
+        _buildCheckinRow(
+          label: AppLocalizations.of(context).avondHerinnering,
+          icon: Icons.nights_stay_outlined,
+          aanKey: 'notif_avond_aan',
+          tijdKey: 'notif_avond_tijd',
+          defaultTijd: NotificationHelper.defaultAvondTijd,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCheckinRow({
+    required String label,
+    required IconData icon,
+    required String aanKey,
+    required String tijdKey,
+    required String defaultTijd,
+  }) {
+    final aan = _settingBool(aanKey);
+    final tijd = _settings?[tijdKey]?.toString() ?? defaultTijd;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: aan
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
+              : Theme.of(context).dividerColor,
+        ),
+      ),
+      child: Column(
+        children: [
+          SwitchListTile(
+            value: aan,
+            onChanged: (v) => _setCheckinSetting(aanKey, v ? '1' : '0'),
+            secondary: Icon(icon,
+                color: aan
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.outline),
+            title: Text(label,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          ),
+          if (aan) ...[
+            Divider(height: 1, color: Theme.of(context).dividerColor),
+            ListTile(
+              dense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              title: Text(AppLocalizations.of(context).herinneringTijd,
+                  style: const TextStyle(fontSize: 14)),
+              trailing: Text(
+                tijd,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              onTap: () => _showTimePicker(label, tijdKey,
+                  onSaved: (tijd) => _setCheckinSetting(tijdKey, tijd)),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
