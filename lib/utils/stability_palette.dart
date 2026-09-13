@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 /// Kleurpalet voor het Ritme Stabiliteit-scherm.
 ///
 /// De dark-waarden zijn exact zoals aangeleverd in het ontwerp. Omdat de app op
