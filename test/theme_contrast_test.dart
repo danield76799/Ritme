@@ -135,6 +135,63 @@ void main() {
     });
   });
 
+  group('Rood is leesbaar in beide modes', () {
+    test('danger() op de eigen kaart: tekst haalt 4.5:1', () {
+      expect(contrast(AppTheme.dangerOn(Brightness.light), AppTheme.surfaceColor),
+          greaterThanOrEqualTo(4.5));
+      expect(contrast(AppTheme.dangerOn(Brightness.dark), AppTheme.darkCard),
+          greaterThanOrEqualTo(4.5));
+    });
+
+    test('het oude error-rood zakte op de donkere kaart (regressiedrempel)', () {
+      // #D32F2F op #223236 = 3.15:1 — onleesbaar precies bij een foutmelding.
+      expect(contrast(AppTheme.error, AppTheme.darkCard), lessThan(4.5));
+    });
+
+    test('error als achtergrond met witte tekst haalt 4.5:1', () {
+      expect(contrast(Colors.white, AppTheme.error), greaterThanOrEqualTo(4.5));
+    });
+
+    test('Colors.red zou hier gefaald hebben (regressiedrempel)', () {
+      // Colors.red (#F44336) met witte knoptekst = 3.68:1.
+      expect(contrast(Colors.white, Colors.red), lessThan(4.5));
+    });
+
+    test('AppTheme.success haalt 4.5:1 met witte snackbar-tekst', () {
+      expect(contrast(Colors.white, AppTheme.success), greaterThanOrEqualTo(4.5));
+    });
+
+    test('green[700] zou hier gefaald hebben (regressiedrempel)', () {
+      expect(contrast(Colors.white, Colors.green[700]!), lessThan(4.5));
+    });
+  });
+
+  group('Rode iconen op de AppBar (non-text, 3:1)', () {
+    // De AppBar is in dark mode LICHT en in light mode DONKER — omgekeerd aan
+    // de rest van het scherm. De reset-knop (wist de database) was
+    // Colors.red.shade300 en haalde op beide balken <2:1: onzichtbaar.
+    test('dark: tint haalt 3:1 op de lichte AppBar', () {
+      expect(
+          contrast(
+              AppTheme.dangerOnAppBar(Brightness.dark), AppTheme.darkTheme.colorScheme.primary),
+          greaterThanOrEqualTo(3.0));
+    });
+
+    test('light: tint haalt 3:1 op de donkere AppBar', () {
+      expect(
+          contrast(
+              AppTheme.dangerOnAppBar(Brightness.light), AppTheme.lightTheme.colorScheme.primary),
+          greaterThanOrEqualTo(3.0));
+    });
+
+    test('red.shade300 zakte op beide balken (regressiedrempel)', () {
+      expect(contrast(Colors.red.shade300, AppTheme.darkTheme.colorScheme.primary),
+          lessThan(3.0));
+      expect(contrast(Colors.red.shade300, AppTheme.lightTheme.colorScheme.primary),
+          lessThan(3.0));
+    });
+  });
+
   group('Begroetingskaart: tekst op de gradient blijft leesbaar', () {
     // De kaart gebruikt in beide modes onSurface als tekstkleur, met de datum
     // op 85% alpha. Beide uiteinden van de gradient moeten de norm halen.

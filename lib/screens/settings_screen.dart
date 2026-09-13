@@ -323,7 +323,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+          Icon(Icons.error_outline, size: 48, color: AppTheme.danger(context)),
           SizedBox(height: 12),
           Text(
             _errorMessage!,
