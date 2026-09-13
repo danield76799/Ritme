@@ -70,7 +70,20 @@ class NotificationHelper {
         AppLogger.warning('Notificatie initialisatie mislukt of geweigerd');
         return;
       }
-      
+
+      // Koude start vanuit een notificatie: als de app niet liep toen de
+      // gebruiker tikte, komt de payload NIET via de callback hierboven maar
+      // via de launch-details van de plugin. Zonder deze regel zou tikken op
+      // een melding bij een afgesloten app de app wel openen, maar niet
+      // doornavigeren naar de check-in.
+      final launchDetails = await _notifications.getNotificationAppLaunchDetails();
+      if (launchDetails?.didNotificationLaunchApp ?? false) {
+        final payload = launchDetails?.notificationResponse?.payload;
+        if (payload != null) {
+          _onNotificationResponse(launchDetails!.notificationResponse!);
+        }
+      }
+
       // Request runtime permissions (notification + exact alarm).
       // This is required on Android 12+ for medication reminders to fire on time.
       await requestNotificationPermissions();
@@ -237,7 +250,20 @@ class NotificationHelper {
         rescheduled++;
       }
 
-      AppLogger.info('Rescheduled $rescheduled medication reminders from DB (after canceling all)');
+      AppLogger.info('Rescheduled $rescheduled medication reminders');
+      // De check-in herinneringen worden hier — en niet bij de aanroeper —
+      // gepland, omdat de cancelAllReminders() hierboven ALLE notificaties wist.
+      // Alles wat vóór die aanroep is gepland, verdwijnt weer. Door dit hier te
+      // doen kan geen enkele aanroeper de volgorde nog verkeerd hebben.
+      //
+      // In een EIGEN try/catch: een fout hierin mag de medicatie-herinneringen
+      // niet als mislukt laten gelden — die zijn op dit punt al gepland.
+      try {
+        await rescheduleCheckinReminders();
+      } catch (e, stackTrace) {
+        AppLogger.error('Check-in herinneringen plannen mislukt (medicatie is wel gepland)',
+            error: e, stackTrace: stackTrace);
+      }
       return rescheduled;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to reschedule medication reminders', error: e, stackTrace: stackTrace);
@@ -825,9 +851,16 @@ class NotificationHelper {
     // Check-in herinnering: stuur de app naar het juiste scherm. De payload
     // wordt door de navigator opgepikt zodra de app weer vooraan staat.
     if (payload != null && payload.startsWith('checkin:')) {
-      _pendingCheckinRoute = payload.split(':').length > 1
-          ? '/${payload.split(':')[1]}-checkin'
-          : null;
+      // Expliciete mapping in plaats van de routenaam uit de payload bouwen:
+      // de payload zegt 'ochtend'/'avond' (NL, want dat is de stabiele
+      // interne naam) maar de routes heten /morning-checkin en
+      // /evening-checkin. Stringconcatenatie leverde hier een niet-bestaande
+      // route op, waardoor tikken op de melding niets deed.
+      final soort = payload.split(':').length > 1 ? payload.split(':')[1] : '';
+      _pendingCheckinRoute = const {
+        'ochtend': '/morning-checkin',
+        'avond': '/evening-checkin',
+      }[soort];
       AppLogger.debug('Check-in notificatie geopend: $_pendingCheckinRoute');
       return;
     }
