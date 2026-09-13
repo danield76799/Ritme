@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Houdt resources die alleen vanuit native code worden gebruikt.
+
+  WAAROM DIT NODIG IS
+  De release-build heeft shrinkResources = true (R8). R8 kijkt welke resources
+  vanuit Java/Kotlin en XML worden aangeroepen en gooit de rest weg. Het
+  notificatie-icoon wordt echter alleen via een STRING aangeduid —
+  AndroidInitializationSettings('@mipmap/ic_launcher') in Dart — en die
+  verwijzing ziet R8 niet. Daardoor verdween ic_launcher.png uit de bundle: in
+  de AAB zat na het aanzetten van R8 alleen nog launcher_icon.png.
+
+  Gevolg: notificaties mislukten STIL. flutter_local_notifications waarschuwt
+  hier zelf voor in de README — bij een ontbrekend icoon "they will never show,
+  instead silently failing". De plugin-aanroep gooit geen fout, dus de app
+  meldde "notificatie verstuurd" terwijl er niets verscheen. Dat trof zowel de
+  testknoppen als alle geplande herinneringen (medicatie én check-in).
+
+  tools:keep zet de resources op de keep-lijst van R8. Bewust ZONDER
+  tools:shrinkMode="strict": die modus gooit alles weg wat niet expliciet in een
+  keep-regel staat, en dat is precies het risico dat dit bestand moet wegnemen.
+  Het voorbeeld van de plugin zelf gebruikt hem ook niet.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@mipmap/ic_launcher,@mipmap/launcher_icon,@drawable/*" />
