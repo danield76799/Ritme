@@ -5,7 +5,7 @@ import '../service_locator.dart';
 import '../theme/app_theme.dart';
 import '../utils/logger.dart';
 import '../utils/mood_assessment_scorer.dart';
-import 'morning_checkin_screen.dart' show MoodAssessmentScorerColors;
+import '../utils/checkin_colors.dart';
 import '../widgets/overzicht_rij.dart';
 
 /// Avond check-in: de terugblik op de dag, vlak voordat je gaat slapen.

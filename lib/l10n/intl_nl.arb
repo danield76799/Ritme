@@ -626,5 +626,32 @@
   "backupShareText": "Hier is mijn Ritme app backup. Bewaar deze veilig!",
   "slaapUrenMinuten": "{h}u {m}m slaap",
   "slaapUren": "{h}u slaap",
-  "slaapMinuten": "{m}m slaap"
+  "slaapMinuten": "{m}m slaap",
+  "ochtendSlaapKortPlus4": "Geen slaapbehoefte",
+  "ochtendSlaapKortPlus3": "Verminderde slaapbehoefte",
+  "ochtendSlaapKortPlus2": "Ruim een uur korter",
+  "ochtendSlaapKortPlus1": "Tot een uur korter",
+  "ochtendSlaapKortMin1": "Minder goed dan gewoonlijk",
+  "ochtendSlaapKortMin2": "1-2 uur eerder wakker",
+  "ochtendSlaapKortMin3": "Uren eerder wakker",
+  "ochtendSlaapKortMin4": "Nauwelijks geslapen",
+  "ochtendSlaapOptiePlus4": "Helemaal geen behoefte aan slaap",
+  "ochtendSlaapOptiePlus3": "Verminderde behoefte aan slaap",
+  "ochtendSlaapOptiePlus2": "Ik slaap minstens 1 uur korter dan gewoonlijk",
+  "ochtendSlaapOptiePlus1": "Ik slaap tot 1 uur korter dan gewoonlijk",
+  "ochtendSlaapOptieMin1": "Ik slaap niet zo goed als gewoonlijk",
+  "ochtendSlaapOptieMin2": "Ik word 's morgens een tot twee uur eerder wakker dan gewoonlijk en kan moeilijk weer in slaap komen",
+  "ochtendSlaapOptieMin3": "Ik word uren eerder wakker dan gewoonlijk en kan dan niet meer in slaap komen",
+  "ochtendSlaapOptieMin4": "Ik slaap niet tot nauwelijks",
+  "ochtendStapVan": "Stap {stap} van {totaal}",
+  "@ochtendStapVan": {
+    "placeholders": {
+      "stap": {
+        "type": "int"
+      },
+      "totaal": {
+        "type": "int"
+      }
+    }
+  }
 }

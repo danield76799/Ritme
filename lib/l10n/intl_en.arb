@@ -626,5 +626,32 @@
   "backupShareText": "Here is my Ritme app backup. Keep it safe!",
   "slaapUrenMinuten": "{h}h {m}m sleep",
   "slaapUren": "{h}h sleep",
-  "slaapMinuten": "{m}m sleep"
+  "slaapMinuten": "{m}m sleep",
+  "ochtendSlaapKortPlus4": "No sleep need",
+  "ochtendSlaapKortPlus3": "Reduced sleep need",
+  "ochtendSlaapKortPlus2": "Over an hour less",
+  "ochtendSlaapKortPlus1": "Up to an hour less",
+  "ochtendSlaapKortMin1": "Less well than usual",
+  "ochtendSlaapKortMin2": "Awake 1-2 hours earlier",
+  "ochtendSlaapKortMin3": "Awake hours earlier",
+  "ochtendSlaapKortMin4": "Barely slept",
+  "ochtendSlaapOptiePlus4": "No need for sleep at all",
+  "ochtendSlaapOptiePlus3": "Reduced need for sleep",
+  "ochtendSlaapOptiePlus2": "I sleep at least 1 hour less than usual",
+  "ochtendSlaapOptiePlus1": "I sleep up to 1 hour less than usual",
+  "ochtendSlaapOptieMin1": "I do not sleep as well as usual",
+  "ochtendSlaapOptieMin2": "I wake 1 to 2 hours earlier than usual and have trouble falling back asleep",
+  "ochtendSlaapOptieMin3": "I wake hours earlier than usual and cannot fall back asleep",
+  "ochtendSlaapOptieMin4": "I hardly sleep at all",
+  "ochtendStapVan": "Step {stap} of {totaal}",
+  "@ochtendStapVan": {
+    "placeholders": {
+      "stap": {
+        "type": "int"
+      },
+      "totaal": {
+        "type": "int"
+      }
+    }
+  }
 }

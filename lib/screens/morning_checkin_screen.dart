@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../theme/app_theme.dart';
+import '../utils/checkin_colors.dart';
 import '../widgets/overzicht_rij.dart';
 import '../utils/logger.dart';
 
@@ -255,11 +256,35 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    // Naadloos doorlopende donkere kop: geen gekleurd contrastvlak meer.
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(l10n.ochtendCheckIn),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        foregroundColor: theme.colorScheme.onSurface,
+        titleSpacing: AppTheme.screenPadding,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              l10n.ochtendCheckIn,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (!_bekijkModus && _step < 3)
+              Text(
+                l10n.ochtendStapVan(_step + 1, 3),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.secondaryText(context),
+                ),
+              ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: _bekijkModus
@@ -373,54 +398,80 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
 
   Widget _buildVraag(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     return Column(
       children: [
         LinearProgressIndicator(
           value: (_step + 1) / 3,
-          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryTeal),
+          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+          valueColor: const AlwaysStoppedAnimation<Color>(CheckinAccent.teal),
         ),
         Expanded(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: _stepContent(context),
-            ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+                AppTheme.screenPadding, 20, AppTheme.screenPadding, 20),
+            child: _stepContent(context),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              if (_step > 0)
+        // Vaste onderbalk: knoppen blijven altijd binnen bereik.
+        Container(
+          padding: const EdgeInsets.fromLTRB(
+              AppTheme.screenPadding, 12, AppTheme.screenPadding, 12),
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            border: Border(
+              top: BorderSide(color: CheckinAccent.unselectedBorder(theme.brightness)),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                if (_step > 0) ...[
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => setState(() => _step -= 1),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.colorScheme.onSurface,
+                        side: BorderSide(
+                            color: CheckinAccent.unselectedBorder(theme.brightness)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(l10n.stemmingsCheckVorige),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => setState(() => _step -= 1),
-                    child: Text(l10n.stemmingsCheckVorige),
-                  ),
-                ),
-              if (_step > 0) const SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _canProceed()
-                      ? () {
-                          if (_step == 2) {
-                            _finish();
-                          } else {
-                            setState(() => _step += 1);
+                  flex: _step > 0 ? 1 : 1,
+                  child: ElevatedButton(
+                    onPressed: _canProceed() && !_isSaving
+                        ? () {
+                            if (_step == 2) {
+                              _finish();
+                            } else {
+                              setState(() => _step += 1);
+                            }
                           }
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryTeal,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(
-                    _step == 2 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: CheckinAccent.teal,
+                      // Donkere tekst op het accent: wit haalt maar 1.79:1.
+                      foregroundColor: CheckinAccent.onAccent,
+                      disabledBackgroundColor:
+                          CheckinAccent.teal.withValues(alpha: 0.30),
+                      disabledForegroundColor:
+                          CheckinAccent.onAccent.withValues(alpha: 0.60),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Text(
+                      _step == 2 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -521,11 +572,45 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.nights_stay, size: 56, color: AppTheme.primaryTeal),
-            const SizedBox(height: 16),
-            Text(
-              l10n.stemmingsCheckVraag4Titel,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+            // Compacte kop: maan-icoon naast de vraag i.p.v. een groot icoon
+            // dat de kaarten naar beneden duwt.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: CheckinAccent.teal.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.nightlight_round,
+                      size: 18, color: CheckinAccent.teal),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.stemmingsCheckVraag4Titel,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n.stemmingsCheckVraag4Ondertitel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.3,
+                          color: AppTheme.secondaryText(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             _SlaapbehoefteOpties(
@@ -587,36 +672,76 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
 }
 
 /// Keuze-opties voor slaapbehoefte (q4) — zelfde schaal als de stemmingscheck.
+///
+/// De schaal loopt -4..+4 en is klinisch betekenisvol: de scorer gebruikt
+/// drempels op >=2 / >=3 (manie-signaal) en <=-2 (depressie-signaal). De waarden
+/// en hun volgorde mogen dus NIET veranderen — alleen de presentatie.
 class _SlaapbehoefteOpties extends StatelessWidget {
   final double? selected;
   final ValueChanged<double> onChanged;
 
   const _SlaapbehoefteOpties({required this.selected, required this.onChanged});
 
+  /// Bouw het datamodel: score + korte categorienaam + volledige toelichting.
+  List<SleepOption> _opties(AppLocalizations l10n) => [
+        SleepOption(
+          score: 4,
+          label: l10n.ochtendSlaapKortPlus4,
+          description: l10n.ochtendSlaapOptiePlus4,
+        ),
+        SleepOption(
+          score: 3,
+          label: l10n.ochtendSlaapKortPlus3,
+          description: l10n.ochtendSlaapOptiePlus3,
+        ),
+        SleepOption(
+          score: 2,
+          label: l10n.ochtendSlaapKortPlus2,
+          description: l10n.ochtendSlaapOptiePlus2,
+        ),
+        SleepOption(
+          score: 1,
+          label: l10n.ochtendSlaapKortPlus1,
+          description: l10n.ochtendSlaapOptiePlus1,
+        ),
+        SleepOption(
+          score: 0,
+          label: l10n.stemmingsCheckOptieNeutraal,
+          description: l10n.stemmingsCheckOptieNeutraal,
+        ),
+        SleepOption(
+          score: -1,
+          label: l10n.ochtendSlaapKortMin1,
+          description: l10n.ochtendSlaapOptieMin1,
+        ),
+        SleepOption(
+          score: -2,
+          label: l10n.ochtendSlaapKortMin2,
+          description: l10n.ochtendSlaapOptieMin2,
+        ),
+        SleepOption(
+          score: -3,
+          label: l10n.ochtendSlaapKortMin3,
+          description: l10n.ochtendSlaapOptieMin3,
+        ),
+        SleepOption(
+          score: -4,
+          label: l10n.ochtendSlaapKortMin4,
+          description: l10n.ochtendSlaapOptieMin4,
+        ),
+      ];
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final options = <double>[-4, -3, -2, -1, 0, 1, 2, 3, 4];
-    final labels = <double, String>{
-      4: l10n.stemmingsCheckOptieSlaapGeen,
-      3: l10n.stemmingsCheckOptieSlaapVerminderd,
-      2: l10n.stemmingsCheckOptieSlaap1UurKorter,
-      1: l10n.stemmingsCheckOptieSlaapTot1UurKorter,
-      0: l10n.stemmingsCheckOptieNeutraal,
-      -1: l10n.stemmingsCheckOptieSlaapNietZoGoed,
-      -2: l10n.stemmingsCheckOptieSlaap12UurEerder,
-      -3: l10n.stemmingsCheckOptieSlaapUrenEerder,
-      -4: l10n.stemmingsCheckOptieSlaapNietTot,
-    };
     return Column(
-      children: options
-          .map((v) => Padding(
+      children: _opties(l10n)
+          .map((optie) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: _OptieTile(
-                  label: labels[v] ?? v.toString(),
-                  value: v,
-                  selected: selected == v,
-                  onTap: () => onChanged(v),
+                child: SleepOptionCard(
+                  option: optie,
+                  selected: selected == optie.score,
+                  onTap: () => onChanged(optie.score.toDouble()),
                 ),
               ))
           .toList(),
@@ -624,70 +749,153 @@ class _SlaapbehoefteOpties extends StatelessWidget {
   }
 }
 
-class _OptieTile extends StatelessWidget {
+/// Datamodel voor één optie in de slaapbehoefte-check-in.
+///
+/// [score] is de klinische waarde die naar de database gaat (q4_slaapbehoefte).
+/// [label] is de korte categorienaam boven de toelichting.
+/// [description] is de volledige uitleg zoals eerder in de lange ARB-string zat.
+class SleepOption {
+  final int score;
   final String label;
-  final double value;
+  final String description;
+
+  const SleepOption({
+    required this.score,
+    required this.label,
+    required this.description,
+  });
+}
+
+/// Interactieve keuzekaart voor de slaapbehoefte.
+///
+/// Eén rustige accentkleur voor de geselecteerde staat (i.p.v. de stoplicht-
+/// gradient), een score-badge links en de toelichting rechts met ruime
+/// regelhoogte. De geselecteerde kaart krijgt een accent-tint, een 1.5px rand
+/// en een gevulde badge; de niet-geselecteerde een donkere kaart met subtiele
+/// rand.
+class SleepOptionCard extends StatelessWidget {
+  final SleepOption option;
   final bool selected;
   final VoidCallback onTap;
 
-  const _OptieTile({
-    required this.label,
-    required this.value,
+  const SleepOptionCard({
+    super.key,
+    required this.option,
     required this.selected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = MoodAssessmentScorerColors.slaapbehoefteColor(value);
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.15) : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? color : Theme.of(context).dividerColor,
-            width: selected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+    final brightness = Theme.of(context).brightness;
+    const accent = CheckinAccent.teal;
+    final scoreText = MoodAssessmentScorerColors.scoreLabel(option.score.toDouble());
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '$scoreText, ${option.label}',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            // Geselecteerd: subtiele accent-tint. Anders: rustige donkere kaart.
+            color: selected
+                ? accent.withValues(alpha: 0.12)
+                : (brightness == Brightness.dark
+                    ? CheckinAccent.unselectedDark
+                    : Theme.of(context).cardColor),
+            borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+            border: Border.all(
+              color: selected
+                  ? accent
+                  : CheckinAccent.unselectedBorder(brightness),
+              width: selected ? 1.5 : 1,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ScoreBadge(text: scoreText, selected: selected),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      option.label,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                        color: brightness == Brightness.dark
+                            ? Colors.white
+                            : AppTheme.textCharcoal,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      option.description,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.3,
+                        color: brightness == Brightness.dark
+                            ? Colors.white70
+                            : AppTheme.textMedium,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// Kleuren voor de slaapbehoefte-schaal (zelfde logica als de stemmingscheck).
-class MoodAssessmentScorerColors {
-  static Color slaapbehoefteColor(double v) {
-    if (v <= -4) return const Color(0xFF616161);
-    if (v <= -3) return const Color(0xFF424242);
-    if (v <= -2) return const Color(0xFF42A5F5);
-    if (v <= -1) return const Color(0xFF90CAF9);
-    if (v == 0) return const Color(0xFF66BB6A);
-    if (v <= 1) return const Color(0xFFFDD835);
-    if (v <= 2) return const Color(0xFFFF9800);
-    if (v <= 3) return const Color(0xFFF57C00);
-    return const Color(0xFFE53935);
+/// Score-badge links op de kaart. Gevuld in de accentkleur zodra de optie
+/// geselecteerd is, anders een rustige omtrek.
+class _ScoreBadge extends StatelessWidget {
+  final String text;
+  final bool selected;
+
+  const _ScoreBadge({required this.text, required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    const accent = CheckinAccent.teal;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      constraints: const BoxConstraints(minWidth: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: selected ? accent : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: selected ? accent : CheckinAccent.unselectedBorder(brightness),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: selected
+              ? CheckinAccent.onAccent
+              : (brightness == Brightness.dark
+                  ? Colors.white70
+                  : AppTheme.textMedium),
+        ),
+      ),
+    );
   }
 }
+
