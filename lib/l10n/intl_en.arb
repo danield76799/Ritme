@@ -303,7 +303,7 @@
   "zojuistBijgewerkt": "Just updated",
   "activiteitEnSlaap": "Activity",
   "slaapduurLabel": "Sleep duration",
-  "activiteitenDezeWeekLabel": "Activities this week",
+  "activiteitenDezeWeekLabel": "Days with activities",
   "matigLabel": "Moderate",
   "uitstekendLabel": "Excellent",
   "minutenGeleden": "{n, plural, =1{1 minute ago} other{{n} minutes ago}}",
@@ -691,6 +691,14 @@
     "placeholders": {
       "naam": {
         "type": "String"
+      }
+    }
+  },
+  "activiteitDagenVan7": "{dagen}/7 days",
+  "@activiteitDagenVan7": {
+    "placeholders": {
+      "dagen": {
+        "type": "int"
       }
     }
   }

@@ -205,11 +205,21 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       }
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
 
-      // Count unique days with activities (not total activities)
+      // Aantal DAGEN met activiteiten in de laatste 7 dagen.
+      //
+      // De query hierboven haalt 14 dagen op (de streak-lookback en de trend
+      // hebben die langere reeks nodig), maar deze kaart gaat over één week.
+      // Zonder de ondergrens van 7 dagen telde hij dagen uit het hele bereik
+      // en kon de teller boven de 7 uitkomen.
       final uniqueDays = <String>{};
+      final weekGrens = now.subtract(const Duration(days: 6));
+      final weekGrensStr =
+          '${weekGrens.year}-${weekGrens.month.toString().padLeft(2, '0')}-${weekGrens.day.toString().padLeft(2, '0')}';
       for (final activity in weeklyActivities) {
         final date = activity['date']?.toString();
-        if (date != null && date.isNotEmpty) uniqueDays.add(date);
+        if (date == null || date.isEmpty) continue;
+        // ISO-datums sorteren lexicografisch, dus stringvergelijking volstaat.
+        if (date.compareTo(weekGrensStr) >= 0) uniqueDays.add(date);
       }
       final int daysWithActivities = uniqueDays.length;
 
@@ -233,7 +243,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           _settings = settings;
           _sleepQuality = avgSleep;
           _rhythmStability = stability;
-          _weeklyActivities = daysWithActivities;
+          // Harde bovengrens: de kaart toont "{n}/7 dagen", dus een waarde
+          // boven 7 zou de belofte van het label breken.
+          _weeklyActivities = daysWithActivities.clamp(0, 7);
           _loggedDaysCount = loggedDaysCount;
           _dailyLogs = dailyLogs;
           _srmActivitiesList = weeklyActivities;
@@ -615,7 +627,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     try {
       final ds = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
       final now = DateTime.now();
-      final weekAgo = now.subtract(const Duration(days: 7));
+      // 7 dagen inclusief vandaag = 6 dagen terug.
+      final weekAgo = now.subtract(const Duration(days: 6));
       final startDateStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
       final endDateStr = ds;
       final results = await Future.wait([
@@ -669,7 +682,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           final date = activity['date']?.toString();
           if (date != null && date.isNotEmpty) uniqueDays.add(date);
         }
-        _weeklyActivities = uniqueDays.length;
+        _weeklyActivities = uniqueDays.length.clamp(0, 7);
         _checkinTypes = checkinTypesForDate;
       });
     } catch (_) {}
@@ -841,7 +854,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: (value / 5).clamp(0.0, 1.0),
+                      // Voortgang over de 7 dagen van de week — niet over het
+                      // aantal activiteitstypes. De oude deler 5 hoorde bij de
+                      // vijf activiteitstypes, maar de teller telt dagen, dus
+                      // "8/5" kon ontstaan.
+                      value: (value / 7).clamp(0.0, 1.0),
                       backgroundColor: color.withValues(alpha: 0.2),
                       valueColor: AlwaysStoppedAnimation(color),
                       minHeight: 6,
@@ -849,7 +866,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text('$value/5', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                Text(AppLocalizations.of(context).activiteitDagenVan7(value),
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
               ],
             ),
         ],
