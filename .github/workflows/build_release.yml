@@ -30,15 +30,22 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
 
-    # Versiecode: altijd uniek en oplopend. Play Store weigert een code die al
-    # gebruikt is, dus we leiden hem af van github.run_number (monotoon per run)
-    # i.p.v. een vaste waarde in pubspec.yaml.
-    - name: Compute version code
+    # Versie: code én naam worden allebei per run opgehoogd, zodat Play Store
+    # nooit een gebruikte code krijgt en het versienummer zichtbaar meestijgt.
+    #   code = 1000 + run_number            (monotoon, uniek)
+    #   naam = 1.3.<5 + runs sinds basis>   (patch-bump per release)
+    - name: Compute version
       id: ver
+      env:
+        BASE_RUN: '39'
+        BASE_PATCH: '5'
       run: |
         CODE=$((1000 + ${{ github.run_number }}))
+        PATCH=$((BASE_PATCH + ${{ github.run_number }} - BASE_RUN))
+        NAME="1.3.${PATCH}"
         echo "code=$CODE" >> "$GITHUB_OUTPUT"
-        echo "Version code: $CODE"
+        echo "name=$NAME" >> "$GITHUB_OUTPUT"
+        echo "Version: $NAME (code $CODE)"
 
     - name: Setup signing config
       env:
@@ -56,10 +63,10 @@ jobs:
         EOF
 
     - name: Build APK (split per ABI)
-      run: flutter build apk --release --split-per-abi --build-number=${{ steps.ver.outputs.code }}
+      run: flutter build apk --release --split-per-abi --build-name=${{ steps.ver.outputs.name }} --build-number=${{ steps.ver.outputs.code }}
 
     - name: Build AAB
-      run: flutter build appbundle --release --build-number=${{ steps.ver.outputs.code }}
+      run: flutter build appbundle --release --build-name=${{ steps.ver.outputs.name }} --build-number=${{ steps.ver.outputs.code }}
 
     - name: Verify APK signatures
       run: |
@@ -78,7 +85,7 @@ jobs:
           build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
           build/app/outputs/bundle/release/app-release.aab
         tag_name: ritme-v${{ github.run_number }}-${{ github.run_id }}
-        name: Ritme v${{ github.run_number }} (build ${{ steps.ver.outputs.code }})
+        name: Ritme ${{ steps.ver.outputs.name }}
         body: |
           Ritme Android release
 
@@ -86,6 +93,6 @@ jobs:
           - `app-armeabi-v7a-release.apk` — oudere telefoons
           - `app-release.aab` — Play Store bundle
 
-          Versiecode: **${{ steps.ver.outputs.code }}**
+          Versie: **${{ steps.ver.outputs.name }}** (code ${{ steps.ver.outputs.code }})
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
