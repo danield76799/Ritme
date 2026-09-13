@@ -38,6 +38,44 @@ class NotifStrings {
   static String get appointmentReminder =>
       _nl ? '📅 Afspraak herinnering' : '📅 Appointment reminder';
 
+  // --- Check-in herinneringen -------------------------------------------------
+
+  static String get checkinReminders =>
+      _nl ? 'Check-in herinneringen' : 'Check-in reminders';
+  static String get checkinRemindersDesc => _nl
+      ? 'Herinneringen voor de ochtend- en avond check-in'
+      : 'Reminders for the morning and evening check-in';
+
+  static String get checkinMorningTitle =>
+      _nl ? '☀️ Ochtend check-in' : '☀️ Morning check-in';
+  static String get checkinMorningBody => _nl
+      ? 'Goedemorgen — vul je ochtend check-in in.'
+      : 'Good morning — fill in your morning check-in.';
+
+  static String get checkinEveningTitle =>
+      _nl ? '🌙 Avond check-in' : '🌙 Evening check-in';
+  static String get checkinEveningBody => _nl
+      ? 'Vul je avond check-in in.'
+      : 'Fill in your evening check-in.';
+
+  /// Toegevoegd aan de gewone tekst wanneer de dag ervoor niet volledig is
+  /// ingevuld. Bewust als extra regel i.p.v. een losse melding: de gebruiker
+  /// krijgt één herinnering, met de context erbij.
+  static String get checkinMissedSuffix => _nl
+      ? '\n\n⚠️ De check-in van gisteren is nog niet ingevuld.'
+      : '\n\n⚠️ Yesterday\'s check-in has not been filled in yet.';
+
+  /// Volledige titel/body voor een check-in herinnering.
+  static String checkinTitle({required bool ochtend, required bool gisterenGemist}) =>
+      gisterenGemist
+          ? (ochtend ? checkinMorningTitle : checkinEveningTitle)
+          : (ochtend ? checkinMorningTitle : checkinEveningTitle);
+
+  static String checkinBody({required bool ochtend, required bool gisterenGemist}) {
+    final base = ochtend ? checkinMorningBody : checkinEveningBody;
+    return gisterenGemist ? '$base$checkinMissedSuffix' : base;
+  }
+
   static String timeToTakeMedication(String daysStr) => _nl
       ? 'Tijd om je medicatie in te nemen! ($daysStr)'
       : 'Time to take your medication! ($daysStr)';

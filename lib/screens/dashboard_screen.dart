@@ -55,6 +55,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     WidgetsBinding.instance.addObserver(this);
     _loadData();
     _setupNotifications();
+    // Koude start vanuit een notificatie: de payload ligt dan al klaar.
+    _openPendingCheckin();
   }
 
   @override
@@ -67,7 +69,27 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _loadData();
+      _openPendingCheckin();
     }
+  }
+
+  /// Opent de check-in waar de gebruiker op tikte in een notificatie.
+  ///
+  /// De notificatie zet de route klaar in NotificationHelper; hier wordt hij
+  /// opgepikt. Dit gebeurt bij het hervatten van de app, zodat het werkt of de
+  /// app nu koud startte of al open stond. Elke route wordt maar één keer
+  /// verbruikt (zie consumePendingCheckinRoute).
+  void _openPendingCheckin() {
+    final route = NotificationHelper.instance.consumePendingCheckinRoute();
+    if (route == null || !mounted) return;
+    // Licht uitgesteld: bij een koude start is het dashboard nog aan het
+    // opbouwen, en dan kan pushNamed midden in een frame vallen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.pushNamed(context, route).then((_) {
+        if (mounted) _loadData();
+      });
+    });
   }
 
   Future<void> _loadData() async {

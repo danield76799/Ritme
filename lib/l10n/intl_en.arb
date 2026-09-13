@@ -709,5 +709,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "checkinHerinneringenTitel": "Check-in reminders",
+  "checkinHerinneringenUitleg": "Get a notification when your morning or evening check-in is still due. If yesterday's check-in is still missing, that is shown too.",
+  "ochtendHerinnering": "Morning reminder",
+  "avondHerinnering": "Evening reminder",
+  "herinneringTijd": "Time",
+  "testCheckinNotificatie": "Test check-in notification"
 }

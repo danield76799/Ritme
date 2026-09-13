@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../utils/notif_strings.dart';
+import '../utils/checkin_status.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -11,6 +12,18 @@ import '../utils/logger.dart';
 
 class NotificationHelper {
   static final NotificationHelper instance = NotificationHelper._();
+
+  /// Route die geopend moet worden nadat de gebruiker op een check-in
+  /// notificatie heeft getikt. De navigator leest dit uit zodra de app weer
+  /// vooraan staat; daarna wordt het gewist.
+  String? _pendingCheckinRoute;
+
+  /// Pakt (en wist) de wachtende check-in route, of null als er niets wacht.
+  String? consumePendingCheckinRoute() {
+    final route = _pendingCheckinRoute;
+    _pendingCheckinRoute = null;
+    return route;
+  }
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   NotificationHelper._();
@@ -642,9 +655,182 @@ class NotificationHelper {
     }
   }
 
+  /// Toont direct een voorbeeld van de ochtend-herinnering, inclusief de
+  /// "gisteren nog niet ingevuld"-regel wanneer die van toepassing is.
+  /// Alleen bedoeld om de melding te beoordelen — plant niets in.
+  Future<void> showCheckinPreview() async {
+    if (kIsWeb) return;
+    final gisteren = DateTime.now().subtract(const Duration(days: 1));
+    final status = await CheckinStatus.voor(CheckinStatus.dateKey(gisteren));
+
+    await showImmediateNotification(
+      title: NotifStrings.checkinTitle(
+          ochtend: true, gisterenGemist: !status.ochtend),
+      body: NotifStrings.checkinBody(
+          ochtend: true, gisterenGemist: !status.ochtend),
+      payload: 'checkin:ochtend',
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Check-in herinneringen (ochtend + avond)
+  // ---------------------------------------------------------------------------
+
+  /// Vaste ID's buiten het bereik dat medicatie (<10000 + id) en afspraken
+  /// (id*100 % 100000, dus <100000) gebruiken, zodat er geen collisie is.
+  static const int _ochtendNotifId = 900001;
+  static const int _avondNotifId = 900002;
+
+  static const String _ochtendKey = 'notif_ochtend_tijd';
+  static const String _avondKey = 'notif_avond_tijd';
+  static const String _ochtendAanKey = 'notif_ochtend_aan';
+  static const String _avondAanKey = 'notif_avond_aan';
+
+  /// Standaardtijden wanneer de gebruiker niets heeft ingesteld.
+  static const String defaultOchtendTijd = '08:00';
+  static const String defaultAvondTijd = '21:00';
+
+  /// Leest de instellingen en plant beide check-in herinneringen opnieuw.
+  ///
+  /// Wordt aangeroepen bij app-start, na het opslaan van Instellingen, en door
+  /// de periodieke WorkManager-taak (Android kan alarms laten vallen na een
+  /// tijd in Doze).
+  Future<void> rescheduleCheckinReminders() async {
+    if (kIsWeb) return;
+    try {
+      final settings = await db.getSettings() ?? <String, dynamic>{};
+
+      final ochtendAan = _asBool(settings[_ochtendAanKey], true);
+      final avondAan = _asBool(settings[_avondAanKey], true);
+      final ochtendTijd =
+          settings[_ochtendKey]?.toString() ?? defaultOchtendTijd;
+      final avondTijd = settings[_avondKey]?.toString() ?? defaultAvondTijd;
+
+      if (ochtendAan) {
+        await _scheduleCheckin(
+          id: _ochtendNotifId,
+          tijd: ochtendTijd,
+          ochtend: true,
+        );
+      } else {
+        await _notifications.cancel(_ochtendNotifId);
+      }
+
+      if (avondAan) {
+        await _scheduleCheckin(
+          id: _avondNotifId,
+          tijd: avondTijd,
+          ochtend: false,
+        );
+      } else {
+        await _notifications.cancel(_avondNotifId);
+      }
+
+      AppLogger.info(
+          'Check-in herinneringen gepland: ochtend=$ochtendAan@$ochtendTijd, avond=$avondAan@$avondTijd');
+    } catch (e) {
+      AppLogger.error('Check-in herinneringen plannen mislukt', error: e);
+    }
+  }
+
+  static bool _asBool(dynamic v, bool fallback) {
+    if (v == null) return fallback;
+    final s = v.toString().toLowerCase();
+    if (s == '1' || s == 'true') return true;
+    if (s == '0' || s == 'false') return false;
+    return fallback;
+  }
+
+  Future<void> _scheduleCheckin({
+    required int id,
+    required String tijd,
+    required bool ochtend,
+  }) async {
+    final parts = tijd.split(':');
+    final hour = int.tryParse(parts.isNotEmpty ? parts[0] : '') ?? (ochtend ? 8 : 21);
+    final minute = int.tryParse(parts.length > 1 ? parts[1] : '') ?? 0;
+
+    // Was de check-in van GISTEREN nog niet (volledig) ingevuld? Dan krijgt de
+    // melding een extra waarschuwingsregel. Dit wordt bij ELKE herplanning
+    // opnieuw bepaald, zodat WorkManager het oordeel ververst zonder dat er een
+    // achtergrondtaak met eigen DB-toegang nodig is.
+    final gisteren = DateTime.now().subtract(const Duration(days: 1));
+    final status = await CheckinStatus.voor(CheckinStatus.dateKey(gisteren));
+    final gisterenGemist = ochtend ? !status.ochtend : !status.avond;
+
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+
+    final androidDetails = AndroidNotificationDetails(
+      'checkin_reminders',
+      NotifStrings.checkinReminders,
+      channelDescription: NotifStrings.checkinRemindersDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+      enableVibration: true,
+      playSound: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    // Zelfde aanpak als de medicatie-planning: vraag het native kanaal of
+    // exacte alarms mogen, en zak anders terug naar inexact — een melding die
+    // iets later komt is beter dan een die niet komt.
+    final androidImpl =
+        _notifications.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    final canScheduleExact =
+        await androidImpl?.canScheduleExactNotifications() ?? false;
+
+    await _notifications.cancel(id);
+    await _notifications.zonedSchedule(
+      id,
+      NotifStrings.checkinTitle(ochtend: ochtend, gisterenGemist: gisterenGemist),
+      NotifStrings.checkinBody(ochtend: ochtend, gisterenGemist: gisterenGemist),
+      scheduled,
+      NotificationDetails(android: androidDetails, iOS: iosDetails),
+      androidScheduleMode: canScheduleExact
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+      payload: ochtend ? 'checkin:ochtend' : 'checkin:avond',
+    );
+
+    AppLogger.info(
+        'Check-in herinnering gepland: ${ochtend ? 'ochtend' : 'avond'} om $tijd '
+        '(gisterenGemist=$gisterenGemist)');
+  }
+
   void _onNotificationResponse(NotificationResponse response) async {
     final payload = response.payload;
     final actionId = response.actionId;
+
+    // Check-in herinnering: stuur de app naar het juiste scherm. De payload
+    // wordt door de navigator opgepikt zodra de app weer vooraan staat.
+    if (payload != null && payload.startsWith('checkin:')) {
+      _pendingCheckinRoute = payload.split(':').length > 1
+          ? '/${payload.split(':')[1]}-checkin'
+          : null;
+      AppLogger.debug('Check-in notificatie geopend: $_pendingCheckinRoute');
+      return;
+    }
 
     if (payload != null && payload.startsWith('medication:')) {
       final medicationId = int.tryParse(payload.split(':')[1]);
