@@ -71,6 +71,28 @@ class AppTheme {
   static Color successOn(Brightness brightness) =>
       brightness == Brightness.dark ? const Color(0xFF4CAF50) : success;
 
+  /// Rood dat in BEIDE modes leesbaar is (tekst én icoon).
+  ///
+  /// [error] (#D32F2F) haalt 4.98:1 op wit maar zakt op de donkere kaart
+  /// (#223236) naar 3.15:1 — te weinig voor tekst. Deze helper kiest per
+  /// brightness, zodat foutmeldingen ook in dark mode leesbaar zijn en
+  /// destructieve iconen niet wegvallen tegen hun achtergrond.
+  static Color danger(BuildContext context) =>
+      dangerOn(Theme.of(context).brightness);
+
+  static Color dangerOn(Brightness brightness) =>
+      brightness == Brightness.dark ? const Color(0xFFFFB4AB) : error;
+
+  /// Rode ICOONKLEUR voor op een AppBar.
+  ///
+  /// Let op: de AppBar is in dark mode LICHT (#7AC8D3) en in light mode
+  /// DONKER (#2F7A85) — precies omgekeerd aan de rest van het scherm. Een
+  /// rode tint moet dus per mode de andere kant op: op de donkere balk is een
+  /// lichte tint nodig, op de lichte balk een diepe.
+  /// (#E57373 haalde op beide balken <2:1 en was daardoor onzichtbaar.)
+  static Color dangerOnAppBar(Brightness brightness) =>
+      brightness == Brightness.dark ? const Color(0xFF8C1D18) : const Color(0xFFFFCDD2);
+
   /// Amber voor de streak-chip. `orange.shade700` haalt 3.6:1 op de chip en
   /// zakt daarmee onder de AA-norm; deze tinten halen 5.9:1 resp. 7.5:1.
   static Color streakText(Brightness brightness) =>

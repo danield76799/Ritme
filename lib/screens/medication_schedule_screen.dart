@@ -69,7 +69,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+          Icon(Icons.error_outline, size: 48, color: AppTheme.danger(context)),
           const SizedBox(height: 12),
           Text(
             _errorMessage!,

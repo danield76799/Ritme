@@ -127,7 +127,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(AppLocalizations.of(context).herinneringGezet(name, timeStr)),
-                backgroundColor: Colors.green[700],
+                // Colors.green[700] gaf witte tekst maar 4.12:1;
+                // AppTheme.success haalt 5.13:1.
+                backgroundColor: AppTheme.success,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 duration: const Duration(seconds: 2),
@@ -175,8 +177,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
             TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context).annuleren)),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text(AppLocalizations.of(context).verwijderen, style: TextStyle(color: Colors.white)),
+              // Colors.red gaf witte tekst 3.68:1; AppTheme.error 4.98:1.
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+              child: Text(AppLocalizations.of(context).verwijderen, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -264,8 +267,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context).annuleren)),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text(AppLocalizations.of(context).resetten, style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+            child: Text(AppLocalizations.of(context).resetten, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -450,7 +453,16 @@ class _MedicationScreenState extends State<MedicationScreen> {
             tooltip: AppLocalizations.of(context).notificatiepermissiesControleren,
             onPressed: _checkNotificationPermissions,
           ),
-          IconButton(icon: Icon(Icons.delete_forever_rounded, color: Colors.red.shade300), tooltip: AppLocalizations.of(context).resetten, onPressed: _resetDatabase),
+          IconButton(
+              icon: Icon(Icons.delete_forever_rounded,
+                  // De AppBar is in dark mode LICHT en in light mode DONKER,
+                  // dus de rode tint moet per mode de andere kant op. De oude
+                  // Colors.red.shade300 haalde op beide balken <2:1 en was
+                  // daardoor onzichtbaar — gevaarlijk voor een knop die de
+                  // database wist.
+                  color: AppTheme.dangerOnAppBar(Theme.of(context).brightness)),
+              tooltip: AppLocalizations.of(context).resetten,
+              onPressed: _resetDatabase),
         ],
       ),
       body: Column(
@@ -478,15 +490,21 @@ class _MedicationScreenState extends State<MedicationScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
-          SizedBox(height: 12),
-          Text(_errorMessage!, style: TextStyle(fontSize: 16, color: Colors.red[600]), textAlign: TextAlign.center),
-          SizedBox(height: 16),
+          Icon(Icons.error_outline, size: 48, color: AppTheme.danger(context)),
+          const SizedBox(height: 12),
+          // red[600] zakte op de donkere kaart naar 3.15:1, precies wanneer er
+          // iets mis is. danger() kiest per mode een leesbare tint.
+          Text(_errorMessage!,
+              style: TextStyle(fontSize: 16, color: AppTheme.danger(context)),
+              textAlign: TextAlign.center),
+          const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _loadData,
             icon: Icon(Icons.refresh),
             label: Text(AppLocalizations.of(context).opnieuwProberen),
-            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary),
           ),
         ],
       ),
@@ -570,8 +588,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 color: taken ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.primary.withValues(alpha: isDark ? 0.2 : 0.12),
               ),
               child: taken
-                  ? Icon(Icons.check_rounded, color: isDark ? AppTheme.darkBackground : Colors.white, size: 26)
-                  : Icon(Icons.medication_rounded, color: isDark ? AppTheme.medicalTealLight : Theme.of(context).colorScheme.primary, size: 24),
+                  ? Icon(Icons.check_rounded, color: Theme.of(context).colorScheme.onPrimary, size: 26)
+                  : Icon(Icons.medication_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
             ),
             Expanded(
               child: Padding(
@@ -628,7 +646,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             taken ? Icons.check_rounded : Icons.add_rounded,
                             size: 17,
                             color: taken
-                                ? (isDark ? AppTheme.darkBackground : Colors.white)
+                                ? Theme.of(context).colorScheme.onPrimary
                                 : Theme.of(context).colorScheme.primary,
                           ),
                           const SizedBox(width: 4),
@@ -638,7 +656,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: taken
-                                  ? (isDark ? AppTheme.darkBackground : Colors.white)
+                                  ? Theme.of(context).colorScheme.onPrimary
                                   : Theme.of(context).colorScheme.primary,
                             ),
                           ),
@@ -684,48 +702,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
   }
 
-  Widget _buildCounterBtn({required IconData icon, required VoidCallback? onPressed, bool isPrimary = false}) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 32, height: 32,
-          decoration: BoxDecoration(color: isPrimary ? Theme.of(context).colorScheme.primary : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
-          child: Icon(icon, size: 18, color: isPrimary ? Colors.white : Colors.black),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIntakeToggleBtn({required int configId, required bool taken}) {
-    final l10n = AppLocalizations.of(context);
-    final label = taken ? l10n.medicatieGenomen : l10n.medicatieNietGenomen;
-    final icon = taken ? Icons.check_circle : Icons.add_circle_outline;
-    final bg = taken ? Theme.of(context).colorScheme.primary : Colors.grey.shade100;
-    final fg = taken ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _toggleIntake(configId),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: taken ? Colors.white : Colors.grey.shade600),
-              const SizedBox(height: 2),
-              Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg), textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildDeleteBtn({required VoidCallback? onPressed}) {
     return Material(
       color: Colors.transparent,
@@ -736,9 +712,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
           width: 34, height: 34,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.red.withValues(alpha: 0.08),
+            color: AppTheme.danger(context).withValues(alpha: 0.10),
           ),
-          child: Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red.shade400),
+          child: Icon(Icons.delete_outline_rounded, size: 18,
+              color: AppTheme.danger(context)),
         ),
       ),
     );
