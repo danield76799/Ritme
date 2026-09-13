@@ -715,5 +715,8 @@
   "ochtendHerinnering": "Morning reminder",
   "avondHerinnering": "Evening reminder",
   "herinneringTijd": "Time",
-  "testCheckinNotificatie": "Test check-in notification"
+  "testCheckinNotificatie": "Test check-in notification",
+  "volgendeHerinneringVandaag": "Next reminder: today at {tijd}",
+  "volgendeHerinneringMorgen": "Next reminder: tomorrow at {tijd}",
+  "tijdAlVoorbijVandaag": "That time has already passed today, so the first notification comes tomorrow."
 }

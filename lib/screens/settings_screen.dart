@@ -569,7 +569,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await db.updateSettingsMap(merged);
       if (mounted) setState(() => _settings = merged);
       await NotificationHelper.instance.rescheduleCheckinReminders();
-      if (mounted) _showSuccess(AppLocalizations.of(context).instellingenOpgeslagen);
+      if (mounted) {
+        // Meld ook meteen wanneer de eerste melding komt. Zonder dit lijkt een
+        // tijd die vandaag al voorbij is op een storing.
+        final l10n = AppLocalizations.of(context);
+        final volgende = NotificationHelper.volgendeMoment(value.toString());
+        _showSuccess(volgende.morgen
+            ? l10n.volgendeHerinneringMorgen(value.toString())
+            : l10n.volgendeHerinneringVandaag(value.toString()));
+      }
     } catch (e, stackTrace) {
       AppLogger.error('Check-in instelling opslaan mislukt', error: e, stackTrace: stackTrace);
       if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
@@ -655,6 +663,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               onTap: () => _showTimePicker(label, tijdKey,
                   onSaved: (tijd) => _setCheckinSetting(tijdKey, tijd)),
+            ),
+            // Terugkoppeling WANNEER de melding echt afgaat. Zonder deze regel
+            // lijkt het instellen van een tijd die vandaag al voorbij is op een
+            // storing: er gebeurt niets, want de melding gaat naar morgen.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: [
+                  Icon(Icons.schedule,
+                      size: 14,
+                      color: NotificationHelper.volgendeMoment(tijd).morgen
+                          ? AppTheme.warning
+                          : Theme.of(context).textTheme.bodySmall?.color),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      NotificationHelper.volgendeMoment(tijd).morgen
+                          ? AppLocalizations.of(context).volgendeHerinneringMorgen(tijd)
+                          : AppLocalizations.of(context).volgendeHerinneringVandaag(tijd),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: NotificationHelper.volgendeMoment(tijd).morgen
+                            ? AppTheme.warning
+                            : Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],

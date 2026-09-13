@@ -24,6 +24,73 @@ class NotificationHelper {
     _pendingCheckinRoute = null;
     return route;
   }
+  /// Is de tijdzone in DEZE isolate al gezet?
+  ///
+  /// Bewust per isolate: de WorkManager-taak draait in een eigen isolate met
+  /// eigen globals. Statisch overerving helpt daar niet.
+  static bool _tzReady = false;
+
+  /// Zet de lokale tijdzone, precies één keer per isolate.
+  ///
+  /// WAAROM DIT EEN EIGEN METHODE IS
+  /// [tz.initializeTimeZones] zet de lokale zone op **UTC** (zie
+  /// timezone/lib/src/env.dart: `_local = _UTC`). Zonder een volgende
+  /// [tz.setLocalLocation] rekent alles in UTC — in Nederland scheelt dat in de
+  /// zomer 2 uur, dus een melding van 19:30 komt dan om 21:30.
+  ///
+  /// Dat gebeurde op twee plekken:
+  ///  1. de fallback in de catch deed alleen een debugPrint en zette dus niets;
+  ///  2. de WorkManager-taak riep initialize() nooit aan, waardoor `tz.local`
+  ///     in die isolate zelfs een LateInitializationError gooide en de hele
+  ///     herplanning stil mislukte.
+  ///
+  /// Vandaar: idempotent, en aangeroepen op ELK pad dat plant.
+  Future<void> _ensureTimeZoneInitialized() async {
+    if (_tzReady) return;
+
+    // initializeTimeZones() reset de lokale zone naar UTC, dus mag maar één
+    // keer per isolate gebeuren. De _tzReady-guard hierboven regelt dat.
+    tz.initializeTimeZones();
+
+    try {
+      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+      // flutter_timezone 5.0.x geeft een object wiens identifier de IANA-naam is.
+      final String timeZoneName = timezoneInfo.identifier.isNotEmpty
+          ? timezoneInfo.identifier
+          : timezoneInfo.toString();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      _tzReady = true;
+      debugPrint('Timezone set to: $timeZoneName');
+      return;
+    } catch (e) {
+      debugPrint('Kon tijdzone niet via de plugin bepalen: $e');
+    }
+
+    // Fallback: bouw een vaste zone op basis van de UTC-offset van het toestel.
+    // Nodig omdat tz zonder setLocalLocation op UTC blijft en alle meldingen
+    // dan uren verschoven worden.
+    try {
+      final offset = DateTime.now().timeZoneOffset;
+      final uren = offset.inHours;
+      if (offset.inMinutes % 60 != 0) {
+        // Halve/hele-kwartierzones (bijv. India) zijn niet als Etc/GMT-zone
+        // uit te drukken. Dan blijft het bij UTC + een duidelijke waarschuwing.
+        AppLogger.warning(
+            'Tijdzone heeft een niet-heel-uur offset ($offset); valt terug op UTC');
+        _tzReady = true;
+        return;
+      }
+      // Let op het teken: in de tz-database betekent Etc/GMT+2 juist UTC-2.
+      final naam = 'Etc/GMT${uren >= 0 ? '-' : '+'}${uren.abs()}';
+      tz.setLocalLocation(tz.getLocation(naam));
+      _tzReady = true;
+      debugPrint('Fallback tijdzone gezet op $naam (offset=$offset)');
+    } catch (e) {
+      AppLogger.warning('Kon ook geen fallback-tijdzone zetten: $e');
+      _tzReady = true; // niet blijven proberen; UTC is dan het beste wat we hebben
+    }
+  }
+
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   NotificationHelper._();
@@ -32,23 +99,7 @@ class NotificationHelper {
     if (kIsWeb) return;
 
     try {
-      tz.initializeTimeZones();
-      try {
-        final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-        // flutter_timezone 5.0.x returns a FlutterLocalTimezone object
-        // whose toString() or identifier gives the IANA name.
-        final String timeZoneName = timezoneInfo.identifier.isNotEmpty
-            ? timezoneInfo.identifier
-            : timezoneInfo.toString();
-        final location = tz.getLocation(timeZoneName);
-        tz.setLocalLocation(location);
-        debugPrint('Timezone set to: $timeZoneName (offset=${location.currentTimeZone.offset})');
-      } catch (e) {
-        debugPrint('Failed to set local timezone, falling back to UTC offset of device: $e');
-        // Fallback: use the device's UTC offset to construct a fixed-offset location
-        final deviceOffset = DateTime.now().timeZoneName;
-        debugPrint('Device timezone name: $deviceOffset');
-      }
+      await _ensureTimeZoneInitialized();
 
       const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosSettings = DarwinInitializationSettings(
@@ -204,7 +255,10 @@ class NotificationHelper {
 
     try {
       await ensureInitialized();
-      
+      // De tijdsberekeningen hieronder gebruiken tz.local; in een verse
+      // isolate (WorkManager) is die nog niet gezet.
+      await _ensureTimeZoneInitialized();
+
       // CRITICAL: Clean up orphaned/duplicate DB schedules and cancel ALL
       // existing local notifications before rescheduling. This prevents stale
       // reminders from deleted/disabled medications from reappearing.
@@ -734,6 +788,29 @@ class NotificationHelper {
   static const String defaultOchtendTijd = '08:00';
   static const String defaultAvondTijd = '21:00';
 
+  /// Wanneer gaat deze herinnering daadwerkelijk af?
+  ///
+  /// Nodig omdat het instellen van een tijd die vandaag al voorbij is niet
+  /// "niets doet": de melding gaat dan naar morgen. Zonder deze terugkoppeling
+  /// lijkt dat op een storing — de gebruiker kiest 19:30 om 19:34 en er
+  /// gebeurt niets.
+  ///
+  /// Geeft (moment, isMorgen) terug.
+  static ({DateTime moment, bool morgen}) volgendeMoment(String tijd) {
+    final parts = tijd.split(':');
+    final hour = int.tryParse(parts.isNotEmpty ? parts[0] : '') ?? 8;
+    final minute = int.tryParse(parts.length > 1 ? parts[1] : '') ?? 0;
+
+    final now = DateTime.now();
+    var moment = DateTime(now.year, now.month, now.day, hour, minute);
+    var morgen = false;
+    if (!moment.isAfter(now)) {
+      moment = moment.add(const Duration(days: 1));
+      morgen = true;
+    }
+    return (moment: moment, morgen: morgen);
+  }
+
   /// Leest de instellingen en plant beide check-in herinneringen opnieuw.
   ///
   /// Wordt aangeroepen bij app-start, na het opslaan van Instellingen, en door
@@ -742,6 +819,9 @@ class NotificationHelper {
   Future<void> rescheduleCheckinReminders() async {
     if (kIsWeb) return;
     try {
+      // Ook hier: dit pad loopt in de WorkManager-isolate, waar de tijdzone
+      // nog niet gezet is. Zonder deze regel rekent hij in UTC of gooit hij.
+      await _ensureTimeZoneInitialized();
       final settings = await db.getSettings() ?? <String, dynamic>{};
 
       final ochtendAan = _asBool(settings[_ochtendAanKey], true);
