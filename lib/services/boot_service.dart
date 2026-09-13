@@ -43,9 +43,9 @@ class BootService {
   /// Returns the number of reminders that were rescheduled.
   static Future<int> _rescheduleAllNotifications() async {
     developer.log('Rescheduling all medication reminders...', name: 'BootService');
-    // Check-in herinneringen zitten in een eigen kanaal/ID-ruimte en worden
-    // hier ook herplant, zodat ze na een reboot niet verdwijnen.
-    await NotificationHelper.instance.rescheduleCheckinReminders();
+    // rescheduleAllMedicationReminders() plant de check-in herinneringen zelf,
+    // ná zijn interne cancelAll() — zie de toelichting daar. Hier dus geen
+    // aparte aanroep: die zou vóór het wissen kunnen vallen.
     return await NotificationHelper.instance.rescheduleAllMedicationReminders();
   }
 

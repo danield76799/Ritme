@@ -275,7 +275,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
     if (confirmed == true) {
       await db.clearAllData();
+      // cancelAll() wist ALLE notificaties, dus ook de check-in herinneringen.
+      // Na een reset staan de instellingen weer op de standaardwaarden, dus
+      // opnieuw plannen geeft de gebruiker meteen de verwachte meldingen terug
+      // in plaats van stilte tot de volgende app-start.
       await NotificationHelper.instance.cancelAllReminders();
+      await NotificationHelper.instance.rescheduleCheckinReminders();
       _loadData();
     }
   }

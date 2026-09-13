@@ -77,9 +77,6 @@ void callbackDispatcher() {
         'WorkManager rescheduled $count medication reminders',
         name: 'WorkManagerService',
       );
-      // Ook de check-in herinneringen verversen: dit is meteen het moment
-      // waarop de "gisteren nog niet ingevuld"-tekst opnieuw wordt bepaald.
-      await NotificationHelper.instance.rescheduleCheckinReminders();
     } catch (e, stackTrace) {
       developer.log(
         'WorkManager reschedule failed: $e',
