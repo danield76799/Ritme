@@ -185,6 +185,11 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       setState(() => _isSaving = true);
     }
 
+    // Alleen bij ECHT gelukte opslag naar de klaar-stap. Eerst stond
+    // `_step = 3` ook in het foutpad, waardoor een mislukte save toch een
+    // vinkje toonde en de gebruiker dacht dat alles bewaard was.
+    bool opgeslagen = false;
+    Object? fout;
     try {
       await ensureInitialized();
 
@@ -230,16 +235,25 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       assessment['date'] = _formattedToday;
       assessment['q4_slaapbehoefte'] = _q4;
       await db.upsertMoodAssessment(assessment);
+      opgeslagen = true;
     } catch (e) {
+      fout = e;
       AppLogger.error('MorningCheckIn: opslaan mislukt', error: e);
     }
 
-    // UI pas naar klaar-stap na voltooide opslag (geen race meer).
-    if (mounted) {
-      setState(() {
-        _step = 3;
-        _isSaving = false;
-      });
+    // Blijf bij een fout op het formulier met een melding, in plaats van
+    // stil naar de klaar-stap te gaan (geen race meer, geen vals vinkje).
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+    if (opgeslagen) {
+      setState(() => _step = 3);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).fout(fout ?? '')),
+          backgroundColor: AppTheme.error,
+        ),
+      );
     }
   }
 
