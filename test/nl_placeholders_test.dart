@@ -15,6 +15,17 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+
+String _code_bestand(String pad) {
+  final zonderBlok = File(pad)
+      .readAsStringSync()
+      .replaceAll(RegExp(r'/\\*[\\s\\S]*?\\*/'), '');
+  return zonderBlok
+      .split('\n')
+      .map((regel) => regel.replaceAll(RegExp(r'//.*$'), ''))
+      .join('\n');
+}
+
 Map<String, dynamic> _arb(String naam) => json.decode(
       File('lib/l10n/$naam').readAsStringSync(),
     ) as Map<String, dynamic>;
@@ -62,6 +73,34 @@ void main() {
       final tekst = nl['herinneringenHerplantDbIngepland'] as String;
       expect(tekst.contains('{rescheduled}'), isTrue);
       expect(tekst.contains('{count}'), isTrue);
+    });
+  });
+
+  group('Planningsfouten worden zichtbaar', () {
+    test('rescheduleCheckinReminders geeft de fout terug', () {
+      final helper = _code_bestand('lib/services/notification_helper.dart');
+      expect(helper.contains('Future<String?> rescheduleCheckinReminders()'),
+          isTrue,
+          reason: 'de Herplan-knop moet de echte fout kunnen tonen');
+      expect(helper.contains('eersteFout'), isTrue);
+    });
+
+    test('één falende herinnering blokkeert de ander niet', () {
+      final helper = _code_bestand('lib/services/notification_helper.dart');
+      // Beide herinneringen hebben een eigen try/catch.
+      expect(
+          RegExp('Ochtendherinnering plannen mislukt')
+              .hasMatch(helper),
+          isTrue);
+      expect(
+          RegExp('Avondherinnering plannen mislukt').hasMatch(helper), isTrue);
+    });
+
+    test('de Herplan-knop toont de fouttekst bij falen', () {
+      final settings =
+          _code_bestand('lib/screens/settings_screen.dart');
+      expect(settings.contains('checkinFout'), isTrue);
+      expect(settings.contains('rescheduleCheckinReminders()'), isTrue);
     });
   });
 }

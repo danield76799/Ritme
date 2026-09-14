@@ -451,10 +451,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
             () async {
               try {
                 final rescheduled = await BootService.rescheduleNow();
-                final count = await NotificationHelper.instance.getPendingNotificationCount();
-                if (mounted) {
+                // Check-in planning apart opvragen: een fout daarin verdween
+                // tot nu toe onzichtbaar in de console. Als die er is, toont
+                // het balkje de echte fouttekst van het toestel.
+                final checkinFout = await NotificationHelper.instance
+                    .rescheduleCheckinReminders();
+                final count = await NotificationHelper.instance
+                    .getPendingNotificationCount();
+                if (!mounted) return;
+                if (checkinFout != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context).herinneringenHerplantDbIngepland(rescheduled, count)), backgroundColor: Colors.green),
+                    SnackBar(
+                        content: Text(
+                            AppLocalizations.of(context).fout(checkinFout)),
+                        backgroundColor: AppTheme.error),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(AppLocalizations.of(context)
+                            .herinneringenHerplantDbIngepland(
+                                rescheduled, count)),
+                        backgroundColor: Colors.green),
                   );
                 }
               } catch (e) {

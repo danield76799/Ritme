@@ -122,7 +122,7 @@ void main() {
 
     test('het plannen van check-in herinneringen komt langs de guard', () {
       final helper = _bron('lib/services/notification_helper.dart');
-      final start = helper.indexOf('Future<void> rescheduleCheckinReminders()');
+      final start = helper.indexOf('Future<String?> rescheduleCheckinReminders()');
       final rest = helper.substring(start + 1);
       final match = RegExp(r'\n  Future<').firstMatch(rest);
       final eind = match == null ? helper.length : start + 1 + match.start;
