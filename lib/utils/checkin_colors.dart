@@ -10,10 +10,11 @@ class MoodAssessmentScorerColors {
 
   /// Kleur voor de slaapbehoefte-/stemmingsschaal.
   ///
-  /// LET OP: dit is bewust een stoplicht-gradient. De ochtend-check-in toont
-  /// deze kleuren NIET meer in de keuzekaarten (daar is één rustige accentkleur
-  /// leidend), maar het avondscherm en de overzichten gebruiken ze nog wel om
-  /// de ernst van een score te duiden.
+  /// Stoplicht-gradient: de keuzekaarten van de ochtend-check-in tonen deze
+  /// kleur gedempt per optie (badge-ring + tint; gevuld bij selectie), zodat
+  /// elke score herkenbaar is zonder dat de kaart vol kleur loopt. Knoppen en
+  /// voortgang blijven bij het ene rustige accent (teal): kleur = betekenis,
+  /// teal = actie.
   static Color slaapbehoefteColor(double v) {
     if (v <= -4) return const Color(0xFF616161);
     if (v <= -3) return const Color(0xFF424242);
@@ -32,6 +33,32 @@ class MoodAssessmentScorerColors {
     final i = score.toInt();
     if (i == 0) return '0';
     return i > 0 ? '+$i' : '—${i.abs()}';
+  }
+
+  /// Leesbare tekst op een gevulde scorekleur (badge). Kiest de tekstkleur
+  /// met het hoogste contrast (donker of wit) — bewaakt in
+  /// test/ochtend_checkin_kleur_test.dart.
+  static Color tekstOp(Color achtergrond) {
+    final l = achtergrond.computeLuminance();
+    final donkerL = CheckinAccent.onAccent.computeLuminance();
+    final contrastDonker = (l + 0.05) / (donkerL + 0.05);
+    final contrastWit = 1.05 / (l + 0.05);
+    return contrastDonker >= contrastWit ? CheckinAccent.onAccent : Colors.white;
+  }
+
+  /// Badge-vulling bij selectie: de scorekleur, tenzij witte tekst daar geen
+  /// WCAG AA (≥4.5:1) op haalt — dan iets verdonkerd tot het wel kan. De ring
+  /// en de kaart-tint tonen altijd de echte klinische kleur; alleen de volle
+  /// vulling achter de badgetekst wordt zo nodig verdiept (bv. rood).
+  static Color badgeVulling(Color kleur) {
+    if (tekstOp(kleur) != Colors.white) return kleur;
+    var vulling = kleur;
+    for (var i = 0;
+        i < 5 && 1.05 / (vulling.computeLuminance() + 0.05) < 4.5;
+        i++) {
+      vulling = Color.lerp(vulling, Colors.black, 0.1)!;
+    }
+    return vulling;
   }
 }
 

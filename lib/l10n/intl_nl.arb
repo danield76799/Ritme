@@ -641,6 +641,17 @@
   "ochtendSlaapOptieMin2": "Ik word 's morgens een tot twee uur eerder wakker dan gewoonlijk en kan moeilijk weer in slaap komen",
   "ochtendSlaapOptieMin3": "Ik word uren eerder wakker dan gewoonlijk en kan dan niet meer in slaap komen",
   "ochtendSlaapOptieMin4": "Ik slaap niet tot nauwelijks",
+  "ochtendHoeGeslapen": "Hoe heb je geslapen?",
+  "ochtendKwaliteit1": "Slecht",
+  "ochtendKwaliteit2": "Matig",
+  "ochtendKwaliteit3": "Redelijk",
+  "ochtendKwaliteit4": "Goed",
+  "ochtendKwaliteit5": "Uitstekend",
+  "ochtendKwaliteitOmschrijving1": "Woelend, vaak wakker",
+  "ochtendKwaliteitOmschrijving2": "Onrustig, gebroken nacht",
+  "ochtendKwaliteitOmschrijving3": "Niet slecht, niet goed",
+  "ochtendKwaliteitOmschrijving4": "Vast geslapen, uitgerust",
+  "ochtendKwaliteitOmschrijving5": "Diep geslapen, fit wakker",
   "ochtendStapVan": "Stap {stap} van {totaal}",
   "@ochtendStapVan": {
     "placeholders": {
