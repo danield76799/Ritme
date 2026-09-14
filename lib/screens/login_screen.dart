@@ -7,6 +7,7 @@ import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../service_locator.dart';
+import '../theme/app_theme.dart';
 import '../utils/logger.dart';
 import 'dashboard_screen.dart';
 import '../generated/l10n/app_localizations.dart';
@@ -140,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context).stelPin),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppTheme.warning,
             ),
           );
           return didAuthenticate;
@@ -255,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).stelEerstPin),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppTheme.warning,
         ),
       );
       setState(() => _isFirstTime = true);
@@ -295,7 +296,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(AppLocalizations.of(context).biometrieGeactiveerd),
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppTheme.success,
                     ),
                   );
                 }
@@ -397,7 +398,7 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
+            Icon(Icons.warning_amber_rounded, color: AppTheme.warning),
             SizedBox(width: 8),
             Text(AppLocalizations.of(context).pinVergeten),
           ],
@@ -415,7 +416,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Navigator.pop(context);
               _showResetConfirmationDialog();
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.dangerOn(Theme.of(context).brightness)),
             child: Text(AppLocalizations.of(context).appResetten),
           ),
         ],
@@ -441,7 +442,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () async {
               await _resetApp();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.errorContainer, foregroundColor: Theme.of(context).colorScheme.onErrorContainer),
             child: Text(AppLocalizations.of(context).jaResetAlles, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
@@ -465,7 +466,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context).appGeresetStartOpnieuw),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
         setState(() {
@@ -480,7 +481,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context).foutResetten(e)),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -559,7 +560,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: TextStyle(fontSize: 16),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
+                                backgroundColor: Theme.of(context).colorScheme.surface,
                                 foregroundColor: Theme.of(context).colorScheme.primary,
                                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                                 shape: RoundedRectangleBorder(
@@ -624,20 +625,22 @@ class _LoginScreenState extends State<LoginScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.red[50],
+                                  // Gefixte light-tinten vielen uit elkaar
+                                  // in dark mode: dangerOn kiest per mode.
+                                  color: AppTheme.dangerOn(Theme.of(context).brightness).withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.red[200]!),
+                                  border: Border.all(color: AppTheme.dangerOn(Theme.of(context).brightness).withValues(alpha: 0.4)),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(Icons.error_outline,
-                                        color: Colors.red[700], size: 20),
+                                        color: AppTheme.dangerOn(Theme.of(context).brightness), size: 20),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         _errorMessage,
                                         style:
-                                            TextStyle(color: Colors.red[700]),
+                                            TextStyle(color: AppTheme.dangerOn(Theme.of(context).brightness)),
                                       ),
                                     ),
                                   ],

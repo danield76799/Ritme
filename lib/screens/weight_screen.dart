@@ -116,7 +116,7 @@ class _WeightScreenState extends State<WeightScreen> {
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
                       SnackBar(
                         content: Text(AppLocalizations.of(context).gewichtMoetTussen20),
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppTheme.error,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -152,7 +152,7 @@ class _WeightScreenState extends State<WeightScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context).gewichtOpgeslagenVoor(DateFormat('d MMM yyyy').format(_selectedDate))),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTheme.success,
             ),
           );
         }
@@ -211,7 +211,7 @@ class _WeightScreenState extends State<WeightScreen> {
                   ScaffoldMessenger.of(dialogContext).showSnackBar(
                     SnackBar(
                       content: Text(AppLocalizations.of(context).gewichtMoetTussen20),
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppTheme.error,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -247,7 +247,7 @@ class _WeightScreenState extends State<WeightScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context).gewichtOpgeslagenVoor(DateFormat('d MMM yyyy').format(_selectedDate))),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
       }
@@ -258,7 +258,7 @@ class _WeightScreenState extends State<WeightScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context).foutOpslaan2(e)),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
