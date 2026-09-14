@@ -39,8 +39,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
   double? _q5;
 
   // SRM-tijden
-  TimeOfDay? _eersteContact;
-  TimeOfDay? _werkHobby;
   TimeOfDay? _avondeten;
   TimeOfDay? _bedTime;
 
@@ -59,7 +57,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
   TimeOfDay? _opgeslagenBedTime;
   int _opgeslagenScore = 0;
 
-  static const _totaalStappen = 8;
+  static const _totaalStappen = 6;
 
   String get _formattedToday {
     if (widget.initialDate != null) return widget.initialDate!;
@@ -137,8 +135,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       _q2Slider = _opgeslagenQ2Slider;
       _q3 = _opgeslagenQ3;
       _q5 = _opgeslagenQ5;
-      _eersteContact = _opgeslagenEersteContact;
-      _werkHobby = _opgeslagenWerkHobby;
       _avondeten = _opgeslagenAvondeten;
       _bedTime = _opgeslagenBedTime;
       _step = 0;
@@ -238,14 +234,10 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       // 3. SRM-activiteiten met P-score tegen doeltijden
       final settings = await db.getSettings();
       final targets = {
-        'Eerste contact': settings?['target_contact']?.toString(),
-        'Werk / Hobby': settings?['target_werk']?.toString(),
         'Avondeten': settings?['target_eten']?.toString(),
         'Naar bed': settings?['target_slapen']?.toString(),
       };
       final tijden = {
-        'Eerste contact': _eersteContact,
-        'Werk / Hobby': _werkHobby,
         'Avondeten': _avondeten,
         'Naar bed': _bedTime,
       };
@@ -289,6 +281,14 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
     }
   }
 
+  /// Na een tijdkeuze (OK in de kiezer) meteen een stap verder, behalve op de
+  /// laatste stap. Zo hoeft een tijdstip niet twee keer bevestigd te worden
+  /// (OK én Volgende).
+  void _gaVerder() {
+    if (!mounted || _step >= _totaalStappen - 1) return;
+    setState(() => _step += 1);
+  }
+
   bool _canProceed() {
     switch (_step) {
       case 0:
@@ -300,12 +300,8 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       case 3:
         return _q5 != null;
       case 4:
-        return true; // SRM-tijden zijn optioneel
+        return true; // avondeten optioneel
       case 5:
-        return true;
-      case 6:
-        return true;
-      case 7:
         return true; // bedtijd optioneel (kan later via ochtendcheck-in)
       default:
         return false;
@@ -507,7 +503,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
                 child: ElevatedButton(
                   onPressed: _canProceed()
                       ? () {
-                          if (_step == 7) {
+                          if (_step == 5) {
                             _finish();
                           } else {
                             setState(() => _step += 1);
@@ -519,7 +515,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
                     foregroundColor: Colors.white,
                   ),
                   child: Text(
-                    _step == 7 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
+                    _step == 5 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
                   ),
                 ),
               ),
@@ -599,26 +595,17 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
         );
       case 4:
         return _srmTijdVraag(
-          icon: Icons.person_outline,
-          titel: l10n.avondEersteContact,
-          tijd: _eersteContact,
-          onPick: (t) => setState(() => _eersteContact = t),
-        );
-      case 5:
-        return _srmTijdVraag(
-          icon: Icons.work_outline,
-          titel: l10n.avondWerkHobby,
-          tijd: _werkHobby,
-          onPick: (t) => setState(() => _werkHobby = t),
-        );
-      case 6:
-        return _srmTijdVraag(
           icon: Icons.restaurant_outlined,
           titel: l10n.avondAvondeten,
           tijd: _avondeten,
-          onPick: (t) => setState(() => _avondeten = t),
+          // Na OK meteen door: anders moet de gebruiker per tijdstip twee
+          // keer bevestigen (OK én Volgende).
+          onPick: (t) {
+            setState(() => _avondeten = t);
+            _gaVerder();
+          },
         );
-      case 7:
+      case 5:
         return _srmTijdVraag(
           icon: Icons.bedtime,
           titel: l10n.avondNaarBed,

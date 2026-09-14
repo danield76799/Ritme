@@ -189,10 +189,11 @@ void main() {
     test('ochtend: klaar-stap alleen bij gelukte opslag', () {
       final code = _code('lib/screens/morning_checkin_screen.dart');
       expect(code.contains('opgeslagen = true'), isTrue);
-      // _step = 4 (klaar) mag alleen in de opgeslagen-tak staan.
+      // _step = 6 (klaar; sinds de SRM-verhuizing 6 stappen) mag alleen
+      // in de opgeslagen-tak staan.
       final finish = code.substring(code.indexOf('Future<void> _finish()'));
       final klaarToekenningen =
-          RegExp(r'_step\s*=\s*4').allMatches(finish).length;
+          RegExp(r'_step\s*=\s*6').allMatches(finish).length;
       expect(klaarToekenningen, 1,
           reason: 'precies één overgang naar klaar, bewaakt door opgeslagen');
       expect(finish.contains('if (opgeslagen)'), isTrue);
