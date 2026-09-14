@@ -583,6 +583,7 @@
   "rhythmDaadwerkelijk": "Daadwerkelijk",
   "activiteitenOpTijd": "{onTime} van {total} activiteiten op tijd",
   "kiesDatum": "Kies datum",
+  "tijdzone": "Tijdzone",
   "bekijken": "Bekijken",
   "wijzigHerinnertijdVoor": "Wijzig herinnertijd voor {name}",
   "stemmingTrendDag": "Stemming Trend (1 dag)",

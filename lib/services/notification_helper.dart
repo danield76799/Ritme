@@ -788,6 +788,18 @@ class NotificationHelper {
   static const String defaultOchtendTijd = '08:00';
   static const String defaultAvondTijd = '21:00';
 
+  /// Naam van de resolved tijdzone (bv. Europe/Amsterdam), zichtbaar in
+  /// Instellingen. Valt de init terug op UTC, dan valt dat hier direct op:
+  /// meldingen komen dan uren verschoven (UTC kan "nooit" niet verklaren,
+  /// hooguit te laat).
+  static String get tijdzoneNaam {
+    try {
+      return tz.TZDateTime.now(tz.local).location.name;
+    } catch (_) {
+      return '?';
+    }
+  }
+
   /// Wanneer gaat deze herinnering daadwerkelijk af?
   ///
   /// Nodig omdat het instellen van een tijd die vandaag al voorbij is niet

@@ -593,6 +593,7 @@
   "rhythmDaadwerkelijk": "Actual",
   "activiteitenOpTijd": "{onTime} of {total} activities on time",
   "kiesDatum": "Pick date",
+  "tijdzone": "Time zone",
   "bekijken": "View",
   "wijzigHerinnertijdVoor": "Change reminder time for {name}",
   "stemmingTrendDag": "Mood Trend (1 day)",
