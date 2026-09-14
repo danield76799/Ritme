@@ -29,15 +29,29 @@ class _DagboekScreenState extends State<DagboekScreen> {
 
   static const _maxWoorden = 250;
 
-  String get _formattedToday {
-    if (widget.initialDate != null) return widget.initialDate!;
-    final d = DateTime.now();
-    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  /// De bekeken dag. Start op initialDate (backfill) of vandaag; nooit in de
+  /// toekomst. Via de bladerbalk kan de gebruiker door de dagen heen.
+  late DateTime _bekekenDatum;
+
+  static String _sleutel(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  static DateTime _vandaag() {
+    final nu = DateTime.now();
+    return DateTime(nu.year, nu.month, nu.day);
   }
+
+  String get _formattedToday => _sleutel(_bekekenDatum);
+
+  bool get _isVandaag => _sleutel(_bekekenDatum) == _sleutel(_vandaag());
 
   @override
   void initState() {
     super.initState();
+    final start = widget.initialDate != null
+        ? DateTime.tryParse(widget.initialDate!) ?? _vandaag()
+        : _vandaag();
+    _bekekenDatum = start.isAfter(_vandaag()) ? _vandaag() : start;
     _laadBestaandeData();
   }
 
@@ -88,6 +102,95 @@ class _DagboekScreenState extends State<DagboekScreen> {
 
   void _startAanpassen() {
     setState(() => _bekijkModus = false);
+  }
+
+  /// Naar een andere dag bladeren: formulier leegmaken en die dag laden.
+  /// Niet verder dan vandaag (geen toekomst).
+  Future<void> _gaNaarDatum(DateTime datum) async {
+    final gekozen =
+        datum.isAfter(_vandaag()) ? _vandaag() : DateTime(datum.year, datum.month, datum.day);
+    if (_sleutel(gekozen) == _sleutel(_bekekenDatum)) return;
+    setState(() {
+      _bekekenDatum = gekozen;
+      _isLoading = true;
+      _bekijkModus = false;
+      _score = 0;
+      _opgeslagenTekst = null;
+      _tekstController.clear();
+      _woorden = 0;
+    });
+    await _laadBestaandeData();
+  }
+
+  Future<void> _kiesDatum() async {
+    final gekozen = await showDatePicker(
+      context: context,
+      initialDate: _bekekenDatum,
+      firstDate: DateTime(2020, 1, 1),
+      lastDate: _vandaag(),
+      locale: Localizations.localeOf(context).languageCode == 'nl'
+          ? const Locale('nl', 'NL')
+          : null,
+      helpText: AppLocalizations.of(context).kiesDatum,
+      cancelText: AppLocalizations.of(context).annuleren,
+      confirmText: AppLocalizations.of(context).bekijken,
+    );
+    if (gekozen != null && mounted) await _gaNaarDatum(gekozen);
+  }
+
+  /// Mooie datumregel: Vandaag / Gisteren / 12 september 2026.
+  String _datumLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final taal = Localizations.localeOf(context).languageCode;
+    final datumDeel =
+        DateFormat('d MMMM yyyy', taal).format(_bekekenDatum);
+    if (_isVandaag) return '${l10n.vandaag} • $datumDeel';
+    final gisteren = _vandaag().subtract(const Duration(days: 1));
+    if (_sleutel(_bekekenDatum) == _sleutel(gisteren)) {
+      return '${l10n.gisteren} • $datumDeel';
+    }
+    return datumDeel;
+  }
+
+  /// Bladerbalk boven de inhoud: ‹ datum ›.
+  Widget _datumNavigator(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            tooltip: AppLocalizations.of(context).stemmingsCheckVorige,
+            onPressed: () =>
+                _gaNaarDatum(_bekekenDatum.subtract(const Duration(days: 1))),
+          ),
+          Expanded(
+            child: TextButton(
+              onPressed: _kiesDatum,
+              child: Text(
+                _datumLabel(context),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            tooltip: AppLocalizations.of(context).stemmingsCheckVolgende,
+            onPressed: _isVandaag
+                ? null
+                : () => _gaNaarDatum(
+                    _bekekenDatum.add(const Duration(days: 1))),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _opslaan() async {
@@ -194,9 +297,16 @@ class _DagboekScreenState extends State<DagboekScreen> {
         ],
       ),
       body: SafeArea(
-        child: _bekijkModus
-            ? _buildOverzicht(context)
-            : _buildInvoer(context),
+        child: Column(
+          children: [
+            _datumNavigator(context),
+            Expanded(
+              child: _bekijkModus
+                  ? _buildOverzicht(context)
+                  : _buildInvoer(context),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -210,11 +320,6 @@ class _DagboekScreenState extends State<DagboekScreen> {
         children: [
           Icon(Icons.menu_book, size: 64, color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: 16),
-          Text(
-            _formattedToday,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 24),
           if (_score > 0) ...[
             Text(_scoreLabel(_score), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),

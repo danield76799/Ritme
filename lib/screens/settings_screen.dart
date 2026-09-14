@@ -616,6 +616,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           AppLocalizations.of(context).checkinHerinneringenUitleg,
           style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color),
         ),
+        const SizedBox(height: 4),
+        Text(
+          '${AppLocalizations.of(context).tijdzone}: ${NotificationHelper.tijdzoneNaam}',
+          style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
+        ),
         const SizedBox(height: 12),
         _buildCheckinRow(
           label: AppLocalizations.of(context).ochtendHerinnering,
