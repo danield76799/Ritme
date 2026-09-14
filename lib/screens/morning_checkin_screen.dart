@@ -6,15 +6,16 @@ import '../utils/checkin_colors.dart';
 import '../widgets/overzicht_rij.dart';
 import '../utils/logger.dart';
 
-/// Ochtend check-in: 3 korte stappen die bij het opstaan horen.
+/// Ochtend check-in: 4 korte stappen die bij het opstaan horen.
 ///
 ///  1. Hoe laat stond je op?        (tijd — vult slaap + SRM "Opstaan" + P-score)
 ///  2. Wakker gelegen (minuten)     (samen met gisteravonds bedtijd → slaapduur)
-///  3. Slaapbehoefte                (q4 uit de stemmingscheck, -4..+4)
+///  3. Hoe heb je geslapen?         (kwaliteit 1..5, puur log — geen klinische score)
+///  4. Slaapbehoefte                (q4 uit de stemmingscheck, -4..+4)
 ///
 /// Opslag:
 ///  - sleep log (bedtijd = gisteravond uit daily_log, wake = nu gekozen)
-///  - daily_log merge-preserving: uren_slaap, awake_minutes, q4
+///  - daily_log merge-preserving: uren_slaap, awake_minutes, sleep_quality, q4
 ///  - SRM "Opstaan" met P-score tegen de doeltijd
 class MorningCheckInScreen extends StatefulWidget {
   const MorningCheckInScreen({super.key, this.onClose, this.initialDate});
@@ -28,15 +29,17 @@ class MorningCheckInScreen extends StatefulWidget {
 }
 
 class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
-  int _step = 0; // 0 = opstaantijd, 1 = wakker gelegen, 2 = slaapbehoefte, 3 = klaar
+  int _step = 0; // 0 = opstaantijd, 1 = wakker gelegen, 2 = hoe geslapen, 3 = slaapbehoefte, 4 = klaar
   TimeOfDay? _wakeTime;
   int _awakeMinutes = 0;
+  int? _kwaliteit; // hoe geslapen, 1..5
   double? _q4; // slaapbehoefte -4..+4
   String? _bedTimeYesterday; // uit gisterens slaap-log
   bool _isSaving = false;
   bool _bekijkModus = false; // true = overzicht van opgeslagen waarden (read-only)
   TimeOfDay? _opgeslagenWakeTime;
   int _opgeslagenAwakeMinutes = 0;
+  int? _opgeslagenKwaliteit;
   double? _opgeslagenQ4;
   String? _opgeslagenBedTime;
 
@@ -91,6 +94,12 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       if (awakeRaw is num) awake = awakeRaw.toInt();
       final q4Raw = assessment?['q4_slaapbehoefte'] ?? log?['q4_slaapbehoefte'];
       if (q4Raw is num) q4 = q4Raw.toDouble();
+      final kwaliteitRaw = log?['sleep_quality'];
+      int? kwaliteit;
+      if (kwaliteitRaw is num) {
+        final k = kwaliteitRaw.toInt();
+        if (k >= 1 && k <= 5) kwaliteit = k;
+      }
 
       final heeftData = wakeTime != null && q4 != null;
       if (mounted && heeftData) {
@@ -98,6 +107,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
           _bekijkModus = true;
           _opgeslagenWakeTime = wakeTime;
           _opgeslagenAwakeMinutes = awake;
+          _opgeslagenKwaliteit = kwaliteit;
           _opgeslagenQ4 = q4;
           _opgeslagenBedTime = _bedTimeYesterday;
         });
@@ -113,6 +123,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       _bekijkModus = false;
       _wakeTime = _opgeslagenWakeTime;
       _awakeMinutes = _opgeslagenAwakeMinutes;
+      _kwaliteit = _opgeslagenKwaliteit;
       _q4 = _opgeslagenQ4;
       _step = 0;
     });
@@ -176,7 +187,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   }
 
   Future<void> _finish() async {
-    if (_wakeTime == null || _q4 == null || _isSaving) return;
+    if (_wakeTime == null || _kwaliteit == null || _q4 == null || _isSaving) return;
 
     final wakeStr = _formatTimeOfDay(_wakeTime!);
     final sleepHours = _calculateSleepHours();
@@ -217,6 +228,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       log['date'] = _formattedToday;
       if (sleepHours != null) log['uren_slaap'] = sleepHours;
       log['awake_minutes'] = _awakeMinutes;
+      log['sleep_quality'] = _kwaliteit;
       log['q4_slaapbehoefte'] = _q4;
       // stemming_hoog: P-score (1-5) geschaald naar 0-10,
       // zodat de dagstatus-kaarten het groene vinkje tonen.
@@ -246,7 +258,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     if (!mounted) return;
     setState(() => _isSaving = false);
     if (opgeslagen) {
-      setState(() => _step = 3);
+      setState(() => _step = 4);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -289,9 +301,9 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            if (!_bekijkModus && _step < 3)
+            if (!_bekijkModus && _step < 4)
               Text(
-                l10n.ochtendStapVan(_step + 1, 3),
+                l10n.ochtendStapVan(_step + 1, 4),
                 style: TextStyle(
                   fontSize: 12,
                   color: AppTheme.secondaryText(context),
@@ -303,7 +315,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       body: SafeArea(
         child: _bekijkModus
             ? _buildOverzicht(context)
-            : _step >= 3
+            : _step >= 4
                 ? _buildKlaar(context)
                 : _buildVraag(context),
       ),
@@ -351,11 +363,19 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
               label: l10n.wakkerGelegen,
               value: '$_opgeslagenAwakeMinutes ${l10n.minuten}',
             ),
+            if (_opgeslagenKwaliteit != null)
+              OverzichtRij(
+                icon: Icons.star_rounded,
+                label: l10n.ochtendHoeGeslapen,
+                value: _kwaliteitLabel(l10n, _opgeslagenKwaliteit!),
+                accent: kwaliteitKleur(_opgeslagenKwaliteit!),
+              ),
             if (_opgeslagenQ4 != null)
               OverzichtRij(
                 icon: Icons.nights_stay,
                 label: l10n.stemmingsCheckVraag4Titel,
                 value: _q4Label(l10n, _opgeslagenQ4!),
+                accent: MoodAssessmentScorerColors.slaapbehoefteColor(_opgeslagenQ4!),
               ),
             if (sleepHours != null)
               OverzichtRij(
@@ -410,13 +430,25 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     }
   }
 
+  /// Label bij een kwaliteitsscore (1..5).
+  String _kwaliteitLabel(AppLocalizations l10n, int v) {
+    switch (v) {
+      case 1: return l10n.ochtendKwaliteit1;
+      case 2: return l10n.ochtendKwaliteit2;
+      case 3: return l10n.ochtendKwaliteit3;
+      case 4: return l10n.ochtendKwaliteit4;
+      case 5: return l10n.ochtendKwaliteit5;
+      default: return v.toString();
+    }
+  }
+
   Widget _buildVraag(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     return Column(
       children: [
         LinearProgressIndicator(
-          value: (_step + 1) / 3,
+          value: (_step + 1) / 4,
           backgroundColor: theme.colorScheme.surfaceContainerHighest,
           valueColor: const AlwaysStoppedAnimation<Color>(CheckinAccent.teal),
         ),
@@ -461,7 +493,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                   child: ElevatedButton(
                     onPressed: _canProceed() && !_isSaving
                         ? () {
-                            if (_step == 2) {
+                            if (_step == 3) {
                               _finish();
                             } else {
                               setState(() => _step += 1);
@@ -479,7 +511,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: Text(
-                      _step == 2 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
+                      _step == 3 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -499,6 +531,8 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       case 1:
         return true; // wakker-gelegen heeft default 0
       case 2:
+        return _kwaliteit != null;
+      case 3:
         return _q4 != null;
       default:
         return false;
@@ -583,6 +617,41 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
           ],
         );
       case 2:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB300).withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.star_rounded,
+                      size: 18, color: Color(0xFFFFB300)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.ochtendHoeGeslapen,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _KwaliteitOpties(
+              selected: _kwaliteit,
+              onChanged: (v) => setState(() => _kwaliteit = v),
+            ),
+          ],
+        );
+      case 3:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -685,6 +754,27 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   }
 }
 
+/// Kleur bij een slaapkwaliteitsscore (1..5): van rood via geel naar groen.
+///
+/// Puur presentatie — anders dan q4 stuurt deze score geen klinische drempels
+/// aan. Top-level zodat tests de mapping kunnen bewaken.
+Color kwaliteitKleur(int v) {
+  switch (v) {
+    case 1:
+      return const Color(0xFFE53935);
+    case 2:
+      return const Color(0xFFFF9800);
+    case 3:
+      return const Color(0xFFFDD835);
+    case 4:
+      return const Color(0xFF66BB6A);
+    case 5:
+      return const Color(0xFF2E7D32);
+    default:
+      return Colors.grey;
+  }
+}
+
 /// Keuze-opties voor slaapbehoefte (q4) — zelfde schaal als de stemmingscheck.
 ///
 /// De schaal loopt -4..+4 en is klinisch betekenisvol: de scorer gebruikt
@@ -763,6 +853,146 @@ class _SlaapbehoefteOpties extends StatelessWidget {
   }
 }
 
+/// Keuze-opties voor "Hoe heb je geslapen" (1..5).
+///
+/// Zelfde kaartentaal als de slaapbehoefte, maar met een eigen meetschaal:
+/// de badge toont het cijfer met een ster, in de kleur van het niveau.
+class _KwaliteitOpties extends StatelessWidget {
+  final int? selected;
+  final ValueChanged<int> onChanged;
+
+  const _KwaliteitOpties({required this.selected, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final brightness = Theme.of(context).brightness;
+    final labels = [
+      l10n.ochtendKwaliteit1,
+      l10n.ochtendKwaliteit2,
+      l10n.ochtendKwaliteit3,
+      l10n.ochtendKwaliteit4,
+      l10n.ochtendKwaliteit5,
+    ];
+    final toelichting = [
+      l10n.ochtendKwaliteitOmschrijving1,
+      l10n.ochtendKwaliteitOmschrijving2,
+      l10n.ochtendKwaliteitOmschrijving3,
+      l10n.ochtendKwaliteitOmschrijving4,
+      l10n.ochtendKwaliteitOmschrijving5,
+    ];
+    return Column(
+      children: List.generate(5, (i) {
+        final score = i + 1;
+        final isGekozen = selected == score;
+        final kleur = kwaliteitKleur(score);
+        final vulling = MoodAssessmentScorerColors.badgeVulling(kleur);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+            onTap: () => onChanged(score),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              decoration: BoxDecoration(
+                color: isGekozen
+                    ? kleur.withValues(alpha: 0.14)
+                    : (brightness == Brightness.dark
+                        ? CheckinAccent.unselectedDark
+                        : Theme.of(context).cardColor),
+                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                border: Border.all(
+                  color: isGekozen
+                      ? kleur
+                      : CheckinAccent.unselectedBorder(brightness),
+                  width: isGekozen ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    constraints: const BoxConstraints(minWidth: 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isGekozen ? vulling : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isGekozen
+                            ? vulling
+                            : kleur.withValues(alpha: 0.55),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.star_rounded,
+                          size: 16,
+                          color: isGekozen
+                              ? MoodAssessmentScorerColors.tekstOp(vulling)
+                              : kleur,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '$score',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: isGekozen
+                                ? MoodAssessmentScorerColors.tekstOp(vulling)
+                                : (brightness == Brightness.dark
+                                    ? Colors.white70
+                                    : AppTheme.textMedium),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          labels[i],
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: isGekozen ? FontWeight.w700 : FontWeight.w600,
+                            color: brightness == Brightness.dark
+                                ? Colors.white
+                                : AppTheme.textCharcoal,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          toelichting[i],
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.3,
+                            color: brightness == Brightness.dark
+                                ? Colors.white70
+                                : AppTheme.textMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
 /// Datamodel voor één optie in de slaapbehoefte-check-in.
 ///
 /// [score] is de klinische waarde die naar de database gaat (q4_slaapbehoefte).
@@ -782,11 +1012,12 @@ class SleepOption {
 
 /// Interactieve keuzekaart voor de slaapbehoefte.
 ///
-/// Eén rustige accentkleur voor de geselecteerde staat (i.p.v. de stoplicht-
-/// gradient), een score-badge links en de toelichting rechts met ruime
-/// regelhoogte. De geselecteerde kaart krijgt een accent-tint, een 1.5px rand
-/// en een gevulde badge; de niet-geselecteerde een donkere kaart met subtiele
-/// rand.
+/// Elke score toont zijn eigen kleur gedempt (badge-ring + tint; gevuld bij
+/// selectie), zodat elk antwoord herkenbaar is. Knoppen en voortgang blijven
+/// bij het ene rustige accent (teal): kleur = betekenis, teal = actie.
+/// De geselecteerde kaart krijgt een score-tint, een 1.5px rand in de
+/// scorekleur en een gevulde badge; de niet-geselecteerde een rustige kaart
+/// met een score-getinte badge-ring.
 class SleepOptionCard extends StatelessWidget {
   final SleepOption option;
   final bool selected;
@@ -802,7 +1033,8 @@ class SleepOptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    const accent = CheckinAccent.teal;
+    final scoreKleur =
+        MoodAssessmentScorerColors.slaapbehoefteColor(option.score.toDouble());
     final scoreText = MoodAssessmentScorerColors.scoreLabel(option.score.toDouble());
 
     return Semantics(
@@ -817,16 +1049,16 @@ class SleepOptionCard extends StatelessWidget {
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
-            // Geselecteerd: subtiele accent-tint. Anders: rustige donkere kaart.
+            // Geselecteerd: subtiele score-tint. Anders: rustige kaart.
             color: selected
-                ? accent.withValues(alpha: 0.12)
+                ? scoreKleur.withValues(alpha: 0.12)
                 : (brightness == Brightness.dark
                     ? CheckinAccent.unselectedDark
                     : Theme.of(context).cardColor),
             borderRadius: BorderRadius.circular(AppTheme.borderRadius),
             border: Border.all(
               color: selected
-                  ? accent
+                  ? scoreKleur
                   : CheckinAccent.unselectedBorder(brightness),
               width: selected ? 1.5 : 1,
             ),
@@ -834,7 +1066,7 @@ class SleepOptionCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _ScoreBadge(text: scoreText, selected: selected),
+              _ScoreBadge(text: scoreText, selected: selected, kleur: scoreKleur),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -872,27 +1104,28 @@ class SleepOptionCard extends StatelessWidget {
   }
 }
 
-/// Score-badge links op de kaart. Gevuld in de accentkleur zodra de optie
-/// geselecteerd is, anders een rustige omtrek.
+/// Score-badge links op de kaart. Ring altijd in de scorekleur, gevuld in de
+/// scorekleur zodra de optie geselecteerd is, anders een rustige omtrek.
 class _ScoreBadge extends StatelessWidget {
   final String text;
   final bool selected;
+  final Color kleur;
 
-  const _ScoreBadge({required this.text, required this.selected});
+  const _ScoreBadge({required this.text, required this.selected, required this.kleur});
 
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    const accent = CheckinAccent.teal;
+    final vulling = MoodAssessmentScorerColors.badgeVulling(kleur);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       constraints: const BoxConstraints(minWidth: 40),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: selected ? accent : Colors.transparent,
+        color: selected ? vulling : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: selected ? accent : CheckinAccent.unselectedBorder(brightness),
+          color: selected ? vulling : kleur.withValues(alpha: 0.55),
           width: 1,
         ),
       ),
@@ -903,7 +1136,7 @@ class _ScoreBadge extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w700,
           color: selected
-              ? CheckinAccent.onAccent
+              ? MoodAssessmentScorerColors.tekstOp(vulling)
               : (brightness == Brightness.dark
                   ? Colors.white70
                   : AppTheme.textMedium),

@@ -119,7 +119,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('geselecteerd: accentrand van 1.5px + gevulde badge',
+    testWidgets('geselecteerd: scorerand van 1.5px + gevulde badge',
         (tester) async {
       await tester.pumpWidget(wrap(SleepOptionCard(
         option: optie,
@@ -137,7 +137,9 @@ void main() {
       final deco = card.decoration as BoxDecoration;
       final border = deco.border as Border;
       expect(border.top.width, 1.5);
-      expect(border.top.color, CheckinAccent.teal);
+      // Score -2 draagt zijn eigen kleur (blauw), niet het actie-accent.
+      expect(border.top.color,
+          MoodAssessmentScorerColors.slaapbehoefteColor(-2));
     });
 
     testWidgets('niet geselecteerd: 1px subtiele rand, geen accentvulling',

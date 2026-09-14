@@ -641,6 +641,17 @@
   "ochtendSlaapOptieMin2": "I wake 1 to 2 hours earlier than usual and have trouble falling back asleep",
   "ochtendSlaapOptieMin3": "I wake hours earlier than usual and cannot fall back asleep",
   "ochtendSlaapOptieMin4": "I hardly sleep at all",
+  "ochtendHoeGeslapen": "How did you sleep?",
+  "ochtendKwaliteit1": "Poor",
+  "ochtendKwaliteit2": "Fair",
+  "ochtendKwaliteit3": "Okay",
+  "ochtendKwaliteit4": "Good",
+  "ochtendKwaliteit5": "Excellent",
+  "ochtendKwaliteitOmschrijving1": "Restless, often awake",
+  "ochtendKwaliteitOmschrijving2": "Disturbed, broken night",
+  "ochtendKwaliteitOmschrijving3": "Neither bad nor good",
+  "ochtendKwaliteitOmschrijving4": "Slept soundly, rested",
+  "ochtendKwaliteitOmschrijving5": "Deep sleep, woke up fit",
   "ochtendStapVan": "Step {stap} of {totaal}",
   "@ochtendStapVan": {
     "placeholders": {
