@@ -1281,14 +1281,24 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // ===================
   // MEDICAL APPOINTMENTS
   // ===================
-  
+
+  /// Leest een DB-waarde als int (Hive bewaart soms String door de
+  /// stringify in de getters; formulieren leveren int of String).
+  static int _leesInt(dynamic v, int fallback) {
+    if (v is int) return v;
+    return int.tryParse(v?.toString() ?? '') ?? fallback;
+  }
+
   @override
   Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
     try {
       // Use a smaller ID to avoid 32-bit integer overflow in Hive (max 0xFFFFFFFF)
       final id = DateTime.now().millisecondsSinceEpoch % 1000000;
       
-      // Ensure all values are properly typed for Hive
+      // Ensure all values are properly typed for Hive.
+      // reminder_days MOET als int bewaard blijven: het scherm vergelijkt
+      // ermee (dropdown-waardes 0/1/3/7) en plant ermee. Viel eerder weg,
+      // waardoor een opgeslagen herinnering als "geen" terugkwam.
       final cleanData = <String, dynamic>{
         'id': id,
         'title': data['title']?.toString() ?? '',
@@ -1297,10 +1307,11 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'appointment_date': data['appointment_date']?.toString() ?? '',
         'appointment_time': data['appointment_time']?.toString() ?? '',
         'notes': data['notes']?.toString() ?? '',
+        'reminder_days': _leesInt(data['reminder_days'], 0),
         'reminder_enabled': data['reminder_enabled']?.toString() ?? '1',
         'created_at': data['created_at']?.toString() ?? DateTime.now().toIso8601String(),
       };
-      
+
       AppLogger.debug('Hive: Inserting medical appointment with id: $id');
       await _medicalAppointments.put(id, cleanData);
       AppLogger.debug('Hive: Successfully inserted medical appointment');
@@ -1317,10 +1328,16 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (!map.containsKey('id')) {
         map['id'] = entry.key;
       }
-      // Ensure all values are properly typed
+      // Ensure all values are properly typed. id en reminder_days blijven
+      // int: het scherm vergelijkt reminder_days met 0/1/3/7 en geeft id als
+      // int door aan cancelAppointmentReminder. Alles stringifyen brak beide.
       final cleanMap = <String, dynamic>{};
       map.forEach((key, value) {
-        cleanMap[key] = value?.toString() ?? value;
+        if (key == 'id' || key == 'reminder_days') {
+          cleanMap[key] = _leesInt(value, 0);
+        } else {
+          cleanMap[key] = value?.toString() ?? value;
+        }
       });
       return cleanMap;
     }).toList()
@@ -1347,7 +1364,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
-    // Ensure all values are properly typed for Hive
+    // Ensure all values are properly typed for Hive (zie insert: reminder_days als int).
     final cleanData = <String, dynamic>{
       'id': id,
       'title': data['title']?.toString() ?? '',
@@ -1356,6 +1373,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       'appointment_date': data['appointment_date']?.toString() ?? '',
       'appointment_time': data['appointment_time']?.toString() ?? '',
       'notes': data['notes']?.toString() ?? '',
+      'reminder_days': _leesInt(data['reminder_days'], 0),
       'reminder_enabled': data['reminder_enabled']?.toString() ?? '1',
       'created_at': data['created_at']?.toString() ?? DateTime.now().toIso8601String(),
     };

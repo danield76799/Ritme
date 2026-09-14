@@ -56,25 +56,54 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         AppLogger.debug('Adding appointment: $result');
         final id = await db.insertMedicalAppointment(result);
         AppLogger.debug('Appointment added with id: $id');
-        
-        // Schedule notification if reminder is set
-        final reminderDays = result['reminder_days'] ?? 0;
+
+        // Schedule notification if reminder is set. reminder_days kan als
+        // String terugkomen (oudere rijen); normaliseer naar int.
+        final dagenRaw = result['reminder_days'];
+        final reminderDays = dagenRaw is int
+            ? dagenRaw
+            : int.tryParse(dagenRaw?.toString() ?? '') ?? 0;
         if (reminderDays > 0) {
-          await NotificationHelper.instance.scheduleAppointmentReminder(
+          final fout = await NotificationHelper.instance.scheduleAppointmentReminder(
             appointmentId: id,
-            title: result['title'] ?? '',
-            doctorName: result['doctor_name'] ?? '',
-            appointmentDate: result['appointment_date'] ?? '',
-            appointmentTime: result['appointment_time'] ?? '',
+            title: result['title']?.toString() ?? '',
+            doctorName: result['doctor_name']?.toString() ?? '',
+            appointmentDate: result['appointment_date']?.toString() ?? '',
+            appointmentTime: result['appointment_time']?.toString() ?? '',
             reminderDays: reminderDays,
           );
+          if (mounted) _toonHerinneringUitslag(fout, result['appointment_date']?.toString() ?? '');
         }
-        
+
         _loadAppointments();
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add appointment', error: e, stackTrace: stackTrace);
       _showError('Kon afspraak niet toevoegen: $e');
+    }
+  }
+
+  /// Toont of de afspraakherinnering echt ingepland staat — groen bij
+  /// succes, oranje als het moment al voorbij is, rood met de echte fout.
+  void _toonHerinneringUitslag(String? fout, String datum) {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+    if (fout == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(l10n.afspraakHerinneringGepland(datum)),
+            backgroundColor: Colors.green),
+      );
+    } else if (fout == 'verleden') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(l10n.afspraakHerinneringVerleden),
+            backgroundColor: Colors.orange),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.fout(fout)), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -123,22 +152,29 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
       if (result != null) {
         debugPrint('Updating appointment: ${appointment['id']} with data: $result');
-        await db.updateMedicalAppointment(appointment['id'], result);
-        
-        // Reschedule notification
-        final reminderDays = result['reminder_days'] ?? 0;
-        await NotificationHelper.instance.cancelAppointmentReminder(appointment['id']);
+        final idRaw = appointment['id'];
+        final appointmentId =
+            idRaw is int ? idRaw : int.tryParse(idRaw?.toString() ?? '') ?? 0;
+        await db.updateMedicalAppointment(appointmentId, result);
+
+        // Reschedule notification (id kan String zijn bij oudere rijen).
+        final dagenRaw = result['reminder_days'];
+        final reminderDays = dagenRaw is int
+            ? dagenRaw
+            : int.tryParse(dagenRaw?.toString() ?? '') ?? 0;
+        await NotificationHelper.instance.cancelAppointmentReminder(appointmentId);
         if (reminderDays > 0) {
-          await NotificationHelper.instance.scheduleAppointmentReminder(
-            appointmentId: appointment['id'],
-            title: result['title'] ?? '',
-            doctorName: result['doctor_name'] ?? '',
-            appointmentDate: result['appointment_date'] ?? '',
-            appointmentTime: result['appointment_time'] ?? '',
+          final fout = await NotificationHelper.instance.scheduleAppointmentReminder(
+            appointmentId: appointmentId,
+            title: result['title']?.toString() ?? '',
+            doctorName: result['doctor_name']?.toString() ?? '',
+            appointmentDate: result['appointment_date']?.toString() ?? '',
+            appointmentTime: result['appointment_time']?.toString() ?? '',
             reminderDays: reminderDays,
           );
+          if (mounted) _toonHerinneringUitslag(fout, result['appointment_date']?.toString() ?? '');
         }
-        
+
         _loadAppointments();
       }
     } catch (e, stackTrace) {
@@ -610,17 +646,6 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               : DateTime.now(),
             firstDate: DateTime(2020),
             lastDate: DateTime(2030),
-            builder: (context, child) {
-              return Theme(
-                data: Theme.of(context).copyWith(
-                  colorScheme: ColorScheme.light(
-                    primary: Theme.of(context).colorScheme.primary,
-                    surface: Colors.white,
-                  ),
-                ),
-                child: child!,
-              );
-            },
           );
           if (picked != null) {
             setState(() {
@@ -653,7 +678,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                   Text(
                     _dateController.text.isEmpty ? l10n.selecteerDatum : _dateController.text,
                     style: TextStyle(
-                      color: _dateController.text.isEmpty ? Colors.grey.shade400 : Colors.black,
+                      color: _dateController.text.isEmpty ? Colors.grey.shade400 : Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                     ),
                   ),
@@ -757,7 +782,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 _reminderDays == 3 ? l10n.drieDagen :
                 l10n.zevenDagen,
                 style: TextStyle(
-                  color: _reminderDays == 0 ? Colors.grey.shade400 : Colors.black,
+                  color: _reminderDays == 0 ? Colors.grey.shade400 : Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
                 ),
               ),

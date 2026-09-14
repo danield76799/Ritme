@@ -601,6 +601,8 @@
   "ingenomen": "✅ Ingenomen",
   "medicatieHerinnering": "Medicatie herinnering",
   "afspraakHerinnering": "📅 Afspraak herinnering",
+  "afspraakHerinneringGepland": "Afspraakherinnering gepland ({datum}).",
+  "afspraakHerinneringVerleden": "De herinnering ligt in het verleden en is niet ingepland.",
   "dag": "dag",
   "exporteerDataJson": "Exporteer je data als JSON voor backup",
   "medicationTitle": "Medicatie",
