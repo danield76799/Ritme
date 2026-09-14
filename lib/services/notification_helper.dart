@@ -816,8 +816,14 @@ class NotificationHelper {
   /// Wordt aangeroepen bij app-start, na het opslaan van Instellingen, en door
   /// de periodieke WorkManager-taak (Android kan alarms laten vallen na een
   /// tijd in Doze).
-  Future<void> rescheduleCheckinReminders() async {
-    if (kIsWeb) return;
+  ///
+  /// Geeft null terug bij succes, of de fouttekst bij falen — zodat de
+  /// aanroeper (Herplan-knop) de echte fout kan TONEN in plaats van dat hij
+  /// onzichtbaar in de console verdwijnt. Elke herinnering staat in zijn
+  /// eigen try/catch: als de ochtend faalt, wordt de avond alsnog gepland.
+  Future<String?> rescheduleCheckinReminders() async {
+    if (kIsWeb) return null;
+    String? eersteFout;
     try {
       // Ook hier: dit pad loopt in de WorkManager-isolate, waar de tijdzone
       // nog niet gezet is. Zonder deze regel rekent hij in UTC of gooit hij.
@@ -831,30 +837,52 @@ class NotificationHelper {
       final avondTijd = settings[_avondKey]?.toString() ?? defaultAvondTijd;
 
       if (ochtendAan) {
-        await _scheduleCheckin(
-          id: _ochtendNotifId,
-          tijd: ochtendTijd,
-          ochtend: true,
-        );
+        try {
+          await _scheduleCheckin(
+            id: _ochtendNotifId,
+            tijd: ochtendTijd,
+            ochtend: true,
+          );
+        } catch (e) {
+          eersteFout ??= e.toString();
+          AppLogger.error('Ochtendherinnering plannen mislukt', error: e);
+        }
       } else {
-        await _notifications.cancel(_ochtendNotifId);
+        try {
+          await _notifications.cancel(_ochtendNotifId);
+        } catch (e) {
+          eersteFout ??= e.toString();
+          AppLogger.error('Ochtendherinnering annuleren mislukt', error: e);
+        }
       }
 
       if (avondAan) {
-        await _scheduleCheckin(
-          id: _avondNotifId,
-          tijd: avondTijd,
-          ochtend: false,
-        );
+        try {
+          await _scheduleCheckin(
+            id: _avondNotifId,
+            tijd: avondTijd,
+            ochtend: false,
+          );
+        } catch (e) {
+          eersteFout ??= e.toString();
+          AppLogger.error('Avondherinnering plannen mislukt', error: e);
+        }
       } else {
-        await _notifications.cancel(_avondNotifId);
+        try {
+          await _notifications.cancel(_avondNotifId);
+        } catch (e) {
+          eersteFout ??= e.toString();
+          AppLogger.error('Avondherinnering annuleren mislukt', error: e);
+        }
       }
 
       AppLogger.info(
           'Check-in herinneringen gepland: ochtend=$ochtendAan@$ochtendTijd, avond=$avondAan@$avondTijd');
     } catch (e) {
+      eersteFout ??= e.toString();
       AppLogger.error('Check-in herinneringen plannen mislukt', error: e);
     }
+    return eersteFout;
   }
 
   static bool _asBool(dynamic v, bool fallback) {
@@ -914,12 +942,20 @@ class NotificationHelper {
 
     // Zelfde aanpak als de medicatie-planning: vraag het native kanaal of
     // exacte alarms mogen, en zak anders terug naar inexact — een melding die
-    // iets later komt is beter dan een die niet komt.
-    final androidImpl =
-        _notifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-    final canScheduleExact =
-        await androidImpl?.canScheduleExactNotifications() ?? false;
+    // iets later komt is beter dan een die niet komt. In een eigen try/catch:
+    // als deze vraag zelf gooit (sommige toestellen), mag dat nooit de hele
+    // planning afbreken.
+    bool canScheduleExact = false;
+    try {
+      final androidImpl =
+          _notifications.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      canScheduleExact =
+          await androidImpl?.canScheduleExactNotifications() ?? false;
+    } catch (e) {
+      AppLogger.error('Exact-alarm check mislukt, val terug op inexact',
+          error: e);
+    }
 
     await _notifications.cancel(id);
     await _notifications.zonedSchedule(
