@@ -66,11 +66,11 @@ class _HelpScreenState extends State<HelpScreen> {
               _buildDetailCard(
                 title: isDutch ? 'Stemmingsschaal (−5 tot +5)' : 'Mood Scale (−5 to +5)',
                 children: [
-                  _buildScaleItem(color: Colors.indigo.shade900, label: isDutch ? '−5: Uiterst depressief' : '−5: Extremely depressed'),
-                  _buildScaleItem(color: Colors.indigo.shade400, label: isDutch ? '−3: Matig depressief' : '−3: Moderately depressed'),
+                  _buildScaleItem(color: AppTheme.accentOn(Theme.of(context).brightness), label: isDutch ? '−5: Uiterst depressief' : '−5: Extremely depressed'),
+                  _buildScaleItem(color: AppTheme.infoOn(Theme.of(context).brightness), label: isDutch ? '−3: Matig depressief' : '−3: Moderately depressed'),
                   _buildScaleItem(color: Theme.of(context).colorScheme.primary, label: '0: ${isDutch ? 'Neutraal' : 'Neutral'}'),
-                  _buildScaleItem(color: Colors.orange.shade700, label: isDutch ? '+3: Matig manisch' : '+3: Moderately manic'),
-                  _buildScaleItem(color: Colors.red.shade600, label: isDutch ? '+5: Uiterst manisch' : '+5: Extremely manic'),
+                  _buildScaleItem(color: AppTheme.streakText(Theme.of(context).brightness), label: isDutch ? '+3: Matig manisch' : '+3: Moderately manic'),
+                  _buildScaleItem(color: AppTheme.dangerOn(Theme.of(context).brightness), label: isDutch ? '+5: Uiterst manisch' : '+5: Extremely manic'),
                 ],
               ),
               const SizedBox(height: 20),
@@ -457,7 +457,7 @@ class _HelpScreenState extends State<HelpScreen> {
             label,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade700,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
@@ -482,7 +482,7 @@ class _HelpScreenState extends State<HelpScreen> {
               label,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade700,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),

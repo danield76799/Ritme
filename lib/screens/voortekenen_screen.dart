@@ -89,7 +89,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).foutKopieren), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).foutKopieren), backgroundColor: AppTheme.error),
         );
         setState(() => _isLoading = false);
       }
@@ -154,7 +154,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: (manieCount > 3 || depressieCount > 3) ? Colors.orange : Theme.of(context).colorScheme.primary,
+            backgroundColor: (manieCount > 3 || depressieCount > 3) ? AppTheme.warning : Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 4),
           ),
         );
@@ -163,7 +163,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).foutOpslaan), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).foutOpslaan), backgroundColor: AppTheme.error),
         );
       }
     } finally {
@@ -203,22 +203,23 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Info card
+            // Info card — kleuren volgen de mode: een licht-oranje kaart
+            // met diep-oranje tekst werkt niet op een donkere ondergrond.
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: AppTheme.streakText(Theme.of(context).brightness).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.orange.shade200),
+                border: Border.all(color: AppTheme.streakText(Theme.of(context).brightness).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.orange.shade700),
+                  Icon(Icons.info_outline, color: AppTheme.streakText(Theme.of(context).brightness)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       AppLocalizations.of(context).checkDagelijksVoortekenen,
-                      style: TextStyle(color: Colors.orange.shade900, fontSize: 13),
+                      style: TextStyle(color: AppTheme.streakText(Theme.of(context).brightness), fontSize: 13),
                     ),
                   ),
                 ],
@@ -232,37 +233,37 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: AppTheme.infoOn(Theme.of(context).brightness).withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.blue.shade200),
+                  border: Border.all(color: AppTheme.infoOn(Theme.of(context).brightness).withValues(alpha: 0.4)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.content_copy, color: Colors.blue.shade700, size: 20),
+                        Icon(Icons.content_copy, color: AppTheme.infoOn(Theme.of(context).brightness), size: 20),
                         const SizedBox(width: 8),
                         Text(
                           AppLocalizations.of(context).snelStarten,
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade900, fontSize: 14),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.infoOn(Theme.of(context).brightness), fontSize: 14),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
                       AppLocalizations.of(context).kopieerVorigeDag(_lastDate ?? ''),
-                      style: TextStyle(color: Colors.blue.shade800, fontSize: 13),
+                      style: TextStyle(color: AppTheme.infoOn(Theme.of(context).brightness), fontSize: 13),
                     ),
                     SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: _copyFromLastDate,
-                        icon: Icon(Icons.copy, size: 18, color: Colors.blue.shade700),
-                        label: Text(AppLocalizations.of(context).kopieer(_lastDate!), style: TextStyle(color: Colors.blue.shade700)),
+                        icon: Icon(Icons.copy, size: 18, color: AppTheme.infoOn(Theme.of(context).brightness)),
+                        label: Text(AppLocalizations.of(context).kopieer(_lastDate!), style: TextStyle(color: AppTheme.infoOn(Theme.of(context).brightness))),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.blue.shade300),
+                          side: BorderSide(color: AppTheme.infoOn(Theme.of(context).brightness).withValues(alpha: 0.55)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
@@ -326,9 +327,15 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-        color: isPresent ? Colors.orange.shade50 : Colors.white,
+        color: isPresent
+            ? AppTheme.streakText(Theme.of(context).brightness).withValues(alpha: 0.10)
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isPresent ? Colors.orange.shade300 : Colors.grey.shade200),
+        border: Border.all(
+          color: isPresent
+              ? AppTheme.streakText(Theme.of(context).brightness).withValues(alpha: 0.55)
+              : Theme.of(context).colorScheme.outline.withValues(alpha: 0.35),
+        ),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -347,7 +354,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
             children: [
               Icon(
                 isPresent ? Icons.check_box : Icons.check_box_outline_blank,
-                color: isPresent ? Colors.orange : Colors.grey.shade400,
+                color: isPresent ? AppTheme.streakText(Theme.of(context).brightness) : Theme.of(context).colorScheme.outline,
               ),
               SizedBox(width: 10),
               Expanded(
@@ -366,7 +373,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                   icon: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: severity >= 3 ? Colors.red.shade100 : severity == 2 ? Colors.orange.shade100 : Colors.green.shade100,
+                      color: (severity >= 3 ? AppTheme.dangerOn(Theme.of(context).brightness) : severity == 2 ? AppTheme.streakText(Theme.of(context).brightness) : AppTheme.successOn(Theme.of(context).brightness)).withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -380,9 +387,9 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                     });
                   },
                   itemBuilder: (context) => [
-                    PopupMenuItem(value: 1, child: Text(AppLocalizations.of(context).licht, style: TextStyle(color: Colors.green.shade700))),
-                    PopupMenuItem(value: 2, child: Text(AppLocalizations.of(context).matig, style: TextStyle(color: Colors.orange.shade700))),
-                    PopupMenuItem(value: 3, child: Text(AppLocalizations.of(context).ernstig, style: TextStyle(color: Colors.red.shade700))),
+                    PopupMenuItem(value: 1, child: Text(AppLocalizations.of(context).licht, style: TextStyle(color: AppTheme.successOn(Theme.of(context).brightness)))),
+                    PopupMenuItem(value: 2, child: Text(AppLocalizations.of(context).matig, style: TextStyle(color: AppTheme.streakText(Theme.of(context).brightness)))),
+                    PopupMenuItem(value: 3, child: Text(AppLocalizations.of(context).ernstig, style: TextStyle(color: AppTheme.dangerOn(Theme.of(context).brightness)))),
                   ],
                 ),
               // Notes icon
@@ -391,7 +398,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                   icon: Icon(
                     (_todaysNotes[cid] ?? '').isNotEmpty ? Icons.edit_note : Icons.add_comment_outlined,
                     size: 20,
-                    color: (_todaysNotes[cid] ?? '').isNotEmpty ? Colors.orange.shade600 : Colors.grey.shade400,
+                    color: (_todaysNotes[cid] ?? '').isNotEmpty ? AppTheme.streakText(Theme.of(context).brightness) : Theme.of(context).colorScheme.outline,
                   ),
                   onPressed: () => _showNoteDialog(cid, item['sign'] as String),
                   tooltip: AppLocalizations.of(context).opmerkingToevoegen,
@@ -458,8 +465,8 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                   final count = item['warning_count'];
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: count > 5 ? Colors.red.shade100 : Colors.orange.shade100,
-                      child: Text(count.toString(), style: TextStyle(color: count > 5 ? Colors.red : Colors.orange.shade800, fontWeight: FontWeight.bold)),
+                      backgroundColor: (count > 5 ? AppTheme.dangerOn(Theme.of(context).brightness) : AppTheme.streakText(Theme.of(context).brightness)).withValues(alpha: 0.18),
+                      child: Text(count.toString(), style: TextStyle(color: count > 5 ? AppTheme.dangerOn(Theme.of(context).brightness) : AppTheme.streakText(Theme.of(context).brightness), fontWeight: FontWeight.bold)),
                     ),
                     title: Text(item['date'] as String),
                     subtitle: Text(AppLocalizations.of(context).voortekenen, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)),

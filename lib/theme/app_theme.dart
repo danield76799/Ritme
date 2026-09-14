@@ -110,6 +110,10 @@ class AppTheme {
   static Color dangerOnAppBar(Brightness brightness) =>
       brightness == Brightness.dark ? const Color(0xFF8C1D18) : const Color(0xFFFFCDD2);
 
+  /// Informatief blauw dat in BEIDE modes leesbaar is (links/kopieer-acties).
+  static Color infoOn(Brightness brightness) =>
+      brightness == Brightness.dark ? const Color(0xFF7EC8F0) : info;
+
   /// Amber voor de streak-chip. `orange.shade700` haalt 3.6:1 op de chip en
   /// zakt daarmee onder de AA-norm; deze tinten halen 5.9:1 resp. 7.5:1.
   static Color streakText(Brightness brightness) =>
