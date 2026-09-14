@@ -144,6 +144,18 @@ void main() {
           reason: 'oude formule kon met medicatie botsen');
     });
 
+    test('herinnering-keuze zijn chips, geen dropdown met dode hoek', () {
+      final code = _code('lib/screens/appointments_screen.dart');
+      final start = code.indexOf('Widget _buildReminderDropdown(');
+      expect(start, greaterThan(-1));
+      final einde = (start + 4500 < code.length) ? start + 4500 : code.length;
+      final blok = code.substring(start, einde);
+      expect(blok.contains('ChoiceChip'), isTrue,
+          reason: 'volle breedte tikbaar');
+      expect(blok.contains('DropdownButton'), isFalse,
+          reason: 'alleen de pijl was tikbaar ("menu opent niet")');
+    });
+
     test('scherm toont de uitslag en normaliseert types', () {
       final code = _code('lib/screens/appointments_screen.dart');
       expect(code.contains('_toonHerinneringUitslag'), isTrue);
