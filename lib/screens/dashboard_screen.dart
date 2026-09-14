@@ -26,6 +26,50 @@ import '../generated/l10n/app_localizations.dart';
 
 enum AlertSeverity { high, medium }
 
+/// De vier SRM-rijen die samen de avond-check-in vormen.
+const avondSrmTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
+
+/// Eén definitie van "ochtend-check-in gedaan", overal gebruikt: tegel,
+/// dagteller, streak en terugkijkweergave.
+///
+/// Een afgeronde ochtendflow schrijft altijd awake_minutes + q4 weg; de
+/// slaapuren ontbreken als de bedtijd van gisteren niet bekend is. Daarom
+/// telt q4 mee — anders zou een ingevulde ochtend de ene keer wel en de
+/// andere keer niet meetellen.
+bool ochtendGedaan(Map<String, dynamic> log) {
+  final s = log['uren_slaap'];
+  final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
+  final a = log['awake_minutes'];
+  final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
+  final q = log['q4_slaapbehoefte'];
+  return (sNum != null && sNum > 0) || aNum > 0 || q != null;
+}
+
+/// Eén definitie van "avond-check-in gedaan": minstens één avond-SRM-rij
+/// met een echte tijd. Rijen zonder tijd zijn nooit afgerond, dus die
+/// tellen nergens mee — ook niet op de tegel van vandaag.
+bool avondGedaan(Iterable<Map<String, dynamic>> activiteiten, String datum) {
+  return activiteiten.any((a) {
+    if (a['date']?.toString() != datum) return false;
+    if (!avondSrmTypes.contains(a['activity_type']?.toString() ?? '')) {
+      return false;
+    }
+    return (a['actual_time']?.toString() ?? '').isNotEmpty;
+  });
+}
+
+String _datumStr(DateTime d) =>
+    '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+/// Weekvenster van 7 dagen EINdigend op [datum] (inclusief), als
+/// [start, end] in yyyy-MM-dd. Het venster hangt aan de bekeken datum,
+/// niet aan vandaag — anders valt een oude datum buiten zijn eigen range.
+List<String> weekVenster(DateTime datum) {
+  final end = DateTime(datum.year, datum.month, datum.day);
+  final start = end.subtract(const Duration(days: 6));
+  return [_datumStr(start), _datumStr(end)];
+}
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -114,15 +158,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final todayActs = weeklyActivities.where((a) => a['date'] == todayStr).toList();
 
       final checkinTypesToday = <String>{};
-      if (todayLog != null) {
-        final s = todayLog['uren_slaap'];
-        final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
-        final a = todayLog['awake_minutes'];
-        final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
-        final q = todayLog['q4_slaapbehoefte'];
-        if ((sNum != null && sNum > 0) || (aNum > 0) || q != null) {
-          checkinTypesToday.add('ochtend');
-        }
+      if (todayLog != null && ochtendGedaan(todayLog)) {
+        checkinTypesToday.add('ochtend');
       }
       try {
         final intake = await db.getMedicationIntake(todayStr);
@@ -137,12 +174,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         final dagboek = await db.getDagboek(todayStr);
         if (dagboek != null) checkinTypesToday.add('dagboek');
       } catch (_) {}
-      final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
-      final hasAvond = todayActs.any((a) {
-        final type = a['activity_type']?.toString() ?? '';
-        return avondTypes.contains(type);
-      });
-      if (hasAvond) checkinTypesToday.add('avond');
+      if (avondGedaan(todayActs, todayStr)) checkinTypesToday.add('avond');
 
       // Dagstreak — tellen vanaf vandaag achterwaarts (max 14 dagen); een dag telt als er minimaal 1 check-in type is (ochtend/avond/medicatie)
       // Haal eerst alle data op voor de lookback-periode
@@ -161,37 +193,22 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         final d = now.subtract(Duration(days: i));
         final ds = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
         final dayTypes = <String>{};
-        
-        // Ochtend: slaap gelogd?
+
+        // Ochtend: zelfde definitie als de tegel (zie ochtendGedaan).
         final dayLog = dailyLogs.where((l) => l['date'] == ds).firstOrNull;
-        if (dayLog != null) {
-          final s = dayLog['uren_slaap'];
-          final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
-          final a = dayLog['awake_minutes'];
-          final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
-          if ((sNum != null && sNum > 0) || aNum > 0) {
-            dayTypes.add('ochtend');
-          }
+        if (dayLog != null && ochtendGedaan(dayLog)) {
+          dayTypes.add('ochtend');
         }
-        
+
         // Medicatie: ingenomen?
         if (medDates.contains(ds)) dayTypes.add('medicatie');
-        
-        // Avond: SRM activiteiten met avond-types, maar ALLEEN afgerond (actual_time + p_score ingevuld)
+
+        // Avond: zelfde definitie als de tegel (zie avondGedaan).
         final dayActs = weeklyActivities.where((a) => a['date'] == ds).toList();
-        final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
-        final avondDone = dayActs.any((a) {
-          if (!avondTypes.contains(a['activity_type']?.toString() ?? '')) return false;
-          final t = a['actual_time'];
-          final p = a['p_score'];
-          final hasTime = t != null && t.toString().isNotEmpty;
-          final hasScore = p != null;
-          return hasTime && hasScore;
-        });
-        if (avondDone) {
+        if (avondGedaan(dayActs, ds)) {
           dayTypes.add('avond');
         }
-        
+
         if (dayTypes.isNotEmpty) {
           streak++;
         } else {
@@ -611,11 +628,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Future<void> _loadDataForDate(DateTime date) async {
     try {
       final ds = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      final now = DateTime.now();
-      // 7 dagen inclusief vandaag = 6 dagen terug.
-      final weekAgo = now.subtract(const Duration(days: 6));
-      final startDateStr = '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
-      final endDateStr = ds;
+      // Venster van 7 dagen eindigend op de BEKEKEN datum. Eerst hing de
+      // start aan vandaag, waardoor een datum ouder dan 6 dagen buiten zijn
+      // eigen range viel en er niets terugkwam.
+      final venster = weekVenster(date);
+      final startDateStr = venster[0];
+      final endDateStr = venster[1];
       final results = await Future.wait([
         db.getSettings(),
         db.getDailyLogsRange(startDateStr, endDateStr),
@@ -629,15 +647,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final todayLogForDate = dailyLogs.where((l) => l['date'] == selectedDs).firstOrNull;
       final todayActsForDate = weeklyActivities.where((a) => a['date'] == selectedDs).toList();
       final checkinTypesForDate = <String>{};
-      if (todayLogForDate != null) {
-        final s = todayLogForDate['uren_slaap'];
-        final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
-        final a = todayLogForDate['awake_minutes'];
-        final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
-        final q = todayLogForDate['q4_slaapbehoefte'];
-        if ((sNum != null && sNum > 0) || (aNum > 0) || q != null) {
-          checkinTypesForDate.add('ochtend');
-        }
+      if (todayLogForDate != null && ochtendGedaan(todayLogForDate)) {
+        checkinTypesForDate.add('ochtend');
       }
       try {
         final intake = await db.getMedicationIntake(selectedDs);
@@ -652,12 +663,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         final dagboek = await db.getDagboek(selectedDs);
         if (dagboek != null) checkinTypesForDate.add('dagboek');
       } catch (_) {}
-      final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
-      final hasAvond = todayActsForDate.any((a) {
-        final type = a['activity_type']?.toString() ?? '';
-        return avondTypes.contains(type);
-      });
-      if (hasAvond) checkinTypesForDate.add('avond');
+      if (avondGedaan(todayActsForDate, selectedDs)) {
+        checkinTypesForDate.add('avond');
+      }
       setState(() {
         _settings = settings;
         _dailyLogs = dailyLogs;
@@ -685,22 +693,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     final ds = '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     bool hasLog;
     if (isOchtend) {
-      hasLog = _dailyLogs.any((l) {
-        if (l['date'] != ds) return false;
-        final s = l['uren_slaap'];
-        final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
-        final a = l['awake_minutes'];
-        final aNum = a is num ? a.toInt() : int.tryParse(a?.toString() ?? '') ?? 0;
-        final q = l['q4_slaapbehoefte'];
-        return (sNum != null && sNum > 0) || (aNum > 0) || q != null;
-      });
+      hasLog = _dailyLogs.where((l) => l['date'] == ds).any(ochtendGedaan);
     } else {
-      final avondTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
-      hasLog = _srmActivitiesList.any((a) {
-        if (a['date'] != ds) return false;
-        final type = a['activity_type']?.toString() ?? '';
-        return avondTypes.contains(type);
-      });
+      hasLog = avondGedaan(_srmActivitiesList, ds);
     }
     return _buildActionCard(context,
         icon: icon, accent: accent, title: title, route: route, isCompleted: hasLog);

@@ -46,6 +46,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
 
   bool _isSaving = false;
   bool _bekijkModus = false; // true = overzicht van opgeslagen waarden (read-only)
+  bool _opslagGelukt = false; // uitslag van _opslaan; _sluiten meldt dit terug
 
   // Opgeslagen waarden voor het overzicht
   double? _opgeslagenQ1;
@@ -190,11 +191,22 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       });
     }
 
-    // Opslaan wachten tot compleet (voor _sluiten → _loadData)
-    await _opslaan(result, q4);
+    // Opslaan wachten tot compleet (voor _sluiten → _loadData).
+    // Het resultaat telt: bij een fout blijft de gebruiker op het
+    // resultaatscherm maar met een foutmelding, en _sluiten meldt
+    // "niet bewaard" zodat het dashboard niet ten onrechte groen kleurt.
+    _opslagGelukt = await _opslaan(result, q4);
+    if (!_opslagGelukt && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).fout('')),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    }
   }
 
-  Future<void> _opslaan(MoodScoreResult result, double q4) async {
+  Future<bool> _opslaan(MoodScoreResult result, double q4) async {
     final today = _formattedToday;
     try {
       await ensureInitialized();
@@ -261,17 +273,19 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
         await db.insertSrmActivity(today, entry.key, timeStr, pScore, null,
             targetTime: (targetStr != null && targetStr != '--:--') ? targetStr : null);
       }
+      return true;
     } catch (e) {
       AppLogger.error('EveningCheckIn: opslaan mislukt', error: e);
+      return false;
     }
   }
 
   void _sluiten() {
     if (!mounted) return;
     if (widget.onClose != null) {
-      widget.onClose!(true);
+      widget.onClose!(_opslagGelukt);
     } else {
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(_opslagGelukt);
     }
   }
 
