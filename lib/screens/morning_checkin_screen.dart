@@ -6,12 +6,14 @@ import '../utils/checkin_colors.dart';
 import '../widgets/overzicht_rij.dart';
 import '../utils/logger.dart';
 
-/// Ochtend check-in: 4 korte stappen die bij het opstaan horen.
+/// Ochtend check-in: 6 korte stappen die bij het opstaan horen.
 ///
 ///  1. Hoe laat stond je op?        (tijd — vult slaap + SRM "Opstaan" + P-score)
 ///  2. Wakker gelegen (minuten)     (samen met gisteravonds bedtijd → slaapduur)
 ///  3. Hoe heb je geslapen?         (kwaliteit 1..5, puur log — geen klinische score)
 ///  4. Slaapbehoefte                (q4 uit de stemmingscheck, -4..+4)
+///  5. Eerste contact vandaag?      (tijd, optioneel — was avond-stap)
+///  6. Werk/hobby begonnen?         (tijd, optioneel — was avond-stap)
 ///
 /// Opslag:
 ///  - sleep log (bedtijd = gisteravond uit daily_log, wake = nu gekozen)
@@ -33,6 +35,8 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   TimeOfDay? _wakeTime;
   int _awakeMinutes = 0;
   int? _kwaliteit; // hoe geslapen, 1..5
+  TimeOfDay? _eersteContact; // vandaag, optioneel (was avond-stap)
+  TimeOfDay? _werkHobby; // vandaag, optioneel (was avond-stap)
   double? _q4; // slaapbehoefte -4..+4
   String? _bedTimeYesterday; // uit gisterens slaap-log
   bool _isSaving = false;
@@ -40,6 +44,8 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   TimeOfDay? _opgeslagenWakeTime;
   int _opgeslagenAwakeMinutes = 0;
   int? _opgeslagenKwaliteit;
+  TimeOfDay? _opgeslagenEersteContact;
+  TimeOfDay? _opgeslagenWerkHobby;
   double? _opgeslagenQ4;
   String? _opgeslagenBedTime;
 
@@ -90,6 +96,21 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
           wakeTime = TimeOfDay(hour: int.tryParse(parts[0]) ?? 0, minute: int.tryParse(parts[1]) ?? 0);
         }
       }
+      // Eerste contact + werk/hobby van vandaag (worden sinds kort in de
+      // ochtend ingevuld; oudere dagen hebben ze via de avond-check-in).
+      TimeOfDay? srmTijd(String type) {
+        for (final a in srm) {
+          if (a['activity_type']?.toString() == type &&
+              a['actual_time']?.toString().isNotEmpty == true) {
+            final parts = a['actual_time'].toString().split(':');
+            return TimeOfDay(
+              hour: int.tryParse(parts[0]) ?? 0,
+              minute: parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0,
+            );
+          }
+        }
+        return null;
+      }
       final awakeRaw = log?['awake_minutes'];
       if (awakeRaw is num) awake = awakeRaw.toInt();
       final q4Raw = assessment?['q4_slaapbehoefte'] ?? log?['q4_slaapbehoefte'];
@@ -108,6 +129,8 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
           _opgeslagenWakeTime = wakeTime;
           _opgeslagenAwakeMinutes = awake;
           _opgeslagenKwaliteit = kwaliteit;
+          _opgeslagenEersteContact = srmTijd('Eerste contact');
+          _opgeslagenWerkHobby = srmTijd('Werk / Hobby');
           _opgeslagenQ4 = q4;
           _opgeslagenBedTime = _bedTimeYesterday;
         });
@@ -124,6 +147,8 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       _wakeTime = _opgeslagenWakeTime;
       _awakeMinutes = _opgeslagenAwakeMinutes;
       _kwaliteit = _opgeslagenKwaliteit;
+      _eersteContact = _opgeslagenEersteContact;
+      _werkHobby = _opgeslagenWerkHobby;
       _q4 = _opgeslagenQ4;
       _step = 0;
     });
@@ -186,6 +211,75 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     }
   }
 
+  /// Generieke tijdkeuze voor de SRM-stappen (eerste contact, werk/hobby).
+  Future<void> _pickTijd(TimeOfDay? huidige, ValueChanged<TimeOfDay> onPick) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: huidige ?? TimeOfDay.now(),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && mounted) onPick(picked);
+  }
+
+  /// Na een tijdkeuze (OK in de kiezer) meteen een stap verder, behalve op de
+  /// laatste stap. Zo hoeft een tijdstip niet twee keer bevestigd te worden
+  /// (OK én Volgende).
+  void _gaVerder() {
+    if (!mounted || _step >= 5) return;
+    setState(() => _step += 1);
+  }
+
+  /// Eén tijdstip-stap: grote klokknop, geen eigen Volgende (zie _gaVerder).
+  Widget _tijdStap(
+    BuildContext context, {
+    required IconData icon,
+    required String titel,
+    required TimeOfDay? tijd,
+    required ValueChanged<TimeOfDay> onPick,
+  }) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(height: 16),
+        Text(
+          titel,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 24),
+        Center(
+          child: OutlinedButton.icon(
+            onPressed: () => _pickTijd(tijd, onPick),
+            icon: const Icon(Icons.access_time),
+            label: Text(
+              tijd != null ? _formatTimeOfDay(tijd) : l10n.tikOmTijdInTeStellen,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// P-score van een SRM-tijd tegen de doeltijd (zelfde staffel als overal).
+  int _pScoreVoor(TimeOfDay tijd, String? targetStr) {
+    if (targetStr == null || targetStr.isEmpty || targetStr == '--:--') return 1;
+    final tParts = targetStr.split(':');
+    final targetMinutes = (int.tryParse(tParts[0]) ?? 0) * 60 + (int.tryParse(tParts[1]) ?? 0);
+    final diff = ((tijd.hour * 60) + tijd.minute - targetMinutes).abs();
+    return diff <= 15 ? 5 : diff <= 30 ? 4 : diff <= 45 ? 3 : diff <= 60 ? 2 : 1;
+  }
+
   Future<void> _finish() async {
     if (_wakeTime == null || _kwaliteit == null || _q4 == null || _isSaving) return;
 
@@ -207,14 +301,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       // Bereken P-score (voor stemming_hoog in daily_log)
       final settings = await db.getSettings();
       final targetStr = settings?['target_opstaan']?.toString();
-      int pScore = 1;
-      if (targetStr != null && targetStr.isNotEmpty && targetStr != '--:--') {
-        final tParts = targetStr.split(':');
-        final targetMinutes = (int.tryParse(tParts[0]) ?? 0) * 60 + (int.tryParse(tParts[1]) ?? 0);
-        final wakeMinutes = (_wakeTime!.hour * 60) + _wakeTime!.minute;
-        final diff = (wakeMinutes - targetMinutes).abs();
-        pScore = diff <= 15 ? 5 : diff <= 30 ? 4 : diff <= 45 ? 3 : diff <= 60 ? 2 : 1;
-      }
+      final pScore = _pScoreVoor(_wakeTime!, targetStr);
 
       // 1. Slaap-log vullen/actualiseren: bedtijd van gisteren behouden,
       //    opstaantijd + wakker-minuten van nu. Merge-preserving!
@@ -239,6 +326,21 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       await db.insertSrmActivity(_formattedToday, 'Opstaan', wakeStr, pScore, null,
           targetTime: (targetStr != null && targetStr != '--:--') ? targetStr : null);
 
+      // 3b. Eerste contact + werk/hobby van VANDAAG (was avond-stap, nu hier
+      //     optioneel). Alleen bij ingevulde tijd, met P-score tegen doeltijd.
+      final targetContact = settings?['target_contact']?.toString();
+      if (_eersteContact != null) {
+        await db.insertSrmActivity(_formattedToday, 'Eerste contact',
+            _formatTimeOfDay(_eersteContact!), _pScoreVoor(_eersteContact!, targetContact), null,
+            targetTime: (targetContact != null && targetContact != '--:--') ? targetContact : null);
+      }
+      final targetWerk = settings?['target_werk']?.toString();
+      if (_werkHobby != null) {
+        await db.insertSrmActivity(_formattedToday, 'Werk / Hobby',
+            _formatTimeOfDay(_werkHobby!), _pScoreVoor(_werkHobby!, targetWerk), null,
+            targetTime: (targetWerk != null && targetWerk != '--:--') ? targetWerk : null);
+      }
+
       // 4. mood_assessment updaten (merge: alleen q4 behouden)
       final existingAssessment = await db.getMoodAssessment(_formattedToday);
       final assessment = existingAssessment != null
@@ -258,7 +360,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     if (!mounted) return;
     setState(() => _isSaving = false);
     if (opgeslagen) {
-      setState(() => _step = 4);
+      setState(() => _step = 6);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -301,9 +403,9 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            if (!_bekijkModus && _step < 4)
+            if (!_bekijkModus && _step < 6)
               Text(
-                l10n.ochtendStapVan(_step + 1, 4),
+                l10n.ochtendStapVan(_step + 1, 6),
                 style: TextStyle(
                   fontSize: 12,
                   color: AppTheme.secondaryText(context),
@@ -315,7 +417,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       body: SafeArea(
         child: _bekijkModus
             ? _buildOverzicht(context)
-            : _step >= 4
+            : _step >= 6
                 ? _buildKlaar(context)
                 : _buildVraag(context),
       ),
@@ -376,6 +478,18 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                 label: l10n.stemmingsCheckVraag4Titel,
                 value: _q4Label(l10n, _opgeslagenQ4!),
                 accent: MoodAssessmentScorerColors.slaapbehoefteColor(_opgeslagenQ4!),
+              ),
+            if (_opgeslagenEersteContact != null)
+              OverzichtRij(
+                icon: Icons.person_outline,
+                label: l10n.avondEersteContact,
+                value: _formatTimeOfDay(_opgeslagenEersteContact!),
+              ),
+            if (_opgeslagenWerkHobby != null)
+              OverzichtRij(
+                icon: Icons.work_outline,
+                label: l10n.avondWerkHobby,
+                value: _formatTimeOfDay(_opgeslagenWerkHobby!),
               ),
             if (sleepHours != null)
               OverzichtRij(
@@ -448,7 +562,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     return Column(
       children: [
         LinearProgressIndicator(
-          value: (_step + 1) / 4,
+          value: (_step + 1) / 6,
           backgroundColor: theme.colorScheme.surfaceContainerHighest,
           valueColor: const AlwaysStoppedAnimation<Color>(CheckinAccent.teal),
         ),
@@ -493,7 +607,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                   child: ElevatedButton(
                     onPressed: _canProceed() && !_isSaving
                         ? () {
-                            if (_step == 3) {
+                            if (_step == 5) {
                               _finish();
                             } else {
                               setState(() => _step += 1);
@@ -511,7 +625,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: Text(
-                      _step == 3 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
+                      _step == 5 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -534,6 +648,10 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
         return _kwaliteit != null;
       case 3:
         return _q4 != null;
+      case 4:
+        return true; // eerste contact optioneel
+      case 5:
+        return true; // werk/hobby optioneel
       default:
         return false;
     }
@@ -701,6 +819,27 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
               onChanged: (v) => setState(() => _q4 = v),
             ),
           ],
+        );
+      case 4:
+        return _tijdStap(
+          context,
+          icon: Icons.person_outline,
+          titel: l10n.avondEersteContact,
+          tijd: _eersteContact,
+          // Na OK meteen door: anders moet elk tijdstip twee keer
+          // bevestigd worden (OK én Volgende).
+          onPick: (t) {
+            setState(() => _eersteContact = t);
+            _gaVerder();
+          },
+        );
+      case 5:
+        return _tijdStap(
+          context,
+          icon: Icons.work_outline,
+          titel: l10n.avondWerkHobby,
+          tijd: _werkHobby,
+          onPick: (t) => setState(() => _werkHobby = t),
         );
       default:
         return const SizedBox.shrink();

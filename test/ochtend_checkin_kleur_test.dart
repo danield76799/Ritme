@@ -119,12 +119,12 @@ void main() {
     });
   });
 
-  group('Flow is 4 stappen met kwaliteit (structuur)', () {
-    test('stapteller en klaar-stap rekenen met 4', () {
+  group('Flow is 6 stappen met kwaliteit + SRM (structuur)', () {
+    test('stapteller en klaar-stap rekenen met 6', () {
       final code = _code('lib/screens/morning_checkin_screen.dart');
-      expect(code.contains('ochtendStapVan(_step + 1, 4)'), isTrue);
-      expect(code.contains('_step = 4'), isTrue);
-      expect(code.contains('(_step + 1) / 4'), isTrue);
+      expect(code.contains('ochtendStapVan(_step + 1, 6)'), isTrue);
+      expect(code.contains('_step = 6'), isTrue);
+      expect(code.contains('(_step + 1) / 6'), isTrue);
     });
 
     test('kwaliteit wordt gevraagd, bewaard en getoond', () {
@@ -153,6 +153,32 @@ void main() {
       expect(code.contains('kwaliteitLabel('), isTrue);
       expect(code.contains('accent:'), isTrue,
           reason: 'OverzichtRij kleurt het antwoord mee');
+    });
+  });
+
+  group('Eerste contact + werk/hobby in de ochtend (structuur)', () {
+    test('ochtend vraagt en bewaart beide tijden van vandaag', () {
+      final code = _code('lib/screens/morning_checkin_screen.dart');
+      expect(code.contains('avondEersteContact'), isTrue);
+      expect(code.contains('avondWerkHobby'), isTrue);
+      expect(code.contains("'Eerste contact'"), isTrue);
+      expect(code.contains("'Werk / Hobby'"), isTrue);
+    });
+
+    test('avond vraagt ze niet meer, maar toont ze nog wel', () {
+      final code = _code('lib/screens/evening_checkin_screen.dart');
+      // Geen invoerstappen meer ...
+      expect(code.contains('_totaalStappen = 6'), isTrue);
+      // ... maar het overzicht toont eerder ingevulde tijden nog.
+      expect(code.contains('_opgeslagenEersteContact'), isTrue);
+      expect(code.contains('_opgeslagenWerkHobby'), isTrue);
+    });
+
+    test('na OK meteen door, geen dubbele bevestiging', () {
+      final ochtend = _code('lib/screens/morning_checkin_screen.dart');
+      final avond = _code('lib/screens/evening_checkin_screen.dart');
+      expect(ochtend.contains('_gaVerder()'), isTrue);
+      expect(avond.contains('_gaVerder()'), isTrue);
     });
   });
 }
