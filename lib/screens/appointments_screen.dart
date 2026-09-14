@@ -756,52 +756,45 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
     );
   }
 
+  /// Herinnering-keuze als chips over de volle breedte in plaats van een
+  /// DropdownButton: de pijl was een kleine dode hoek (tikken op de tekst
+  /// deed niets, "menu opent niet") en chips volgen het thema vanzelf.
   Widget _buildReminderDropdown(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    const opties = [0, 1, 3, 7];
+    String label(int v) {
+      if (v == 0) return l10n.geenHerinnering;
+      if (v == 1) return l10n.eenDag;
+      if (v == 3) return l10n.drieDagen;
+      return l10n.zevenDagen;
+    }
+
     return Container(
       decoration: BoxDecoration(
-        color: Color(0xFFFFFFFF),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color(0xFFCCCCCC)),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.herinnering,
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-              ),
-              SizedBox(height: 4),
-              Text(
-                _reminderDays == 0 ? l10n.geenHerinnering :
-                _reminderDays == 1 ? l10n.eenDag :
-                _reminderDays == 3 ? l10n.drieDagen :
-                l10n.zevenDagen,
-                style: TextStyle(
-                  color: _reminderDays == 0 ? Colors.grey.shade400 : Theme.of(context).colorScheme.onSurface,
-                  fontSize: 16,
-                ),
-              ),
-            ],
+          Text(
+            l10n.herinnering,
+            style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
           ),
-          DropdownButton<int>(
-            value: _reminderDays,
-            underline: SizedBox(),
-            items: [
-              DropdownMenuItem(value: 0, child: Text(AppLocalizations.of(context).geen)),
-              DropdownMenuItem(value: 1, child: Text(AppLocalizations.of(context).eenDag)),
-              DropdownMenuItem(value: 3, child: Text(AppLocalizations.of(context).drieDagen)),
-              DropdownMenuItem(value: 7, child: Text(AppLocalizations.of(context).zevenDagen)),
-            ],
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => _reminderDays = value);
-              }
-            },
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: opties
+                .map((v) => ChoiceChip(
+                      label: Text(label(v)),
+                      selected: _reminderDays == v,
+                      onSelected: (_) =>
+                          setState(() => _reminderDays = v),
+                    ))
+                .toList(),
           ),
         ],
       ),
