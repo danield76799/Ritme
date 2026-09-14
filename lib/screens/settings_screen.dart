@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -6,7 +7,6 @@ import '../services/backup_service.dart';
 import '../services/notification_helper.dart';
 import '../services/boot_service.dart';
 import 'package:file_picker/file_picker.dart';
-import '../services/theme_service.dart';
 import '../main.dart';
 import '../generated/l10n/app_localizations.dart';
 
@@ -37,7 +37,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: 300,
@@ -71,12 +71,13 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
                   ),
                 ),
-                // Minute picker
+                // Minute picker — vrije keuze per minuut (was per kwartier,
+                // waardoor tijden als 19:35 niet in te stellen waren).
                 _buildNumberPicker(
                   value: selectedMinute,
                   min: 0,
                   max: 59,
-                  step: 15,
+                  step: 1,
                   onChanged: (value) => setState(() => selectedMinute = value),
                 ),
               ],
@@ -183,6 +184,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Controllers for text fields
   final _usernameController = TextEditingController();
 
+  // Debounce voor het direct wegschrijven van de gebruikersnaam tijdens typen.
+  Timer? _usernameSaveTimer;
+
   @override
   void initState() {
     super.initState();
@@ -191,6 +195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
+    _usernameSaveTimer?.cancel();
     _usernameController.dispose();
     super.dispose();
   }
@@ -221,19 +226,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _saveSettings() async {
+  /// Schrijft één instelling direct weg, zonder op een Opslaan-knop te wachten.
+  ///
+  /// Naam, slaapschema en dagelijkse doelen gebruiken dit; check-in
+  /// herinneringen doen hetzelfde via _setCheckinSetting. Eén model voor het
+  /// hele scherm: alles is meteen bewaard, er valt niets te vergeten.
+  Future<void> _directOpslaan(String key, Object value) async {
     try {
-      // Laad eerst bestaande settings om te voorkomen dat we velden overschrijven
       final existing = await db.getSettings();
       final merged = Map<String, dynamic>.from(existing ?? {});
-      merged.addAll(_settings ?? {});
-      merged['username'] = _usernameController.text;
+      merged[key] = value;
       await db.updateSettingsMap(merged);
-      _showSuccess(AppLocalizations.of(context).instellingenOpgeslagen);
+      if (mounted) setState(() => _settings = merged);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to save settings', error: e, stackTrace: stackTrace);
-      _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
+      AppLogger.error('Instelling direct opslaan mislukt', error: e, stackTrace: stackTrace);
+      if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
     }
+  }
+
+  /// Gebruikersnaam tijdens typen bewaren (met debounce); bij Enter of
+  /// wegklikken meteen. Stil bij succes — de tekst blijft immers staan.
+  void _usernameGewijzigd(String value) {
+    _usernameSaveTimer?.cancel();
+    _usernameSaveTimer = Timer(const Duration(milliseconds: 800), () {
+      _directOpslaan('username', value);
+    });
+  }
+
+  void _usernameNuOpslaan() {
+    _usernameSaveTimer?.cancel();
+    _directOpslaan('username', _usernameController.text);
   }
 
   void _showSuccess(String message) {
@@ -352,17 +374,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Eén opslagmodel voor het hele scherm: alles wordt direct
+          // bewaard, er is geen Opslaan-knop meer.
+          Text(
+            AppLocalizations.of(context).wijzigingenDirectOpgeslagen,
+            style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color),
+          ),
+          const SizedBox(height: 12),
           _buildSectionHeader(AppLocalizations.of(context).profiel),
-          _buildTextField(AppLocalizations.of(context).gebruikersnaam, _usernameController),
+          _buildTextField(
+            AppLocalizations.of(context).gebruikersnaam,
+            _usernameController,
+            onChanged: _usernameGewijzigd,
+            onEditingAfgerond: _usernameNuOpslaan,
+          ),
           const SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).slaapschema),
-          _buildTimeField(AppLocalizations.of(context).opstaan, 'target_opstaan'),
-          _buildTimeField(AppLocalizations.of(context).slapen, 'target_slapen'),
+          _buildTimeField(AppLocalizations.of(context).opstaan, 'target_opstaan',
+              onSaved: (t) => _directOpslaan('target_opstaan', t)),
+          _buildTimeField(AppLocalizations.of(context).slapen, 'target_slapen',
+              onSaved: (t) => _directOpslaan('target_slapen', t)),
           SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).dagelijkseDoelen),
-          _buildTimeField(AppLocalizations.of(context).eersteContact, 'target_contact'),
-          _buildTimeField(AppLocalizations.of(context).werkHobby, 'target_werk'),
-          _buildTimeField(AppLocalizations.of(context).avondeten, 'target_eten'),
+          _buildTimeField(AppLocalizations.of(context).eersteContact, 'target_contact',
+              onSaved: (t) => _directOpslaan('target_contact', t)),
+          _buildTimeField(AppLocalizations.of(context).werkHobby, 'target_werk',
+              onSaved: (t) => _directOpslaan('target_werk', t)),
+          _buildTimeField(AppLocalizations.of(context).avondeten, 'target_eten',
+              onSaved: (t) => _directOpslaan('target_eten', t)),
           SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).weergave),
           _buildThemeSelector(),
@@ -370,32 +409,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader(AppLocalizations.of(context).notificaties),
           _buildCheckinReminders(),
           const SizedBox(height: 12),
+          // Eén testknop: laat zien hoe de check-in melding er echt uitziet,
+          // inclusief de 'gisteren nog niet ingevuld'-regel als die geldt.
           _buildActionButton(
-                        AppLocalizations.of(context).testNotificatieNu,
+            AppLocalizations.of(context).testMeldingVersturen,
             () async {
               try {
-                await NotificationHelper.instance.showTestNotification();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context).testNotificatieVerstuurd), backgroundColor: Colors.green),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
-                  );
-                }
-              }
-            },
-          ),
-          _buildActionButton(
-            AppLocalizations.of(context).testCheckinNotificatie,
-            () async {
-              try {
-                // Toont eenmalig hoe de check-in melding eruitziet, inclusief
-                // de 'gisteren nog niet ingevuld'-regel als die van toepassing
-                // is — zo kan de gebruiker het effect meteen beoordelen.
                 await NotificationHelper.instance.showCheckinPreview();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -412,6 +431,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               }
             },
+          ),
+          _buildSectionHeader(AppLocalizations.of(context).medicatie),
+          _buildActionButton(
+                        AppLocalizations.of(context).medicatieBeheren,
+            () => Navigator.pushNamed(context, '/medication'),
+          ),
+          const SizedBox(height: 8),
+          _buildSectionHeader(AppLocalizations.of(context).backupHerstel),
+          _buildBackupButtons(),
+          const SizedBox(height: 32),
+          _buildSectionHeader(AppLocalizations.of(context).overige),
+          _buildActionButton(
+                        AppLocalizations.of(context).databaseDebug,
+            () => Navigator.pushNamed(context, '/database-debug'),
           ),
           _buildActionButton(
                         AppLocalizations.of(context).herplanMedicatieHerinneringen,
@@ -432,34 +465,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               }
             },
-          ),
-          _buildSectionHeader(AppLocalizations.of(context).medicatie),
-          _buildActionButton(
-                        AppLocalizations.of(context).medicatieBeheren,
-            () => Navigator.pushNamed(context, '/medication'),
-          ),
-          SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _saveSettings,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context).backupHerstel),
-          _buildBackupButtons(),
-          const SizedBox(height: 32),
-          _buildSectionHeader(AppLocalizations.of(context).overige),
-          _buildActionButton(
-                        AppLocalizations.of(context).databaseDebug,
-            () => Navigator.pushNamed(context, '/database-debug'),
           ),
           const SizedBox(height: 32),
         ],
@@ -766,7 +771,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {ValueChanged<String>? onChanged, VoidCallback? onEditingAfgerond}) {
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -782,6 +788,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: TextField(
         controller: controller,
+        onChanged: onChanged,
+        onEditingComplete: onEditingAfgerond,
+        onTapOutside: (_) => onEditingAfgerond?.call(),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
@@ -798,7 +807,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildTimeField(String label, String key) {
+  Widget _buildTimeField(String label, String key,
+      {Future<void> Function(String tijd)? onSaved}) {
     final timeValue = _settings?[key]?.toString() ?? '--:--';
     
     return Container(
@@ -828,7 +838,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         trailing: Icon(Icons.access_time, color: Theme.of(context).colorScheme.primary),
-        onTap: () => _showTimePicker(label, key),
+        onTap: () => _showTimePicker(label, key, onSaved: onSaved),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
@@ -857,23 +867,5 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
-  }
-
-  /// Direct een test notificatie tonen (binnen enkele seconden)
-  Future<void> showTestNotification() async {
-    try {
-      await NotificationHelper.instance.showTestNotification();
-    } catch (e) {
-      AppLogger.error('Test notification now failed', error: e);
-    }
-  }
-
-  /// Test notificatie plannen op een door de gebruiker gekozen tijdstip
-  Future<void> showTestNotificationAtTime() async {
-    try {
-      // This is a placeholder or internal method, the actual logic should use showTestNotificationAt
-    } catch (e) {
-      AppLogger.error('Test notification at time failed', error: e);
-    }
   }
 }
