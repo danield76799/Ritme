@@ -67,3 +67,13 @@
 
 # Keep all application classes
 -keep class com.ritme.ritme.** { *; }
+
+# flutter_local_notifications: herhalende meldingen worden via Gson
+# (TypeToken) in SharedPreferences bewaard. R8 stript zonder deze regels de
+# generic-signature, waardoor ELKE cancel()/uitlezen van geplande meldingen
+# in release-builds faalt met "Missing type parameter" (debug heeft geen
+# minify en merkt er niets van — vandaar dat dit alleen op het toestel stuk
+# ging: 0 ingepland, geen enkele herinnering).
+-keep class com.dexterous.flutterlocalnotifications.** { *; }
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
