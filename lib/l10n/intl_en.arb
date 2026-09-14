@@ -64,6 +64,16 @@
   "herinneringGezet": "Reminder set for {name} at {time}",
   "herinnering2": "Reminder: {time}",
   "herinneringenHerplantDbIngepland": "Reminders rescheduled ✓ ({rescheduled} in DB, {count} scheduled)",
+  "@herinneringenHerplantDbIngepland": {
+    "placeholders": {
+      "rescheduled": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "herinnertijdGewijzigd": "Reminder time changed to {newTime}",
   "herstelError": "Restore error: {error}",
   "historie": "History",
@@ -260,7 +270,7 @@
   "dagelijkseDoelen": "Daily goals",
   "eersteContact": "First contact",
   "avondeten": "Evening meal",
-  "herplanMedicatieHerinneringen": "Reschedule all medication reminders",
+  "herplanMedicatieHerinneringen": "Reschedule all reminders",
   "medicatieBeheren": "Manage medication",
   "overige": "Other",
   "backupMaken": "Create backup",
