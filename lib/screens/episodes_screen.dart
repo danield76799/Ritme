@@ -127,8 +127,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(AppLocalizations.of(context).toevoegen, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
@@ -247,7 +247,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
 
                 return Card(
                   margin: EdgeInsets.only(bottom: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
                     contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     leading: Container(
@@ -265,8 +265,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                           SizedBox(width: 8),
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-                            child: Text(AppLocalizations.of(context).actiefLabel, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold)),
+                            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+                            child: Text(AppLocalizations.of(context).actiefLabel, style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ],

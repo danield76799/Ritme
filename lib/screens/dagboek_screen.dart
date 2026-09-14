@@ -172,7 +172,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
               child: Text(
                 _datumLabel(context),
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: theme.colorScheme.primary,
                 ),
@@ -397,7 +397,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
               onPressed: _score > 0 && !_isSaving ? _opslaan : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: Text(_isSaving ? 'Bezig...' : l10n.dagboekOpslaan),

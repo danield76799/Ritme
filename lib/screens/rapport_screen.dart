@@ -91,8 +91,8 @@ class _RapportScreenState extends State<RapportScreen> {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -117,7 +117,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.success,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
@@ -136,7 +136,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                     foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
@@ -161,7 +161,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   scrollDirection: Axis.horizontal,
                   child: SelectableText(
                     _reportText!,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 11, height: 1.4),
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12, height: 1.4),
                   ),
                 ),
               ),

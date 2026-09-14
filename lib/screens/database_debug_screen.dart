@@ -219,8 +219,8 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                           icon: Icon(Icons.cleaning_services),
                           label: Text(AppLocalizations.of(context).dubbeleOpruimen),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
+                            backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                            foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
                           ),
                         ),
                       ),
@@ -231,8 +231,8 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                           icon: Icon(Icons.delete_forever),
                           label: Text(AppLocalizations.of(context).allesWissen2),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
+                            backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                            foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
                           ),
                         ),
                       ),
@@ -327,7 +327,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                 'SLAAP',
                 style: TextStyle(
                   color: Colors.blue,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),

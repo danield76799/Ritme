@@ -238,13 +238,13 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                       onTap: _kiesDatum,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Theme.of(context).dividerColor),
                         ),
                         child: Row(
@@ -266,7 +266,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.orange.shade700.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.orange.shade700.withValues(alpha: 0.6)),
                       ),
                       child: Row(
@@ -696,7 +696,7 @@ class _OptionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -704,7 +704,7 @@ class _OptionTile extends StatelessWidget {
           color: isSelected
               ? option.color.withValues(alpha: 0.15)
               : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? option.color
@@ -926,7 +926,7 @@ class _ResultStep extends StatelessWidget {
                           border: Border.all(
                             color: color.withValues(alpha: 0.6),
                           ),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,

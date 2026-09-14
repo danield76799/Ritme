@@ -130,7 +130,7 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(Icons.access_time, color: Theme.of(context).colorScheme.primary),
         ),
