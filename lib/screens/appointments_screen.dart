@@ -212,7 +212,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           content: Text(message),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -253,7 +253,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 16),
@@ -275,7 +275,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           const SizedBox(height: 12),
           Text(
             AppLocalizations.of(context).geenAfspraken,
-            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
           ),
           const SizedBox(height: 4),
           Text(
@@ -328,7 +328,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
                     ),
@@ -342,13 +342,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                           ),
                           SizedBox(height: 4),
-                          if (doctor.isNotEmpty) Text(AppLocalizations.of(context).dokterMetNaam(doctor), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
-                          if (location.isNotEmpty) Text(AppLocalizations.of(context).locatieMetNaam(location), style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13)),
+                          if (doctor.isNotEmpty) Text(AppLocalizations.of(context).dokterMetNaam(doctor), style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13)),
+                          if (location.isNotEmpty) Text(AppLocalizations.of(context).locatieMetNaam(location), style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13)),
                           Text(
                             time.isNotEmpty
                                 ? AppLocalizations.of(context).omTijd(time)
                                 : '',
-                            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, fontSize: 13),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13),
                           ),
                         ],
                       ),
@@ -437,7 +437,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       insetPadding: EdgeInsets.all(16),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       surfaceTintColor: Colors.transparent,
       child: Container(
         width: double.infinity,
@@ -448,15 +448,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            brightness: Brightness.light,
-            colorScheme: ColorScheme.light(
-              primary: Theme.of(context).colorScheme.primary,
-              surface: Colors.white,
-            ),
-          ),
-          child: Padding(
+        child: Padding(
           padding: EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -467,7 +459,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 20),
@@ -513,7 +505,10 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                             ),
                             ElevatedButton(
                               onPressed: () => Navigator.pop(ctx, true),
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                                foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+                              ),
                               child: Text(AppLocalizations.of(context).verwijderen),
                             ),
                           ],
@@ -523,7 +518,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                         if (context.mounted) Navigator.pop(context, {'_delete': true, 'id': int.parse(widget.appointment!['id'].toString())});
                       }
                     },
-                    child: Text(AppLocalizations.of(context).verwijderen3, style: TextStyle(color: Colors.red, fontSize: 16)),
+                    child: Text(AppLocalizations.of(context).verwijderen3, style: TextStyle(color: AppTheme.dangerOn(Theme.of(context).brightness), fontSize: 16)),
                   ),
                 ),
               Row(
@@ -549,7 +544,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -561,7 +556,6 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -572,7 +566,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
         controller: controller,
         validator: validator,
         style: TextStyle(
-          color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
+          color: Theme.of(context).colorScheme.onSurface,
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
@@ -587,11 +581,11 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white, width: 2),
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -665,7 +659,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                   ),
                 ],
               ),
-              Icon(Icons.calendar_today, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
+              Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.onSurface),
             ],
           ),
         ),
@@ -730,7 +724,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
                 ),
               ],
             ),
-            Icon(Icons.access_time, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
+            Icon(Icons.access_time, color: Theme.of(context).colorScheme.onSurface),
           ],
         ),
       ),

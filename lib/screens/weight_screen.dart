@@ -74,7 +74,7 @@ class _WeightScreenState extends State<WeightScreen> {
       final result = await showDialog<Map<String, dynamic>>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Text(AppLocalizations.of(context).gewichtBewerkenVoor(DateFormat('d MMM yyyy').format(_selectedDate))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -118,7 +118,7 @@ class _WeightScreenState extends State<WeightScreen> {
                         content: Text(AppLocalizations.of(context).gewichtMoetTussen20),
                         backgroundColor: Colors.red,
                         behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     );
                     return;
@@ -167,7 +167,7 @@ class _WeightScreenState extends State<WeightScreen> {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(AppLocalizations.of(context).gewichtToevoegenVoor(DateFormat('d MMM yyyy').format(_selectedDate))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -213,7 +213,7 @@ class _WeightScreenState extends State<WeightScreen> {
                       content: Text(AppLocalizations.of(context).gewichtMoetTussen20),
                       backgroundColor: Colors.red,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   );
                   return;
@@ -328,7 +328,7 @@ class _WeightScreenState extends State<WeightScreen> {
                         padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.05),
@@ -541,7 +541,7 @@ class _WeightScreenState extends State<WeightScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),

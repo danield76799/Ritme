@@ -165,7 +165,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
                                 color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
@@ -310,7 +310,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
             label: Text(AppLocalizations.of(context).opnieuwProberen),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
         ],
@@ -448,7 +448,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
       padding: EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [

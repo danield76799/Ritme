@@ -234,7 +234,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: Text(
@@ -382,7 +382,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                                   info.title,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                    fontSize: 16,
                                     height: 1.25,
                                     color: theme.colorScheme.onSurface,
                                   ),
@@ -467,7 +467,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: c.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(_sectionIcon(def.section), color: c, size: 20),
                       ),
@@ -491,7 +491,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.blueGrey.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.add, color: Colors.blueGrey, size: 20),
                     ),

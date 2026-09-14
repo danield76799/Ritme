@@ -176,7 +176,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                         padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.05),
@@ -225,7 +225,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
                                   getTitlesWidget: (value, meta) {
                                     return Text(
                                       '${value.toInt()}u',
-                                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline),
                                     );
                                   },
                                 ),
@@ -402,7 +402,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
       padding: EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [

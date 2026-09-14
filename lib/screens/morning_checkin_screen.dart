@@ -260,7 +260,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
             icon: const Icon(Icons.access_time),
             label: Text(
               tijd != null ? _formatTimeOfDay(tijd) : l10n.tikOmTijdInTeStellen,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -504,7 +504,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
               label: Text(l10n.aanpassen),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
@@ -687,7 +687,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                 icon: const Icon(Icons.access_time),
                 label: Text(
                   _wakeTime != null ? _formatTimeOfDay(_wakeTime!) : l10n.tikOmTijdInTeStellen,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -745,7 +745,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFB300).withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.star_rounded,
                       size: 18, color: Color(0xFFFFB300)),
@@ -782,7 +782,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: CheckinAccent.teal.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.nightlight_round,
                       size: 18, color: CheckinAccent.teal),
@@ -882,7 +882,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
               onPressed: _sluiten,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
               child: Text(l10n.stemmingsCheckSuccesDoorNaar),
             ),
@@ -1057,7 +1057,7 @@ class _KwaliteitOpties extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     decoration: BoxDecoration(
                       color: isGekozen ? vulling : Colors.transparent,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isGekozen
                             ? vulling
@@ -1101,7 +1101,7 @@ class _KwaliteitOpties extends StatelessWidget {
                         Text(
                           labels[i],
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 16,
                             fontWeight: isGekozen ? FontWeight.w700 : FontWeight.w600,
                             color: brightness == Brightness.dark
                                 ? Colors.white
@@ -1214,7 +1214,7 @@ class SleepOptionCard extends StatelessWidget {
                     Text(
                       option.label,
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                         color: brightness == Brightness.dark
                             ? Colors.white
@@ -1262,7 +1262,7 @@ class _ScoreBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: selected ? vulling : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: selected ? vulling : kleur.withValues(alpha: 0.55),
           width: 1,

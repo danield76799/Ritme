@@ -169,7 +169,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       padding: EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         AppLocalizations.of(context).srtScoreFormula,
@@ -283,7 +283,7 @@ class _HelpScreenState extends State<HelpScreen> {
                           '• Export your data as JSON for backup',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         height: 1.5,
                       ),
                     ),
@@ -392,7 +392,7 @@ class _HelpScreenState extends State<HelpScreen> {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     height: 1.5,
                   ),
                 ),
@@ -511,7 +511,7 @@ class _HelpScreenState extends State<HelpScreen> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: color.withValues(alpha: 0.3),
           ),
@@ -543,14 +543,14 @@ class _HelpScreenState extends State<HelpScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Text(
                     action,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],

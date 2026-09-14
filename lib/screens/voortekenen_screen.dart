@@ -263,7 +263,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                         label: Text(AppLocalizations.of(context).kopieer(_lastDate!), style: TextStyle(color: Colors.blue.shade700)),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: Colors.blue.shade300),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
@@ -307,8 +307,8 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                 onPressed: _isSaving ? null : _saveAll,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: _isSaving
                     ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
@@ -367,11 +367,11 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: severity >= 3 ? Colors.red.shade100 : severity == 2 ? Colors.orange.shade100 : Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       severity >= 3 ? AppLocalizations.of(context).ernstig : severity == 2 ? AppLocalizations.of(context).matig : AppLocalizations.of(context).licht,
-                      style: TextStyle(fontSize: 11, color: severity >= 3 ? Colors.red : severity == 2 ? Colors.orange.shade800 : Colors.green.shade800),
+                      style: TextStyle(fontSize: 12, color: severity >= 3 ? AppTheme.dangerOn(Theme.of(context).brightness) : severity == 2 ? AppTheme.streakText(Theme.of(context).brightness) : AppTheme.successOn(Theme.of(context).brightness)),
                     ),
                   ),
                   onSelected: (val) {
@@ -414,7 +414,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
           maxLines: 3,
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context).beschrijfHoeVoortekenZich,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [

@@ -417,7 +417,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
               label: Text(l10n.aanpassen),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
@@ -512,7 +512,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                   child: Text(
                     _step == 5 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
@@ -686,7 +686,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
             icon: const Icon(Icons.access_time),
             label: Text(
               tijd != null ? _formatTimeOfDay(tijd) : l10n.tikOmTijdInTeStellen,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -783,7 +783,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
               onPressed: _sluiten,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
               child: Text(l10n.stemmingsCheckSuccesDoorNaar),
             ),
@@ -812,13 +812,13 @@ class _OptieTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.15) : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? color : Theme.of(context).dividerColor,
             width: selected ? 2 : 1,

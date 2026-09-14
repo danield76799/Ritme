@@ -131,7 +131,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 // AppTheme.success haalt 5.13:1.
                 backgroundColor: AppTheme.success,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -358,7 +358,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
                             ),
                             items: ['mg', 'ml', 'stuks', 'µg', 'IE']
-                                .map((u) => DropdownMenuItem(value: u, child: Text(u, style: TextStyle(color: textColor, fontSize: 15))))
+                                .map((u) => DropdownMenuItem(value: u, child: Text(u, style: TextStyle(color: textColor, fontSize: 16))))
                                 .toList(),
                             onChanged: (v) => setDialogState(() => unit = v ?? 'mg'),
                           ),
@@ -391,8 +391,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             labelStyle: TextStyle(color: labelColor),
                             filled: true,
                             fillColor: cs.surfaceContainerHighest,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: cs.outline)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
                           ),
                           child: Text(
                             reminderTime == null
@@ -658,7 +658,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           Text(
                             taken ? AppLocalizations.of(context).medicatieGenomen : AppLocalizations.of(context).medicatieNietGenomen,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: taken
                                   ? Theme.of(context).colorScheme.onPrimary
@@ -674,7 +674,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 // Herinnering-tijd (tappable)
                 InkWell(
                   onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime ?? '08:00'),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     child: Row(
@@ -686,7 +686,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         Text(
                           reminderTime ?? AppLocalizations.of(context).stelTijdIn,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: reminderTime != null
                                 ? Theme.of(context).colorScheme.primary
@@ -712,7 +712,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
           width: 34, height: 34,
           decoration: BoxDecoration(

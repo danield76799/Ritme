@@ -49,7 +49,7 @@ class OverzichtRij extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kleurtje),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: kleurtje),
             ),
           ),
         ],

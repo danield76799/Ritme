@@ -625,7 +625,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: Colors.red[50],
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                   border: Border.all(color: Colors.red[200]!),
                                 ),
                                 child: Row(
@@ -650,7 +650,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Theme.of(context).colorScheme.primary,
-                                  foregroundColor: Colors.white,
+                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),

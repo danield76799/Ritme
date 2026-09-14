@@ -449,7 +449,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                       dateStr,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
-                        fontSize: 15,
+                        fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -583,7 +583,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.orange.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -706,7 +706,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor.withValues(alpha: 0.20),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -758,7 +758,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 isCompleted: isCompleted,
               ),
               const SizedBox(height: 12),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15), textAlign: TextAlign.center),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16), textAlign: TextAlign.center),
             ],
           ),
         );
@@ -792,7 +792,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           if (isEmpty && emptyHint != null)
             Text(emptyHint, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
           else if (subtitle != null)
-            Text(subtitle, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color)),
+            Text(subtitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color)),
           if (value != null)
             Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
           else if (emptyValue != null)
@@ -910,7 +910,7 @@ class _DagStatusMeter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

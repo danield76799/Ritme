@@ -180,7 +180,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           content: Text(AppLocalizations.of(context).jeKuntGeenActiviteiten),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -289,7 +289,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               ),
               backgroundColor: Theme.of(context).colorScheme.primary,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -348,7 +348,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             content: Text(AppLocalizations.of(context).konActiviteitOpslaanProbeer),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -513,7 +513,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             content: Text(AppLocalizations.of(context).slaapduurMetUren(_formatSleepDuration(context, sleepHours))),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -736,7 +736,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 color: hasValue
                     ? AppTheme.accentOn(Theme.of(context).brightness)
                     : Colors.grey.shade600,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, size: 18,
                   color: Theme.of(context).colorScheme.onPrimary),
@@ -795,7 +795,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             label: Text(AppLocalizations.of(context).opnieuwProberen),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
         ],
@@ -842,7 +842,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   height: 40,
                   decoration: BoxDecoration(
                     color: isDone ? Theme.of(context).colorScheme.primary : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     icoon,
@@ -871,7 +871,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             const SizedBox(width: 4),
                             Text(
                               _formatTijd(richtTijd),
-                              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.outline),
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline),
                             ),
                           ],
                           if (werkTijd != null) ...[
@@ -880,7 +880,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             const SizedBox(width: 4),
                             Text(
                               _formatTijd(werkTijd),
-                              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
                             ),
                           ] else ...[
                             const SizedBox(width: 8),
@@ -888,7 +888,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             const SizedBox(width: 4),
                             Text(
                               AppLocalizations.of(context).tikOmTijdInTeStellen,
-                              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.outline, fontStyle: FontStyle.italic),
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline, fontStyle: FontStyle.italic),
                             ),
                           ],
                         ],

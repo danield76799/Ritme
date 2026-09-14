@@ -40,11 +40,28 @@ class AppTheme {
   static double borderRadius = 16.0;
   static double largeRadius = 24.0;
 
+  /// Hoekenschaal van de app — hier houden, nergens anders verzinnen:
+  ///   12  knoppen, rijen, invoervelden, chips en kleine kaarten
+  ///   16  kaarten en dialoog-inhoud (borderRadius)
+  ///   24  dialogs en hero-vlakken (largeRadius)
+  ///   999 pillen (chips die rondom rond zijn)
+  /// Kleinere waarden (2/4/6) alleen functioneel: accentstreepjes, dots en
+  /// grafiekbalken waar de straal uit de vorm volgt, niet uit de stijl.
+  static double smallRadius = 12.0;
+
   /// Consistente horizontale schermpadding. Gebruik dit voor zowel de AppBar
   /// (`titleSpacing`) als de body, zodat de titel exact boven de kaarten en het
   /// grid uitlijnt. Flutters AppBar-default is toevallig ook 16
   /// (`NavigationToolbar.kMiddleSpacing`), maar expliciet vastpinnen voorkomt
   /// dat een themawijziging de uitlijning stil breekt.
+  /// Tekstschaal van de app (losse fontSize-literals):
+  ///   12  captions, secundaire labels, dichte tabellen
+  ///   13  hulptekst onder titels
+  ///   14  body en de meeste labels
+  ///   16  subtitels, knoptekst, kaartwaarden
+  ///   18+ koppen en hero-cijfers (per scherm, spaarzaam)
+  /// Kleinere maten (10/11) alleen in grafiekassen; 15/17/22 niet gebruiken
+  /// (afgerond naar 16/16/20). PDF-tekst (pw.TextStyle) valt hierbuiten.
   static const double screenPadding = 16.0;
 
   /// Secundaire tekstkleur die WCAG AA (>=4.5:1) haalt op zowel de pagina-

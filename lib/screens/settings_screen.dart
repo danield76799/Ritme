@@ -38,7 +38,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         width: 300,
         padding: EdgeInsets.all(20),
@@ -68,7 +68,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                   padding: EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     ':',
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                   ),
                 ),
                 // Minute picker — vrije keuze per minuut (was per kwartier,
@@ -102,7 +102,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
@@ -265,7 +265,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.w600)),
           backgroundColor: Colors.green[700],
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           duration: Duration(seconds: 2),
         ),
       );
@@ -279,7 +279,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.w600)),
           backgroundColor: Colors.red[700],
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -355,7 +355,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(height: 12),
           Text(
             _errorMessage!,
-            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 16),
@@ -505,7 +505,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     content: Text(AppLocalizations.of(context).backupOpgeslagen(backupPath)),
                     backgroundColor: Colors.green[700],
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -517,7 +517,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     content: Text(AppLocalizations.of(context).backupError(e)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -545,7 +545,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       content: Text(AppLocalizations.of(context).backupSuccesvolHersteld),
                       backgroundColor: Colors.green[700],
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       duration: const Duration(seconds: 3),
                     ),
                   );
@@ -559,7 +559,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     content: Text(AppLocalizations.of(context).herstelError(e)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -671,7 +671,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? Theme.of(context).colorScheme.primary
                     : Theme.of(context).colorScheme.outline),
             title: Text(label,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
           ),
           if (aan) ...[
@@ -684,7 +684,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: Text(
                 tijd,
                 style: TextStyle(
-                  fontSize: 17,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -816,7 +816,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onTapOutside: (_) => onEditingAfgerond?.call(),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
+          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -825,7 +825,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
-        style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87, fontSize: 16),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16),
       ),
     );
   }
@@ -878,7 +878,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
-              fontSize: 15,
+              fontSize: 16,
             )),
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
