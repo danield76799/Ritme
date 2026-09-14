@@ -83,12 +83,14 @@ void main() {
   });
 
   group('Notificatie-ID\'s botsen niet met medicatie of afspraken', () {
-    test('medicatie blijft onder 100000, dus 900001/900002 zijn vrij', () {
+    test('medicatie blijft onder 100000, afspraken onder 10000', () {
       final helper = _bron('lib/services/notification_helper.dart');
       // Medicatie: (id % 90000) + 10000 -> max 99999.
       expect(helper, contains('(id % 90000) + 10000'));
-      // Afspraken: (id * 100) % 100000 -> max 99999.
-      expect(helper, contains('(appointmentId * 100) % 100000'));
+      // Afspraken: eigen range 1000-9999 (de oude (id*100)%100000 kon met
+      // medicatie botsen en herinneringen overschrijven).
+      expect(helper, contains('(appointmentId % 9000) + 1000'));
+      expect(helper.contains('(appointmentId * 100) % 100000'), isFalse);
     });
 
     test('de check-in ID\'s liggen boven beide bereiken', () {

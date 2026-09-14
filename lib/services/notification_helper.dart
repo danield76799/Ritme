@@ -318,6 +318,16 @@ class NotificationHelper {
         AppLogger.error('Check-in herinneringen plannen mislukt (medicatie is wel gepland)',
             error: e, stackTrace: stackTrace);
       }
+      // Afspraken idem: cancelAllReminders() hierboven wiste ook die, en
+      // niets plande ze terug. Elke app-start veegde zo alle
+      // afspraakherinneringen weg. Eigen try/catch om dezelfde reden.
+      try {
+        final afspraken = await rescheduleAppointmentReminders();
+        AppLogger.info('Afspraakherinneringen herplant: $afspraken');
+      } catch (e, stackTrace) {
+        AppLogger.error('Afspraakherinneringen plannen mislukt',
+            error: e, stackTrace: stackTrace);
+      }
       return rescheduled;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to reschedule medication reminders', error: e, stackTrace: stackTrace);
@@ -643,7 +653,11 @@ class NotificationHelper {
     }
   }
 
-  Future<void> scheduleAppointmentReminder({
+  /// Plant een afspraakherinnering, of geeft terug waarom dat niet kon.
+  ///
+  /// Geeft null terug bij succes, 'verleden' als het moment al voorbij is,
+  /// anders de fouttekst. De aanroeper toont dit (stil wegvallen was de bug).
+  Future<String?> scheduleAppointmentReminder({
     required int appointmentId,
     required String title,
     required String doctorName,
@@ -651,8 +665,8 @@ class NotificationHelper {
     required String appointmentTime,
     required int reminderDays,
   }) async {
-    if (kIsWeb) return;
-    if (reminderDays <= 0) return;
+    if (kIsWeb) return null;
+    if (reminderDays <= 0) return null;
 
     try {
       final dateParts = appointmentDate.split('-');
@@ -681,10 +695,13 @@ class NotificationHelper {
       final now = tz.TZDateTime.now(tz.local);
       if (reminderDateTime.isBefore(now)) {
         debugPrint('Appointment reminder time has passed, skipping');
-        return;
+        return 'verleden';
       }
 
-      final notificationId = (appointmentId * 100) % 100000;
+      // Eigen ID-range (1000-9999): medicatie zit op 10000+ en check-ins op
+      // 900001/900002. De oude formule ((id*100)%100000) kon met medicatie
+      // botsen, waardoor herinneringen elkaar overschreven.
+      final notificationId = (appointmentId % 9000) + 1000;
 
       final androidDetails = AndroidNotificationDetails(
         'appointment_reminders',
@@ -716,26 +733,82 @@ class NotificationHelper {
         iOS: iosDetails,
       );
 
+      // Exacte alarms mogen niet altijd (Android 12+): check het eerst en
+      // zak terug op inexact. Hardcoded exact gooide een SecurityException
+      // die hieronder stil werd weggeslikt — geen herinnering, geen melding.
+      bool canScheduleExact = false;
+      try {
+        final androidImpl =
+            _notifications.resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+        canScheduleExact =
+            await androidImpl?.canScheduleExactNotifications() ?? false;
+      } catch (e) {
+        debugPrint('Afspraak exact-alarm check mislukt, val terug op inexact: $e');
+      }
+
+      await _notifications.cancel(notificationId);
       await _notifications.zonedSchedule(
         notificationId,
         NotifStrings.appointmentReminder,
         NotifStrings.appointmentBody(title, doctorName, reminderDays),
         reminderDateTime,
         details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: canScheduleExact
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'appointment:$appointmentId',
       );
       debugPrint('Afspraak herinnering gepland voor $title op $reminderDateTime');
+      return null;
     } catch (e) {
       debugPrint('Afspraak herinnering error: $e');
+      return e.toString();
     }
+  }
+
+  /// Plant alle afspraakherinneringen opnieuw (na cancelAll bij opstart:
+  /// die wist ook de afspraken, en niets plande ze terug — daardoor kwamen
+  /// ze nooit, hoe vaak je de app ook opende).
+  Future<int> rescheduleAppointmentReminders() async {
+    if (kIsWeb) return 0;
+    var aantal = 0;
+    try {
+      final afspraken = await db.getMedicalAppointments();
+      for (final a in afspraken) {
+        try {
+          final idRaw = a['id'];
+          final id = idRaw is int ? idRaw : int.tryParse(idRaw?.toString() ?? '');
+          if (id == null) continue;
+          final dagenRaw = a['reminder_days'];
+          final dagen = dagenRaw is int
+              ? dagenRaw
+              : int.tryParse(dagenRaw?.toString() ?? '') ?? 0;
+          if (dagen <= 0) continue;
+          final fout = await scheduleAppointmentReminder(
+            appointmentId: id,
+            title: a['title']?.toString() ?? '',
+            doctorName: a['doctor_name']?.toString() ?? '',
+            appointmentDate: a['appointment_date']?.toString() ?? '',
+            appointmentTime: a['appointment_time']?.toString() ?? '',
+            reminderDays: dagen,
+          );
+          if (fout == null) aantal++;
+        } catch (e) {
+          debugPrint('Afspraak herplannen overgeslagen: $e');
+        }
+      }
+    } catch (e) {
+      debugPrint('Afspraken herplannen mislukt: $e');
+    }
+    return aantal;
   }
 
   Future<void> cancelAppointmentReminder(int appointmentId) async {
     if (kIsWeb) return;
     try {
-      final notificationId = (appointmentId * 100) % 100000;
+      final notificationId = (appointmentId % 9000) + 1000;
       await _notifications.cancel(notificationId);
       debugPrint('Afspraak herinnering geannuleerd');
     } catch (e) {

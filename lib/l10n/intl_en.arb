@@ -611,6 +611,8 @@
   "ingenomen": "✅ Taken",
   "medicatieHerinnering": "Medication reminder",
   "afspraakHerinnering": "📅 Appointment reminder",
+  "afspraakHerinneringGepland": "Appointment reminder scheduled ({datum}).",
+  "afspraakHerinneringVerleden": "The reminder is in the past and was not scheduled.",
   "dag": "day",
   "exporteerDataJson": "Export your data as JSON for backup",
   "medicationTitle": "Medication",
