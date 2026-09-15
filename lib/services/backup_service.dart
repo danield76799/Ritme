@@ -6,12 +6,17 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../database/database_helper.dart';
+import '../database/database_repository.dart';
+import '../service_locator.dart' show db;
 import 'backup_map_service.dart';
 import '../utils/logger.dart';
 
 class BackupService {
-  static final DatabaseHelper _db = DatabaseHelper.instance;
+  // Via de locator, NIET direct DatabaseHelper.instance: op Android is Hive
+  // leidend en SQLite een tweede, onzichtbare database (09-2026: alles wat
+  // de backup wegschreef was onzichtbaar voor de UI). Getter i.p.v. static
+  // final: db bestaat pas na initDatabase().
+  static DatabaseRepository get _db => db;
 
   /// Export all data - SQLite AND Hive
   static Future<Map<String, dynamic>> exportAllData() async {
