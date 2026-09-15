@@ -283,7 +283,9 @@ class BackupService {
   static const autoBackupFreqKey = 'auto_backup_freq';
   static const lastAutoBackupKey = 'last_auto_backup';
 
-  /// Toegestane frequenties: uit (standaard), dagelijks, elke 3 dagen, wekelijks.
+  /// Toegestane frequenties. Standaard wekelijks: bij een verse installatie
+  /// wordt er dan in ieder geval een backup gemaakt.
+  static const freqStandaard = freqWeek;
   static const freqUit = 'uit';
   static const freqDagelijks = 'dagelijks';
   static const freq3Dagen = '3dagen';
@@ -318,7 +320,7 @@ class BackupService {
   static Future<bool> maybeAutoBackup({DateTime? now}) async {
     try {
       final settings = await _db.getSettings();
-      final freq = settings?[autoBackupFreqKey]?.toString() ?? freqUit;
+      final freq = settings?[autoBackupFreqKey]?.toString() ?? freqStandaard;
       final last = settings?[lastAutoBackupKey]?.toString();
       if (!autoBackupVerschuldigd(freq, last, now ?? DateTime.now())) {
         return false;
