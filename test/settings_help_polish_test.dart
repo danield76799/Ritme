@@ -104,19 +104,17 @@ void main() {
           reason: 'de knop toont de echte check-in melding');
     });
 
-    test('herplannen staat onder Overige, niet bij Notificaties', () {
+    test('herplan-knop is weg (opstart + WorkManager doen het)', () {
+      // Weggehaald 09-2026: noodknop uit de notificatie-storingsweek.
+      // Herplannen gebeurt bij elke opstart (main) + elke 12u via WorkManager.
       final code = _code('lib/screens/settings_screen.dart');
-      final herplan = code.indexOf('herplanMedicatieHerinneringen');
-      final overige = code.indexOf('.overige');
-      expect(herplan, greaterThan(-1));
-      expect(overige, greaterThan(-1));
-      expect(herplan, greaterThan(overige),
-          reason: 'diagnostiek hoort bij Overige');
+      expect(code.contains('herplanMedicatieHerinneringen'), isFalse);
+      expect(code.contains('.overige'), isFalse,
+          reason: 'sectie Overige hield alleen Herplannen over');
       // De notificatiesectie houdt alleen de herinneringen + testknop over.
       final notificaties = code.indexOf('_buildCheckinReminders()');
       final testknop = code.indexOf('testMeldingVersturen');
       expect(testknop, greaterThan(notificaties));
-      expect(herplan, greaterThan(testknop));
     });
   });
 

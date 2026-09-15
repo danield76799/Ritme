@@ -68,12 +68,7 @@ void main() {
           reason: 'onbekende placeholders: ${fouten.join(', ')}');
     });
 
-    test('de herplan-melding toont beide getallen', () {
-      final nl = _arb('intl_nl.arb');
-      final tekst = nl['herinneringenHerplantDbIngepland'] as String;
-      expect(tekst.contains('{rescheduled}'), isTrue);
-      expect(tekst.contains('{count}'), isTrue);
-    });
+
   });
 
   group('Planningsfouten worden zichtbaar', () {
@@ -96,11 +91,14 @@ void main() {
           RegExp('Avondherinnering plannen mislukt').hasMatch(helper), isTrue);
     });
 
-    test('de Herplan-knop toont de fouttekst bij falen', () {
-      final settings =
-          _code_bestand('lib/screens/settings_screen.dart');
-      expect(settings.contains('checkinFout'), isTrue);
-      expect(settings.contains('rescheduleCheckinReminders()'), isTrue);
+    test('herplannen gebeurt bij de opstart, niet via een knop', () {
+      // De Herplan-knop is weg (09-2026); de borging zit in main + WorkManager.
+      final main = _code_bestand('lib/main.dart');
+      expect(main.contains('rescheduleAllMedicationReminders()'), isTrue,
+          reason: 'elke opstart plant opnieuw');
+      final work = _code_bestand('lib/services/work_manager_service.dart');
+      expect(work.contains('registerPeriodicTask'), isTrue,
+          reason: 'elke 12u opnieuw, ook zonder openen');
     });
   });
 }

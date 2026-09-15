@@ -441,46 +441,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader(AppLocalizations.of(context).backupHerstel),
           _buildBackupButtons(),
           const SizedBox(height: 32),
-          _buildSectionHeader(AppLocalizations.of(context).overige),
-          _buildActionButton(
-                        AppLocalizations.of(context).herplanMedicatieHerinneringen,
-            () async {
-              try {
-                final rescheduled = await BootService.rescheduleNow();
-                // Check-in planning apart opvragen: een fout daarin verdween
-                // tot nu toe onzichtbaar in de console. Als die er is, toont
-                // het balkje de echte fouttekst van het toestel.
-                final checkinFout = await NotificationHelper.instance
-                    .rescheduleCheckinReminders();
-                final count = await NotificationHelper.instance
-                    .getPendingNotificationCount();
-                if (!mounted) return;
-                if (checkinFout != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            AppLocalizations.of(context).fout(checkinFout)),
-                        backgroundColor: AppTheme.error),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(AppLocalizations.of(context)
-                            .herinneringenHerplantDbIngepland(
-                                rescheduled, count)),
-                        backgroundColor: Colors.green),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
-                  );
-                }
-              }
-            },
-          ),
-          const SizedBox(height: 32),
         ],
       ),
     );
