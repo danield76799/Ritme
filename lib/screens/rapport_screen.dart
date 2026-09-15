@@ -5,6 +5,9 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../theme/app_theme.dart';
 import '../services/rapport_generator.dart';
+import '../services/rapport_pdf.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class RapportScreen extends StatefulWidget {
@@ -101,12 +104,12 @@ class _RapportScreenState extends State<RapportScreen> {
             // Preview (if generated)
             if (_reportText != null) ...[
               const SizedBox(height: 24),
-              // Deel-knop (altijd beschikbaar zodra er een rapport is)
+              // Deel-knop: tekst (WhatsApp/e-mail) of echte PDF (behandelaar).
               SizedBox(
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton.icon(
-                  onPressed: _isSharing ? null : _deelRapport,
+                  onPressed: _isSharing ? null : _kiesDeelvorm,
                   icon: _isSharing
                       ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
                       : const Icon(Icons.share, size: 22),
@@ -195,6 +198,57 @@ class _RapportScreenState extends State<RapportScreen> {
           SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
         );
       }
+    }
+  }
+
+  /// Vraagt Tekst of PDF en deelt daarna (zelfde keuzemenu als Dagboek).
+  Future<void> _kiesDeelvorm() async {
+    if (_reportText == null || _reportText!.isEmpty) return;
+    final keuze = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fill,
+      items: [
+        PopupMenuItem(
+          value: 'tekst',
+          child: Text(AppLocalizations.of(context).alsTekstDelen),
+        ),
+        PopupMenuItem(
+          value: 'pdf',
+          child: Text(AppLocalizations.of(context).alsPdfDelen),
+        ),
+      ],
+    );
+    if (!mounted) return;
+    if (keuze == 'pdf') {
+      await _deelPdf();
+    } else if (keuze == 'tekst') {
+      await _deelRapport();
+    }
+  }
+
+  /// Deelt het rapport als echte PDF (systeem-deeldialoog), gebouwd uit
+  /// hetzelfde markdown via RapportPdf. Emoji/speciale tekens worden
+  /// PDF-veilig gemaakt (zie sanitizeVoorPdf).
+  Future<void> _deelPdf() async {
+    if (_reportText == null || _reportText!.isEmpty) return;
+    setState(() => _isSharing = true);
+    try {
+      final bytes = await bouwRapportPdf(
+        titel: AppLocalizations.of(context).ritmeRapportOnderwerp,
+        markdown: _reportText!,
+      );
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => bytes,
+        name: 'ritme_rapport.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 
