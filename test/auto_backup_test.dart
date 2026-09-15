@@ -226,5 +226,21 @@ void main() {
           reason: 'zonder map: backup weg bij verwijderen');
       expect(code.contains('_kiesBackupMap'), isTrue);
     });
+
+    test('mislukte keuze toont de fout, lege naam valt terug op uri', () {
+      // "Ik koos een map maar er staat Niet gekozen" (09-2026): het pakket
+      // is solide, dus de stilte zat in onze UI. Nu: fouttekst in een rode
+      // balk, en bij lege naam de uri-staart in plaats van "Niet gekozen".
+      final service =
+          File('lib/services/backup_map_service.dart').readAsStringSync();
+      expect(service.contains('fout: e.toString()'), isTrue,
+          reason: 'fouttekst gaat mee terug naar de UI');
+      final scherm =
+          File('lib/screens/settings_screen.dart').readAsStringSync();
+      expect(scherm.contains('uitslag.fout'), isTrue,
+          reason: 'rode balk bij falen');
+      expect(scherm.contains('mapWeergave'), isTrue,
+          reason: 'uri-staart bij lege naam');
+    });
   });
 }

@@ -25,9 +25,11 @@ class BackupMapService {
   static const mapUriKey = 'backup_map_uri';
   static const mapNaamKey = 'backup_map_naam';
 
-  /// Opent de systeemkiezer. Geeft de gekozen mapnaam terug, null bij
-  /// annuleren. Schrijft uri + naam direct weg.
-  static Future<String?> kiesBackupMap() async {
+  /// Opent de systeemkiezer. Geeft (mapnaam, fouttekst) terug: bij annuleren
+  /// allebei null, bij falen een fouttekst — de UI toont die, zodat een
+  /// mislukte keuze nooit meer stil blijft ("ik koos een map maar er staat
+  /// Niet gekozen", 09-2026).
+  static Future<({String? naam, String? fout})> kiesBackupMap() async {
     try {
       final huidig = await mapUri();
       final map = await _saf.pickDirectory(
@@ -36,17 +38,17 @@ class BackupMapService {
         // de app bij elke opstart opnieuw om een map.
         persistablePermission: true,
       );
-      if (map == null) return null;
+      if (map == null) return (naam: null, fout: null);
       final settings = await _db.getSettings();
       final merged = Map<String, dynamic>.from(settings ?? {});
       merged[mapUriKey] = map.uri;
       merged[mapNaamKey] = map.name;
       await _db.updateSettingsMap(merged);
       debugPrint('BackupMapService: map gekozen (${map.name})');
-      return map.name;
+      return (naam: map.name, fout: null);
     } catch (e) {
       debugPrint('BackupMapService: kiezen mislukt - $e');
-      return null;
+      return (naam: null, fout: e.toString());
     }
   }
 
