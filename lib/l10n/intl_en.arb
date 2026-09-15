@@ -557,6 +557,7 @@
   "backupMapTitel": "Backup folder",
   "kiesMap": "Choose folder",
   "geenMap": "Not chosen",
+  "mapKiesTip": "Tip: pick a subfolder (Android forbids the Downloads root itself)",
   "geenMapUitleg": "Without a folder the backup stays in the app (gone if deleted)",
   "backupFrequentie": "Automatic backup",
   "freqUit": "Off",

@@ -547,6 +547,7 @@
   "backupMapTitel": "Backupmap",
   "kiesMap": "Map kiezen",
   "geenMap": "Niet gekozen",
+  "mapKiesTip": "Tip: kies een ondermap (de hoofdmap Downloads zelf mag van Android niet)",
   "geenMapUitleg": "Zonder map blijft de backup in de app (weg bij verwijderen)",
   "backupFrequentie": "Automatische backup",
   "freqUit": "Uit",
