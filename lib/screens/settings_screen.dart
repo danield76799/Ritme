@@ -610,6 +610,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         l10n.geenMapUitleg,
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                       ),
+                    Text(
+                      l10n.mapKiesTip,
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13, fontStyle: FontStyle.italic),
+                    ),
                   ],
                 ),
               ),
