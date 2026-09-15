@@ -67,11 +67,14 @@ class BackupMapService {
   }
 
   /// Wis de opgeslagen map (toestemming kwijt of gebruiker wil opnieuw).
+  ///
+  /// Schrijft lege strings: settings_extra kent geen delete via de
+  /// repository en mapUri/mapNaam lezen leeg al als "geen".
   static Future<void> wisBackupMap() async {
     final settings = await _db.getSettings();
     final merged = Map<String, dynamic>.from(settings ?? {});
-    merged.remove(mapUriKey);
-    merged.remove(mapNaamKey);
+    merged[mapUriKey] = '';
+    merged[mapNaamKey] = '';
     await _db.updateSettingsMap(merged);
   }
 

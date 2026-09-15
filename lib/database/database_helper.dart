@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -205,6 +205,16 @@ class DatabaseHelper implements DatabaseRepository {
       )
     ''');
 
+    // Vrije sleutel-waarde-instellingen (backup-frequentie, backupmap, ...).
+    // Vaste kolommen per sleutel toevoegen brak telkens (09-2026:
+    // backup_map_uri gooide SQLITE_ERROR). Eén extra-tabel voor alles.
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS settings_extra (
+        key TEXT PRIMARY KEY,
+        value TEXT
+      )
+    ''');
+
     // Indexen voor betere performance
     await _createIndexes(db);
   }
@@ -273,6 +283,16 @@ class DatabaseHelper implements DatabaseRepository {
       } catch (e) {
         // Table may already exist
       }
+    }
+    if (oldVersion < 6) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS settings_extra (
+            key TEXT PRIMARY KEY,
+            value TEXT
+          )
+        ''');
+      } catch (_) {}
     }
     if (oldVersion < 5) {
       try {
@@ -405,7 +425,17 @@ class DatabaseHelper implements DatabaseRepository {
   Future<Map<String, dynamic>?> getSettings() async {
     final db = await database;
     final results = await db.query('settings', limit: 1);
-    return results.isNotEmpty ? results.first : null;
+    if (results.isEmpty) return null;
+    final merged = Map<String, dynamic>.from(results.first);
+    // Vrije sleutels uit settings_extra erbij (zie updateSettingsMap).
+    try {
+      final extras = await db.query('settings_extra');
+      for (final row in extras) {
+        final k = row['key']?.toString();
+        if (k != null && k.isNotEmpty) merged[k] = row['value'];
+      }
+    } catch (_) {}
+    return merged;
   }
 
   @override
@@ -420,15 +450,58 @@ class DatabaseHelper implements DatabaseRepository {
     return await db.update('settings', settings, where: 'username = ?', whereArgs: [username]);
   }
 
+  /// Vaste kolommen van de settings-tabel. Alles daarbuiten gaat naar
+  /// settings_extra — direct updaten/inserten met onbekende sleutels gooide
+  /// SQLITE_ERROR (09-2026: backup_map_uri).
+  static const _settingsKolommen = {
+    'username',
+    'password_hash',
+    'target_opstaan',
+    'target_slapen',
+    'target_contact',
+    'target_werk',
+    'target_eten',
+    'show_menstruatie',
+    'created_at',
+    'biometric_enabled',
+  };
+
   @override
   Future<int> updateSettingsMap(Map<String, dynamic> settings) async {
     final db = await database;
+    final bekend = <String, dynamic>{};
+    final extra = <String, dynamic>{};
+    settings.forEach((key, value) {
+      if (_settingsKolommen.contains(key)) {
+        bekend[key] = value;
+      } else {
+        extra[key] = value?.toString() ?? value;
+      }
+    });
     final existing = await getSettings();
-    if (existing != null) {
-      return await db.update('settings', settings, where: 'username = ?', whereArgs: [existing['username']]);
-    } else {
-      return await db.insert('settings', settings);
+    int resultaat = 1;
+    if (bekend.isNotEmpty) {
+      if (existing != null) {
+        resultaat = await db.update('settings', bekend,
+            where: 'username = ?', whereArgs: [existing['username']]);
+      } else {
+        // Eerste keer: username is PRIMARY KEY — zonder wordt inserten fout.
+        bekend.putIfAbsent('username', () => 'user');
+        resultaat = await db.insert('settings', bekend);
+      }
+    } else if (existing == null) {
+      // Alleen extra's maar nog geen rij: minimale rij aanmaken zodat
+      // getSettings (limit 1) blijft werken.
+      await db.insert('settings', {'username': 'user'});
     }
+    for (final entry in extra.entries) {
+      await db.insert(
+        'settings_extra',
+        {'key': entry.key, 'value': entry.value?.toString()},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    return resultaat;
   }
 
   @override
