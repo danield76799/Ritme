@@ -193,4 +193,38 @@ void main() {
       expect(code.contains('AppLogger.error'), isTrue);
     });
   });
+
+  group('SAF-backupmap: gekozen map eerst (structuur)', () {
+    test('saveLocalBackup probeert de SAF-map vóór Downloads', () {
+      // Zonder gekozen map overleeft de backup de-installatie niet.
+      final code = File('lib/services/backup_service.dart').readAsStringSync();
+      final saf = code.indexOf('BackupMapService.schrijf(');
+      final downloads = code.indexOf('/storage/emulated/0/Download');
+      expect(saf, greaterThan(-1));
+      expect(downloads, greaterThan(-1));
+      expect(saf, lessThan(downloads),
+          reason: 'gekozen map eerst, dan pas Downloads/app-map');
+    });
+
+    test('mapkeuze wordt bewaard (uri + naam) en wisbaar', () {
+      final code =
+          File('lib/services/backup_map_service.dart').readAsStringSync();
+      expect(code.contains('pickDirectory'), isTrue);
+      expect(code.contains('persistablePermission'), isTrue,
+          reason: 'toestemming overleeft herstarts (staat default aan)');
+      expect(code.contains('overwrite: true'), isTrue,
+          reason: 'zelfde weekbestand overschrijven');
+      expect(code.contains('wisBackupMap'), isTrue,
+          reason: 'dode toestemming wordt opgeruimd');
+    });
+
+    test('instellingen tonen de map of waarschuwen', () {
+      final code =
+          File('lib/screens/settings_screen.dart').readAsStringSync();
+      expect(code.contains('backupMapTitel'), isTrue);
+      expect(code.contains('geenMapUitleg'), isTrue,
+          reason: 'zonder map: backup weg bij verwijderen');
+      expect(code.contains('_kiesBackupMap'), isTrue);
+    });
+  });
 }

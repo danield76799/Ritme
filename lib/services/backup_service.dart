@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import '../utils/notif_strings.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,7 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../database/database_helper.dart';
+import 'backup_map_service.dart';
 import '../utils/logger.dart';
 
 class BackupService {
@@ -126,10 +128,19 @@ class BackupService {
         : "ritme_backup_${DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0]}.json";
 
     // Schrijven naar Downloads lukt op moderne Android (scoped storage,
-    // targetSdk 36) niet via een raw path — writeAsString gooit dan. Daarom:
-    // eerst Downloads proberen, bij een schrijffout terugvallen op de
-    // app-map (altijd schrijfbaar). Zonder deze terugval faalde de
-    // automatische backup bij ELKE opstart stil (09-2026).
+    // targetSdk 36) niet via een raw path — writeAsString gooit dan. Volgorde:
+    // 1. gekozen SAF-map (overleeft de-installatie), 2. Downloads proberen,
+    // 3. app-map (altijd schrijfbaar, maar weg bij verwijderen). Zonder deze
+    // terugval faalde de automatische backup bij ELKE opstart stil (09-2026).
+    // Eerst de SAF-map: die schrijft via ContentResolver, niet via File.
+    if (await BackupMapService.schrijf(
+        bestandsnaam, Uint8List.fromList(utf8.encode(jsonString)))) {
+      if (auto) await BackupMapService.ruimOp();
+      // Pad voor in de melding: mapnaam + bestand (geen raw path bij SAF).
+      final mapnaam = await BackupMapService.mapNaam();
+      return '${mapnaam ?? 'backupmap'}:$bestandsnaam';
+    }
+
     final pogingen = <Directory>[];
     try {
       if (Platform.isAndroid) {
