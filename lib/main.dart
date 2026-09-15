@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'generated/l10n/app_localizations.dart';
 
 // Services
+import 'services/backup_service.dart';
 import 'services/boot_service.dart';
 import 'services/notification_helper.dart';
 import 'services/widget_service.dart';
@@ -61,6 +62,11 @@ void main() async {
       await NotificationHelper.instance.openBatteryOptimizationSettings();
       final rescheduled = await NotificationHelper.instance.rescheduleAllMedicationReminders();
       AppLogger.info('Startup reschedule completed: $rescheduled medication reminders scheduled (exactAlarm=$permissionsOk)');
+      // Automatische backup als het gekozen interval verstreken is.
+      // Fire-and-forget: een mislukte backup mag de opstart nooit breken.
+      BackupService.maybeAutoBackup().then((gemaakt) {
+        if (gemaakt) AppLogger.info('Startup: automatische backup gemaakt');
+      });
       final recovered = await BootService.rescheduleIfEmpty();
       if (recovered > 0) AppLogger.info('Recovered $recovered reminders after empty pending queue');
       await WidgetService.initialize();

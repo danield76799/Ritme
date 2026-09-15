@@ -111,7 +111,12 @@ class BackupService {
   }
 
   /// Save backup to Downloads folder (direct, no share sheet)
-  static Future<String> saveLocalBackup() async {
+  ///
+  /// Met [auto] = true krijgt het bestand de weeknaam
+  /// (`ritme_backup_auto_2026-W38.json`, zie [autoBackupBestandsnaam]) en
+  /// wordt het bij elke run in die week overschreven. Handmatige backups
+  /// houden hun timestamp-naam en blijven altijd staan.
+  static Future<String> saveLocalBackup({bool auto = false}) async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
     
@@ -129,10 +134,16 @@ class BackupService {
     }
     
     final dir = downloadsDir ?? await getApplicationDocumentsDirectory();
-    final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
-    final file = File('${dir.path}/ritme_backup_$timestamp.json');
+    final bestandsnaam = auto
+        ? autoBackupBestandsnaam(DateTime.now())
+        : "ritme_backup_${DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0]}.json";
+    final file = File('${dir.path}/$bestandsnaam');
     await file.writeAsString(jsonString);
-    
+
+    // Alleen bij auto: maximaal [behoud] automatische backups bewaren, zodat
+    // Downloads niet volloopt. Handmatige backups blijven altijd staan.
+    if (auto) await ruimOudeAutoBackupsOp(dir);
+
     return file.path;
   }
 
@@ -258,9 +269,120 @@ class BackupService {
   static Future<void> restoreFromFile(String filePath) async {
     final file = File(filePath);
     if (!await file.exists()) throw Exception('File not found');
-    
+
     final jsonString = await file.readAsString();
     final data = jsonDecode(jsonString) as Map<String, dynamic>;
     await restoreFromData(data);
+  }
+
+  // ===================
+  // AUTOMATISCHE BACKUP
+  // ===================
+
+  /// Instelling-sleutels (vrije settings-map, zie HiveDatabaseHelper).
+  static const autoBackupFreqKey = 'auto_backup_freq';
+  static const lastAutoBackupKey = 'last_auto_backup';
+
+  /// Toegestane frequenties: uit (standaard), dagelijks, elke 3 dagen, wekelijks.
+  static const freqUit = 'uit';
+  static const freqDagelijks = 'dagelijks';
+  static const freq3Dagen = '3dagen';
+  static const freqWeek = 'week';
+
+  /// Aantal automatische weekbestanden dat bewaard blijft (oudste weken
+  /// worden opgeruimd). Eén bestand per week, dus dit zijn weken.
+  static const autoBackupBehoud = 4;
+
+  /// Pure interval-logica, zonder DB — daarom direct unit-testbaar.
+  ///
+  /// Geeft true als er nog nooit een automatische backup was ([lastIso] null
+  /// of onleesbaar) en de frequentie niet 'uit' staat, of als het interval
+  /// sinds de laatste verstreken is.
+  static bool autoBackupVerschuldigd(String freq, String? lastIso, DateTime now) {
+    final interval = switch (freq) {
+      freqDagelijks => const Duration(days: 1),
+      freq3Dagen => const Duration(days: 3),
+      freqWeek => const Duration(days: 7),
+      _ => null,
+    };
+    if (interval == null) return false;
+    if (lastIso == null || lastIso.isEmpty) return true;
+    final last = DateTime.tryParse(lastIso);
+    if (last == null) return true;
+    return now.difference(last) >= interval;
+  }
+
+  /// Draait bij het opstarten (zie main): maakt een automatische backup als
+  /// het interval verstreken is. Geeft true terug als er een backup gemaakt
+  /// is. Gooit nooit — een mislukte backup mag de opstart niet breken.
+  static Future<bool> maybeAutoBackup({DateTime? now}) async {
+    try {
+      final settings = await _db.getSettings();
+      final freq = settings?[autoBackupFreqKey]?.toString() ?? freqUit;
+      final last = settings?[lastAutoBackupKey]?.toString();
+      if (!autoBackupVerschuldigd(freq, last, now ?? DateTime.now())) {
+        return false;
+      }
+      await saveLocalBackup(auto: true);
+      final merged = Map<String, dynamic>.from(settings ?? {});
+      merged[lastAutoBackupKey] = (now ?? DateTime.now()).toIso8601String();
+      await _db.updateSettingsMap(merged);
+      debugPrint('BackupService: automatische backup gemaakt (freq=$freq)');
+      return true;
+    } catch (e) {
+      debugPrint('BackupService: automatische backup mislukt (niet-fataal) - $e');
+      return false;
+    }
+  }
+
+  /// Bestandsnaam voor de automatische backup: één bestand per ISO-week
+  /// (`ritme_backup_auto_2026-W38.json`), dat bij elke run in die week
+  /// overschreven wordt. Zo hoopt Downloads nooit vol met timestamps.
+  ///
+  /// Het jaar is het ISO-weekjaar (de donderdag bepaalt): 29-12-2025 valt
+  /// in week 1 van 2026 en heet dus `2026-W01`.
+  static String autoBackupBestandsnaam(DateTime now) {
+    final donderdag = now.add(Duration(days: 4 - now.weekday));
+    final weekjaar = donderdag.year;
+    final week = isoWeekNummer(now);
+    return 'ritme_backup_auto_${weekjaar}-W${week.toString().padLeft(2, '0')}.json';
+  }
+
+  /// ISO-8601-weeknummer (1-53), zonder pakket nodig.
+  ///
+  /// Let op: gerekend in UTC-dagen. Met lokale middernachten sluipt de
+  /// zomertijd-overgang erin (259 dagen − 1 uur → inDays = 258), waardoor
+  /// het weeknummer van het tijdstip op de dag zou afhangen.
+  static int isoWeekNummer(DateTime datum) {
+    final donderdag = datum.add(Duration(days: 4 - datum.weekday));
+    final d0 = DateTime.utc(donderdag.year, donderdag.month, donderdag.day);
+    final j0 = DateTime.utc(donderdag.year, 1, 1);
+    return (d0.difference(j0).inDays ~/ 7) + 1;
+  }
+
+  /// Ruimt oude automatische weekbestanden op tot [behoud] stuks (nieuwste
+  /// weken blijven). Raakt handmatige backups (`ritme_backup_*.json` zonder
+  /// `_auto`) niet aan.
+  static Future<void> ruimOudeAutoBackupsOp(Directory dir, {int behoud = autoBackupBehoud}) async {
+    try {
+      if (!await dir.exists()) return;
+      final autos = await dir
+          .list()
+          .where((e) => e is File && e.path.contains('ritme_backup_auto_') && e.path.endsWith('.json'))
+          .cast<File>()
+          .toList();
+      if (autos.length <= behoud) return;
+      final stats = <File, DateTime>{};
+      for (final f in autos) {
+        stats[f] = (await f.stat()).modified;
+      }
+      autos.sort((a, b) => stats[a]!.compareTo(stats[b]!));
+      for (final oud in autos.take(autos.length - behoud)) {
+        await oud.delete();
+      }
+      debugPrint('BackupService: ${autos.length - behoud} oude auto-backups opgeruimd');
+    } catch (e) {
+      debugPrint('BackupService: opruimen auto-backups mislukt (niet-fataal) - $e');
+    }
   }
 }
