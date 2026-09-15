@@ -131,14 +131,14 @@ void main() {
       await tester.pumpWidget(_metTaal(const HelpScreen(), const Locale('nl')));
       await tester.pumpAndSettle();
       expect(find.text('Gebruiksaanwijzing'), findsOneWidget);
-      expect(find.text('Stemming bijhouden'), findsOneWidget);
+      expect(find.text('Check-ins (ochtend & avond)'), findsOneWidget);
     });
 
     testWidgets('Engelse app toont Engelse help', (tester) async {
       await tester.pumpWidget(_metTaal(const HelpScreen(), const Locale('en')));
       await tester.pumpAndSettle();
       expect(find.text('User Guide'), findsOneWidget);
-      expect(find.text('Track Mood'), findsOneWidget);
+      expect(find.text('Check-ins (morning & evening)'), findsOneWidget);
     });
   });
 }

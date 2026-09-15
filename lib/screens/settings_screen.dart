@@ -5,7 +5,6 @@ import '../service_locator.dart';
 import '../utils/logger.dart';
 import '../services/backup_service.dart';
 import '../services/notification_helper.dart';
-import '../services/boot_service.dart';
 import 'package:file_picker/file_picker.dart';
 import '../main.dart';
 import '../generated/l10n/app_localizations.dart';

@@ -4,6 +4,9 @@ import '../service_locator.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../utils/logger.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 /// Dagboek-scherm: dagelijkse check-in met 5-sterren score en notities.
 /// Ondersteunt backfill (eerdere dagen aanpassen) via initialDate.
@@ -222,11 +225,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
   Future<void> _exporteren() async {
     try {
       final now = DateTime.now();
-      final startDate = now.subtract(const Duration(days: 30));
-      final startStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
-      final endStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-
-      final dagboeken = await db.getDagboekRange(startStr, endStr);
+      final dagboeken = await _dagboekenLaatste30Dagen();
       if (dagboeken.isEmpty) return;
 
       final buffer = StringBuffer();
@@ -256,6 +255,125 @@ class _DagboekScreenState extends State<DagboekScreen> {
     } catch (e) {
       AppLogger.error('Dagboek: exporteren mislukt', error: e);
     }
+  }
+
+
+  /// Exporteert dezelfde 30 dagen als echte PDF (systeem-deeldialoog),
+  /// zoals Statistieken dat doet. Tekst-export (WhatsApp/Gemini) blijft
+  /// via het menu beschikbaar.
+  Future<void> _exporteerAlsPdf() async {
+    try {
+      final l10n = AppLocalizations.of(context);
+      final taal = Localizations.localeOf(context).toString();
+      final now = DateTime.now();
+      final dagboeken = await _dagboekenLaatste30Dagen();
+      if (dagboeken.isEmpty) return;
+
+      String scoreWoord(int score) {
+        switch (score) {
+          case 1:
+            return l10n.zeerSlecht;
+          case 2:
+            return l10n.slecht;
+          case 3:
+            return l10n.neutraal;
+          case 4:
+            return l10n.goed;
+          case 5:
+            return l10n.zeerGoed;
+          default:
+            return '';
+        }
+      }
+
+      final pdf = pw.Document();
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          header: (pw.Context ctx) => pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(bottom: 20),
+            child: pw.Text(
+              l10n.dagboekExportTitel,
+              style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.teal800),
+            ),
+          ),
+          footer: (pw.Context ctx) => pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(top: 10),
+            child: pw.Text(
+              'Page ${ctx.pageNumber} of ${ctx.pagesCount}',
+              style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+            ),
+          ),
+          build: (pw.Context ctx) => [
+            pw.Text(
+              '${l10n.gegenereerdOp} ${DateFormat('d MMMM yyyy', taal).format(now)}',
+              style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
+            ),
+            pw.SizedBox(height: 16),
+            for (final dagboek in dagboeken.reversed)
+              pw.Container(
+                margin: const pw.EdgeInsets.only(bottom: 16),
+                padding: const pw.EdgeInsets.all(12),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.teal200),
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      _pdfDatum(dagboek['date'] as String? ?? '', taal),
+                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.teal800),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      'Score: ${(dagboek['score'] as num?)?.toInt() ?? 0}/5 - ${scoreWoord((dagboek['score'] as num?)?.toInt() ?? 0)}',
+                      style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey800),
+                    ),
+                    if (((dagboek['tekst'] as String?)?.trim() ?? '').isNotEmpty) ...[
+                      pw.SizedBox(height: 6),
+                      pw.Text(
+                        (dagboek['tekst'] as String).trim(),
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+
+      if (!mounted) return;
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+        name: 'ritme_dagboek.pdf',
+      );
+    } catch (e) {
+      AppLogger.error('Dagboek: PDF-export mislukt', error: e);
+    }
+  }
+
+  /// '2026-09-10' -> '10 september 2026' (valt terug op de ruwe tekst).
+  String _pdfDatum(String iso, String taal) {
+    try {
+      return DateFormat('d MMMM yyyy', taal).format(DateTime.parse(iso));
+    } catch (_) {
+      return iso;
+    }
+  }
+
+  /// Haalt de dagboeken van de laatste 30 dagen op (gedeeld door
+  /// tekst- en PDF-export).
+  Future<List<Map<String, dynamic>>> _dagboekenLaatste30Dagen() async {
+    final now = DateTime.now();
+    final startDate = now.subtract(const Duration(days: 30));
+    String fmt(DateTime d) =>
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    return db.getDagboekRange(fmt(startDate), fmt(now));
   }
 
   String _scoreLabel(int score) {
@@ -289,10 +407,26 @@ class _DagboekScreenState extends State<DagboekScreen> {
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: Icon(Icons.ios_share, color: theme.colorScheme.onPrimary),
-            onPressed: _exporteren,
             tooltip: AppLocalizations.of(context).exporterenDelen,
+            onSelected: (keuze) {
+              if (keuze == 'pdf') {
+                _exporteerAlsPdf();
+              } else {
+                _exporteren();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'tekst',
+                child: Text(AppLocalizations.of(context).alsTekstDelen),
+              ),
+              PopupMenuItem(
+                value: 'pdf',
+                child: Text(AppLocalizations.of(context).alsPdfDelen),
+              ),
+            ],
           ),
         ],
       ),
