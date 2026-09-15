@@ -492,7 +492,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildBackupButtons() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildAutoBackupKeuze(),
+        const SizedBox(height: 12),
         _buildActionButton(
                     AppLocalizations.of(context).backupMaken,
           () async {
@@ -569,6 +572,88 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ],
     );
+  }
+
+  /// Keuze voor de automatische backup: Uit / Elke dag / Elke 3 dagen /
+  /// Elke week. Wordt direct weggeschreven; de backup zelf draait bij de
+  /// volgende opstart als het interval verstreken is. Daaronder staat
+  /// wanneer de laatste automatische backup gemaakt is.
+  Widget _buildAutoBackupKeuze() {
+    final l10n = AppLocalizations.of(context);
+    final freq = _settings?[BackupService.autoBackupFreqKey]?.toString() ?? BackupService.freqUit;
+    final laatste = _settings?[BackupService.lastAutoBackupKey]?.toString();
+    String label(String v) {
+      if (v == BackupService.freqDagelijks) return l10n.freqDagelijks;
+      if (v == BackupService.freq3Dagen) return l10n.freq3Dagen;
+      if (v == BackupService.freqWeek) return l10n.freqWeek;
+      return l10n.freqUit;
+    }
+
+    String laatsteTekst() {
+      if (laatste == null || laatste.isEmpty) return l10n.autoBackupNooit;
+      final dt = DateTime.tryParse(laatste);
+      if (dt == null) return l10n.autoBackupNooit;
+      final datum = '${dt.day}-${dt.month}-${dt.year}';
+      return l10n.laatsteAutoBackup(datum);
+    }
+
+    const opties = [
+      BackupService.freqUit,
+      BackupService.freqDagelijks,
+      BackupService.freq3Dagen,
+      BackupService.freqWeek,
+    ];
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.backupFrequentie,
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: opties
+                .map((v) => ChoiceChip(
+                      label: Text(label(v)),
+                      selected: freq == v,
+                      onSelected: (_) => _setBackupFreq(v),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            laatsteTekst(),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Schrijft de backupfrequentie direct weg (zelfde patroon als de
+  /// check-in-instellingen: geen Opslaan-knop nodig).
+  Future<void> _setBackupFreq(String freq) async {
+    try {
+      final existing = await db.getSettings();
+      final merged = Map<String, dynamic>.from(existing ?? {});
+      merged[BackupService.autoBackupFreqKey] = freq;
+      await db.updateSettingsMap(merged);
+      if (mounted) setState(() => _settings = merged);
+    } catch (e, stackTrace) {
+      AppLogger.error('Backupfrequentie opslaan mislukt', error: e, stackTrace: stackTrace);
+      if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
+    }
   }
 
   /// Leest een instelling als bool met fallback.
