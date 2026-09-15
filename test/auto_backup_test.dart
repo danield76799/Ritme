@@ -166,4 +166,31 @@ void main() {
       }
     });
   });
+
+  group('saveLocalBackup: terugval bij geblokkeerde Downloads (structuur)', () {
+    test('schrijft altijd, valt terug op de app-map', () {
+      // Regressie 09-2026: op moderne Android (scoped storage) gooide
+      // writeAsString naar Downloads — elke opstart faalde stil en er kwam
+      // nooit een backup ("nog nooit"). Nu: pogingen-lus met terugval.
+      final code = File('lib/services/backup_service.dart').readAsStringSync();
+      final start = code.indexOf('saveLocalBackup({bool auto');
+      expect(start, greaterThan(-1));
+      final stop = code.indexOf('ruimOudeAutoBackupsOp(Directory dir', start);
+      final blok = code.substring(start, stop > start ? stop : start + 3000);
+      expect(
+          blok.contains(
+              'pogingen.add(await getApplicationDocumentsDirectory())'),
+          isTrue,
+          reason: 'app-map zit altijd in de pogingen');
+      expect(blok.contains('laatsteFout'), isTrue,
+          reason: 'schrijffout per poging wordt bijgehouden');
+      expect(blok.contains('Backup schrijven mislukt'), isTrue,
+          reason: 'pas gooien als ALLES faalt');
+    });
+
+    test('mislukte auto-backup wordt gelogd, niet stilgeslikt', () {
+      final code = File('lib/services/backup_service.dart').readAsStringSync();
+      expect(code.contains('AppLogger.error'), isTrue);
+    });
+  });
 }
