@@ -110,6 +110,36 @@ void main() {
       );
     });
 
+    test('ochtend-rijen (Eerste contact, Werk/Hobby) maken de avond NIET groen', () {
+      // Regressie 09-2026: de ochtendflow schrijft deze twee sinds v59 al
+      // weg; avondGedaan telde ze mee, dus de avondtegel werd groen na
+      // alleen een ochtend-check-in. Alleen Avondeten/Naar bed tellen.
+      for (final type in ['Eerste contact', 'Werk / Hobby']) {
+        expect(
+          avondGedaan([
+            {
+              'date': '2026-09-10',
+              'activity_type': type,
+              'actual_time': '09:00',
+            },
+          ], '2026-09-10'),
+          isFalse,
+          reason: type,
+        );
+      }
+      // En Naar bed telt wél mee (tweede avond-rij naast Avondeten).
+      expect(
+        avondGedaan([
+          {
+            'date': '2026-09-10',
+            'activity_type': 'Naar bed',
+            'actual_time': '22:30',
+          },
+        ], '2026-09-10'),
+        isTrue,
+      );
+    });
+
     test('andere datum en ander type tellen niet mee', () {
       expect(
         avondGedaan([
@@ -168,11 +198,18 @@ void main() {
           greaterThanOrEqualTo(5));
       expect(RegExp(r'ochtendGedaan').allMatches(code).length,
           greaterThanOrEqualTo(5));
-      // De vier avondtypen staan op precies één plek (de const).
+      // De avondtypen staan op precies één plek (de const): alleen
+      // Avondeten + Naar bed. 'Eerste contact'/'Werk / Hobby' schrijft de
+      // ochtendflow weg en mogen de avondtegel niet groen maken.
       expect(
         RegExp(r"'Eerste contact'").allMatches(code).length,
+        0,
+        reason: 'ochtend-typen horen niet in de avonddefinitie',
+      );
+      expect(
+        RegExp(r"'Avondeten'").allMatches(code).length,
         1,
-        reason: 'tweede letterlijke set = tweede definitie',
+        reason: 'avondtypen op precies één plek (de const)',
       );
     });
 

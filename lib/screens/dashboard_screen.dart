@@ -27,7 +27,10 @@ import '../generated/l10n/app_localizations.dart';
 enum AlertSeverity { high, medium }
 
 /// De vier SRM-rijen die samen de avond-check-in vormen.
-const avondSrmTypes = {'Eerste contact', 'Werk / Hobby', 'Avondeten', 'Naar bed'};
+/// Let op: alleen Avondeten + Naar bed. 'Eerste contact' en 'Werk / Hobby'
+/// schrijft de OCHTENDFLOW sinds v59 al weg — die hier meetellen maakte de
+/// avondtegel groen na alleen een ochtend-check-in.
+const avondSrmTypes = {'Avondeten', 'Naar bed'};
 
 /// Eén definitie van "ochtend-check-in gedaan", overal gebruikt: tegel,
 /// dagteller, streak en terugkijkweergave.
