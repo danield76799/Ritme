@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
 import '../services/backup_service.dart';
+import '../services/backup_map_service.dart';
 import '../services/notification_helper.dart';
 import 'package:file_picker/file_picker.dart';
 import '../main.dart';
@@ -533,8 +534,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// Elke week. Wordt direct weggeschreven; de backup zelf draait bij de
   /// volgende opstart als het interval verstreken is. Daaronder staat
   /// wanneer de laatste automatische backup gemaakt is.
+  ///
+  /// Bovenaan: de backupmap (SAF). Zonder gekozen map belandt de backup in
+  /// de app-map en is hij weg bij verwijderen — vandaar de waarschuwing.
   Widget _buildAutoBackupKeuze() {
     final l10n = AppLocalizations.of(context);
+    final mapNaam = _settings?[BackupMapService.mapNaamKey]?.toString();
     final freq = _settings?[BackupService.autoBackupFreqKey]?.toString() ?? BackupService.freqStandaard;
     final laatste = _settings?[BackupService.lastAutoBackupKey]?.toString();
     String label(String v) {
@@ -570,6 +575,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.backupMapTitel,
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      (mapNaam == null || mapNaam.isEmpty) ? l10n.geenMap : mapNaam,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: (mapNaam == null || mapNaam.isEmpty)
+                            ? AppTheme.warning
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    if (mapNaam == null || mapNaam.isEmpty)
+                      Text(
+                        l10n.geenMapUitleg,
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+                      ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: _kiesBackupMap,
+                child: Text(l10n.kiesMap),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
           Text(
             l10n.backupFrequentie,
             style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14),
@@ -607,6 +648,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) setState(() => _settings = merged);
     } catch (e, stackTrace) {
       AppLogger.error('Backupfrequentie opslaan mislukt', error: e, stackTrace: stackTrace);
+      if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
+    }
+  }
+
+  /// Opent de systeemkiezer voor de backupmap (SAF) en herlaadt daarna de
+  /// instellingen, zodat de gekozen mapnaam meteen in beeld staat.
+  Future<void> _kiesBackupMap() async {
+    try {
+      await BackupMapService.kiesBackupMap();
+      final vers = await db.getSettings();
+      if (mounted) setState(() => _settings = vers);
+    } catch (e, stackTrace) {
+      AppLogger.error('Backupmap kiezen mislukt', error: e, stackTrace: stackTrace);
       if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
     }
   }
