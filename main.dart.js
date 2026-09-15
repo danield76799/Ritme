@@ -135725,7 +135725,7 @@ s=j.d
 if(s==null)r=i
 else{s=J.y(s,"auto_backup_freq")
 s=s==null?i:J.a8(s)
-r=s}if(r==null)r="uit"
+r=s}if(r==null)r="week"
 s=j.d
 if(s==null)q=i
 else{s=J.y(s,"last_auto_backup")
