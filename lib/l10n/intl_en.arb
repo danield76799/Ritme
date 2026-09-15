@@ -62,7 +62,6 @@
   "herinnering": "Reminder",
   "herinneringGezet": "Reminder set for {name} at {time}",
   "herinnering2": "Reminder: {time}",
-  "herinneringenHerplantDbIngepland": "Reminders rescheduled ✓ ({rescheduled} in DB, {count} scheduled)",
   "@herinneringenHerplantDbIngepland": {
     "placeholders": {
       "rescheduled": {
@@ -269,7 +268,6 @@
   "dagelijkseDoelen": "Daily goals",
   "eersteContact": "First contact",
   "avondeten": "Evening meal",
-  "herplanMedicatieHerinneringen": "Reschedule all reminders",
   "medicatieBeheren": "Manage medication",
   "overige": "Other",
   "backupMaken": "Create backup",
