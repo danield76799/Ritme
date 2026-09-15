@@ -540,6 +540,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildAutoBackupKeuze() {
     final l10n = AppLocalizations.of(context);
     final mapNaam = _settings?[BackupMapService.mapNaamKey]?.toString();
+    final mapUri = _settings?[BackupMapService.mapUriKey]?.toString();
+    // Naam leeg maar uri wel bewaard (sommige kiezer-teruggaven): toon de
+    // uri-staart in plaats van "Niet gekozen".
+    final mapWeergave = (mapNaam == null || mapNaam.isEmpty)
+        ? ((mapUri == null || mapUri.isEmpty)
+            ? null
+            : '…${mapUri.substring(mapUri.length > 40 ? mapUri.length - 40 : 0)}')
+        : mapNaam;
+    final geenMap = mapWeergave == null;
     final freq = _settings?[BackupService.autoBackupFreqKey]?.toString() ?? BackupService.freqStandaard;
     final laatste = _settings?[BackupService.lastAutoBackupKey]?.toString();
     String label(String v) {
@@ -587,16 +596,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      (mapNaam == null || mapNaam.isEmpty) ? l10n.geenMap : mapNaam,
+                      geenMap ? l10n.geenMap : mapWeergave!,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: (mapNaam == null || mapNaam.isEmpty)
+                        color: geenMap
                             ? AppTheme.warning
                             : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    if (mapNaam == null || mapNaam.isEmpty)
+                    if (geenMap)
                       Text(
                         l10n.geenMapUitleg,
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
@@ -653,10 +662,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// Opent de systeemkiezer voor de backupmap (SAF) en herlaadt daarna de
-  /// instellingen, zodat de gekozen mapnaam meteen in beeld staat.
+  /// instellingen, zodat de gekozen mapnaam meteen in beeld staat. Bij
+  /// falen een rode balk met de echte fout (nooit meer stil).
   Future<void> _kiesBackupMap() async {
     try {
-      await BackupMapService.kiesBackupMap();
+      final uitslag = await BackupMapService.kiesBackupMap();
+      if (uitslag.fout != null) {
+        if (mounted) {
+          _showError(AppLocalizations.of(context).fout(uitslag.fout!));
+        }
+        return;
+      }
       final vers = await db.getSettings();
       if (mounted) setState(() => _settings = vers);
     } catch (e, stackTrace) {
