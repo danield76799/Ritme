@@ -15,10 +15,14 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:saf/saf.dart';
 
-import '../database/database_helper.dart';
+import '../database/database_repository.dart';
+import '../service_locator.dart' show db;
 
 class BackupMapService {
-  static final DatabaseHelper _db = DatabaseHelper.instance;
+  // Zelfde reden als BackupService: via de locator (Hive op Android),
+  // niet direct SQLite — anders schrijft de mapkeuze in een database die
+  // de UI nooit leest.
+  static DatabaseRepository get _db => db;
   static final Saf _saf = Saf();
 
   /// Instelling-sleutels (vrije settings-map).

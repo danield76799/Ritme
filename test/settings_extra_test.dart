@@ -62,5 +62,21 @@ void main() {
       expect(code.contains('.remove(mapUriKey)'), isFalse,
           reason: 'remove haalt niets uit settings_extra');
     });
+
+    test('backup-services gaan via de locator, niet direct SQLite', () {
+      // 09-2026: op Android is Hive leidend; BackupService en
+      // BackupMapService schreven direct naar SQLite — een tweede,
+      // onzichtbare database. UI zag nooit map, frequentie of datum.
+      for (final pad in [
+        'lib/services/backup_service.dart',
+        'lib/services/backup_map_service.dart',
+      ]) {
+        final code = _code(pad);
+        expect(code.contains('DatabaseHelper.instance'), isFalse,
+            reason: '$pad omzeilt de locator');
+        expect(code.contains('service_locator'), isTrue,
+            reason: '$pad gebruikt de locator');
+      }
+    });
   });
 }
