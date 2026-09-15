@@ -443,10 +443,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 32),
           _buildSectionHeader(AppLocalizations.of(context).overige),
           _buildActionButton(
-                        AppLocalizations.of(context).databaseDebug,
-            () => Navigator.pushNamed(context, '/database-debug'),
-          ),
-          _buildActionButton(
                         AppLocalizations.of(context).herplanMedicatieHerinneringen,
             () async {
               try {

@@ -16,7 +16,6 @@ import 'screens/activities_detail_screen.dart';
 import 'screens/activity_screen.dart';
 import 'screens/appointments_screen.dart';
 import 'screens/crisisplan_screen.dart';
-import 'screens/database_debug_screen.dart';
 import 'screens/help_screen.dart';
 import 'screens/medication_schedule_screen.dart';
 import 'screens/medication_screen.dart';
@@ -213,7 +212,6 @@ class _RitmeAppState extends State<RitmeApp> {
         ),
         '/activity': (context) => ActivityScreen(),
         '/medication': (context) => MedicationScreen(),
-        '/database-debug': (context) => DatabaseDebugScreen(),
         '/settings': (context) => SettingsScreen(),
         '/medication-schedule': (context) => MedicationScheduleScreen(),
         '/weight': (context) => WeightScreen(),

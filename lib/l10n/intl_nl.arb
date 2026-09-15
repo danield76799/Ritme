@@ -30,7 +30,6 @@
   "biometrischeAuthenticatie": "Biometrische Authenticatie",
   "crisisplan": "Crisisplan",
   "dagen": "{n, plural, =1{1 dag} other{{n} dagen}}",
-  "databaseDebug": "Database Debug",
   "databaseOpruimen": "Database Opruimen",
   "databaseReset": "Database Reset",
   "databaseResetten": "Database resetten?",
