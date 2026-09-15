@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../database/database_helper.dart';
+import '../utils/logger.dart';
 
 class BackupService {
   static final DatabaseHelper _db = DatabaseHelper.instance;
@@ -119,30 +120,57 @@ class BackupService {
   static Future<String> saveLocalBackup({bool auto = false}) async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
-    
-    // Try to save directly to Downloads
-    Directory? downloadsDir;
-    try {
-      if (Platform.isAndroid) {
-        downloadsDir = Directory('/storage/emulated/0/Download');
-        if (!downloadsDir.existsSync()) {
-          downloadsDir = Directory('/sdcard/Download');
-        }
-      }
-    } catch (e) {
-      debugPrint('BackupService: Could not access Downloads, falling back');
-    }
-    
-    final dir = downloadsDir ?? await getApplicationDocumentsDirectory();
+
     final bestandsnaam = auto
         ? autoBackupBestandsnaam(DateTime.now())
         : "ritme_backup_${DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0]}.json";
-    final file = File('${dir.path}/$bestandsnaam');
-    await file.writeAsString(jsonString);
 
-    // Alleen bij auto: maximaal [behoud] automatische backups bewaren, zodat
-    // Downloads niet volloopt. Handmatige backups blijven altijd staan.
-    if (auto) await ruimOudeAutoBackupsOp(dir);
+    // Schrijven naar Downloads lukt op moderne Android (scoped storage,
+    // targetSdk 36) niet via een raw path — writeAsString gooit dan. Daarom:
+    // eerst Downloads proberen, bij een schrijffout terugvallen op de
+    // app-map (altijd schrijfbaar). Zonder deze terugval faalde de
+    // automatische backup bij ELKE opstart stil (09-2026).
+    final pogingen = <Directory>[];
+    try {
+      if (Platform.isAndroid) {
+        final downloads = Directory('/storage/emulated/0/Download');
+        if (downloads.existsSync()) {
+          pogingen.add(downloads);
+        } else {
+          final sdcard = Directory('/sdcard/Download');
+          if (sdcard.existsSync()) pogingen.add(sdcard);
+        }
+      }
+    } catch (e) {
+      debugPrint('BackupService: Downloads niet bereikbaar, terugval - $e');
+    }
+    pogingen.add(await getApplicationDocumentsDirectory());
+
+    File? gelukt;
+    Object? laatsteFout;
+    for (final dir in pogingen) {
+      try {
+        final file = File('${dir.path}/$bestandsnaam');
+        await file.writeAsString(jsonString);
+        gelukt = file;
+        break;
+      } catch (e) {
+        laatsteFout = e;
+      }
+    }
+    if (gelukt == null) {
+      throw Exception('Backup schrijven mislukt (ook terugval): $laatsteFout');
+    }
+    final file = gelukt;
+
+    // Alleen bij auto: maximaal [behoud] automatische weekbestanden bewaren.
+    // Handmatige backups blijven altijd staan. Opruimen gebeurt in BEIDE
+    // mappen (oude weken kunnen nog in Downloads staan van vóór de terugval).
+    if (auto) {
+      for (final dir in pogingen) {
+        await ruimOudeAutoBackupsOp(dir);
+      }
+    }
 
     return file.path;
   }
@@ -331,8 +359,11 @@ class BackupService {
       await _db.updateSettingsMap(merged);
       debugPrint('BackupService: automatische backup gemaakt (freq=$freq)');
       return true;
-    } catch (e) {
-      debugPrint('BackupService: automatische backup mislukt (niet-fataal) - $e');
+    } catch (e, stackTrace) {
+      // Nooit gooien (opstart!), maar wél loggen: stil falen kostte ons
+      // weken ("nog nooit een backup") voordat iemand het zag.
+      AppLogger.error('BackupService: automatische backup mislukt',
+          error: e, stackTrace: stackTrace);
       return false;
     }
   }
