@@ -15,13 +15,43 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _activeEpisode;
 
+  // Semantiek per type (manie = rood, depressie = blauw, ...) blijft;
+  // de tint wordt pas bij gebruik modus-bewust gekozen (zie _typeKleur),
+  // zodat de iconen in dark mode leesbaar blijven.
   final _types = [
-    {'value': 'hypomanie', 'key': 'hypomanie', 'icon': Icons.trending_up, 'color': Colors.orange},
-    {'value': 'manie', 'key': 'manie', 'icon': Icons.warning, 'color': Colors.red},
-    {'value': 'depressie', 'key': 'depressie', 'icon': Icons.trending_down, 'color': Colors.blue},
-    {'value': 'gemengd', 'key': 'gemengd', 'icon': Icons.compare_arrows, 'color': Colors.purple},
-    {'value': 'euthym', 'key': 'stabielEuthym', 'icon': Icons.check_circle, 'color': Colors.green},
+    {'value': 'hypomanie', 'key': 'hypomanie', 'icon': Icons.trending_up, 'tint': 'amber'},
+    {'value': 'manie', 'key': 'manie', 'icon': Icons.warning, 'tint': 'red'},
+    {'value': 'depressie', 'key': 'depressie', 'icon': Icons.trending_down, 'tint': 'blue'},
+    {'value': 'gemengd', 'key': 'gemengd', 'icon': Icons.compare_arrows, 'tint': 'purple'},
+    {'value': 'euthym', 'key': 'stabielEuthym', 'icon': Icons.check_circle, 'tint': 'green'},
   ];
+
+  /// Modus-bewuste tint bij een episourcetype. Paars (gemengd) heeft geen
+  /// helper; effen paars haalt als icoon ~3.3:1 op donker — genoeg voor
+  /// grafische elementen.
+  Color _typeKleur(String tint, Brightness helderheid) {
+    switch (tint) {
+      case 'amber':
+        return AppTheme.streakText(helderheid);
+      case 'red':
+        return AppTheme.dangerOn(helderheid);
+      case 'blue':
+        return AppTheme.infoOn(helderheid);
+      case 'green':
+        return AppTheme.successOn(helderheid);
+      default:
+        return Colors.purple;
+    }
+  }
+
+  /// Tint van een type-info (uit _types of een losse map met 'tint').
+  Color _kleurVan(Map<String, dynamic>? typeInfo, BuildContext context) {
+    if (typeInfo == null) return Colors.grey;
+    if (typeInfo['tint'] is String) {
+      return _typeKleur(typeInfo['tint'] as String, Theme.of(context).brightness);
+    }
+    return typeInfo['color'] as Color? ?? Colors.grey;
+  }
 
   @override
   void initState() {
@@ -79,12 +109,12 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                   final isSelected = selectedType == t['value'];
                   return ChoiceChip(
                     label: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(t['icon'] as IconData, size: 16, color: isSelected ? Colors.white : t['color'] as Color),
+                      Icon(t['icon'] as IconData, size: 16, color: isSelected ? Colors.white : _typeKleur(t['tint'] as String, Theme.of(context).brightness)),
                       const SizedBox(width: 6),
                       Text(_labelFor(context, t['key'] as String)),
                     ]),
                     selected: isSelected,
-                    selectedColor: t['color'] as Color,
+                    selectedColor: _typeKleur(t['tint'] as String, Theme.of(context).brightness),
                     onSelected: (val) => setModalState(() => selectedType = val ? t['value'] as String : null),
                   );
                 }).toList(),
@@ -243,7 +273,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 final type = ep['episode_type'] as String;
                 final typeInfo = _getTypeInfo(type);
                 final isActive = ep['end_date'] == null;
-                final color = typeInfo?['color'] as Color? ?? Colors.grey;
+                final color = _kleurVan(typeInfo, context);
 
                 return Card(
                   margin: EdgeInsets.only(bottom: 10),

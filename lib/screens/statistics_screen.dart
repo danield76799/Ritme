@@ -361,9 +361,11 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
                       children: [
-                        _bouwKpiKaart(_gemStemming.toStringAsFixed(1), AppLocalizations.of(context).gemStemming, Colors.orange),
-                        _bouwKpiKaart(_formatHours(_gemSlaap), AppLocalizations.of(context).gemSlaap, Colors.blue),
-                        _bouwKpiKaart('$_aantalActiviteiten', AppLocalizations.of(context).activiteitenGelogd, Colors.green),
+                        // Modus-bewuste tinten (zelfde hues): effen orange/blue/green
+                        // zakken in dark mode onder AA op de kaart.
+                        _bouwKpiKaart(_gemStemming.toStringAsFixed(1), AppLocalizations.of(context).gemStemming, AppTheme.streakText(Theme.of(context).brightness)),
+                        _bouwKpiKaart(_formatHours(_gemSlaap), AppLocalizations.of(context).gemSlaap, AppTheme.infoOn(Theme.of(context).brightness)),
+                        _bouwKpiKaart('$_aantalActiviteiten', AppLocalizations.of(context).activiteitenGelogd, AppTheme.successOn(Theme.of(context).brightness)),
                       ],
                     ),
                     SizedBox(height: 24),

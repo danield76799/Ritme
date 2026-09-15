@@ -540,6 +540,8 @@
   "slaapPerDagLaatste7Dagen": "Sleep per day (last 7 days)",
   "slaapLogAwakeMin": "awake",
   "dagboekExport": "Diary Export",
+  "alsTekstDelen": "Share as text",
+  "alsPdfDelen": "Share as PDF",
   "exporterenDelen": "Export & share",
   "stapXvanY": "Step {step} of {total}",
   "genereerRapportDesc": "Generate a Life Chart Method (LCM) report for your practitioner. Includes mood, sleep, medication, episodes and warning signs.",
