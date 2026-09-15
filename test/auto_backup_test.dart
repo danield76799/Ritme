@@ -14,6 +14,12 @@ void main() {
   final nu = DateTime(2026, 9, 15, 8, 0); // di, week 38
 
   group('autoBackupVerschuldigd: interval per frequentie', () {
+    test('standaard is wekelijks: verse installatie krijgt backups', () {
+      expect(BackupService.freqStandaard, BackupService.freqWeek);
+      // Verse installatie: geen frequentie én geen laatste -> verschuldigd.
+      expect(BackupService.autoBackupVerschuldigd(BackupService.freqStandaard, null, nu), isTrue);
+    });
+
     test('uit doet nooit iets', () {
       expect(BackupService.autoBackupVerschuldigd('uit', null, nu), isFalse);
       expect(

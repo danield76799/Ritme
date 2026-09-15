@@ -580,7 +580,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// wanneer de laatste automatische backup gemaakt is.
   Widget _buildAutoBackupKeuze() {
     final l10n = AppLocalizations.of(context);
-    final freq = _settings?[BackupService.autoBackupFreqKey]?.toString() ?? BackupService.freqUit;
+    final freq = _settings?[BackupService.autoBackupFreqKey]?.toString() ?? BackupService.freqStandaard;
     final laatste = _settings?[BackupService.lastAutoBackupKey]?.toString();
     String label(String v) {
       if (v == BackupService.freqDagelijks) return l10n.freqDagelijks;
