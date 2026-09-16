@@ -93,6 +93,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   List<Map<String, dynamic>> _srmActivitiesList = [];
   List<Alert> _alerts = [];
 
+  /// Slaapduur van de MEEST RECENTE nacht met data (gisteren als vannacht
+  /// nog niet gelogd is). Nul = geen recente slaapdata.
+  double _lastNightSleep = 0.0;
+
   int _dagStreak = 0;
   DateTime _selectedDate = DateTime.now();
 
@@ -246,6 +250,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       }
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
 
+      // Meest recente nacht: hoogste datum-string met slaap > 0.
+      String? lastSleepDate;
+      double lastSleepValue = 0.0;
+      sleepPerDay.forEach((dateStr, hours) {
+        if (lastSleepDate == null || dateStr.compareTo(lastSleepDate!) > 0) {
+          lastSleepDate = dateStr;
+          lastSleepValue = hours;
+        }
+      });
+      final lastNightSleep = lastSleepValue;
+
       double totalPScore = 0;
       int totalActivities = 0;
       for (final activity in weeklyActivities) {
@@ -265,6 +280,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         setState(() {
           _settings = settings;
           _sleepQuality = avgSleep;
+          _lastNightSleep = lastNightSleep;
           _rhythmStability = stability;
           _loggedDaysCount = loggedDaysCount;
           _dailyLogs = dailyLogs;
@@ -538,7 +554,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 title: AppLocalizations.of(context).slaapduurLabel,
                 value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
                 emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
-                subtitle: null,
+                // Derde regel: de meest recente nacht (gisteren als vannacht
+                // nog niet gelogd is), zodat de actuele slaap zichtbaar blijft
+                // naast het 14-daagse gemiddelde.
+                secondSubtitle: _lastNightSleep > 0
+                    ? '${AppLocalizations.of(context).laatsteNacht}: ${_formatHours(_lastNightSleep)}'
+                    : null,
                 emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
                 color: const Color(0xFF88B0C7),
                 route: '/sleep-detail',
@@ -778,6 +799,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       required String? value,
       String? emptyValue,
       String? subtitle,
+      String? secondSubtitle,
       String? emptyHint,
       required Color color,
       required String route,
@@ -800,6 +822,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
           else if (emptyValue != null)
             Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
+          if (secondSubtitle != null)
+            Text(secondSubtitle, style: TextStyle(fontSize: 13, color: AppTheme.secondaryText(context))),
         ],
       ),
     );
