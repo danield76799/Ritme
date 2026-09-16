@@ -1004,16 +1004,18 @@ class _SleepPeriodSwitch extends StatelessWidget {
       children: [
         for (final period in _SleepPeriod.values) ...[
           if (period != _SleepPeriod.values.first) const SizedBox(width: 6),
-          _periodPill(
-            context,
-            label: switch (period) {
-              _SleepPeriod.yesterday => l10n.periodYesterday,
-              _SleepPeriod.week => l10n.periodWeek,
-              _SleepPeriod.fourteenDays => l10n.periodFourteenDays,
-            },
-            isSelected: period == selected,
-            onTap: () => onChanged(period),
-            theme: theme,
+          Expanded(
+            child: _periodPill(
+              context,
+              label: switch (period) {
+                _SleepPeriod.yesterday => l10n.periodYesterday,
+                _SleepPeriod.week => l10n.periodWeek,
+                _SleepPeriod.fourteenDays => l10n.periodFourteenDays,
+              },
+              isSelected: period == selected,
+              onTap: () => onChanged(period),
+              theme: theme,
+            ),
           ),
         ],
       ],
@@ -1031,15 +1033,20 @@ class _SleepPeriodSwitch extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected
               ? theme.colorScheme.primaryContainer
               : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(999),
         ),
+        alignment: Alignment.center,
         child: Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
