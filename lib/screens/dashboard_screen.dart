@@ -262,15 +262,20 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
 
       // Periode-gemiddelde voor de tegel: gisteren / 7 dagen / 14 dagen.
-      // Gisteren = de nacht gelogd bij de dag-ervoor (sleepPerDay is per
-      // datum gekeyd op de dag waarop de ochtend-checkin de waarde schreef).
+      // "Gisteren" = de nacht die vanmorgen eindigde — die staat in de DB
+      // onder de ochtend-datum van VANDAAG (ochtend-checkin logt de nacht
+      // onder de dag waarop je opstaat). Fallback: gisterens ochtend-entry.
       double periodSleep() {
         switch (_sleepPeriod) {
           case _SleepPeriod.yesterday:
-            final y = now.subtract(const Duration(days: 1));
             final yStr =
+                '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+            final vandaag = sleepPerDay[yStr];
+            if (vandaag != null) return vandaag;
+            final y = now.subtract(const Duration(days: 1));
+            final gisterenStr =
                 '${y.year}-${y.month.toString().padLeft(2, '0')}-${y.day.toString().padLeft(2, '0')}';
-            return sleepPerDay[yStr] ?? 0.0;
+            return sleepPerDay[gisterenStr] ?? 0.0;
           case _SleepPeriod.week:
             var total = 0.0;
             var n = 0;
@@ -338,7 +343,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     double value;
     switch (_sleepPeriod) {
       case _SleepPeriod.yesterday:
-        value = _sleepPerDay[dateStr(now.subtract(const Duration(days: 1)))] ?? 0.0;
+        // De "nacht van gisteren" = de slaap die vanmorgen eindigde, en die
+        // staat in de DB onder de ochtend-datum van VANDAAG (ochtend-checkin
+        // logt de nacht onder de dag waarop je opstaat). Vandaar nu-1 → de
+        // ochtend van gisteren, nu → de ochtend van vandaag (de nacht van
+        // gisteren op vandaag). Pak vandaags als die er is, anders gisterens.
+        final vandaag = _sleepPerDay[dateStr(now)];
+        value = vandaag ?? _sleepPerDay[dateStr(now.subtract(const Duration(days: 1)))] ?? 0.0;
       case _SleepPeriod.week:
         final weekAgoStr = dateStr(now.subtract(const Duration(days: 7)));
         var total = 0.0;
