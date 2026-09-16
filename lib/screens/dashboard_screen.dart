@@ -96,6 +96,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   /// Periode waarover de slaap-tegel rekent: gisteren, 7 of 14 dagen.
   _SleepPeriod _sleepPeriod = _SleepPeriod.fourteenDays;
 
+  /// Slaapduur per dag (datum-string → uren), gevuld door [_loadData].
+  /// De periode-schakelaar recomputet hieruit zonder nieuwe DB-load.
+  Map<String, double> _sleepPerDay = const {};
+
   int _dagStreak = 0;
   DateTime _selectedDate = DateTime.now();
 
@@ -249,6 +253,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       }
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
 
+      // Bewaar de per-dag slaapmap zodat de periode-schakelaar de waarde
+      // kan recomputen zonder een nieuwe DB-load.
+      _sleepPerDay = Map.of(sleepPerDay);
+
       final weekAgo = now.subtract(const Duration(days: 7));
       final weekAgoStr =
           '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
@@ -318,6 +326,37 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       AppLogger.error('Dashboard _loadData error', error: e);
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Rekent de tegelwaarde opnieuw uit [_sleepPerDay] voor de gekozen periode.
+  /// Wordt aangeroepen door de periode-schakelaar (gisteren / week / 14 dagen).
+  void _recomputeSleepValue() {
+    final now = DateTime.now();
+    String dateStr(DateTime d) =>
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+    double value;
+    switch (_sleepPeriod) {
+      case _SleepPeriod.yesterday:
+        value = _sleepPerDay[dateStr(now.subtract(const Duration(days: 1)))] ?? 0.0;
+      case _SleepPeriod.week:
+        final weekAgoStr = dateStr(now.subtract(const Duration(days: 7)));
+        var total = 0.0;
+        var n = 0;
+        _sleepPerDay.forEach((date, hours) {
+          if (date.compareTo(weekAgoStr) >= 0) {
+            total += hours;
+            n++;
+          }
+        });
+        value = n > 0 ? total / n : 0.0;
+      case _SleepPeriod.fourteenDays:
+        // Hele 14-daagse map is al gefilterd op de load-range: gemiddelde.
+        var total = 0.0;
+        _sleepPerDay.forEach((_, hours) => total += hours);
+        value = _sleepPerDay.isNotEmpty ? total / _sleepPerDay.length : 0.0;
+    }
+    if (mounted) setState(() => _sleepQuality = value);
   }
 
   Future<void> _setupNotifications() async {
@@ -579,7 +618,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 // Periode-schakelaar onder de waarde: gisteren / week / 14d.
                 footer: _SleepPeriodSwitch(
                   selected: _sleepPeriod,
-                  onChanged: (p) => setState(() => _sleepPeriod = p),
+                  onChanged: (p) => setState(() {
+                    _sleepPeriod = p;
+                    _recomputeSleepValue();
+                  }),
                 ),
               ),
               const SizedBox(height: 10),
