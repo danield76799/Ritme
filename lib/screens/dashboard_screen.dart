@@ -93,9 +93,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   List<Map<String, dynamic>> _srmActivitiesList = [];
   List<Alert> _alerts = [];
 
-  /// Slaapduur van de MEEST RECENTE nacht met data (gisteren als vannacht
-  /// nog niet gelogd is). Nul = geen recente slaapdata.
-  double _lastNightSleep = 0.0;
+  /// Periode waarover de slaap-tegel rekent: gisteren, 7 of 14 dagen.
+  _SleepPeriod _sleepPeriod = _SleepPeriod.fourteenDays;
 
   int _dagStreak = 0;
   DateTime _selectedDate = DateTime.now();
@@ -250,16 +249,36 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       }
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
 
-      // Meest recente nacht: hoogste datum-string met slaap > 0.
-      String? lastSleepDate;
-      double lastSleepValue = 0.0;
-      sleepPerDay.forEach((dateStr, hours) {
-        if (lastSleepDate == null || dateStr.compareTo(lastSleepDate!) > 0) {
-          lastSleepDate = dateStr;
-          lastSleepValue = hours;
+      final weekAgo = now.subtract(const Duration(days: 7));
+      final weekAgoStr =
+          '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
+
+      // Periode-gemiddelde voor de tegel: gisteren / 7 dagen / 14 dagen.
+      // Gisteren = de nacht gelogd bij de dag-ervoor (sleepPerDay is per
+      // datum gekeyd op de dag waarop de ochtend-checkin de waarde schreef).
+      double periodSleep() {
+        switch (_sleepPeriod) {
+          case _SleepPeriod.yesterday:
+            final y = now.subtract(const Duration(days: 1));
+            final yStr =
+                '${y.year}-${y.month.toString().padLeft(2, '0')}-${y.day.toString().padLeft(2, '0')}';
+            return sleepPerDay[yStr] ?? 0.0;
+          case _SleepPeriod.week:
+            var total = 0.0;
+            var n = 0;
+            sleepPerDay.forEach((dateStr, hours) {
+              if (dateStr.compareTo(weekAgoStr) >= 0) {
+                total += hours;
+                n++;
+              }
+            });
+            return n > 0 ? total / n : 0.0;
+          case _SleepPeriod.fourteenDays:
+            return avgSleep; // hele 14-daagse range is al het gemiddelde
         }
-      });
-      final lastNightSleep = lastSleepValue;
+      }
+
+      final periodAvg = periodSleep();
 
       double totalPScore = 0;
       int totalActivities = 0;
@@ -279,8 +298,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       if (mounted) {
         setState(() {
           _settings = settings;
-          _sleepQuality = avgSleep;
-          _lastNightSleep = lastNightSleep;
+          _sleepQuality = periodAvg;
           _rhythmStability = stability;
           _loggedDaysCount = loggedDaysCount;
           _dailyLogs = dailyLogs;
@@ -554,16 +572,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 title: AppLocalizations.of(context).slaapduurLabel,
                 value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
                 emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
-                // Derde regel: de meest recente nacht (gisteren als vannacht
-                // nog niet gelogd is), zodat de actuele slaap zichtbaar blijft
-                // naast het 14-daagse gemiddelde.
-                secondSubtitle: _lastNightSleep > 0
-                    ? '${AppLocalizations.of(context).laatsteNacht}: ${_formatHours(_lastNightSleep)}'
-                    : null,
                 emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
                 color: const Color(0xFF88B0C7),
                 route: '/sleep-detail',
                 isEmpty: _sleepQuality <= 0,
+                // Periode-schakelaar onder de waarde: gisteren / week / 14d.
+                footer: _SleepPeriodSwitch(
+                  selected: _sleepPeriod,
+                  onChanged: (p) => setState(() => _sleepPeriod = p),
+                ),
               ),
               const SizedBox(height: 10),
               // SRT Score staat op volle breedte: de SRT-berekening ís de
@@ -803,7 +820,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       String? emptyHint,
       required Color color,
       required String route,
-      bool isEmpty = false}) {
+      bool isEmpty = false,
+      Widget? footer,
+    }) {
     final theme = Theme.of(context);
     return MetricCardShell(
       icon: icon,
@@ -824,6 +843,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
           if (secondSubtitle != null)
             Text(secondSubtitle, style: TextStyle(fontSize: 13, color: AppTheme.secondaryText(context))),
+          if (footer != null) ...[
+            const SizedBox(height: 8),
+            footer,
+          ],
         ],
       ),
     );
@@ -957,6 +980,74 @@ class _DagStatusMeter extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Periode waarover de slaap-tegel rekent.
+enum _SleepPeriod { yesterday, week, fourteenDays }
+
+/// Periode-schakelaar onder de slaap-waarde: gisteren / week / 14 dagen.
+/// Compacte pill-rij, thema-veilig (selected = primary-container).
+class _SleepPeriodSwitch extends StatelessWidget {
+  final _SleepPeriod selected;
+  final ValueChanged<_SleepPeriod> onChanged;
+
+  const _SleepPeriodSwitch({required this.selected, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        for (final period in _SleepPeriod.values) ...[
+          if (period != _SleepPeriod.values.first) const SizedBox(width: 6),
+          _periodPill(
+            context,
+            label: switch (period) {
+              _SleepPeriod.yesterday => l10n.periodYesterday,
+              _SleepPeriod.week => l10n.periodWeek,
+              _SleepPeriod.fourteenDays => l10n.periodFourteenDays,
+            },
+            isSelected: period == selected,
+            onTap: () => onChanged(period),
+            theme: theme,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _periodPill(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required ThemeData theme,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.primaryContainer
+              : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: isSelected
+                ? theme.colorScheme.onPrimaryContainer
+                : AppTheme.secondaryText(context),
+          ),
+        ),
       ),
     );
   }

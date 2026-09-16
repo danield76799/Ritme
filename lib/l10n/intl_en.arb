@@ -309,7 +309,7 @@
   "aantalSocialeInteractiesVandaag": "Number of social interactions today",
   "zojuistBijgewerkt": "Just updated",
   "activiteitEnSlaap": "Activity",
-  "slaapduurLabel": "Average sleep (14 days)",
+  "slaapduurLabel": "Average sleep",
   "matigLabel": "Moderate",
   "uitstekendLabel": "Excellent",
   "minutenGeleden": "{n, plural, =1{1 minute ago} other{{n} minutes ago}}",
@@ -757,5 +757,17 @@
   "laatsteNacht": "Last night",
   "@laatsteNacht": {
     "description": "Label for the most recent night's sleep duration on the dashboard sleep tile"
+  },
+  "periodYesterday": "Yesterday",
+  "@periodYesterday": {
+    "description": "Label for the sleep tile period switch: yesterday"
+  },
+  "periodWeek": "Last week",
+  "@periodWeek": {
+    "description": "Label for the sleep tile period switch: last 7 days"
+  },
+  "periodFourteenDays": "Last 14 days",
+  "@periodFourteenDays": {
+    "description": "Label for the sleep tile period switch: last 14 days"
   }
 }
