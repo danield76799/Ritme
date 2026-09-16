@@ -743,5 +743,9 @@
   "testMeldingVersturen": "Testmelding versturen",
   "volgendeHerinneringVandaag": "Volgende herinnering: vandaag om {tijd}",
   "volgendeHerinneringMorgen": "Volgende herinnering: morgen om {tijd}",
-  "tijdAlVoorbijVandaag": "Deze tijd is vandaag al voorbij, dus de eerste melding komt morgen."
+  "tijdAlVoorbijVandaag": "Deze tijd is vandaag al voorbij, dus de eerste melding komt morgen.",
+  "laatsteNacht": "Laatste nacht",
+  "@laatsteNacht": {
+    "description": "Label for the most recent night's sleep duration on the dashboard sleep tile"
+  }
 }
