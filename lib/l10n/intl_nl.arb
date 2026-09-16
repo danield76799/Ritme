@@ -299,7 +299,7 @@
   "aantalSocialeInteractiesVandaag": "Aantal sociale interacties vandaag",
   "zojuistBijgewerkt": "Zojuist bijgewerkt",
   "activiteitEnSlaap": "Activiteit",
-  "slaapduurLabel": "Slaapduur",
+  "slaapduurLabel": "Gemiddelde slaapduur (14 dagen)",
   "matigLabel": "Matig",
   "uitstekendLabel": "Uitstekend",
   "minutenGeleden": "{n, plural, =1{1 minuut geleden} other{{n} minuten geleden}}",
