@@ -766,8 +766,8 @@
   "@periodWeek": {
     "description": "Label for the sleep tile period switch: last 7 days"
   },
-  "periodFourteenDays": "Last 2 weeks",
+  "periodFourteenDays": "2 weeks",
   "@periodFourteenDays": {
-    "description": "Label for the sleep tile period switch: last 14 days"
+    "description": "Label for the sleep tile period switch: last 2 weeks"
   }
 }
