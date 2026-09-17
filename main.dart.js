@@ -128763,7 +128763,7 @@ XO(a){return"Next reminder: today at "+a},
 XN(a){return"Next reminder: tomorrow at "+a},
 gaiB(){return"Yesterday"},
 gaiA(){return"7 days"},
-gaiz(){return"Last 2 weeks"}}
+gaiz(){return"2 weeks"}}
 A.Ti.prototype={
 gXP(){return"Voortekenen"},
 gaaq(){return"Accu-optimalisatie kan notificaties blokkeren."},
@@ -129250,7 +129250,7 @@ XO(a){return"Volgende herinnering: vandaag om "+a},
 XN(a){return"Volgende herinnering: morgen om "+a},
 gaiB(){return"Gisteren"},
 gaiA(){return"Week"},
-gaiz(){return"Afgel. 2 weken"}}
+gaiz(){return"2 weken"}}
 A.b5G.prototype={
 $1(a){A.cO("Flutter error",a.a,a.b)
 A.bji().$1(a)},
