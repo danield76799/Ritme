@@ -180,7 +180,7 @@ class RapportGenerator {
     buf.writeln('---');
     buf.writeln();
 
-    // === 2. SUMMARY STATISTICS ===
+    // === 3. SAMENVATTING ===
     buf.writeln('## 📈 Samenvatting');
     buf.writeln();
     buf.writeln('| Metriek | Waarde |');
@@ -201,7 +201,36 @@ class RapportGenerator {
 
     buf.writeln();
 
-    // === 3. MEDICATION — genomen dagen
+    // === 3. DAGBOEK ===
+    final dagboekEntries = await db.getDagboekRange(startStr, '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}');
+    if (dagboekEntries.isNotEmpty) {
+      double totalScore = 0;
+      int scoreCount = 0;
+      for (final entry in dagboekEntries) {
+        final sc = _extractDouble(entry['score']);
+        if (sc != null) { totalScore += sc; scoreCount++; }
+      }
+      buf.writeln('## ${s.dagboekTitle}');
+      buf.writeln();
+      if (scoreCount > 0) {
+        buf.writeln('| ${s.dagboekScore} | ${s.dagboekEntries} |');
+        buf.writeln('|---------|--------|');
+        buf.writeln('| **${(totalScore / scoreCount).toStringAsFixed(0)}** | ${dagboekEntries.length} |');
+        buf.writeln();
+      }
+      for (final entry in dagboekEntries.reversed) {
+        final dateStr = entry['date']?.toString() ?? '?';
+        final tekst = entry['tekst']?.toString() ?? '';
+        final score = _extractDouble(entry['score']);
+        if (tekst.isNotEmpty) {
+          buf.writeln('- **${s.dagboekEntryLabel(dateStr, score)}**');
+          buf.writeln('  > ${tekst.trim()}');
+        }
+      }
+      buf.writeln();
+    }
+
+    // === 5. MEDICATION — genomen dagen
     if (medicationConfigs.isNotEmpty) {
       buf.writeln('## ${s.medTakenDays}');
       buf.writeln();
@@ -235,7 +264,7 @@ class RapportGenerator {
       buf.writeln();
     }
 
-    // === 4. EPISODES ===
+    // === 6. EPISODES ===
     final episodes = await db.getEpisodes(limit: 20);
     final periodsInReport = episodes.where((e) {
       try {
@@ -256,7 +285,7 @@ class RapportGenerator {
       buf.writeln();
     }
 
-    // === 4. MEDICATION ===
+    // === 7. MEDICATION ===
     if (medicationConfigs.isNotEmpty) {
       buf.writeln('## ${s.med}');
       buf.writeln();
@@ -271,7 +300,7 @@ class RapportGenerator {
       buf.writeln();
     }
 
-    // === 5. PRODROMAL WARNINGS ===
+    // === 8. PRODROMAL WARNINGS ===
     final recentWarnings = await db.getRecentProdromalTrends(days);
     if (recentWarnings.isNotEmpty) {
       final totalWarnings = recentWarnings.fold<int>(0, (sum, d) => sum + (d['warning_count'] as int? ?? 0));
@@ -290,7 +319,7 @@ class RapportGenerator {
       }
     }
 
-    // === 6. CRISIS PLAN ===
+    // === 9. CRISIS PLAN ===
     final crisisPlan = await db.getCrisisPlan();
     final filledPlans = crisisPlan.where((s) => (s['content'] as String?)?.isNotEmpty == true).toList();
     if (filledPlans.isNotEmpty) {
