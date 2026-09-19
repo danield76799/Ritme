@@ -63,8 +63,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
         }
         if (medId != null) {
           intakeMap[medId] = aantal;
-          if (intake['dosering'] != null) {
-            doseringMap[medId] = intake['dosering'].toString();
+          // Alleen dosering opslaan als die expliciet gezet is (niet null/leeg)
+          final d = intake['dosering']?.toString();
+          if (d != null && d.isNotEmpty) {
+            doseringMap[medId] = d;
           }
         }
       }
