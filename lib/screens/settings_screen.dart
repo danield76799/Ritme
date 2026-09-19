@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -440,6 +443,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           _buildSectionHeader(AppLocalizations.of(context).backupHerstel),
           _buildBackupButtons(),
+          const SizedBox(height: 24),
+          _buildDataWipeSection(),
           const SizedBox(height: 32),
         ],
       ),
@@ -1003,6 +1008,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
           elevation: 0,
         ),
       ),
+    );
+  }
+
+  Widget _buildDataWipeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Database'),
+        _buildActionButton(
+          '🗑️ Wis alle app-data',
+          () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Alle data wissen?'),
+                content: const Text(
+                  'Dit verwijdert ALLE medicatie-logs, check-ins, slaapdata en instellingen. Dit kan niet ongedaan worden gemaakt. Maak eerst een backup als je data wilt bewaren.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: Text(AppLocalizations.of(context).annuleer),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                      foregroundColor: Theme.of(context).colorScheme.onError,
+                    ),
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Wissen'),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed != true) return;
+            try {
+              final dbDir = await getApplicationDocumentsDirectory();
+              final dbPath = p.join(dbDir.path, 'ritme.db');
+              await deleteDatabase(dbPath);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Database verwijderd. App herstart...'),
+                    backgroundColor: Colors.green[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              }
+              // Herstart de app door naar main te navigeren
+              await Future.delayed(const Duration(seconds: 1));
+              if (mounted) {
+                Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Fout bij wissen: $e'),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              }
+            }
+          },
+        ),
+      ],
     );
   }
 }
