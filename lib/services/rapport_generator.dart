@@ -258,7 +258,9 @@ class RapportGenerator {
             if (v is String) return (int.tryParse(v) ?? 0) > 0;
             return false;
           }();
-          return '  ${ingenomen ? '✅' : '❌'} $dateStr';
+          final dagDosering = r['dosering']?.toString() ?? '';
+          final doseringLabel = dagDosering.isNotEmpty ? ' — $dagDosering$eenheid' : '';
+          return '  ${ingenomen ? '✅' : '❌'} $dateStr$doseringLabel';
         }).join('\n'));
       }
       buf.writeln();

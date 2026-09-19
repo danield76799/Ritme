@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -102,6 +102,7 @@ class DatabaseHelper implements DatabaseRepository {
         medication_id INTEGER NOT NULL,
         date TEXT NOT NULL,
         aantal_ingenomen INTEGER DEFAULT 0,
+        dosering TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -299,6 +300,13 @@ class DatabaseHelper implements DatabaseRepository {
       try {
         await db.execute(
           'ALTER TABLE medication_config ADD COLUMN deleted INTEGER DEFAULT 0',
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 8) {
+      try {
+        await db.execute(
+          'ALTER TABLE medication_intake ADD COLUMN dosering TEXT',
         );
       } catch (_) {}
     }
@@ -805,10 +813,14 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
     final db = await database;
+    // Haal huidige dosering op uit config voor historische snapshot
+    final config = await db.query('medication_config', where: 'id = ?', whereArgs: [medicationId], limit: 1);
+    final dosering = config.isNotEmpty ? (config.first['dosering']?.toString() ?? '') : '';
     return await db.insert('medication_intake', {
       'medication_id': medicationId,
       'date': date,
       'aantal_ingenomen': confirmed,
+      'dosering': dosering,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -819,10 +831,13 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
     final db = await database;
+    final config = await db.query('medication_config', where: 'id = ?', whereArgs: [medicationId], limit: 1);
+    final dosering = config.isNotEmpty ? (config.first['dosering']?.toString() ?? '') : '';
     return await db.insert('medication_intake', {
       'medication_id': medicationId,
       'date': date,
       'aantal_ingenomen': aantal,
+      'dosering': dosering,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
