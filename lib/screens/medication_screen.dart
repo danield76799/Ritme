@@ -194,6 +194,112 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
+  Future<void> _editMedication(Map<String, dynamic> config, int configId) async {
+    String name = config['naam']?.toString() ?? '';
+    double dosage = double.tryParse(config['dosering']?.toString() ?? '0') ?? 0;
+    String unit = config['eenheid']?.toString() ?? 'mg';
+    bool reminderEnabled = (config['reminder_enabled']?.toString() ?? '1') == '1';
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        final textColor = cs.onSurface;
+        final labelColor = cs.onSurfaceVariant;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog.adaptive(
+              title: Text(AppLocalizations.of(context).medicatieWijzigen),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: TextEditingController(text: name),
+                      style: TextStyle(color: textColor),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context).naamBijvLithium,
+                        labelStyle: TextStyle(color: labelColor),
+                        filled: true,
+                        fillColor: cs.surfaceContainerHighest,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                      ),
+                      onChanged: (v) => name = v,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: TextEditingController(text: dosage > 0 ? dosage.toString() : ''),
+                            style: TextStyle(color: textColor),
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context).dosering,
+                              labelStyle: TextStyle(color: labelColor),
+                              filled: true,
+                              fillColor: cs.surfaceContainerHighest,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (v) => dosage = double.tryParse(v.replaceAll(',', '.')) ?? 0,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        SizedBox(
+                          width: 96,
+                          child: DropdownButtonFormField<String>(
+                            style: TextStyle(color: textColor),
+                            dropdownColor: cs.surface,
+                            value: unit,
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context).eenheidMgMlStuks,
+                              labelStyle: TextStyle(color: labelColor),
+                              filled: true,
+                              fillColor: cs.surfaceContainerHighest,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                            ),
+                            items: ['mg', 'ml', 'stuks', 'µg', 'IE']
+                                .map((u) => DropdownMenuItem(value: u, child: Text(u, style: TextStyle(color: textColor, fontSize: 16))))
+                                .toList(),
+                            onChanged: (v) => setDialogState(() => unit = v ?? 'mg'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context).annuleer, style: TextStyle(color: cs.primary))),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: cs.primary, foregroundColor: cs.onPrimary),
+                  onPressed: () async {
+                    if (name.isNotEmpty) {
+                      await db.updateMedicationConfig(configId, {
+                        'naam': name,
+                        'dosering': dosage.toString(),
+                        'eenheid': unit,
+                        'reminder_enabled': reminderEnabled ? 1 : 0,
+                      });
+                      _loadData();
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: Text(AppLocalizations.of(context).opslaan),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _editMedicationReminderTime(int configId, String name, bool reminderEnabled, String currentTime) async {
     final parts = currentTime.split(':');
     TimeOfDay reminderTime = TimeOfDay(
@@ -700,8 +806,28 @@ class _MedicationScreenState extends State<MedicationScreen> {
               ],
             ),
             const SizedBox(width: 4),
+            _buildEditBtn(onPressed: () => _editMedication(config, configId!)),
             _buildDeleteBtn(onPressed: () => _deleteMedication(configId!)),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditBtn({required VoidCallback? onPressed}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 34, height: 34,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Theme.of(context).colorScheme.primary.withAlpha(25),
+          ),
+          child: Icon(Icons.edit_outlined, size: 18,
+              color: Theme.of(context).colorScheme.primary),
         ),
       ),
     );
