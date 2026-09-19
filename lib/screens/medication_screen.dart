@@ -19,6 +19,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _configs = [];
   Map<int, int> _intakesForDay = {};
+  Map<int, String> _intakeDoseringForDay = {}; // per-dag dosering snapshot
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -42,6 +43,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       final schedules = await db.getMedicationSchedules();
       final intakes = await db.getMedicationIntake(_formattedDate);
       Map<int, int> intakeMap = {};
+      Map<int, String> doseringMap = {};
       for (var intake in intakes) {
         dynamic rawMedId = intake['medication_id'];
         int? medId;
@@ -61,6 +63,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
         }
         if (medId != null) {
           intakeMap[medId] = aantal;
+          if (intake['dosering'] != null) {
+            doseringMap[medId] = intake['dosering'].toString();
+          }
         }
       }
 
@@ -94,6 +99,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       setState(() {
         _configs = mergedConfigs;
         _intakesForDay = intakeMap;
+        _intakeDoseringForDay = doseringMap;
         _isLoading = false;
       });
     } catch (e, stackTrace) {
@@ -691,7 +697,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
     if (configId == null) return SizedBox.shrink();
     int count = _intakesForDay[configId] ?? 0;
     String name = config['naam']?.toString() ?? AppLocalizations.of(context).onbekend;
-    String dosage = '${config['dosering']?.toString() ?? ''} ${config['eenheid']?.toString() ?? ''}';
+    // Per-dag dosering uit intake; anders huidige config (voor nieuwe dagen)
+    String dagDosering = _intakeDoseringForDay[configId] ?? config['dosering']?.toString() ?? '';
+    String dosage = '$dagDosering ${config['eenheid']?.toString() ?? ''}';
     bool reminderEnabled = (config['reminder_enabled']?.toString() ?? '1') == '1';
     String? reminderTime = config['reminder_time']?.toString();
     final taken = count > 0;
