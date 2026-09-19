@@ -877,11 +877,20 @@ class HiveDatabaseHelper implements DatabaseRepository {
           }
         });
         return cleanMap;
+      }).where((m) {
+        final del = m['deleted'];
+        return del == null || del == 0 || del == '0' || del == false;
       }).toList();
     } catch (e) {
       AppLogger.error('Error loading medication configs', error: e);
       return [];
     }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationConfigsAll() async {
+    // Hive backend: geen soft-delete filter, retourneer alles
+    return getMedicationConfigs();
   }
 
   // ===================

@@ -93,7 +93,7 @@ class RapportGenerator {
 
     // === 2. WEEKOVERZICHT (i.p.v. per-dag tabel) ===
     final dailyLogs = await db.getDailyLogs();
-    final medicationConfigs = await db.getMedicationConfigs();
+    final medicationConfigs = await db.getMedicationConfigsAll();
 
     double totalMood = 0;
     int moodCount = 0;
@@ -385,7 +385,7 @@ class RapportGenerator {
     report['episodes'] = episodes;
 
     // Medication
-    report['medication_configs'] = await db.getMedicationConfigs();
+    report['medication_configs'] = await db.getMedicationConfigsAll();
 
     return report;
   }

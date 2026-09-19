@@ -35,6 +35,7 @@ abstract class DatabaseRepository {
   Future<int> deleteMedicationConfig(int id);
   Future<int> updateMedicationConfig(int id, Map<String, dynamic> data);
   Future<List<Map<String, dynamic>>> getMedicationConfigs();
+  Future<List<Map<String, dynamic>>> getMedicationConfigsAll();
 
   // Medication Schedule
   Future<List<Map<String, dynamic>>> getMedicationSchedules();
