@@ -155,10 +155,35 @@ class _MedicationScreenState extends State<MedicationScreen> {
     try {
       final current = _intakesForDay[configId] ?? 0;
       final newVal = current > 0 ? 0 : 1;
+      // Behoud bestaande dosering als die er is; anders huidige config
+      final existingIntakes = await db.getMedicationIntake(_formattedDate);
+      final existing = existingIntakes.firstWhere(
+        (i) {
+          final rawId = i['medication_id'];
+          if (rawId is int) return rawId == configId;
+          if (rawId is String) return int.tryParse(rawId) == configId;
+          return false;
+        },
+        orElse: () => {},
+      );
+      String dosering = existing['dosering']?.toString() ?? '';
+      if (dosering.isEmpty) {
+        final config = _configs.firstWhere(
+          (c) {
+            final rawId = c['id'];
+            if (rawId is int) return rawId == configId;
+            if (rawId is String) return int.tryParse(rawId) == configId;
+            return false;
+          },
+          orElse: () => {},
+        );
+        dosering = config['dosering']?.toString() ?? '';
+      }
       await db.insertMedicationIntakeMap({
         'medication_id': configId,
         'date': _formattedDate,
         'aantal_ingenomen': newVal,
+        'dosering': dosering,
       });
       _loadData();
     } catch (e, stackTrace) {
