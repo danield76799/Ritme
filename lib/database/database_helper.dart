@@ -733,9 +733,10 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> deleteMedicationConfig(int id) async {
     final db = await database;
-    // Cascade delete: remove schedules and intakes first
+    // Historie (intakes) bewaren — alleen config + schedule verwijderen.
+    // Zo blijft het LCM-rapport intact. Intakes zonder config worden
+    // genegeerd bij dagelijkse check-in, maar tellen wel in rapporten.
     await db.delete('medication_schedule', where: 'medication_id = ?', whereArgs: [id]);
-    await db.delete('medication_intake', where: 'medication_id = ?', whereArgs: [id]);
     return await db.delete('medication_config', where: 'id = ?', whereArgs: [id]);
   }
 
