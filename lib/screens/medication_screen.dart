@@ -199,6 +199,47 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
+  Future<void> _editIntakeDosering(int configId, String medName, String currentDosering) async {
+    final controller = TextEditingController(text: currentDosering);
+    final confirmed = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return AlertDialog(
+          title: Text('$medName — dosering'),
+          content: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              hintText: 'Bijv. 5 of 2.5',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context).annuleer)),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: cs.primary, foregroundColor: cs.onPrimary),
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: Text(AppLocalizations.of(context).opslaan),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == null || confirmed.isEmpty) return;
+    try {
+      await db.insertMedicationIntakeMap({
+        'medication_id': configId,
+        'date': _formattedDate,
+        'aantal_ingenomen': _intakesForDay[configId] ?? 0,
+        'dosering': confirmed,
+      });
+      _loadData();
+    } catch (e) {
+      AppLogger.error('Failed to edit intake dosage', error: e);
+    }
+  }
+
   Future<void> _deleteMedication(int configId) async {
     try {
       final confirmed = await showDialog<bool>(
@@ -760,6 +801,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           ),
                           child: Text(dosage.trim().isEmpty ? '—' : dosage.trim(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodySmall?.color ?? AppTheme.textMedium)),
                         ),
+                        if (taken) ...[
+                          const SizedBox(width: 4),
+                          InkWell(
+                            onTap: () => _editIntakeDosering(configId!, name, dagDosering),
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              child: Icon(Icons.edit_rounded, size: 14, color: Theme.of(context).colorScheme.primary),
+                            ),
+                          ),
+                        ],
                         const SizedBox(width: 8),
                         if (reminderTime != null && reminderEnabled)
                           Icon(Icons.notifications_active_rounded, size: 14, color: Theme.of(context).colorScheme.primary)
