@@ -327,6 +327,19 @@ class DatabaseHelper implements DatabaseRepository {
         );
       } catch (_) {}
     }
+    if (oldVersion < 10) {
+      try {
+        // Back-vul ontbrekende doseringen met huidige config-dosering
+        await db.execute('''
+          UPDATE medication_intake
+          SET dosering = (
+            SELECT dosering FROM medication_config
+            WHERE medication_config.id = medication_intake.medication_id
+          )
+          WHERE dosering IS NULL OR dosering = ''
+        ''');
+      } catch (_) {}
+    }
     if (oldVersion < 5) {
       try {
         await db.execute('''
