@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -103,7 +103,8 @@ class DatabaseHelper implements DatabaseRepository {
         date TEXT NOT NULL,
         aantal_ingenomen INTEGER DEFAULT 0,
         dosering TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(medication_id, date)
       )
     ''');
 
@@ -307,6 +308,22 @@ class DatabaseHelper implements DatabaseRepository {
       try {
         await db.execute(
           'ALTER TABLE medication_intake ADD COLUMN dosering TEXT',
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 9) {
+      try {
+        // Verwijder dubbele rijen, behoud de nieuwste
+        await db.execute('''
+          DELETE FROM medication_intake
+          WHERE rowid NOT IN (
+            SELECT MAX(rowid)
+            FROM medication_intake
+            GROUP BY medication_id, date
+          )
+        ''');
+        await db.execute(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_intake_med_date ON medication_intake(medication_id, date)',
         );
       } catch (_) {}
     }
