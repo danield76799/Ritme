@@ -78,6 +78,35 @@ class BackupService {
       debugPrint('BackupService: error exporting SQLite settings - $e');
     }
 
+    // Export SQLite medication tables
+    try {
+      final medConfigs = await _db.getMedicationConfigsAll();
+      if (medConfigs.isNotEmpty) {
+        export['data']['sqlite_medication_config'] = medConfigs;
+        debugPrint('BackupService: exported ${medConfigs.length} medication configs from SQLite');
+      }
+    } catch (e) {
+      debugPrint('BackupService: error exporting SQLite medication_config - $e');
+    }
+    try {
+      final medSchedules = await _db.getMedicationSchedules();
+      if (medSchedules.isNotEmpty) {
+        export['data']['sqlite_medication_schedule'] = medSchedules;
+        debugPrint('BackupService: exported ${medSchedules.length} medication schedules from SQLite');
+      }
+    } catch (e) {
+      debugPrint('BackupService: error exporting SQLite medication_schedule - $e');
+    }
+    try {
+      final medIntakes = await _db.getMedicationIntakeRange('2000-01-01', '2099-12-31');
+      if (medIntakes.isNotEmpty) {
+        export['data']['sqlite_medication_intake'] = medIntakes;
+        debugPrint('BackupService: exported ${medIntakes.length} medication intakes from SQLite');
+      }
+    } catch (e) {
+      debugPrint('BackupService: error exporting SQLite medication_intake - $e');
+    }
+
     // Export Hive boxes
     final boxNames = [
       'settings',
@@ -280,6 +309,53 @@ class BackupService {
         debugPrint('BackupService: restored ${activities.length} SRM activities');
       } catch (e) {
         debugPrint('BackupService: error restoring SRM activities - $e');
+      }
+    }
+
+    // Restore SQLite medication tables
+    if (boxesData.containsKey('sqlite_medication_config')) {
+      try {
+        final configs = boxesData['sqlite_medication_config'] as List<dynamic>;
+        for (final config in configs) {
+          final map = config as Map<String, dynamic>;
+          await _db.insertMedicationConfig(
+            map['naam']?.toString() ?? '',
+            map['dosering']?.toString(),
+            map['eenheid']?.toString(),
+            reminderEnabled: map['reminder_enabled'] != 0,
+          );
+        }
+        debugPrint('BackupService: restored ${configs.length} medication configs');
+      } catch (e) {
+        debugPrint('BackupService: error restoring medication configs - $e');
+      }
+    }
+    if (boxesData.containsKey('sqlite_medication_schedule')) {
+      try {
+        final schedules = boxesData['sqlite_medication_schedule'] as List<dynamic>;
+        for (final sched in schedules) {
+          final map = sched as Map<String, dynamic>;
+          await _db.insertMedicationSchedule(
+            map['medication_id'] as int,
+            map['reminder_time']?.toString() ?? '',
+            map['days_of_week']?.toString() ?? '',
+          );
+        }
+        debugPrint('BackupService: restored ${schedules.length} medication schedules');
+      } catch (e) {
+        debugPrint('BackupService: error restoring medication schedules - $e');
+      }
+    }
+    if (boxesData.containsKey('sqlite_medication_intake')) {
+      try {
+        final intakes = boxesData['sqlite_medication_intake'] as List<dynamic>;
+        for (final intake in intakes) {
+          final map = intake as Map<String, dynamic>;
+          await _db.insertMedicationIntakeMap(map);
+        }
+        debugPrint('BackupService: restored ${intakes.length} medication intakes');
+      } catch (e) {
+        debugPrint('BackupService: error restoring medication intakes - $e');
       }
     }
 
