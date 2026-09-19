@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -80,6 +80,7 @@ class DatabaseHelper implements DatabaseRepository {
         dosering TEXT,
         eenheid TEXT,
         reminder_enabled INTEGER DEFAULT 0,
+        deleted INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -292,6 +293,13 @@ class DatabaseHelper implements DatabaseRepository {
             value TEXT
           )
         ''');
+      } catch (_) {}
+    }
+    if (oldVersion < 7) {
+      try {
+        await db.execute(
+          'ALTER TABLE medication_config ADD COLUMN deleted INTEGER DEFAULT 0',
+        );
       } catch (_) {}
     }
     if (oldVersion < 5) {
@@ -733,11 +741,15 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> deleteMedicationConfig(int id) async {
     final db = await database;
-    // Historie (intakes) bewaren — alleen config + schedule verwijderen.
-    // Zo blijft het LCM-rapport intact. Intakes zonder config worden
-    // genegeerd bij dagelijkse check-in, maar tellen wel in rapporten.
+    // Soft-delete: markeer als verwijderd zonder intake-historie te wissen.
+    // Schedules worden wel verwijderd (geen herinneringen meer nodig).
     await db.delete('medication_schedule', where: 'medication_id = ?', whereArgs: [id]);
-    return await db.delete('medication_config', where: 'id = ?', whereArgs: [id]);
+    return await db.update(
+      'medication_config',
+      {'deleted': 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   @override
@@ -749,7 +761,7 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<List<Map<String, dynamic>>> getMedicationConfigs() async {
     final db = await database;
-    return await db.query('medication_config');
+    return await db.query('medication_config', where: 'deleted = 0 OR deleted IS NULL');
   }
 
   // ===================
