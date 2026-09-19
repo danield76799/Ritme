@@ -134846,29 +134846,29 @@ return new A.P0(new A.b8(Date.now(),0,!1),A.b([],t.c),A.B(s,s),A.B(s,t.N))}}
 A.P0.prototype={
 az(){this.aK()
 this.jJ()},
-jJ(){var s=0,r=A.w(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3
-var $async$jJ=A.x(function(a4,a5){if(a4===1){p.push(a5)
+jJ(){var s=0,r=A.w(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5
+var $async$jJ=A.x(function(a6,a7){if(a6===1){p.push(a7)
 s=q}for(;;)switch(s){case 0:o.G(new A.aVJ(o))
 q=3
-a=$.ar
-if(a==null)A.E(A.Q(u.O))
+a0=$.ar
+if(a0==null)A.E(A.Q(u.O))
 s=6
-return A.j(a.DX(),$async$jJ)
-case 6:n=a5
-a=$.ar
-if(a==null)A.E(A.Q(u.O))
+return A.j(a0.DX(),$async$jJ)
+case 6:n=a7
+a0=$.ar
+if(a0==null)A.E(A.Q(u.O))
 s=7
-return A.j(a.yX(),$async$jJ)
-case 7:m=a5
-a=$.ar
-if(a==null)A.E(A.Q(u.O))
+return A.j(a0.yX(),$async$jJ)
+case 7:m=a7
+a0=$.ar
+if(a0==null)A.E(A.Q(u.O))
 s=8
-return A.j(a.rL(A.f1("yyyy-MM-dd",null).e6(o.d)),$async$jJ)
-case 8:l=a5
-a=t.S
-k=A.B(a,a)
-j=A.B(a,t.N)
-for(a=J.bc(l);a.v();){i=a.gS(a)
+return A.j(a0.rL(A.f1("yyyy-MM-dd",null).e6(o.d)),$async$jJ)
+case 8:l=a7
+a0=t.S
+k=A.B(a0,a0)
+j=A.B(a0,t.N)
+for(a0=J.bc(l);a0.v();){i=a0.gS(a0)
 h=J.y(i,"medication_id")
 g=null
 if(A.cb(h))g=h
@@ -134876,22 +134876,24 @@ else if(typeof h=="string")g=A.bh(h,null)
 f=J.y(i,"aantal_ingenomen")
 e=null
 if(A.cb(f))e=f
-else if(typeof f=="string"){a0=A.bh(f,null)
-e=a0==null?0:a0}else e=0
+else if(typeof f=="string"){a1=A.bh(f,null)
+e=a1==null?0:a1}else e=0
 if(g!=null){J.be(k,g,e)
-if(J.y(i,"dosering")!=null)J.be(j,g,J.a2(J.y(i,"dosering")))}}a=J.fq(n,new A.aVK(m),t.P)
-a1=A.a0(a,a.$ti.h("aK.E"))
-d=a1
-o.G(new A.aVL(o,d,k,j))
+a2=J.y(i,"dosering")
+d=a2==null?null:J.a2(a2)
+if(d!=null&&d.length!==0)J.be(j,g,d)}}a0=J.fq(n,new A.aVK(m),t.P)
+a3=A.a0(a0,a0.$ti.h("aK.E"))
+c=a3
+o.G(new A.aVL(o,c,k,j))
 q=1
 s=5
 break
 case 3:q=2
-a3=p.pop()
-c=A.ac(a3)
-b=A.b7(a3)
-A.cO("Failed to load medication data",c,b)
-o.G(new A.aVM(o,c))
+a5=p.pop()
+b=A.ac(a5)
+a=A.b7(a5)
+A.cO("Failed to load medication data",b,a)
+o.G(new A.aVM(o,b))
 s=5
 break
 case 2:s=1
