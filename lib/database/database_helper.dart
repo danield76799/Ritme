@@ -772,6 +772,12 @@ class DatabaseHelper implements DatabaseRepository {
     return await db.query('medication_config', where: 'deleted = 0 OR deleted IS NULL');
   }
 
+  @override
+  Future<List<Map<String, dynamic>>> getMedicationConfigsAll() async {
+    final db = await database;
+    return await db.query('medication_config');
+  }
+
   // ===================
   // MEDICATION SCHEDULE
   // ===================
