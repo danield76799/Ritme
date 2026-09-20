@@ -129670,14 +129670,14 @@ gEH(){return"Normal energy level"},
 gEE(){return"Tired earlier than usual"},
 gED(){return"Tired from almost everything"},
 gEG(){return"Too tired to do anything"},
-gNv(){return"+4 \u2014 No need for sleep at all / barely slept and still not tired"},
-gNA(){return"+3 \u2014 Clearly less sleep needed than usual, little fatigue"},
-gNu(){return"+2 \u2014 Less sleep needed than usual"},
-gNy(){return"+1 \u2014 Slightly less sleep or slightly less need for sleep than usual"},
+gNA(){return"+4 \u2014 No need for sleep at all / barely slept and still not tired"},
+gNz(){return"+3 \u2014 Clearly less sleep needed than usual, little fatigue"},
+gNy(){return"+2 \u2014 Less sleep needed than usual"},
+gNx(){return"+1 \u2014 Slightly less sleep or slightly less need for sleep than usual"},
 ga_x(){return"0 \u2014 Normal sleep and normal sleep need for me"},
-gNx(){return"\u20141 \u2014 Slightly more sleep needed than usual / slightly more tired"},
-gNt(){return"\u20142 \u2014 Clearly more sleep needed than usual"},
-gNz(){return"\u20143 \u2014 Much more sleep needed, or sleep is not very restorative"},
+gNt(){return"\u20141 \u2014 Slightly more sleep needed than usual / slightly more tired"},
+gNu(){return"\u20142 \u2014 Clearly more sleep needed than usual"},
+gNv(){return"\u20143 \u2014 Much more sleep needed, or sleep is not very restorative"},
 gNw(){return"\u20144 \u2014 Barely slept due to severe sleep problems, or extreme sleeping/sleepiness"},
 ga_y(){return"Close"},
 ga_t(){return"Already filled in"},
@@ -130158,14 +130158,14 @@ gEH(){return"Normaal energie level"},
 gEE(){return"Eerder moe dan normaal"},
 gED(){return"Ik word moe van bijna alles"},
 gEG(){return"Te moe om ook maar iets te doen"},
-gNv(){return"+4 \u2014 Helemaal geen behoefte aan slaap / vrijwel niet geslapen en toch niet moe"},
-gNA(){return"+3 \u2014 Duidelijk minder slaap nodig dan normaal, weinig vermoeid"},
-gNu(){return"+2 \u2014 Minder slaap nodig dan normaal"},
-gNy(){return"+1 \u2014 Iets minder slaap of iets minder behoefte aan slaap dan normaal"},
+gNA(){return"+4 \u2014 Helemaal geen behoefte aan slaap / vrijwel niet geslapen en toch niet moe"},
+gNz(){return"+3 \u2014 Duidelijk minder slaap nodig dan normaal, weinig vermoeid"},
+gNy(){return"+2 \u2014 Minder slaap nodig dan normaal"},
+gNx(){return"+1 \u2014 Iets minder slaap of iets minder behoefte aan slaap dan normaal"},
 ga_x(){return"0 \u2014 Normale slaap en normale slaapbehoefte voor mij"},
-gNx(){return"\u20141 \u2014 Iets meer slaap nodig dan normaal / iets vermoeider"},
-gNt(){return"\u20142 \u2014 Duidelijk meer slaap nodig dan normaal"},
-gNz(){return"\u20143 \u2014 Veel meer slaap nodig, of slaap is weinig herstellend"},
+gNt(){return"\u20141 \u2014 Iets meer slaap nodig dan normaal / iets vermoeider"},
+gNu(){return"\u20142 \u2014 Duidelijk meer slaap nodig dan normaal"},
+gNv(){return"\u20143 \u2014 Veel meer slaap nodig, of slaap is weinig herstellend"},
 gNw(){return"\u20144 \u2014 Nauwelijks geslapen door ernstige slaapproblemen \xf3f extreem veel slapen/slaperigheid"},
 ga_y(){return"Sluiten"},
 ga_t(){return"Al ingevuld"},
@@ -136207,7 +136207,7 @@ auU(a){var s=this
 switch(s.d){case 0:return new A.xT(a.gET(),a.ga_A(),A.b([new A.dm(a.gMb(),4,A.dK(4)),new A.dm(a.gJm(),3,A.dK(3)),new A.dm(a.gJf(),2,A.dK(2)),new A.dm(a.gKo(),1,A.dK(1)),new A.dm(a.gEA(),0,A.dK(0)),new A.dm(a.gEz(),-1,A.dK(-1)),new A.dm(a.gKe(),-2,A.dK(-2)),new A.dm(a.gKn(),-3,A.dK(-3)),new A.dm(a.gJl(),-4,A.dK(-4))],t.eC),s.f,new A.aWu(s),B.bk6)
 case 1:return new A.agD(a.gEU(),a.gND(),a.gNC(),a.gNE(),s.r,new A.aWv(s),B.bk7)
 case 2:return new A.xT(a.gEV(),a.ga_B(),A.b([new A.dm(a.gEJ(),3,A.dK(3)),new A.dm(a.gEI(),2,A.dK(2)),new A.dm(a.gEF(),1,A.dK(1)),new A.dm(a.gEH(),0,A.dK(0)),new A.dm(a.gEE(),-1,A.dK(-1)),new A.dm(a.gED(),-2,A.dK(-2)),new A.dm(a.gEG(),-3,A.dK(-3))],t.eC),s.w,new A.aWw(s),B.bk8)
-case 3:return new A.xT(a.gEW(),a.gNF(),A.b([new A.dm(a.gNv(),4,A.dK(4)),new A.dm(a.gNA(),3,A.dK(3)),new A.dm(a.gNu(),2,A.dK(2)),new A.dm(a.gNy(),1,A.dK(1)),new A.dm(a.ga_x(),0,A.dK(0)),new A.dm(a.gNx(),-1,A.dK(-1)),new A.dm(a.gNt(),-2,A.dK(-2)),new A.dm(a.gNz(),-3,A.dK(-3)),new A.dm(a.gNw(),-4,A.dK(-4))],t.eC),s.x,new A.aWx(s),B.bk9)
+case 3:return new A.xT(a.gEW(),a.gNF(),A.b([new A.dm(a.gNA(),4,A.dK(4)),new A.dm(a.gNz(),3,A.dK(3)),new A.dm(a.gNy(),2,A.dK(2)),new A.dm(a.gNx(),1,A.dK(1)),new A.dm(a.ga_x(),0,A.dK(0)),new A.dm(a.gNt(),-1,A.dK(-1)),new A.dm(a.gNu(),-2,A.dK(-2)),new A.dm(a.gNv(),-3,A.dK(-3)),new A.dm(a.gNw(),-4,A.dK(-4))],t.eC),s.x,new A.aWx(s),B.bk9)
 case 4:return new A.xT(a.gEX(),a.gNG(),A.b([new A.dm(a.gEL(),4,A.dK(4)),new A.dm(a.gEQ(),3,A.dK(3)),new A.dm(a.gER(),2,A.dK(2)),new A.dm(a.gEN(),1,A.dK(1)),new A.dm(a.gt1(),0,A.dK(0)),new A.dm(a.gEM(),-1,A.dK(-1)),new A.dm(a.gEP(),-2,A.dK(-2)),new A.dm(a.gEO(),-3,A.dK(-3)),new A.dm(a.gEK(),-4,A.dK(-4))],t.eC),s.y,new A.aWy(s),B.bka)
 default:return B.bK}}}
 A.aWz.prototype={
@@ -136765,14 +136765,14 @@ p=q-r-n.ax
 if(p<=0)p+=1440
 l=p
 return l/60}catch(o){return m}},
-aJx(a,b){switch(B.n.cj(b)){case 4:return a.gNv()
-case 3:return a.gNA()
-case 2:return a.gNu()
-case 1:return a.gNy()
+aJx(a,b){switch(B.n.cj(b)){case 4:return a.gNA()
+case 3:return a.gNz()
+case 2:return a.gNy()
+case 1:return a.gNx()
 case 0:return a.gt1()
-case-1:return a.gNx()
-case-2:return a.gNt()
-case-3:return a.gNz()
+case-1:return a.gNt()
+case-2:return a.gNu()
+case-3:return a.gNv()
 case-4:return a.gNw()
 default:return B.n.j(b)}},
 aFG(a,b){switch(b){case 1:return a.gWp()
