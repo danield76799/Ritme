@@ -464,47 +464,47 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
           subtitle: l10n.stemmingsCheckVraag4Ondertitel,
           options: [
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaapGeen,
+              label: l10n.stemmingsCheckOptieSlaapPlus4,
               value: 4,
               color: _getStemmingColor(4),
             ),
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaapVerminderd,
+              label: l10n.stemmingsCheckOptieSlaapPlus3,
               value: 3,
               color: _getStemmingColor(3),
             ),
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaap1UurKorter,
+              label: l10n.stemmingsCheckOptieSlaapPlus2,
               value: 2,
               color: _getStemmingColor(2),
             ),
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaapTot1UurKorter,
+              label: l10n.stemmingsCheckOptieSlaapPlus1,
               value: 1,
               color: _getStemmingColor(1),
             ),
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaapEvenGoed,
+              label: l10n.stemmingsCheckOptieSlaapNul,
               value: 0,
               color: _getStemmingColor(0),
             ),
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaapNietZoGoed,
+              label: l10n.stemmingsCheckOptieSlaapMin1,
               value: -1,
               color: _getStemmingColor(-1),
             ),
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaap12UurEerder,
+              label: l10n.stemmingsCheckOptieSlaapMin2,
               value: -2,
               color: _getStemmingColor(-2),
             ),
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaapUrenEerder,
+              label: l10n.stemmingsCheckOptieSlaapMin3,
               value: -3,
               color: _getStemmingColor(-3),
             ),
             _ChoiceOption(
-              label: l10n.stemmingsCheckOptieSlaapNietTot,
+              label: l10n.stemmingsCheckOptieSlaapMin4,
               value: -4,
               color: _getStemmingColor(-4),
             ),

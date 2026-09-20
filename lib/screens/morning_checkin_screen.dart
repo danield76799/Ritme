@@ -531,15 +531,15 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
 
   String _q4Label(AppLocalizations l10n, double v) {
     switch (v.toInt()) {
-      case 4: return l10n.stemmingsCheckOptieSlaapGeen;
-      case 3: return l10n.stemmingsCheckOptieSlaapVerminderd;
-      case 2: return l10n.stemmingsCheckOptieSlaap1UurKorter;
-      case 1: return l10n.stemmingsCheckOptieSlaapTot1UurKorter;
+      case 4: return l10n.stemmingsCheckOptieSlaapPlus4;
+      case 3: return l10n.stemmingsCheckOptieSlaapPlus3;
+      case 2: return l10n.stemmingsCheckOptieSlaapPlus2;
+      case 1: return l10n.stemmingsCheckOptieSlaapPlus1;
       case 0: return l10n.stemmingsCheckOptieNeutraal;
-      case -1: return l10n.stemmingsCheckOptieSlaapNietZoGoed;
-      case -2: return l10n.stemmingsCheckOptieSlaap12UurEerder;
-      case -3: return l10n.stemmingsCheckOptieSlaapUrenEerder;
-      case -4: return l10n.stemmingsCheckOptieSlaapNietTot;
+      case -1: return l10n.stemmingsCheckOptieSlaapMin1;
+      case -2: return l10n.stemmingsCheckOptieSlaapMin2;
+      case -3: return l10n.stemmingsCheckOptieSlaapMin3;
+      case -4: return l10n.stemmingsCheckOptieSlaapMin4;
       default: return v.toString();
     }
   }
