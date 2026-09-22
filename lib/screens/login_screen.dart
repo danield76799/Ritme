@@ -564,7 +564,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 foregroundColor: Theme.of(context).colorScheme.primary,
                                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                                   side: BorderSide(color: Theme.of(context).colorScheme.primary),
                                 ),
                               ),
@@ -608,10 +608,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     : AppLocalizations.of(context).voerJePinIn,
                                 prefixIcon: const Icon(Icons.pin),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                                   borderSide: BorderSide(
                                     color: Theme.of(context).colorScheme.primary,
                                     width: 2,
@@ -628,7 +628,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   // Gefixte light-tinten vielen uit elkaar
                                   // in dark mode: dangerOn kiest per mode.
                                   color: AppTheme.dangerOn(Theme.of(context).brightness).withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                                   border: Border.all(color: AppTheme.dangerOn(Theme.of(context).brightness).withValues(alpha: 0.4)),
                                 ),
                                 child: Row(
@@ -655,7 +655,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   backgroundColor: Theme.of(context).colorScheme.primary,
                                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                                   ),
                                 ),
                                 onPressed: _login,

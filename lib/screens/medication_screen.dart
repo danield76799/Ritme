@@ -139,7 +139,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 // AppTheme.success haalt 5.13:1.
                 backgroundColor: AppTheme.success,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -212,7 +212,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
               hintText: 'Bijv. 5 of 2.5',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
             ),
           ),
           actions: [
@@ -296,8 +296,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         labelStyle: TextStyle(color: labelColor),
                         filled: true,
                         fillColor: cs.surfaceContainerHighest,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
                       ),
                       onChanged: (v) => name = v,
                     ),
@@ -314,8 +314,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               labelStyle: TextStyle(color: labelColor),
                               filled: true,
                               fillColor: cs.surfaceContainerHighest,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
                             ),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             onChanged: (v) => dosage = double.tryParse(v.replaceAll(',', '.')) ?? 0,
@@ -333,8 +333,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               labelStyle: TextStyle(color: labelColor),
                               filled: true,
                               fillColor: cs.surfaceContainerHighest,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
                             ),
                             items: ['mg', 'ml', 'stuks', 'µg', 'IE']
@@ -496,8 +496,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         labelStyle: TextStyle(color: labelColor),
                         filled: true,
                         fillColor: cs.surfaceContainerHighest,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
                       ),
                       onChanged: (v) => name = v,
                     ),
@@ -514,8 +514,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               labelStyle: TextStyle(color: labelColor),
                               filled: true,
                               fillColor: cs.surfaceContainerHighest,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
                             ),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             onChanged: (v) => dosage = double.tryParse(v.replaceAll(',', '.')) ?? 0,
@@ -533,8 +533,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               labelStyle: TextStyle(color: labelColor),
                               filled: true,
                               fillColor: cs.surfaceContainerHighest,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
                             ),
                             items: ['mg', 'ml', 'stuks', 'µg', 'IE']
@@ -571,8 +571,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             labelStyle: TextStyle(color: labelColor),
                             filled: true,
                             fillColor: cs.surfaceContainerHighest,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outline)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
                           ),
                           child: Text(
                             reminderTime == null
@@ -830,12 +830,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => _toggleIntake(configId!),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                       decoration: BoxDecoration(
                         color: taken ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -867,7 +867,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 // Herinnering-tijd (tappable)
                 InkWell(
                   onTap: () => _editMedicationReminderTime(configId!, name, reminderEnabled, reminderTime ?? '08:00'),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     child: Row(
@@ -906,7 +906,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         child: Container(
           width: 34, height: 34,
           decoration: BoxDecoration(
@@ -925,7 +925,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         child: Container(
           width: 34, height: 34,
           decoration: BoxDecoration(

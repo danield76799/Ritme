@@ -264,7 +264,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                         label: Text(AppLocalizations.of(context).kopieer(_lastDate!), style: TextStyle(color: AppTheme.infoOn(Theme.of(context).brightness))),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: AppTheme.infoOn(Theme.of(context).brightness).withValues(alpha: 0.55)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
@@ -309,7 +309,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                 ),
                 child: _isSaving
                     ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
@@ -330,7 +330,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         color: isPresent
             ? AppTheme.streakText(Theme.of(context).brightness).withValues(alpha: 0.10)
             : Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         border: Border.all(
           color: isPresent
               ? AppTheme.streakText(Theme.of(context).brightness).withValues(alpha: 0.55)
@@ -338,7 +338,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
         ),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         onTap: () {
           setState(() {
             final newPresent = isPresent ? 0 : 1;
@@ -374,7 +374,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: (severity >= 3 ? AppTheme.dangerOn(Theme.of(context).brightness) : severity == 2 ? AppTheme.streakText(Theme.of(context).brightness) : AppTheme.successOn(Theme.of(context).brightness)).withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                     ),
                     child: Text(
                       severity >= 3 ? AppLocalizations.of(context).ernstig : severity == 2 ? AppLocalizations.of(context).matig : AppLocalizations.of(context).licht,
@@ -421,7 +421,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
           maxLines: 3,
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context).beschrijfHoeVoortekenZich,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
           ),
         ),
         actions: [

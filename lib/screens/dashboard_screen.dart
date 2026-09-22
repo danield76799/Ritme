@@ -540,11 +540,18 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                       ),
                     ),
                     const SizedBox(height: 14),
+                    // De twee tijdchips moeten kunnen krimpen: met vaste
+                    // breedte liep deze Row op een smal toestel over
+                    // (gemeten: 133 px op 412dp, tot 224 px op 320dp).
                     Row(
                       children: [
-                        _buildTimeChip(Icons.wb_sunny_outlined, AppLocalizations.of(context).opstaan, _settings?['target_opstaan'] ?? '08:00', isDark),
+                        Expanded(
+                          child: _buildTimeChip(Icons.wb_sunny_outlined, AppLocalizations.of(context).opstaan, _settings?['target_opstaan'] ?? '08:00', isDark),
+                        ),
                         const SizedBox(width: 8),
-                        _buildTimeChip(Icons.bedtime, AppLocalizations.of(context).slapen, _settings?['target_slapen'] ?? '23:00', isDark),
+                        Expanded(
+                          child: _buildTimeChip(Icons.bedtime, AppLocalizations.of(context).slapen, _settings?['target_slapen'] ?? '23:00', isDark),
+                        ),
                       ],
                     ),
                   ],
@@ -561,18 +568,30 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
               // Datum-picker + dagstatus-metertje + streak-chip
               Row(children: [
-                GestureDetector(
-                  onTap: () => _selectDate(context),
-                  child: Row(children: [
-                    Text(
-                      _formatSelectedDate(context),
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                // Expanded (i.p.v. Spacer): de datum mag krimpen met ellipsis
+                // in plaats van de Row te laten overlopen. Gemeten: 76 px
+                // overflow op 320dp met de lange datumnotatie.
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _selectDate(context),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            _formatSelectedDate(context),
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.calendar_today, size: 18, color: Theme.of(context).colorScheme.primary),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    Icon(Icons.calendar_today, size: 18, color: Theme.of(context).colorScheme.primary),
-                  ]),
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 _DagStatusMeter(
                   gelogd: _checkinTypes.length,
                   totaal: 4,
@@ -607,11 +626,27 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
               Row(
                 children: [
-                  Text(AppLocalizations.of(context).overzicht, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                  const Spacer(),
+                  // Flexible: "Overzicht" + tijdstempel past niet op 320dp
+                  // (gemeten: 115 px overflow). De kop krimpt nu met ellipsis.
+                  Flexible(
+                    child: Text(
+                      AppLocalizations.of(context).overzicht,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   if (_lastUpdated != null)
-                    Text(_formatLastUpdated(context),
-                        style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context))),
+                    Flexible(
+                      child: Text(
+                        _formatLastUpdated(context),
+                        style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -677,7 +712,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.orange.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -800,14 +835,23 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor.withValues(alpha: 0.20),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
           SizedBox(width: 8),
-          Text(AppLocalizations.of(context).labelEnTijd(label, time), style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w600)),
+          // Flexible zodat een lange label+tijd-combinatie kan krimpen in
+          // plaats van de Row te laten overlopen.
+          Flexible(
+            child: Text(
+              AppLocalizations.of(context).labelEnTijd(label, time),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w600),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
         ],
       ),
     );
@@ -841,19 +885,36 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         return InkWell(
           onTap: () => openContainer(),
           borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TileIconBadge(
-                icon: icon,
-                accent: accent,
-                size: 60,
-                iconSize: 28,
-                isCompleted: isCompleted,
-              ),
-              const SizedBox(height: 12),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16), textAlign: TextAlign.center),
-            ],
+          // FittedBox: de tegelinhoud (badge 60px + label) past niet in elke
+          // tegelmaat. Gemeten: 21 px verticale overflow op 320dp, waar het
+          // label naar 2 regels wikkelt. scaleDown krimpt de inhoud dan in
+          // plaats van hem onzichtbaar af te snijden.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TileIconBadge(
+                  icon: icon,
+                  accent: accent,
+                  size: 60,
+                  iconSize: 28,
+                  isCompleted: isCompleted,
+                ),
+                const SizedBox(height: 12),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 120),
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -940,7 +1001,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         border: Border.all(color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning.withValues(alpha: 0.5)),
       ),
       child: Column(
@@ -1013,7 +1074,7 @@ class _DagStatusMeter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

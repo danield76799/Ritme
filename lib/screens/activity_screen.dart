@@ -180,7 +180,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           content: Text(AppLocalizations.of(context).jeKuntGeenActiviteiten),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
         ),
       );
       return;
@@ -289,7 +289,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               ),
               backgroundColor: Theme.of(context).colorScheme.primary,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -348,7 +348,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             content: Text(AppLocalizations.of(context).konActiviteitOpslaanProbeer),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
           ),
         );
       }
@@ -513,7 +513,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             content: Text(AppLocalizations.of(context).slaapduurMetUren(_formatSleepDuration(context, sleepHours))),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -647,7 +647,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.smallRadius),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -714,12 +714,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
     
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: hasValue ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.05) : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.smallRadius),
           border: Border.all(
             color: hasValue ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3) : Colors.grey.shade300!,
             width: 1.5,
@@ -736,7 +736,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 color: hasValue
                     ? AppTheme.accentOn(Theme.of(context).brightness)
                     : Colors.grey.shade600,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.smallRadius),
               ),
               child: Icon(icon, size: 18,
                   color: Theme.of(context).colorScheme.onPrimary),
@@ -760,7 +760,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: hasValue ? FontWeight.w600 : FontWeight.normal,
-                      color: hasValue ? Colors.black : Colors.grey.shade400,
+                      color: hasValue ? AppTheme.primaryText(context) : AppTheme.placeholderText(context),
                     ),
                   ),
                 ],
@@ -823,7 +823,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         border: Border.all(
           color: isDone ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3) : Colors.grey.shade100,
         ),
@@ -832,7 +832,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _toggleActivity(index),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.smallRadius),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
@@ -842,7 +842,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   height: 40,
                   decoration: BoxDecoration(
                     color: isDone ? Theme.of(context).colorScheme.primary : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                   ),
                   child: Icon(
                     icoon,
@@ -860,7 +860,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: isDone ? Colors.black : Colors.grey.shade700,
+                          color: isDone ? AppTheme.primaryText(context) : AppTheme.mutedText(context),
                         ),
                       ),
                       const SizedBox(height: 2),

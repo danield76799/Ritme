@@ -38,8 +38,16 @@ Future<void> initDatabase() async {
   if (_db != null) return; // Already initialized
   
   AppLogger.debug('initDatabase: starting...');
-  AppLogger.debug('initDatabase: kIsWeb=$kIsWeb, Platform.isAndroid=${Platform.isAndroid}, Platform.isIOS=${Platform.isIOS}');
-  
+  // Let op: Platform.isAndroid/isIOS GOOIT op web (Unsupported operation:
+  // Platform._operatingSystem). Deze regel stond vóór de kIsWeb-check en
+  // liet de webversie crashen bij het opstarten — nog vóór de eerste regel
+  // van de try. Daarom alleen loggen als we niet op web zitten.
+  if (kIsWeb) {
+    AppLogger.debug('initDatabase: kIsWeb=true (platform-check overgeslagen)');
+  } else {
+    AppLogger.debug('initDatabase: kIsWeb=false, Platform.isAndroid=${Platform.isAndroid}, Platform.isIOS=${Platform.isIOS}');
+  }
+
   try {
     if (kIsWeb) {
       AppLogger.debug('initDatabase: using Hive for web');

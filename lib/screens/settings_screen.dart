@@ -106,7 +106,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                   child: Text(
@@ -134,7 +134,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
       height: 180,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
       ),
       child: ListWheelScrollView.useDelegate(
         itemExtent: 50,
@@ -159,7 +159,7 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                 style: TextStyle(
                   fontSize: isSelected ? 28 : 20,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Theme.of(context).colorScheme.primary : Colors.black54,
+                  color: isSelected ? Theme.of(context).colorScheme.primary : AppTheme.mutedText(context),
                 ),
               ),
             );
@@ -268,7 +268,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.w600)),
           backgroundColor: Colors.green[700],
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
           duration: Duration(seconds: 2),
         ),
       );
@@ -282,7 +282,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.w600)),
           backgroundColor: Colors.red[700],
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -467,7 +467,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     content: Text(AppLocalizations.of(context).backupOpgeslagen(backupPath)),
                     backgroundColor: Colors.green[700],
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -479,7 +479,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     content: Text(AppLocalizations.of(context).backupError(e)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -507,7 +507,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       content: Text(AppLocalizations.of(context).backupSuccesvolHersteld),
                       backgroundColor: Colors.green[700],
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                       duration: const Duration(seconds: 3),
                     ),
                   );
@@ -521,7 +521,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     content: Text(AppLocalizations.of(context).herstelError(e)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -580,7 +580,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -771,7 +771,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         border: Border.all(
           color: aan
               ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
@@ -869,7 +869,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -917,7 +917,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -935,7 +935,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           labelText: label,
           labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.smallRadius),
             borderSide: BorderSide.none,
           ),
           filled: true,
@@ -955,7 +955,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -979,7 +979,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         trailing: Icon(Icons.access_time, color: Theme.of(context).colorScheme.primary),
         onTap: () => _showTimePicker(label, key, onSaved: onSaved),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
       ),
     );
   }
@@ -1002,7 +1002,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           foregroundColor: Theme.of(context).colorScheme.onSurface,
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
           elevation: 0,
         ),
       ),

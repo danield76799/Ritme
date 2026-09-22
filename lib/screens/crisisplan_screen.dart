@@ -199,15 +199,15 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                         ? AppTheme.darkCard
                         : theme.colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                       borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                       borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                       borderSide:
                           BorderSide(color: theme.colorScheme.primary, width: 2),
                     ),
@@ -234,7 +234,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                     ),
                   ),
                   child: Text(
@@ -368,7 +368,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                             ),
                             child: Icon(_sectionIcon(sectionKey),
                                 color: color, size: 22),
@@ -467,7 +467,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: c.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                         ),
                         child: Icon(_sectionIcon(def.section), color: c, size: 20),
                       ),
@@ -491,7 +491,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.blueGrey.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                       ),
                       child: const Icon(Icons.add, color: Colors.blueGrey, size: 20),
                     ),
@@ -555,7 +555,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                     borderSide: BorderSide.none,
                   ),
                 ),
@@ -572,7 +572,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                     filled: true,
                     fillColor: theme.colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                       borderSide: BorderSide.none,
                     ),
                   ),
