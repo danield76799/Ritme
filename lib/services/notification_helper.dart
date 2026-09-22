@@ -18,6 +18,21 @@ class NotificationHelper {
   /// vooraan staat; daarna wordt het gewist.
   String? _pendingCheckinRoute;
 
+  /// Is [initialize] al gedraaid in deze isolate?
+  ///
+  /// WAAROM DIT NODIG IS
+  /// `initialize()` wordt twee keer aangeroepen: eenmaal in `main.dart` bij
+  /// het opstarten en eenmaal vanuit het dashboard (`_setupNotifications`).
+  /// De tweede aanroep las de launch-details van de plugin opnieuw.
+  /// `getNotificationAppLaunchDetails()` bepaalt "is de app vanuit een
+  /// notificatie gestart" uit `mainActivity.getIntent()`, en die intent blijft
+  /// de notificatie-intent zolang er geen nieuwe intent komt (de plugin zet
+  /// hem alleen in `onNewIntent`). De payload werd daardoor een tweede keer
+  /// verwerkt, zette `_pendingCheckinRoute` nóg eens klaar, en de volgende
+  /// resume pushte het check-in scherm opnieuw — een leeg scherm met
+  /// terug-pijl, precies waar de gebruiker net "Opslaan & sluiten" had gedrukt.
+  bool _initialized = false;
+
   /// Pakt (en wist) de wachtende check-in route, of null als er niets wacht.
   String? consumePendingCheckinRoute() {
     final route = _pendingCheckinRoute;
@@ -97,6 +112,11 @@ class NotificationHelper {
 
   Future<void> initialize() async {
     if (kIsWeb) return;
+    // Idempotent: main.dart én het dashboard roepen dit aan. Zonder deze guard
+    // leest de tweede aanroep de launch-details opnieuw en zet de check-in
+    // route nog eens klaar — zie de uitleg bij _initialized.
+    if (_initialized) return;
+    _initialized = true;
 
     try {
       await _ensureTimeZoneInitialized();
