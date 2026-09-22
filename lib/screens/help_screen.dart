@@ -151,7 +151,7 @@ class _HelpScreenState extends State<HelpScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         border: Border.all(
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
         ),
@@ -208,7 +208,7 @@ class _HelpScreenState extends State<HelpScreen> {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.smallRadius),
           ),
           child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 22),
         ),
@@ -323,7 +323,7 @@ class _HelpScreenState extends State<HelpScreen> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.smallRadius),
           border: Border.all(
             color: color.withValues(alpha: 0.3),
           ),

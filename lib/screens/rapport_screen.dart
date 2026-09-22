@@ -95,7 +95,7 @@ class _RapportScreenState extends State<RapportScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                 ),
               ),
             ),
@@ -120,7 +120,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.success,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                   ),
                 ),
               ),
@@ -139,7 +139,7 @@ class _RapportScreenState extends State<RapportScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                     foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                   ),
                 ),
               ),

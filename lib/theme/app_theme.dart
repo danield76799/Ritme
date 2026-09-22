@@ -70,6 +70,39 @@ class AppTheme {
   static Color secondaryText(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkTextSecondary : textMedium;
 
+  /// Primaire tekstkleur die in BEIDE modes leesbaar is.
+  ///
+  /// Gebruik dit in plaats van `Colors.black` of `Colors.black54` voor tekst
+  /// op een thema-afhankelijke ondergrond: zwart haalt op de donkere kaart
+  /// (#223236) maar 1.58:1 en is dan onzichtbaar. In light mode is [textCharcoal]
+  /// juist de juiste keuze (>=13:1 op wit).
+  static Color primaryText(BuildContext context) =>
+      primaryTextOn(Theme.of(context).brightness);
+
+  static Color primaryTextOn(Brightness brightness) =>
+      brightness == Brightness.dark ? darkText : textCharcoal;
+
+  /// Gedempte tekst/icoonkleur die in BEIDE modes >=4.5:1 haalt.
+  ///
+  /// `Colors.black54` op donker geeft 1.36:1 — vrijwel onzichtbaar. In light
+  /// mode is [textMedium] donker genoeg en duidelijk secundair.
+  static Color mutedText(BuildContext context) =>
+      mutedTextOn(Theme.of(context).brightness);
+
+  static Color mutedTextOn(Brightness brightness) =>
+      brightness == Brightness.dark ? darkTextSecondary : textMedium;
+
+  /// Kleur voor een UITSTAANDE/lege waarde ("nog niets ingevuld").
+  ///
+  /// `Colors.grey.shade400` haalt op licht 1.78:1 en op donker 3.9:1 — beide
+  /// onder de norm voor tekst. Deze tint is bewust zwakker dan [mutedText],
+  /// maar blijft leesbaar.
+  static Color placeholderText(BuildContext context) =>
+      placeholderTextOn(Theme.of(context).brightness);
+
+  static Color placeholderTextOn(Brightness brightness) =>
+      brightness == Brightness.dark ? const Color(0xFF8A9BA0) : const Color(0xFF6B7B80);
+
   /// Accent-teal die in BEIDE modes leesbaar is.
   ///
   /// #4FB2C1 werkt alleen op donker (5.37:1) en #2F7A85 alleen op licht

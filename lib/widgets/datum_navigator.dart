@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../generated/l10n/app_localizations.dart';
+import '../theme/app_theme.dart';
 
 class DatumNavigator extends StatelessWidget {
   final DateTime geselecteerdeDatum;
@@ -68,7 +69,7 @@ class DatumNavigator extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),

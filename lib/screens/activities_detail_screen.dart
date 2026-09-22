@@ -367,7 +367,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                   ),
                   child: Text(
                     AppLocalizations.of(context).activiteitenCount(day['count']),

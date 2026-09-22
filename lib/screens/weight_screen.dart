@@ -86,7 +86,7 @@ class _WeightScreenState extends State<WeightScreen> {
                   labelText: AppLocalizations.of(context).gewichtKgGebruikPunt,
                   hintText: AppLocalizations.of(context).bijv1015,
                   prefixIcon: const Icon(Icons.monitor_weight),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                 ),
               ),
               const SizedBox(height: 12),
@@ -96,7 +96,7 @@ class _WeightScreenState extends State<WeightScreen> {
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context).notitiesOptioneel,
                   prefixIcon: const Icon(Icons.notes),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                 ),
               ),
             ],
@@ -118,7 +118,7 @@ class _WeightScreenState extends State<WeightScreen> {
                         content: Text(AppLocalizations.of(context).gewichtMoetTussen20),
                         backgroundColor: AppTheme.error,
                         behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                       ),
                     );
                     return;
@@ -132,7 +132,7 @@ class _WeightScreenState extends State<WeightScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
               ),
               child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
             ),
@@ -179,7 +179,7 @@ class _WeightScreenState extends State<WeightScreen> {
                 labelText: AppLocalizations.of(context).gewichtKgGebruikPunt,
                 hintText: AppLocalizations.of(context).bijv1015,
                 prefixIcon: const Icon(Icons.monitor_weight),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
               ),
             ),
             const SizedBox(height: 12),
@@ -189,7 +189,7 @@ class _WeightScreenState extends State<WeightScreen> {
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context).notitiesOptioneel,
                 prefixIcon: const Icon(Icons.notes),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
               ),
             ),
           ],
@@ -213,7 +213,7 @@ class _WeightScreenState extends State<WeightScreen> {
                       content: Text(AppLocalizations.of(context).gewichtMoetTussen20),
                       backgroundColor: AppTheme.error,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
                     ),
                   );
                   return;
@@ -227,7 +227,7 @@ class _WeightScreenState extends State<WeightScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
             ),
             child: Text(AppLocalizations.of(context).opslaan, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
@@ -454,7 +454,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
                                       color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                                     ),
                                     child: Icon(Icons.monitor_weight, color: Theme.of(context).colorScheme.primary),
                                   ),
@@ -580,7 +580,7 @@ class _WeightScreenState extends State<WeightScreen> {
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.smallRadius),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

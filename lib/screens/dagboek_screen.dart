@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import '../theme/app_theme.dart';
 
 /// Dagboek-scherm: dagelijkse check-in met 5-sterren score en notities.
 /// Ondersteunt backfill (eerdere dagen aanpassen) via initialDate.
@@ -464,7 +465,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.smallRadius),
               ),
               child: Text(_opgeslagenTekst!),
             ),
@@ -520,7 +521,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
             maxLines: 6,
             decoration: InputDecoration(
               hintText: l10n.dagboekTekstPlaceholder,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
               counterText: l10n.dagboekWoordenTellen(_woorden),
             ),
           ),

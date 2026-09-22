@@ -124,13 +124,13 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.smallRadius),
           ),
           child: Icon(Icons.access_time, color: Theme.of(context).colorScheme.primary),
         ),

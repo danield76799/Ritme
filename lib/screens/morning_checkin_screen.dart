@@ -745,7 +745,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFB300).withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                   ),
                   child: const Icon(Icons.star_rounded,
                       size: 18, color: Color(0xFFFFB300)),
@@ -782,7 +782,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: CheckinAccent.teal.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                   ),
                   child: const Icon(Icons.nightlight_round,
                       size: 18, color: CheckinAccent.teal),
@@ -1057,7 +1057,7 @@ class _KwaliteitOpties extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     decoration: BoxDecoration(
                       color: isGekozen ? vulling : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                       border: Border.all(
                         color: isGekozen
                             ? vulling
@@ -1262,7 +1262,7 @@ class _ScoreBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: selected ? vulling : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         border: Border.all(
           color: selected ? vulling : kleur.withValues(alpha: 0.55),
           width: 1,

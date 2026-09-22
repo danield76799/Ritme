@@ -4,6 +4,7 @@ import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../utils/mood_assessment_scorer.dart';
 import '../utils/bipolar_tag_l10n.dart';
+import '../theme/app_theme.dart';
 
 /// 5-staps vragenlijst die een stemming-score berekent op basis van gewogen
 /// antwoorden, de stemming direct wegschrijft naar de daily log, en de
@@ -238,13 +239,13 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                       onTap: _kiesDatum,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.smallRadius),
                           border: Border.all(color: Theme.of(context).dividerColor),
                         ),
                         child: Row(
@@ -696,7 +697,7 @@ class _OptionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -704,7 +705,7 @@ class _OptionTile extends StatelessWidget {
           color: isSelected
               ? option.color.withValues(alpha: 0.15)
               : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.smallRadius),
           border: Border.all(
             color: isSelected
                 ? option.color
@@ -881,7 +882,7 @@ class _ResultStep extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.smallRadius),
               border: Border.all(color: theme.dividerColor),
             ),
             child: Column(

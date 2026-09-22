@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 /// Eén rij in een overzichtsscherm: icoon + label + waarde.
 /// Gedeeld door de ochtend- en avond check-in.
@@ -27,7 +28,7 @@ class OverzichtRij extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         border: Border.all(
           color: accent != null
               ? kleurtje.withValues(alpha: 0.45)

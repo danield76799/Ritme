@@ -812,13 +812,13 @@ class _OptieTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppTheme.smallRadius),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.15) : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.smallRadius),
           border: Border.all(
             color: selected ? color : Theme.of(context).dividerColor,
             width: selected ? 2 : 1,
