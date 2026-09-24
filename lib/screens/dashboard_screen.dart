@@ -80,7 +80,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObserver {
+class _DashboardScreenState extends State<DashboardScreen>
+    with WidgetsBindingObserver {
   Map<String, dynamic>? _settings;
   bool _isLoading = true;
   double _sleepQuality = 0.0;
@@ -150,8 +151,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     try {
       final now = DateTime.now();
       final twoWeeksAgo = now.subtract(const Duration(days: 14));
-      final startDateStr = '${twoWeeksAgo.year}-${twoWeeksAgo.month.toString().padLeft(2, '0')}-${twoWeeksAgo.day.toString().padLeft(2, '0')}';
-      final endDateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final startDateStr =
+          '${twoWeeksAgo.year}-${twoWeeksAgo.month.toString().padLeft(2, '0')}-${twoWeeksAgo.day.toString().padLeft(2, '0')}';
+      final endDateStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
       final results = await Future.wait([
         db.getSettings(),
@@ -164,8 +167,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final weeklyActivities = results[2] as List<Map<String, dynamic>>;
 
       final todayStr = endDateStr;
-      final todayLog = dailyLogs.where((l) => l['date'] == todayStr).firstOrNull;
-      final todayActs = weeklyActivities.where((a) => a['date'] == todayStr).toList();
+      final todayLog =
+          dailyLogs.where((l) => l['date'] == todayStr).firstOrNull;
+      final todayActs =
+          weeklyActivities.where((a) => a['date'] == todayStr).toList();
 
       final checkinTypesToday = <String>{};
       if (todayLog != null && ochtendGedaan(todayLog)) {
@@ -189,8 +194,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       // Dagstreak — tellen vanaf vandaag achterwaarts (max 14 dagen); een dag telt als er minimaal 1 check-in type is (ochtend/avond/medicatie)
       // Haal eerst alle data op voor de lookback-periode
       final streakLookback = now.subtract(const Duration(days: 14));
-      final streakLookbackStr = '${streakLookback.year}-${streakLookback.month.toString().padLeft(2, '0')}-${streakLookback.day.toString().padLeft(2, '0')}';
-      final allMedicationIntake = await db.getMedicationIntakeRange(streakLookbackStr, endDateStr);
+      final streakLookbackStr =
+          '${streakLookback.year}-${streakLookback.month.toString().padLeft(2, '0')}-${streakLookback.day.toString().padLeft(2, '0')}';
+      final allMedicationIntake = await db.getMedicationIntakeRange(
+        streakLookbackStr,
+        endDateStr,
+      );
       final medDates = <String>{};
       for (final row in allMedicationIntake) {
         final raw = row['aantal_ingenomen'];
@@ -201,7 +210,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       int streak = 0;
       for (int i = 0; i < 14; i++) {
         final d = now.subtract(Duration(days: i));
-        final ds = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+        final ds =
+            '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
         final dayTypes = <String>{};
 
         // Ochtend: zelfde definitie als de tegel (zie ochtendGedaan).
@@ -239,10 +249,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         final rawUren = log['uren_slaap'];
         double? sleep;
         if (rawSleep != null) {
-          sleep = rawSleep is num ? rawSleep.toDouble() : double.tryParse(rawSleep.toString());
+          sleep =
+              rawSleep is num
+                  ? rawSleep.toDouble()
+                  : double.tryParse(rawSleep.toString());
         }
         if (sleep == null || sleep <= 0) {
-          sleep = rawUren is num ? rawUren.toDouble() : double.tryParse(rawUren?.toString() ?? '');
+          sleep =
+              rawUren is num
+                  ? rawUren.toDouble()
+                  : double.tryParse(rawUren?.toString() ?? '');
         }
         if (sleep != null && sleep > 0 && !sleepPerDay.containsKey(dateStr)) {
           sleepPerDay[dateStr] = sleep;
@@ -299,14 +315,18 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         final actualTime = activity['actual_time'];
         final rawPScore = activity['p_score'];
         if (actualTime != null && rawPScore != null) {
-          final int pScore = rawPScore is int ? rawPScore : int.tryParse(rawPScore.toString()) ?? 0;
+          final int pScore =
+              rawPScore is int
+                  ? rawPScore
+                  : int.tryParse(rawPScore.toString()) ?? 0;
           if (pScore > 0) {
             totalPScore += pScore;
             totalActivities++;
           }
         }
       }
-      final stability = totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0.0;
+      final stability =
+          totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0.0;
 
       if (mounted) {
         setState(() {
@@ -349,7 +369,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         // ochtend van gisteren, nu → de ochtend van vandaag (de nacht van
         // gisteren op vandaag). Pak vandaags als die er is, anders gisterens.
         final vandaag = _sleepPerDay[dateStr(now)];
-        value = vandaag ?? _sleepPerDay[dateStr(now.subtract(const Duration(days: 1)))] ?? 0.0;
+        value =
+            vandaag ??
+            _sleepPerDay[dateStr(now.subtract(const Duration(days: 1)))] ??
+            0.0;
       case _SleepPeriod.week:
         final weekAgoStr = dateStr(now.subtract(const Duration(days: 7)));
         var total = 0.0;
@@ -426,8 +449,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     }
 
     final today = DateTime.now();
-    final dateStr = DateFormat('EEEE d MMMM', Localizations.localeOf(context).toString().split('_').first).format(today);
-    final username = _settings?['username']?.toString() ??
+    final dateStr = DateFormat(
+      'EEEE d MMMM',
+      Localizations.localeOf(context).toString().split('_').first,
+    ).format(today);
+    final username =
+        _settings?['username']?.toString() ??
         AppLocalizations.of(context).gebruikerFallback;
     final isDark = theme.brightness == Brightness.dark;
 
@@ -442,7 +469,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
         title: Text(
           'Ritme',
-          style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
         ),
         actions: [
           IconButton(
@@ -451,7 +480,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             tooltip: AppLocalizations.of(context).crisisplan,
           ),
           IconButton(
-            icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.onSurface),
+            icon: Icon(
+              Icons.settings,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             onPressed: () async {
               await Navigator.pushNamed(context, '/settings');
               _loadData();
@@ -459,30 +491,109 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             tooltip: AppLocalizations.of(context).instellingen,
           ),
           PopupMenuButton<int>(
-            icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onSurface),
+            icon: Icon(
+              Icons.more_vert,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             tooltip: AppLocalizations.of(context).meer,
             onSelected: (value) async {
               switch (value) {
-                case 0: Navigator.pushNamed(context, '/statistics'); break;
-                case 2: Navigator.pushNamed(context, '/weight'); break;
-                case 3: Navigator.pushNamed(context, '/appointments'); break;
-                case 4: Navigator.pushNamed(context, '/voortekenen'); break;
-                case 5: Navigator.pushNamed(context, '/rapport'); break;
-                case 6: Navigator.pushNamed(context, '/help'); break;
-                case 7: _logout(); break;
+                case 0:
+                  Navigator.pushNamed(context, '/statistics');
+                  break;
+                case 2:
+                  Navigator.pushNamed(context, '/weight');
+                  break;
+                case 3:
+                  Navigator.pushNamed(context, '/appointments');
+                  break;
+                case 4:
+                  Navigator.pushNamed(context, '/voortekenen');
+                  break;
+                case 5:
+                  Navigator.pushNamed(context, '/rapport');
+                  break;
+                case 6:
+                  Navigator.pushNamed(context, '/help');
+                  break;
+                case 7:
+                  _logout();
+                  break;
               }
             },
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 0, child: ListTile(leading: Icon(Icons.bar_chart), title: Text(AppLocalizations.of(context).statistieken), contentPadding: EdgeInsets.zero, dense: true)),
-              const PopupMenuDivider(),
-              PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.monitor_weight), title: Text(AppLocalizations.of(context).gewicht), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.calendar_today), title: Text(AppLocalizations.of(context).afspraken), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 4, child: ListTile(leading: Icon(Icons.warning_amber), title: Text(AppLocalizations.of(context).voortekenen), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 5, child: ListTile(leading: Icon(Icons.description), title: Text(AppLocalizations.of(context).rapport), contentPadding: EdgeInsets.zero, dense: true)),
-              PopupMenuItem(value: 6, child: ListTile(leading: Icon(Icons.help_outline), title: Text(AppLocalizations.of(context).gebruiksaanwijzing), contentPadding: EdgeInsets.zero, dense: true)),
-              const PopupMenuDivider(),
-              PopupMenuItem(value: 7, child: ListTile(leading: Icon(Icons.logout, color: AppTheme.error), title: Text(AppLocalizations.of(context).uitloggen, style: TextStyle(color: AppTheme.error)), contentPadding: EdgeInsets.zero, dense: true)),
-            ],
+            itemBuilder:
+                (context) => [
+                  PopupMenuItem(
+                    value: 0,
+                    child: ListTile(
+                      leading: Icon(Icons.bar_chart),
+                      title: Text(AppLocalizations.of(context).statistieken),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 2,
+                    child: ListTile(
+                      leading: Icon(Icons.monitor_weight),
+                      title: Text(AppLocalizations.of(context).gewicht),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 3,
+                    child: ListTile(
+                      leading: Icon(Icons.calendar_today),
+                      title: Text(AppLocalizations.of(context).afspraken),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 4,
+                    child: ListTile(
+                      leading: Icon(Icons.warning_amber),
+                      title: Text(AppLocalizations.of(context).voortekenen),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 5,
+                    child: ListTile(
+                      leading: Icon(Icons.description),
+                      title: Text(AppLocalizations.of(context).rapport),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 6,
+                    child: ListTile(
+                      leading: Icon(Icons.help_outline),
+                      title: Text(
+                        AppLocalizations.of(context).gebruiksaanwijzing,
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 7,
+                    child: ListTile(
+                      leading: Icon(Icons.logout, color: AppTheme.error),
+                      title: Text(
+                        AppLocalizations.of(context).uitloggen,
+                        style: TextStyle(color: AppTheme.error),
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  ),
+                ],
           ),
         ],
       ),
@@ -491,7 +602,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(
-              AppTheme.screenPadding, 8, AppTheme.screenPadding, 24),
+            AppTheme.screenPadding,
+            8,
+            AppTheme.screenPadding,
+            24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -500,17 +615,19 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 width: double.infinity,
                 padding: EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: isDark
-                      ? LinearGradient(
-                          colors: [Color(0xFF2A3D42), Color(0xFF1A2B30)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : AppTheme.brandGradient,
+                  gradient:
+                      isDark
+                          ? LinearGradient(
+                            colors: [Color(0xFF2A3D42), Color(0xFF1A2B30)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                          : AppTheme.brandGradient,
                   borderRadius: BorderRadius.circular(AppTheme.largeRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: (isDark ? Colors.black : const Color(0xFFB4A8D4)).withValues(alpha: 0.25),
+                      color: (isDark ? Colors.black : const Color(0xFFB4A8D4))
+                          .withValues(alpha: 0.25),
                       blurRadius: 16,
                       offset: Offset(0, 8),
                     ),
@@ -535,22 +652,42 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     Text(
                       dateStr,
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.85),
                         fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // De twee tijdchips moeten kunnen krimpen: met vaste
-                    // breedte liep deze Row op een smal toestel over
-                    // (gemeten: 133 px op 412dp, tot 224 px op 320dp).
-                    Row(
+                    // Wrap, niet Row+Expanded.
+                    //
+                    // Gemeten: "Opstaan 08:00" vraagt 236px en "Slapen 23:00"
+                    // 222px, samen 466px. In de kaart is zelfs op 412dp maar
+                    // 339px beschikbaar (op 320dp 248px). Twee chips naast
+                    // elkaar MET label passen dus op geen enkele telefoonbreedte
+                    // — `Expanded` gaf elk de helft (112px) en kapte de tijd af
+                    // ("Opstaan 08…" terwijl de tijd juist de informatie is).
+                    //
+                    // Wrap laat de chips op hun natuurlijke breedte en schuift
+                    // ze naar een tweede regel zodra ze samen niet passen. Op
+                    // een telefoon staat er dus één chip per regel; op een
+                    // tablet of in landscape passen ze wél naast elkaar, wat de
+                    // bedoelde look daar is. Geen enkele maat wordt afgekapt.
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        Expanded(
-                          child: _buildTimeChip(Icons.wb_sunny_outlined, AppLocalizations.of(context).opstaan, _settings?['target_opstaan'] ?? '08:00', isDark),
+                        _buildTimeChip(
+                          Icons.wb_sunny_outlined,
+                          AppLocalizations.of(context).opstaan,
+                          _settings?['target_opstaan'] ?? '08:00',
+                          isDark,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildTimeChip(Icons.bedtime, AppLocalizations.of(context).slapen, _settings?['target_slapen'] ?? '23:00', isDark),
+                        _buildTimeChip(
+                          Icons.bedtime,
+                          AppLocalizations.of(context).slapen,
+                          _settings?['target_slapen'] ?? '23:00',
+                          isDark,
                         ),
                       ],
                     ),
@@ -567,36 +704,42 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               ],
 
               // Datum-picker + dagstatus-metertje + streak-chip
-              Row(children: [
-                // Expanded (i.p.v. Spacer): de datum mag krimpen met ellipsis
-                // in plaats van de Row te laten overlopen. Gemeten: 76 px
-                // overflow op 320dp met de lange datumnotatie.
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectDate(context),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            _formatSelectedDate(context),
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+              Row(
+                children: [
+                  // Expanded (i.p.v. Spacer): de datum mag krimpen met ellipsis
+                  // in plaats van de Row te laten overlopen. Gemeten: 76 px
+                  // overflow op 320dp met de lange datumnotatie.
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _selectDate(context),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              _formatSelectedDate(context),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(Icons.calendar_today, size: 18, color: Theme.of(context).colorScheme.primary),
-                      ],
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.calendar_today,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                _DagStatusMeter(
-                  gelogd: _checkinTypes.length,
-                  totaal: 4,
-                ),
-              ]),
+                  const SizedBox(width: 8),
+                  _DagStatusMeter(gelogd: _checkinTypes.length, totaal: 4),
+                ],
+              ),
               if (_dagStreak > 0) ...[
                 const SizedBox(height: 8),
                 Align(
@@ -613,12 +756,54 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.35,
                 children: [
-                  _buildCheckinCard(context, icon: Icons.wb_sunny, accent: TileAccent.morning, title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate, isOchtend: true),
-                  _buildCheckinCard(context, icon: Icons.nights_stay, accent: TileAccent.evening, title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate, isOchtend: false),
-                  _buildActionCard(context, icon: Icons.medication, accent: TileAccent.medication, title: AppLocalizations.of(context).medicatie, route: '/medication', isCompleted: _checkinTypes.contains('medicatie')),
-                  _buildActionCard(context, icon: Icons.menu_book, accent: TileAccent.journal, title: AppLocalizations.of(context).dagboek, route: '/dagboek', isCompleted: _checkinTypes.contains('dagboek')),
-                  _buildActionCard(context, icon: Icons.description, accent: TileAccent.report, title: AppLocalizations.of(context).rapport, route: '/rapport'),
-                  _buildActionCard(context, icon: Icons.calendar_today, accent: TileAccent.appointments, title: AppLocalizations.of(context).afspraken, route: '/appointments'),
+                  _buildCheckinCard(
+                    context,
+                    icon: Icons.wb_sunny,
+                    accent: TileAccent.morning,
+                    title: AppLocalizations.of(context).ochtendCheckIn,
+                    route: '/morning-checkin',
+                    date: _selectedDate,
+                    isOchtend: true,
+                  ),
+                  _buildCheckinCard(
+                    context,
+                    icon: Icons.nights_stay,
+                    accent: TileAccent.evening,
+                    title: AppLocalizations.of(context).avondCheckIn,
+                    route: '/evening-checkin',
+                    date: _selectedDate,
+                    isOchtend: false,
+                  ),
+                  _buildActionCard(
+                    context,
+                    icon: Icons.medication,
+                    accent: TileAccent.medication,
+                    title: AppLocalizations.of(context).medicatie,
+                    route: '/medication',
+                    isCompleted: _checkinTypes.contains('medicatie'),
+                  ),
+                  _buildActionCard(
+                    context,
+                    icon: Icons.menu_book,
+                    accent: TileAccent.journal,
+                    title: AppLocalizations.of(context).dagboek,
+                    route: '/dagboek',
+                    isCompleted: _checkinTypes.contains('dagboek'),
+                  ),
+                  _buildActionCard(
+                    context,
+                    icon: Icons.description,
+                    accent: TileAccent.report,
+                    title: AppLocalizations.of(context).rapport,
+                    route: '/rapport',
+                  ),
+                  _buildActionCard(
+                    context,
+                    icon: Icons.calendar_today,
+                    accent: TileAccent.appointments,
+                    title: AppLocalizations.of(context).afspraken,
+                    route: '/appointments',
+                  ),
                 ],
               ),
 
@@ -631,7 +816,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   Flexible(
                     child: Text(
                       AppLocalizations.of(context).overzicht,
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -641,7 +829,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     Flexible(
                       child: Text(
                         _formatLastUpdated(context),
-                        style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.secondaryText(context),
+                        ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         textAlign: TextAlign.right,
@@ -664,10 +855,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 // Periode-schakelaar onder de waarde: gisteren / week / 14d.
                 footer: _SleepPeriodSwitch(
                   selected: _sleepPeriod,
-                  onChanged: (p) => setState(() {
-                    _sleepPeriod = p;
-                    _recomputeSleepValue();
-                  }),
+                  onChanged:
+                      (p) => setState(() {
+                        _sleepPeriod = p;
+                        _recomputeSleepValue();
+                      }),
                 ),
               ),
               const SizedBox(height: 10),
@@ -678,9 +870,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 context,
                 icon: Icons.schedule,
                 title: AppLocalizations.of(context).srtScore,
-                value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : null,
+                value:
+                    _rhythmStability > 0
+                        ? '${_rhythmStability.round()}%'
+                        : null,
                 emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
-                subtitle: _rhythmStability > 0 ? _getSrtLabel(_rhythmStability, context) : null,
+                subtitle:
+                    _rhythmStability > 0
+                        ? _getSrtLabel(_rhythmStability, context)
+                        : null,
                 emptyHint: AppLocalizations.of(context).srtTooltip,
                 color: _getSrtColor(_rhythmStability),
                 route: '/rhythm-detail',
@@ -689,9 +887,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
               const SizedBox(height: 24),
 
-              Row(children: [
-                Text(AppLocalizations.of(context).stemmingTrend, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-              ]),
+              Row(
+                children: [
+                  Text(
+                    AppLocalizations.of(context).stemmingTrend,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
 
               Container(
@@ -741,9 +944,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       initialDate: _selectedDate,
       firstDate: DateTime(2020, 1, 1),
       lastDate: DateTime.now(),
-      locale: Localizations.localeOf(context).languageCode == 'nl'
-          ? const Locale('nl', 'NL')
-          : null,
+      locale:
+          Localizations.localeOf(context).languageCode == 'nl'
+              ? const Locale('nl', 'NL')
+              : null,
       helpText: AppLocalizations.of(context).kiesDatum,
       cancelText: AppLocalizations.of(context).annuleren,
       confirmText: AppLocalizations.of(context).bekijken,
@@ -756,7 +960,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   Future<void> _loadDataForDate(DateTime date) async {
     try {
-      final ds = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final ds =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
       // Venster van 7 dagen eindigend op de BEKEKEN datum. Eerst hing de
       // start aan vandaag, waardoor een datum ouder dan 6 dagen buiten zijn
       // eigen range viel en er niets terugkwam.
@@ -773,8 +978,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final dailyLogs = results[1] as List<Map<String, dynamic>>;
       final weeklyActivities = results[2] as List<Map<String, dynamic>>;
       final selectedDs = ds;
-      final todayLogForDate = dailyLogs.where((l) => l['date'] == selectedDs).firstOrNull;
-      final todayActsForDate = weeklyActivities.where((a) => a['date'] == selectedDs).toList();
+      final todayLogForDate =
+          dailyLogs.where((l) => l['date'] == selectedDs).firstOrNull;
+      final todayActsForDate =
+          weeklyActivities.where((a) => a['date'] == selectedDs).toList();
       final checkinTypesForDate = <String>{};
       if (todayLogForDate != null && ochtendGedaan(todayLogForDate)) {
         checkinTypesForDate.add('ochtend');
@@ -810,24 +1017,38 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     final locale = Localizations.localeOf(context).languageCode;
     if (diff == 0) return locale == 'nl' ? 'Vandaag' : 'Today';
     if (diff == -1) return locale == 'nl' ? 'Gisteren' : 'Yesterday';
-    if (diff == -2) return locale == 'nl' ? 'Eergisteren' : 'Day before yesterday';
+    if (diff == -2)
+      return locale == 'nl' ? 'Eergisteren' : 'Day before yesterday';
     if (diff > 0) return locale == 'nl' ? 'Overmorgen' : 'Tomorrow';
     final fmt = DateFormat('d MMMM', locale);
     return fmt.format(_selectedDate);
   }
 
-  Widget _buildCheckinCard(BuildContext context,
-      {required IconData icon, required TileAccent accent, required String title,
-       required String route, DateTime? date, bool isOchtend = false}) {
-    final ds = '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  Widget _buildCheckinCard(
+    BuildContext context, {
+    required IconData icon,
+    required TileAccent accent,
+    required String title,
+    required String route,
+    DateTime? date,
+    bool isOchtend = false,
+  }) {
+    final ds =
+        '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     bool hasLog;
     if (isOchtend) {
       hasLog = _dailyLogs.where((l) => l['date'] == ds).any(ochtendGedaan);
     } else {
       hasLog = avondGedaan(_srmActivitiesList, ds);
     }
-    return _buildActionCard(context,
-        icon: icon, accent: accent, title: title, route: route, isCompleted: hasLog);
+    return _buildActionCard(
+      context,
+      icon: icon,
+      accent: accent,
+      title: title,
+      route: route,
+      isCompleted: hasLog,
+    );
   }
 
   Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
@@ -841,15 +1062,18 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
-          SizedBox(width: 8),
-          // Flexible zodat een lange label+tijd-combinatie kan krimpen in
-          // plaats van de Row te laten overlopen.
-          Flexible(
-            child: Text(
-              AppLocalizations.of(context).labelEnTijd(label, time),
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w600),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+          const SizedBox(width: 8),
+          // Geen Flexible/ellipsis meer: de chip staat nu in een Wrap en mag
+          // zijn natuurlijke breedte houden. De vorige krimp-constructie kapte
+          // de TIJD af ("Opstaan 08…") — precies het stuk dat de gebruiker
+          // nodig heeft. Past het niet, dan schuift de chip naar de volgende
+          // regel in plaats van te krimpen.
+          Text(
+            AppLocalizations.of(context).labelEnTijd(label, time),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -862,17 +1086,21 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   /// [isCompleted] toont het groene vinkje + accentrand en correspondeert met de
   /// teller bovenaan ("X/4 ingevuld"). Navigatie-tegels (Rapport, Afspraken)
   /// krijgen géén eigen pijl meer — alle tegels blijven zo visueel uniform.
-  Widget _buildActionCard(BuildContext context,
-      {required IconData icon,
-      required TileAccent accent,
-      required String title,
-      required String route,
-      bool isCompleted = false}) {
+  Widget _buildActionCard(
+    BuildContext context, {
+    required IconData icon,
+    required TileAccent accent,
+    required String title,
+    required String route,
+    bool isCompleted = false,
+  }) {
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: Duration(milliseconds: 400),
       closedElevation: 2,
-      closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.borderRadius)),
+      closedShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+      ),
       closedColor: Theme.of(context).cardColor,
       openColor: Theme.of(context).scaffoldBackgroundColor,
       onClosed: (_) {
@@ -907,7 +1135,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   constraints: const BoxConstraints(maxWidth: 120),
                   child: Text(
                     title,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -924,19 +1155,20 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     );
   }
 
-  Widget _buildMetricCard(BuildContext context,
-      {required IconData icon,
-      required String title,
-      required String? value,
-      String? emptyValue,
-      String? subtitle,
-      String? secondSubtitle,
-      String? emptyHint,
-      required Color color,
-      required String route,
-      bool isEmpty = false,
-      Widget? footer,
-    }) {
+  Widget _buildMetricCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String? value,
+    String? emptyValue,
+    String? subtitle,
+    String? secondSubtitle,
+    String? emptyHint,
+    required Color color,
+    required String route,
+    bool isEmpty = false,
+    Widget? footer,
+  }) {
     final theme = Theme.of(context);
     return MetricCardShell(
       icon: icon,
@@ -945,22 +1177,54 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
           const SizedBox(height: 4),
           if (isEmpty && emptyHint != null)
-            Text(emptyHint, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
+            Text(
+              emptyHint,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppTheme.secondaryText(context),
+              ),
+            )
           else if (subtitle != null)
-            Text(subtitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color)),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: theme.textTheme.bodyMedium?.color,
+              ),
+            ),
           if (value != null)
-            Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
+            Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: value.length > 12 ? 14 : 18,
+              ),
+            )
           else if (emptyValue != null)
-            Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
+            Text(
+              emptyValue,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                color: AppTheme.secondaryText(context),
+              ),
+            ),
           if (secondSubtitle != null)
-            Text(secondSubtitle, style: TextStyle(fontSize: 13, color: AppTheme.secondaryText(context))),
-          if (footer != null) ...[
-            const SizedBox(height: 8),
-            footer,
-          ],
+            Text(
+              secondSubtitle,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.secondaryText(context),
+              ),
+            ),
+          if (footer != null) ...[const SizedBox(height: 8), footer],
         ],
       ),
     );
@@ -973,36 +1237,75 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     return '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
   }
 
-  Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
+  Widget _routeBuilder(
+    String route, {
+    void Function({bool? returnValue})? closeContainer,
+  }) {
     switch (route) {
-      case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/dagboek': return DagboekScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/morning-checkin': return MorningCheckInScreen(
-        initialDate: _initialDateArg,
-        onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/evening-checkin': return EveningCheckInScreen(
-        initialDate: _initialDateArg,
-        onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/activity': return ActivityScreen();
-      case '/medication': return MedicationScreen();
-      case '/weight': return WeightScreen();
-      case '/appointments': return AppointmentsScreen();
-      case '/voortekenen': return VoortekenenScreen();
-      case '/crisisplan': return CrisisPlanScreen();
-      case '/rapport': return RapportScreen();
-      default: return SizedBox.shrink();
+      case '/mood':
+        return MoodAssessmentScreen(
+          onClose:
+              closeContainer == null
+                  ? null
+                  : (saved) => closeContainer(returnValue: saved),
+        );
+      case '/dagboek':
+        return DagboekScreen(
+          onClose:
+              closeContainer == null
+                  ? null
+                  : (saved) => closeContainer(returnValue: saved),
+        );
+      case '/morning-checkin':
+        return MorningCheckInScreen(
+          initialDate: _initialDateArg,
+          onClose:
+              closeContainer == null
+                  ? null
+                  : (saved) => closeContainer(returnValue: saved),
+        );
+      case '/evening-checkin':
+        return EveningCheckInScreen(
+          initialDate: _initialDateArg,
+          onClose:
+              closeContainer == null
+                  ? null
+                  : (saved) => closeContainer(returnValue: saved),
+        );
+      case '/activity':
+        return ActivityScreen();
+      case '/medication':
+        return MedicationScreen();
+      case '/weight':
+        return WeightScreen();
+      case '/appointments':
+        return AppointmentsScreen();
+      case '/voortekenen':
+        return VoortekenenScreen();
+      case '/crisisplan':
+        return CrisisPlanScreen();
+      case '/rapport':
+        return RapportScreen();
+      default:
+        return SizedBox.shrink();
     }
   }
 
   Widget _buildAlertCard(Alert alert, ThemeData theme) {
-    AlertSeverity severity = alert.severity == 'high' ? AlertSeverity.high : AlertSeverity.medium;
+    AlertSeverity severity =
+        alert.severity == 'high' ? AlertSeverity.high : AlertSeverity.medium;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-        border: Border.all(color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning.withValues(alpha: 0.5)),
+        border: Border.all(
+          color:
+              severity == AlertSeverity.high
+                  ? AppTheme.error
+                  : AppTheme.warning.withValues(alpha: 0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1010,8 +1313,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           Row(
             children: [
               Icon(
-                severity == AlertSeverity.high ? Icons.warning_amber : Icons.warning,
-                color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning,
+                severity == AlertSeverity.high
+                    ? Icons.warning_amber
+                    : Icons.warning,
+                color:
+                    severity == AlertSeverity.high
+                        ? AppTheme.error
+                        : AppTheme.warning,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -1028,8 +1336,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context).geregistreerdOp(
-                DateTime.now().toLocal().toString().split(' ')[0]),
-            style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+              DateTime.now().toLocal().toString().split(' ')[0],
+            ),
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.textTheme.bodyMedium?.color,
+            ),
           ),
         ],
       ),
@@ -1065,11 +1377,14 @@ class _DagStatusMeter extends StatelessWidget {
     final allesKlaar = gelogd >= totaal;
     final brightness = theme.brightness;
     // #ED6C02 haalt 4.94:1 op de chip; in dark mode is #FFB74D ruimer (6.7:1).
-    final color = allesKlaar
-        ? AppTheme.successOn(brightness)
-        : (gelogd > 0
-            ? (brightness == Brightness.dark ? const Color(0xFFFFB74D) : AppTheme.warning)
-            : AppTheme.secondaryText(context));
+    final color =
+        allesKlaar
+            ? AppTheme.successOn(brightness)
+            : (gelogd > 0
+                ? (brightness == Brightness.dark
+                    ? const Color(0xFFFFB74D)
+                    : AppTheme.warning)
+                : AppTheme.secondaryText(context));
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -1150,9 +1465,12 @@ class _SleepPeriodSwitch extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primaryContainer
-              : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color:
+              isSelected
+                  ? theme.colorScheme.primaryContainer
+                  : theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
+                  ),
           borderRadius: BorderRadius.circular(999),
         ),
         alignment: Alignment.center,
@@ -1164,9 +1482,10 @@ class _SleepPeriodSwitch extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            color: isSelected
-                ? theme.colorScheme.onPrimaryContainer
-                : AppTheme.secondaryText(context),
+            color:
+                isSelected
+                    ? theme.colorScheme.onPrimaryContainer
+                    : AppTheme.secondaryText(context),
           ),
         ),
       ),
