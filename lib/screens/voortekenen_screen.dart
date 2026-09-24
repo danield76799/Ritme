@@ -176,7 +176,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text(AppLocalizations.of(context).voortekenen2, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).voortekenen2, style: TextStyle(color: Theme.of(context).colorScheme.onSurface))),
         body: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
       );
     }
@@ -186,15 +186,14 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text(AppLocalizations.of(context).voortekenen2, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
+        title: Text(AppLocalizations.of(context).voortekenen2, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface), onPressed: () => Navigator.pop(context)),
         actions: [
           TextButton.icon(
             onPressed: () => _showHistory(context),
-            icon: Icon(Icons.history, color: Theme.of(context).colorScheme.onPrimary),
-            label: Text(AppLocalizations.of(context).historie, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            icon: Icon(Icons.history, color: Theme.of(context).colorScheme.onSurface),
+            label: Text(AppLocalizations.of(context).historie, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ),
         ],
       ),

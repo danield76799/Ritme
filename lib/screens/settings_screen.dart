@@ -336,10 +336,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Volgt thema (ook dark mode)
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).instellingen, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(AppLocalizations.of(context).instellingen, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         elevation: 0,
-        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))

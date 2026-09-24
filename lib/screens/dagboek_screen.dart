@@ -405,11 +405,10 @@ class _DagboekScreenState extends State<DagboekScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.dagboek),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
+        foregroundColor: theme.colorScheme.onSurface,
         actions: [
           PopupMenuButton<String>(
-            icon: Icon(Icons.ios_share, color: theme.colorScheme.onPrimary),
+            icon: Icon(Icons.ios_share, color: theme.colorScheme.onSurface),
             tooltip: AppLocalizations.of(context).exporterenDelen,
             onSelected: (keuze) {
               if (keuze == 'pdf') {

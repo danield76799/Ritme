@@ -49,10 +49,9 @@ class _MedicationScheduleScreenState extends State<MedicationScheduleScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).medicatieSchema, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(AppLocalizations.of(context).medicatieSchema, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         elevation: 0,
-        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))

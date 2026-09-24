@@ -28,10 +28,9 @@ class _RapportScreenState extends State<RapportScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text(AppLocalizations.of(context).rapport, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
+        title: Text(AppLocalizations.of(context).rapport, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface), onPressed: () => Navigator.pop(context)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

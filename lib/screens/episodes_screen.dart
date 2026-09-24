@@ -234,7 +234,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.primary, title: Text(AppLocalizations.of(context).episodes, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).episodes, style: TextStyle(color: Theme.of(context).colorScheme.onSurface))),
         body: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
       );
     }
@@ -242,10 +242,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text(AppLocalizations.of(context).episodes, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary), onPressed: () => Navigator.pop(context)),
+        title: Text(AppLocalizations.of(context).episodes, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface), onPressed: () => Navigator.pop(context)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEpisode,
