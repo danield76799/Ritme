@@ -328,10 +328,9 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        title: Text(AppLocalizations.of(context).statistiekenLifeChart, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
+        title: Text(AppLocalizations.of(context).statistiekenLifeChart, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),

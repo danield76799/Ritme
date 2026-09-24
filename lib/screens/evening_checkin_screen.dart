@@ -315,8 +315,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.avondCheckIn),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
+        foregroundColor: theme.colorScheme.onSurface,
       ),
       body: SafeArea(
         child: _bekijkModus

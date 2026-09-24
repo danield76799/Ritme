@@ -226,8 +226,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.stemmingsCheckTitel),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
       body: SafeArea(
         child: Column(

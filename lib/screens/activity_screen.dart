@@ -552,11 +552,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
       appBar: AppBar(
         title: Text(
           AppLocalizations.of(context).activiteitEnSlaapTitel,
-          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: Column(
         children: [

@@ -195,11 +195,10 @@ class _RhythmDetailScreenState extends State<RhythmDetailScreen> {
     return Scaffold(
       backgroundColor: StabilityPalette.canvas(brightness),
       appBar: AppBar(
-        // Naadloos doorlopend: geen fel teal blok meer boven een donker canvas.
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        foregroundColor: StabilityPalette.primaryText(brightness),
+        // Balkkleur, elevation, scrolledUnderElevation én foregroundColor staan
+        // in appBarTheme. Hier stond `StabilityPalette.primaryText(brightness)`,
+        // dat in dark mode puur wit koos terwijl het thema darkText gebruikt.
+        // Die afwijking is nu weg: één bron voor alle 20 schermen.
         titleSpacing: AppTheme.screenPadding,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),

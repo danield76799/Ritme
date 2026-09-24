@@ -167,28 +167,42 @@ void main() {
   });
 
   group('Rode iconen op de AppBar (non-text, 3:1)', () {
-    // De AppBar is in dark mode LICHT en in light mode DONKER — omgekeerd aan
-    // de rest van het scherm. De reset-knop (wist de database) was
-    // Colors.red.shade300 en haalde op beide balken <2:1: onzichtbaar.
-    test('dark: tint haalt 3:1 op de lichte AppBar', () {
+    // De AppBar was ooit in dark mode LICHT en in light mode DONKER — omgekeerd
+    // aan de rest van het scherm. Die omgekeerde balk bestaat NIET meer: de
+    // balk is nu in beide modes transparant en volgt de pagina-achtergrond.
+    // De tint moet dus rekenen met de SCAFFOLD-kleur, niet met
+    // colorScheme.primary. De reset-knop (wist de database) was ooit
+    // Colors.red.shade300 en haalde op de oude balken <2:1.
+    test('dark: tint haalt 3:1 op de pagina-achtergrond', () {
       expect(
-          contrast(
-              AppTheme.dangerOnAppBar(Brightness.dark), AppTheme.darkTheme.colorScheme.primary),
+          contrast(AppTheme.dangerOnAppBar(Brightness.dark),
+              AppTheme.darkBackground),
           greaterThanOrEqualTo(3.0));
     });
 
-    test('light: tint haalt 3:1 op de donkere AppBar', () {
+    test('light: tint haalt 3:1 op de pagina-achtergrond', () {
       expect(
-          contrast(
-              AppTheme.dangerOnAppBar(Brightness.light), AppTheme.lightTheme.colorScheme.primary),
+          contrast(AppTheme.dangerOnAppBar(Brightness.light),
+              AppTheme.backgroundColor),
           greaterThanOrEqualTo(3.0));
     });
 
-    test('red.shade300 zakte op beide balken (regressiedrempel)', () {
-      expect(contrast(Colors.red.shade300, AppTheme.darkTheme.colorScheme.primary),
+    test('de balk volgt het thema: transparant in beide modes', () {
+      // Borgt dat de 16 schermen hun eigen colorScheme.primary-override niet
+      // terugzetten; zonder dit kan de inconsistentie terugsluipen.
+      expect(AppTheme.lightTheme.appBarTheme.backgroundColor, Colors.transparent);
+      expect(AppTheme.darkTheme.appBarTheme.backgroundColor, Colors.transparent);
+    });
+
+    test('red.shade300: faalt op de LICHTE pagina, niet op de donkere', () {
+      // De reset-knop was ooit Colors.red.shade300. Op de oude DONKERE balk in
+      // light mode (#2F7A85) haalde die <2:1. Nu de balk de pagina-achtergrond
+      // volgt, geldt: op licht #F7F9FA haalt hij maar 2.83:1 (faalt), op
+      // donker #0F1A1D juist 5.93:1 (prima). Daarom rekent dangerOn per mode.
+      expect(contrast(Colors.red.shade300, AppTheme.backgroundColor),
           lessThan(3.0));
-      expect(contrast(Colors.red.shade300, AppTheme.lightTheme.colorScheme.primary),
-          lessThan(3.0));
+      expect(contrast(Colors.red.shade300, AppTheme.darkBackground),
+          greaterThanOrEqualTo(3.0));
     });
   });
 

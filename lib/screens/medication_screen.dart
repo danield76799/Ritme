@@ -627,10 +627,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).medicatie, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(AppLocalizations.of(context).medicatie, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         elevation: 0,
-        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
         actions: [
           IconButton(icon: Icon(Icons.add_rounded), tooltip: AppLocalizations.of(context).nieuweMedicatie, onPressed: _showAddMedicationDialog),
           IconButton(

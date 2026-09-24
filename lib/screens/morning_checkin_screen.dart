@@ -388,10 +388,9 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        foregroundColor: theme.colorScheme.onSurface,
+        // Balkkleur, elevation, scrolledUnderElevation en foregroundColor staan
+        // in appBarTheme. Alleen titleSpacing blijft hier: de titel is een
+        // Column (titel + subtitel) en moet met de body uitlijnen.
         titleSpacing: AppTheme.screenPadding,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

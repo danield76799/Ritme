@@ -133,15 +133,18 @@ class AppTheme {
   static Color dangerOn(Brightness brightness) =>
       brightness == Brightness.dark ? const Color(0xFFFFB4AB) : error;
 
-  /// Rode ICOONKLEUR voor op een AppBar.
+  /// Rode ICOONKLEUR voor op de AppBar.
   ///
-  /// Let op: de AppBar is in dark mode LICHT (#7AC8D3) en in light mode
-  /// DONKER (#2F7A85) — precies omgekeerd aan de rest van het scherm. Een
-  /// rode tint moet dus per mode de andere kant op: op de donkere balk is een
-  /// lichte tint nodig, op de lichte balk een diepe.
-  /// (#E57373 haalde op beide balken <2:1 en was daardoor onzichtbaar.)
-  static Color dangerOnAppBar(Brightness brightness) =>
-      brightness == Brightness.dark ? const Color(0xFF8C1D18) : const Color(0xFFFFCDD2);
+  /// De AppBar is nu in BEIDE modes TRANSPARANT en volgt dus de
+  /// pagina-achtergrond (scaffold). Daarmee is er geen omgekeerde balk meer en
+  /// is [dangerOn] de juiste keuze — die rekent al per brightness.
+  ///
+  /// Deze functie blijft bestaan als dunne alias zodat aanroepen blijven
+  /// werken, maar de oude reden ("de balk is in dark mode LICHT en in light
+  /// mode DONKER") geldt NIET meer. De oude waarden (#8C1D18 op donker,
+  /// #FFCDD2 op licht) waren voor die omgekeerde balk bedoeld en haalden op
+  /// de huidige pagina-achtergrond nog maar 1.94:1 resp. 1.33:1.
+  static Color dangerOnAppBar(Brightness brightness) => dangerOn(brightness);
 
   /// Informatief blauw dat in BEIDE modes leesbaar is (links/kopieer-acties).
   static Color infoOn(Brightness brightness) =>
@@ -174,18 +177,40 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         centerTitle: false,
-        backgroundColor: medicalTealDeep,
-        foregroundColor: Colors.white,
+        // De balk is TRANSPARANT en volgt dus de pagina-achtergrond. Dat is de
+        // behandeling die het dashboard al had: de titel staat los boven de
+        // kaarten in plaats van in een gekleurd vlak.
+        //
+        // WAAROM ÉÉN BRON: voorheen zetten 16 schermen zelf
+        // `backgroundColor: colorScheme.primary` — exact wat het thema hier
+        // ook deed. Die herhaling was ruis, en juist daardoor liepen de
+        // schermen uit elkaar: 3 transparant, 16 vol teal, 1 via de scaffold.
+        // In dark mode gaf dat een fel-lichte balk (#7AC8D3, 9.30:1 verschil
+        // met de pagina) naast bijna-zwarte schermen.
+        backgroundColor: Colors.transparent,
+        // surfaceTintColor EN scrolledUnderElevation moeten uit, anders legt
+        // Material 3 in light mode een paarse tint over de transparante balk
+        // zodra er content onder doorscrollt. morning_checkin zette dit per
+        // scherm; hier geldt het voor alle 20.
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        // foregroundColor kleurt titel én iconen op de balk. onSurface is in
+        // light mode #222222 en in dark mode #F0F5F7 — beide leesbaar op de
+        // pagina-achtergrond (#F7F9FA resp. #0F1A1D).
+        foregroundColor: textCharcoal,
         titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: textCharcoal,
           letterSpacing: -0.3,
         ),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: textCharcoal),
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
+          // De pagina is LICHT, dus de statusbar-iconen moeten donker zijn.
+          // Met Brightness.light (de oude waarde voor de donkere balk) waren
+          // de klok en batterij onzichtbaar.
+          statusBarIconBrightness: Brightness.dark,
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -318,7 +343,12 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         centerTitle: false,
-        backgroundColor: darkSurface,
+        // Zelfde behandeling als light: transparant, titel en iconen in
+        // onSurface. De oude dark-balk was #1A2B30 met teal iconen; die
+        // wijkt nu niet meer af van de pagina (#0F1A1D).
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         foregroundColor: darkText,
         titleTextStyle: const TextStyle(
           fontSize: 20,
@@ -326,7 +356,12 @@ class AppTheme {
           color: darkText,
           letterSpacing: -0.3,
         ),
-        iconTheme: const IconThemeData(color: medicalTealLight),
+        iconTheme: const IconThemeData(color: darkText),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          // De pagina is DONKER, dus de statusbar-iconen moeten licht zijn.
+          statusBarIconBrightness: Brightness.light,
+        ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: medicalTealLight,

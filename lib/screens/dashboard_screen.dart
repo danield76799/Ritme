@@ -461,12 +461,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        // backgroundColor en elevation staan in appBarTheme: de balk is overal
+        // transparant. Alleen de uitlijning blijft hier scherm-specifiek.
+        //
         // Zelfde offset als de body-padding, zodat "Ritme" exact boven de
         // welkomstkaart en het grid uitlijnt.
         titleSpacing: AppTheme.screenPadding,
-        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
         title: Text(
           'Ritme',
           style: theme.textTheme.headlineMedium?.copyWith(
