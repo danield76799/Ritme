@@ -48,12 +48,45 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // Migreer oude p_scores (eenmalig)
     final h2 = HiveDatabaseHelper.instance;
     await h2.migrateOldPScores();
+    // Ruim de dubbele slaaprijen op die de oude insertSleepLog opstapelde
+    // (eenmalig; laat per datum één rij staan).
+    final h3 = HiveDatabaseHelper.instance;
+    await h3.migrateDubbeleSlaaprijen();
   }
 
   Box get _settings => Hive.box(_settingsBox);
   Box get _dailyLogs => Hive.box(_dailyLogsBox);
   Box get _srmActivities => Hive.box(_srmActivitiesBox);
   Box get _medicationConfig => Hive.box(_medicationConfigBox);
+
+  /// Unieke sleutel voor een nieuwe Hive-rij.
+  ///
+  /// Eerder gebruikten meerdere writers `DateTime.now().millisecondsSinceEpoch
+  /// % 1000000`. Die modulo-bezetting herhaalt zich elke 1.000.000 ms (16 min
+  /// 40 s), dus twee rijen die binnen dat venster werden geschreven kregen
+  /// DEZELFDE sleutel en de tweede overschreef de eerste — stil dataverlies.
+  /// Gemeten: 30 dagen innames wegschrijven liet 15 rijen over.
+  ///
+  /// Het bereik MOET klein blijven: de config-id wordt doorgegeven aan
+  /// `notification_helper` als `(id % 90000) + 10000` voor de Android-melding,
+  /// en het oude commentaar waarschuwde al voor 32-bit overflow. Daarom geen
+  /// tijdstempel in milliseconden (13 cijfers) maar een teller die aansluit op
+  /// het hoogste id dat al in de box staat: monotoon, dus nooit een botsing,
+  /// en niet groter dan nodig.
+  int _nieuweSleutel(Box box, {String? seed}) {
+    int hoogste = 0;
+    for (final k in box.keys) {
+      final n = k is int ? k : int.tryParse(k.toString()) ?? 0;
+      if (n > hoogste) hoogste = n;
+    }
+    if (hoogste > 0) return hoogste + 1;
+    // Lege box: zaai met een tijdstempel binnen het oude bereik.
+    if (seed != null) {
+      final n = int.tryParse(seed) ?? 0;
+      if (n > 0) return n;
+    }
+    return DateTime.now().millisecondsSinceEpoch % 1000000;
+  }
   Box get _medicationIntake => Hive.box(_medicationIntakeBox);
   Box get _medicationSchedule => Hive.box(_medicationScheduleBox);
   Box get _lifeEvents => Hive.box(_lifeEventsBox);
@@ -97,7 +130,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
     for (final item in defaults) {
       final sortOrder = item['sort_order'] is int ? item['sort_order'] as int : int.tryParse(item['sort_order'].toString()) ?? 0;
-      final id = DateTime.now().millisecondsSinceEpoch % 1000000 + sortOrder;
+      final id = _nieuweSleutel(_prodromalChecklist) + sortOrder;
       final data = Map<String, dynamic>.from(item);
       data['id'] = id;
       await _prodromalChecklist.put(id, data);
@@ -216,8 +249,33 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // Group by date and MERGE all entries per date (vragenlijst schrijft
     // onder date-key, slaap-log onder int-key — samennemen i.p.v. winner
     // kiezen, anders verdwijnt stemming_hoog uit de dagrij).
+    //
+    // TWEE DINGEN DIE HIER MISGINGEN:
+    //
+    // 1. `insertSleepLog` zette elke ochtend-check-in als NIEUWE rij neer. Wie
+    //    de bedtijd corrigeerde kreeg dus een tweede slaaprij ernaast, en deze
+    //    merge laat de EERST geziene waarde winnen — de oude. De gecorrigeerde
+    //    slaapduur stond wél in de opslag maar kwam nooit op het scherm. De
+    //    slaapvelden komen daarom nu uit de rij met het HOOGSTE numerieke id
+    //    (de laatst geschreven slaaprij).
+    //
+    // 2. `bed_time` betekent per rij iets ANDERS: de avond-check-in schrijft de
+    //    bedtijd van DIE avond (onder de datum-sleutel), de ochtend-check-in de
+    //    bedtijd van de avond ERVOOR (onder een numerieke sleutel). De
+    //    datum-rij moet daarom voorrang houden — anders overschrijft de
+    //    ochtendrij de avond en klopt de "je ging gisteren om X naar bed"-regel
+    //    niet meer.
     Map<String, Map<String, dynamic>> mergedLogsByDate = {};
+    final nieuwsteSlaaprij = <String, Map<String, dynamic>>{};
+    final avondBedTijd = <String, String>{};
     int latestNumericId = 0;
+
+    int numeriekId(Map<String, dynamic> rij) {
+      final raw = rij['id'];
+      if (raw is num) return raw.toInt();
+      return int.tryParse(raw?.toString() ?? '') ?? 0;
+    }
+
     for (var log in logs) {
       final date = log['date']?.toString();
       if (date == null) continue;
@@ -236,12 +294,35 @@ class HiveDatabaseHelper implements DatabaseRepository {
         mergedLogsByDate[date] = existing;
       }
 
+      // Nieuwste slaaprij per datum onthouden.
+      if (log['sleep_hours'] != null) {
+        final vorige = nieuwsteSlaaprij[date];
+        if (vorige == null || numeriekId(log) >= numeriekId(vorige)) {
+          nieuwsteSlaaprij[date] = log;
+        }
+      }
+
+      // Bedtijd van de avond-check-in (datum-sleutel) apart houden.
+      if (log['id']?.toString() == date &&
+          (log['bed_time']?.toString().isNotEmpty ?? false)) {
+        avondBedTijd[date] = log['bed_time'].toString();
+      }
+
       // Hoogste numerieke id bijhouden (voor 'meest recent'-volgorde)
-      final idNum = log['id'] is num
-          ? (log['id'] as num).toInt()
-          : int.tryParse(log['id']?.toString() ?? '') ?? 0;
+      final idNum = numeriekId(log);
       if (idNum > latestNumericId) latestNumericId = idNum;
     }
+
+    // Slaapvelden uit de NIEUWSTE slaaprij; de avond-bedtijd houdt voorrang.
+    mergedLogsByDate.forEach((date, rij) {
+      final slaap = nieuwsteSlaaprij[date];
+      if (slaap != null) {
+        if (slaap['sleep_hours'] != null) rij['sleep_hours'] = slaap['sleep_hours'];
+        if (slaap['wake_time'] != null) rij['wake_time'] = slaap['wake_time'];
+      }
+      final bed = avondBedTijd[date];
+      if (bed != null) rij['bed_time'] = bed;
+    });
 
     // Zorg dat elke dagrij het hoogste id draagt (consistentie met oud gedrag)
     for (var log in mergedLogsByDate.values) {
@@ -324,8 +405,28 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // ===================
   
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
-    // Use incremental counter for unique IDs
-    final id = _nextId++;
+    // Deze rij hoort bij de OCHTEND-check-in: bed_time is de bedtijd van de
+    // avond ERVÓÓR. De avond-check-in schrijft dezelfde datum onder de
+    // datum-sleutel met bed_time van DIE avond — dat zijn twee verschillende
+    // betekenissen, dus deze rij mag die nooit overschrijven.
+    //
+    // Maar hij mag zichzelf ook niet blijven stapelen: eerder deed elke
+    // ochtend-check-in `_nextId++` en zette er een NIEUWE rij naast. Wie zijn
+    // bedtijd corrigeerde kreeg zo een tweede slaaprij, en de lezer pakte de
+    // oudste — de correctie kwam nooit op het scherm. Daarom: bestaat er al een
+    // ochtendrij voor deze datum, werk die dan bij.
+    int? bestaandeSleutel;
+    for (final entry in _dailyLogs.toMap().entries) {
+      final sleutelIsDatum = entry.key.toString() == date;
+      final isSlaaprij = entry.value['date']?.toString() == date &&
+          entry.value['sleep_hours'] != null;
+      if (!sleutelIsDatum && isSlaaprij) {
+        bestaandeSleutel = entry.key as int?;
+        break;
+      }
+    }
+
+    final id = bestaandeSleutel ?? _nextId++;
     await _dailyLogs.put(id, {
       'id': id,
       'date': date.toString(),
@@ -419,7 +520,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       return key;
     } else {
       // Insert new record with smaller ID
-      final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+      final id = _nieuweSleutel(_srmActivities);
       await _srmActivities.put(id, {
         'id': id,
         'date': date.toString(),
@@ -493,6 +594,57 @@ class HiveDatabaseHelper implements DatabaseRepository {
     }
     if (migrated > 0) {
       AppLogger.debug('SRT migratie: $migrated activiteiten opgewaardeerd van p_score 1 naar 3');
+    }
+  }
+
+  /// Eenmalige opruiming van de dubbele dag-/slaaprijen die door de oude
+  /// writers zijn ontstaan.
+  ///
+  /// `insertSleepLog` zette elke ochtend-check-in als nieuwe rij neer, dus een
+  /// gecorrigeerde dag had meerdere slaaprijen. De lezer pakt nu de nieuwste
+  /// (zie getDailyLogs), maar de oude rijen blijven anders voor altijd staan.
+  /// Deze migratie laat per datum één slaaprij over — de laatst geschreven —
+  /// en ruimt de rest op. De dagrij onder de datum-sleutel blijft ongemoeid,
+  /// want die draagt de avond-bedtijd en de vragenlijstvelden.
+  Future<void> migrateDubbeleSlaaprijen() async {
+    const marker = 'migratie_dubbele_slaaprijen_v1';
+    if (_settings.get(marker) == true) return;
+
+    // Groepeer slaaprijen (niet-datum-sleutel) per datum.
+    final perDatum = <String, List<dynamic>>{};
+    for (final k in _dailyLogs.keys) {
+      if (k.toString() == '') continue;
+      final v = _dailyLogs.get(k);
+      if (v == null) continue;
+      final datum = v['date']?.toString();
+      if (datum == null) continue;
+      final isDatumSleutel = k.toString() == datum;
+      if (isDatumSleutel) continue;              // dagrij: nooit aanraken
+      if (v['sleep_hours'] == null) continue;    // geen slaaprij
+      perDatum.putIfAbsent(datum, () => []).add(k);
+    }
+
+    int opgeruimd = 0;
+    for (final entry in perDatum.entries) {
+      final sleutels = entry.value;
+      if (sleutels.length < 2) continue;
+      // Bewaar de sleutel met het hoogste nummer = laatst geschreven.
+      sleutels.sort((a, b) {
+        final na = a is int ? a : int.tryParse(a.toString()) ?? 0;
+        final nb = b is int ? b : int.tryParse(b.toString()) ?? 0;
+        return na.compareTo(nb);
+      });
+      final bewaren = sleutels.last;
+      for (final k in sleutels) {
+        if (k == bewaren) continue;
+        await _dailyLogs.delete(k);
+        opgeruimd++;
+      }
+    }
+
+    await _settings.put(marker, true);
+    if (opgeruimd > 0) {
+      AppLogger.debug('Slaapmigratie: $opgeruimd dubbele slaaprijen opgeruimd');
     }
   }
 
@@ -704,7 +856,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       for (var row in tables['crisis_plan'] as List) {
         final map = Map<String, dynamic>.from(row);
         if (!map.containsKey('id')) {
-          map['id'] = DateTime.now().millisecondsSinceEpoch % 1000000;
+          map['id'] = _nieuweSleutel(_crisisPlan);
         }
         // Ensure all values are strings for Hive compatibility
         final cleanMap = <String, dynamic>{};
@@ -718,7 +870,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       for (var row in tables['prodromal_checklist'] as List) {
         final map = Map<String, dynamic>.from(row);
         if (!map.containsKey('id')) {
-          map['id'] = DateTime.now().millisecondsSinceEpoch % 1000000;
+          map['id'] = _nieuweSleutel(_prodromalChecklist);
         }
         // Ensure all values are strings for Hive compatibility
         final cleanMap = <String, dynamic>{};
@@ -732,7 +884,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       for (var row in tables['prodromal_logs'] as List) {
         final map = Map<String, dynamic>.from(row);
         if (!map.containsKey('id')) {
-          map['id'] = DateTime.now().millisecondsSinceEpoch % 1000000;
+          map['id'] = _nieuweSleutel(_prodromalLogs);
         }
         // Ensure all values are strings for Hive compatibility
         final cleanMap = <String, dynamic>{};
@@ -746,7 +898,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       for (var row in tables['episode_logs'] as List) {
         final map = Map<String, dynamic>.from(row);
         if (!map.containsKey('id')) {
-          map['id'] = DateTime.now().millisecondsSinceEpoch % 1000000;
+          map['id'] = _nieuweSleutel(_episodeLogs);
         }
         final cleanMap = <String, dynamic>{};
         map.forEach((key, value) {
@@ -759,7 +911,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       for (var row in tables['mood_assessment'] as List) {
         final map = Map<String, dynamic>.from(row);
         if (!map.containsKey('id')) {
-          map['id'] = map['date'] ?? DateTime.now().millisecondsSinceEpoch % 1000000;
+          map['id'] = map['date'] ?? _nieuweSleutel(_moodAssessment);
         }
         final cleanMap = <String, dynamic>{};
         map.forEach((key, value) {
@@ -772,7 +924,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       for (var row in tables['dagboek'] as List) {
         final map = Map<String, dynamic>.from(row);
         if (!map.containsKey('id')) {
-          map['id'] = map['date'] ?? DateTime.now().millisecondsSinceEpoch % 1000000;
+          map['id'] = map['date'] ?? _nieuweSleutel(_dagboekBox);
         }
         final cleanMap = <String, dynamic>{};
         map.forEach((key, value) {
@@ -804,7 +956,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
     try {
       // Use a smaller ID to avoid 32-bit integer overflow
-      final id = DateTime.now().millisecondsSinceEpoch % 1000000; // Max 999,999
+      final id = _nieuweSleutel(_medicationConfig); // Max 999,999
       final data = {
         'id': id,
         'naam': naam.toString(),
@@ -822,7 +974,13 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> deleteMedicationConfig(int id) async {
-    // Cascade delete: remove schedules and intakes first
+    // Soft-delete, zelfde als de SQLite-kant (database_helper.dart): het
+    // medicijn verdwijnt uit de lijst maar de INNAME-HISTORIE BLIJFT. Eerder
+    // wiste deze methode alle intakes van dat medicijn mee (cascade), waardoor
+    // het verwijderen van één dag met terugwerkende kracht je hele historie
+    // leegmaakte — je zag daarna nergens meer dat je het ooit genomen had.
+    //
+    // Schedules mogen wél weg: er hoeft geen herinnering meer af te gaan.
     final schedules = _medicationSchedule.toMap().entries.where((e) {
       final medId = e.value['medication_id'];
       return medId == id || medId == id.toString();
@@ -830,16 +988,15 @@ class HiveDatabaseHelper implements DatabaseRepository {
     for (final s in schedules) {
       await _medicationSchedule.delete(s.key);
     }
-    final intakes = _medicationIntake.toMap().entries.where((e) {
-      final medId = e.value['medication_id'];
-      return medId == id || medId == id.toString();
-    });
-    for (final i in intakes) {
-      await _medicationIntake.delete(i.key);
-    }
-    // Try deleting with both int and string key
-    await _medicationConfig.delete(id);
-    await _medicationConfig.delete(id.toString());
+    // Innames blijven staan; alleen de config krijgt de markering.
+    final bestaand = _medicationConfig.get(id) ??
+        _medicationConfig.get(id.toString());
+    final gemarkeerd = <String, dynamic>{
+      ...?bestaand?.cast<String, dynamic>(),
+      'id': id,
+      'deleted': '1',
+    };
+    await _medicationConfig.put(id, gemarkeerd);
     return 1;
   }
 
@@ -916,7 +1073,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicationSchedule(int medicationId, String reminderTime, String daysOfWeek) async {
     // Use smaller ID to avoid 32-bit integer overflow in Hive
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final id = _nieuweSleutel(_medicationSchedule);
     await _medicationSchedule.put(id, {
       'id': id,
       'medication_id': medicationId,
@@ -1005,7 +1162,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> confirmMedicationIntake(String date, int medicationId, int confirmed) async {
     // Use smaller ID to avoid 32-bit integer overflow in Hive
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final id = _nieuweSleutel(_medicationIntake);
     await _medicationIntake.put(id, {
       'id': id,
       'date': date.toString(),
@@ -1023,34 +1180,45 @@ class HiveDatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertMedicationIntake(String date, int medicationId, int aantal) async {
-    // Find existing record for this date + medication
-    final existing = _medicationIntake.values.where((e) =>
-      e['date'] == date && e['medication_id'] == medicationId
-    ).toList();
-
-    if (existing.isNotEmpty) {
-      // Update existing record - use first found record's key
-      final key = _medicationIntake.keyAt(
-        _medicationIntake.values.toList().indexOf(existing.first)
-      );
-      await _medicationIntake.put(key, {
-        'id': key,
-        'date': date.toString(),
-        'medication_id': medicationId,
-        'aantal_ingenomen': aantal,
-      });
-      return key;
-    } else {
-      // Insert new record
-      final id = DateTime.now().millisecondsSinceEpoch;
-      await _medicationIntake.put(id, {
-        'id': id,
-        'date': date.toString(),
-        'medication_id': medicationId,
-        'aantal_ingenomen': aantal,
-      });
-      return id;
+    // Find existing record for this date + medication.
+    //
+    // De vergelijking moet TYPE-TOLERANT zijn: de SQLite->Hive migratie zet
+    // elke waarde om naar een string (zie de migratie verderop), dus
+    // `medication_id` is daar '555' terwijl de UI met int 555 schrijft. Een
+    // strikte `==` vond de bestaande rij dan nooit en zette er elke keer een
+    // NIEUWE naast — dat is de "tweede inname" die op het scherm verscheen
+    // zodra je de dosering van een medicijn aanpaste.
+    bool zelfdeMedicijn(dynamic raw) {
+      final id = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
+      return id == medicationId;
     }
+
+    dynamic bestaandeSleutel;
+    for (final e in _medicationIntake.toMap().entries) {
+      if (e.value['date'] == date && zelfdeMedicijn(e.value['medication_id'])) {
+        bestaandeSleutel = e.key;
+        break;
+      }
+    }
+
+    if (bestaandeSleutel != null) {
+      await _medicationIntake.put(bestaandeSleutel, {
+        'id': bestaandeSleutel,
+        'date': date.toString(),
+        'medication_id': medicationId,
+        'aantal_ingenomen': aantal,
+      });
+      return 1;
+    }
+    // Nog geen rij voor deze dag: nieuwe aanmaken.
+    final id = DateTime.now().millisecondsSinceEpoch;
+    await _medicationIntake.put(id, {
+      'id': id,
+      'date': date.toString(),
+      'medication_id': medicationId,
+      'aantal_ingenomen': aantal,
+    });
+    return id;
   }
 
   @override
@@ -1058,16 +1226,18 @@ class HiveDatabaseHelper implements DatabaseRepository {
     final date = data['date'] as String;
     final medicationId = data['medication_id'] as int;
 
-    // Find existing record for this date + medication
-    final existing = _medicationIntake.values.where((e) =>
-      e['date'] == date && e['medication_id'] == medicationId
-    ).toList();
+    // Zelfde type-tolerantie als insertMedicationIntake: na de migratie staat
+    // medication_id als string in de box. Een strikte `==` ziet de bestaande
+    // rij niet en maakt een tweede aan — precies de dubbele inname.
+    final existing = _medicationIntake.toMap().entries.where((e) {
+      final raw = e.value['medication_id'];
+      final id = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
+      return e.value['date'] == date && id == medicationId;
+    }).toList();
 
     if (existing.isNotEmpty) {
-      // Update existing record - use first found record's key
-      final key = _medicationIntake.keyAt(
-        _medicationIntake.values.toList().indexOf(existing.first)
-      );
+      // Werk de gevonden rij bij — de entries dragen hun sleutel al.
+      final key = existing.first.key;
       await _medicationIntake.put(key, {
         ...data,
         'id': key,
@@ -1076,18 +1246,17 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'aantal_ingenomen': data['aantal_ingenomen'] ?? 0,
       });
       return key;
-    } else {
-      // Insert new record with smaller ID to avoid 32-bit overflow
-      final id = DateTime.now().millisecondsSinceEpoch % 1000000;
-      await _medicationIntake.put(id, {
-        ...data,
-        'id': id,
-        'date': (data['date'] as String?)?.toString() ?? date,
-        'medication_id': data['medication_id'] ?? medicationId,
-        'aantal_ingenomen': data['aantal_ingenomen'] ?? 0,
-      });
-      return id;
     }
+    // Nog geen rij: nieuwe aanmaken met kleinere ID tegen 32-bit overflow.
+    final id = _nieuweSleutel(_medicationIntake);
+    await _medicationIntake.put(id, {
+      ...data,
+      'id': id,
+      'date': (data['date'] as String?)?.toString() ?? date,
+      'medication_id': data['medication_id'] ?? medicationId,
+      'aantal_ingenomen': data['aantal_ingenomen'] ?? 0,
+    });
+    return id;
   }
 
   @override
@@ -1172,7 +1341,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertLifeEvent(String date, String omschrijving, int invloed) async {
     // Use smaller ID to avoid 32-bit integer overflow in Hive
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final id = _nieuweSleutel(_lifeEvents);
     await _lifeEvents.put(id, {
       'id': id,
       'date': date.toString(),
@@ -1185,7 +1354,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertLifeEventMap(Map<String, dynamic> data) async {
     // Use smaller ID to avoid 32-bit integer overflow in Hive
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final id = _nieuweSleutel(_lifeEvents);
     final cleanData = <String, dynamic>{
       'id': id,
       'date': (data['date'] as String?)?.toString() ?? '',
@@ -1302,7 +1471,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   Future<int> insertMedicalAppointment(Map<String, dynamic> data) async {
     try {
       // Use a smaller ID to avoid 32-bit integer overflow in Hive (max 0xFFFFFFFF)
-      final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+      final id = _nieuweSleutel(_medicalAppointments);
       
       // Ensure all values are properly typed for Hive.
       // reminder_days MOET als int bewaard blijven: het scherm vergelijkt
@@ -1437,7 +1606,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertProdromalSign(Map<String, dynamic> data) async {
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final id = _nieuweSleutel(_prodromalChecklist);
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {
       if (key == 'id' || key == 'sort_order') {
@@ -1479,7 +1648,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertProdromalLog(Map<String, dynamic> data) async {
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final id = _nieuweSleutel(_prodromalLogs);
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {
       cleanData[key] = value?.toString() ?? value;
@@ -1660,7 +1829,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertCrisisPlanSection(Map<String, dynamic> data) async {
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final id = _nieuweSleutel(_crisisPlan);
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {
       cleanData[key] = value?.toString() ?? value;
@@ -1709,7 +1878,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertEpisode(Map<String, dynamic> data) async {
-    final id = DateTime.now().millisecondsSinceEpoch % 1000000;
+    final id = _nieuweSleutel(_episodeLogs);
     final clean = Map<String, dynamic>.from(data);
     clean['id'] = id;
     clean.forEach((key, value) {
