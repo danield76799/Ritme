@@ -89,6 +89,67 @@ void main() {
       );
     });
 
+    test('dagelijkse frequentie krijgt een DATUMnaam, niet een weeknaam', () {
+      // Regressie 09-2026: de naam was ALTIJD per week. Met 'dagelijks'
+      // schreef elke dag naar hetzelfde weekbestand en overschreef de vorige,
+      // dus de gebruiker zag één bestand per week in plaats van per dag.
+      final ma = BackupService.autoBackupBestandsnaam(
+          DateTime(2026, 9, 21), freq: BackupService.freqDagelijks);
+      final di = BackupService.autoBackupBestandsnaam(
+          DateTime(2026, 9, 22), freq: BackupService.freqDagelijks);
+      final wo = BackupService.autoBackupBestandsnaam(
+          DateTime(2026, 9, 23), freq: BackupService.freqDagelijks);
+
+      expect(ma, 'ritme_backup_auto_2026-09-21.json');
+      expect(di, 'ritme_backup_auto_2026-09-22.json');
+      expect(wo, 'ritme_backup_auto_2026-09-23.json');
+      expect({ma, di, wo}.length, 3,
+          reason: 'drie dagen in dezelfde week = drie bestanden');
+    });
+
+    test('3dagen krijgt ook een datumnaam', () {
+      expect(
+        BackupService.autoBackupBestandsnaam(DateTime(2026, 9, 25),
+            freq: BackupService.freq3Dagen),
+        'ritme_backup_auto_2026-09-25.json',
+      );
+    });
+
+    test('weekfrequentie houdt de weeknaam', () {
+      expect(
+        BackupService.autoBackupBestandsnaam(DateTime(2026, 9, 25),
+            freq: BackupService.freqWeek),
+        'ritme_backup_auto_2026-W39.json',
+      );
+      // En zonder freq (standaard) ook.
+      expect(
+        BackupService.autoBackupBestandsnaam(DateTime(2026, 9, 25)),
+        'ritme_backup_auto_2026-W39.json',
+      );
+    });
+
+    test('twee runs op dezelfde dag overschrijven elkaar (dat is de bedoeling)', () {
+      final ochtend = BackupService.autoBackupBestandsnaam(
+          DateTime(2026, 9, 25, 7), freq: BackupService.freqDagelijks);
+      final avond = BackupService.autoBackupBestandsnaam(
+          DateTime(2026, 9, 25, 22), freq: BackupService.freqDagelijks);
+      expect(ochtend, avond);
+    });
+
+    test('de bewaartermijn hangt van de frequentie af', () {
+      // Vier bestanden is bij 'dagelijks' maar vier dagen geschiedenis.
+      expect(BackupService.autoBackupBehoudVoor(BackupService.freqDagelijks),
+          greaterThan(BackupService.autoBackupBehoud));
+      expect(
+          BackupService.autoBackupBehoudVoor(BackupService.freqWeek),
+          BackupService.autoBackupBehoud);
+      // Dekking blijft in de buurt van een maand.
+      for (final f in [BackupService.freqDagelijks, BackupService.freq3Dagen]) {
+        expect(BackupService.autoBackupBehoudVoor(f) >= 10, isTrue,
+            reason: 'minimaal 10 bestanden bij een dagfrequentie');
+      }
+    });
+
     test('jaargrens volgt het ISO-weekjaar, niet de kalender', () {
       // 29-12-2025 (ma) valt in week 1 van 2026.
       expect(

@@ -102,7 +102,7 @@ class BackupMapService {
     }
   }
 
-  /// Ruimt oude auto-weekbestanden in de gekozen map op tot [behoud] stuks.
+  /// Ruimt oude auto-bestanden in de gekozen map op tot [behoud] stuks.
   static Future<void> ruimOp({int behoud = 4}) async {
     try {
       final uri = await mapUri();
@@ -114,6 +114,9 @@ class BackupMapService {
               b.name.startsWith('ritme_backup_auto_') &&
               b.name.endsWith('.json'))
           .toList()
+        // Nieuwste naam achteraan: werkt voor zowel datumnamen
+        // (2026-09-25) als weeknamen (2026-W39) — beide sorteren lexicaal
+        // in chronologische orde.
         ..sort((a, b) => a.name.compareTo(b.name));
       if (autos.length <= behoud) return;
       for (final oud in autos.take(autos.length - behoud)) {

@@ -149,16 +149,21 @@ class BackupService {
 
   /// Save backup to Downloads folder (direct, no share sheet)
   ///
-  /// Met [auto] = true krijgt het bestand de weeknaam
-  /// (`ritme_backup_auto_2026-W38.json`, zie [autoBackupBestandsnaam]) en
-  /// wordt het bij elke run in die week overschreven. Handmatige backups
-  /// houden hun timestamp-naam en blijven altijd staan.
-  static Future<String> saveLocalBackup({bool auto = false}) async {
+  /// Bij [auto] bepaalt de gekozen FREQUENTIE de bestandsnaam: 'dagelijks' en
+  /// '3dagen' krijgen een datumnaam (`ritme_backup_auto_2026-09-25.json`),
+  /// 'week' een weeknaam (`ritme_backup_auto_2026-W39.json`).
+  ///
+  /// Waarom dat onderscheid: eerder was de naam ALTIJD per ISO-week, ongeacht
+  /// de frequentie. Koos je 'dagelijks', dan schreef elke dag naar hetzelfde
+  /// weekbestand en overschreef de vorige — je zag één bestand per week en de
+  /// geschiedenis van maandag was weg zodra dinsdag draaide.
+  static Future<String> saveLocalBackup({bool auto = false, String? freq}) async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
 
+    final gekozenFreq = freq ?? await huidigeFrequentie();
     final bestandsnaam = auto
-        ? autoBackupBestandsnaam(DateTime.now())
+        ? autoBackupBestandsnaam(DateTime.now(), freq: gekozenFreq)
         : "ritme_backup_${DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0]}.json";
 
     // Schrijven naar Downloads lukt op moderne Android (scoped storage,
@@ -169,7 +174,9 @@ class BackupService {
     // Eerst de SAF-map: die schrijft via ContentResolver, niet via File.
     if (await BackupMapService.schrijf(
         bestandsnaam, Uint8List.fromList(utf8.encode(jsonString)))) {
-      if (auto) await BackupMapService.ruimOp();
+      if (auto) {
+        await BackupMapService.ruimOp(behoud: autoBackupBehoudVoor(gekozenFreq));
+      }
       // Pad voor in de melding: mapnaam + bestand (geen raw path bij SAF).
       final mapnaam = await BackupMapService.mapNaam();
       return '${mapnaam ?? 'backupmap'}:$bestandsnaam';
@@ -213,7 +220,8 @@ class BackupService {
     // mappen (oude weken kunnen nog in Downloads staan van vóór de terugval).
     if (auto) {
       for (final dir in pogingen) {
-        await ruimOudeAutoBackupsOp(dir);
+        await ruimOudeAutoBackupsOp(dir,
+            behoud: autoBackupBehoudVoor(gekozenFreq));
       }
     }
 
@@ -445,7 +453,7 @@ class BackupService {
       if (!autoBackupVerschuldigd(freq, last, now ?? DateTime.now())) {
         return false;
       }
-      await saveLocalBackup(auto: true);
+      await saveLocalBackup(auto: true, freq: freq);
       final merged = Map<String, dynamic>.from(settings ?? {});
       merged[lastAutoBackupKey] = (now ?? DateTime.now()).toIso8601String();
       await _db.updateSettingsMap(merged);
@@ -460,17 +468,49 @@ class BackupService {
     }
   }
 
-  /// Bestandsnaam voor de automatische backup: één bestand per ISO-week
-  /// (`ritme_backup_auto_2026-W38.json`), dat bij elke run in die week
-  /// overschreven wordt. Zo hoopt Downloads nooit vol met timestamps.
+  /// Bestandsnaam voor de automatische backup.
   ///
-  /// Het jaar is het ISO-weekjaar (de donderdag bepaalt): 29-12-2025 valt
-  /// in week 1 van 2026 en heet dus `2026-W01`.
-  static String autoBackupBestandsnaam(DateTime now) {
+  /// De naam volgt de GEKOZEN FREQUENTIE, want anders overschrijft een
+  /// dagelijkse backup zichzelf zeven keer per week:
+  ///  - 'dagelijks' en '3dagen' → datumnaam, één bestand per dag
+  ///    (`ritme_backup_auto_2026-09-25.json`). Twee runs op dezelfde dag
+  ///    overschrijven elkaar, wat de bedoeling is.
+  ///  - 'week' (en alles wat geen dagfrequentie is) → weeknaam, één bestand
+  ///    per ISO-week (`ritme_backup_auto_2026-W39.json`), dat bij elke run in
+  ///    die week overschreven wordt.
+  ///
+  /// Het jaar in de weeknaam is het ISO-weekjaar (de donderdag bepaalt):
+  /// 29-12-2025 valt in week 1 van 2026 en heet dus `2026-W01`.
+  static String autoBackupBestandsnaam(DateTime now, {String? freq}) {
+    final effectief = freq ?? freqStandaard;
+    if (effectief == freqDagelijks || effectief == freq3Dagen) {
+      return 'ritme_backup_auto_'
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-'
+          '${now.day.toString().padLeft(2, '0')}.json';
+    }
     final donderdag = now.add(Duration(days: 4 - now.weekday));
     final weekjaar = donderdag.year;
     final week = isoWeekNummer(now);
     return 'ritme_backup_auto_${weekjaar}-W${week.toString().padLeft(2, '0')}.json';
+  }
+
+  /// Hoeveel automatische bestanden bewaard blijven, afhankelijk van de
+  /// frequentie. Eén constante zou bij 'dagelijks' maar vier DAGEN geschiedenis
+  /// geven; dit houdt de dekking vergelijkbaar (ongeveer een maand).
+  static int autoBackupBehoudVoor(String freq) => switch (freq) {
+        freqDagelijks => 14, // twee weken
+        freq3Dagen => 10, // een maand
+        _ => autoBackupBehoud, // 4 weken
+      };
+
+  /// Huidige frequentie uit de instellingen (valt terug op de standaard).
+  static Future<String> huidigeFrequentie() async {
+    try {
+      final settings = await _db.getSettings();
+      return settings?[autoBackupFreqKey]?.toString() ?? freqStandaard;
+    } catch (_) {
+      return freqStandaard;
+    }
   }
 
   /// ISO-8601-weeknummer (1-53), zonder pakket nodig.
@@ -485,9 +525,10 @@ class BackupService {
     return (d0.difference(j0).inDays ~/ 7) + 1;
   }
 
-  /// Ruimt oude automatische weekbestanden op tot [behoud] stuks (nieuwste
-  /// weken blijven). Raakt handmatige backups (`ritme_backup_*.json` zonder
-  /// `_auto`) niet aan.
+  /// Ruimt oude automatische bestanden op tot [behoud] stuks (nieuwste
+  /// blijven). Werkt voor zowel datum- als weeknamen: alles met
+  /// `ritme_backup_auto_` wordt op wijzigingsdatum gesorteerd. Handmatige
+  /// backups (`ritme_backup_*.json` zonder `_auto`) blijven altijd staan.
   static Future<void> ruimOudeAutoBackupsOp(Directory dir, {int behoud = autoBackupBehoud}) async {
     try {
       if (!await dir.exists()) return;
