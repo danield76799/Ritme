@@ -226,6 +226,46 @@ void main() {
         await dir.delete(recursive: true);
       }
     });
+
+    test('oude weekbestanden naast nieuwe dagbestanden: de OUDSTE gaan weg', () async {
+      // Regressie: op naam sorteren zet '…-W39' NA '…-2026-09-25' (want 'W' >
+      // '9'), waardoor de oude weekbestanden als nieuwste gelden en juist de
+      // verse dagbestanden verwijderd worden. Sorteren op wijzigingsdatum
+      // voorkomt dat.
+      final dir = await Directory.systemTemp.createTemp('autobackup3');
+      try {
+        // Twee oude weekbestanden (aangemaakt in september).
+        for (final w in ['W38', 'W39']) {
+          final f = File('${dir.path}/ritme_backup_auto_2026-$w.json');
+          await f.writeAsString('{}');
+          await f.setLastModified(DateTime(2026, 9, 20));
+        }
+        // Tien nieuwe dagbestanden (later gewijzigd).
+        for (var d = 21; d <= 30; d++) {
+          final f = File('${dir.path}/ritme_backup_auto_2026-09-$d.json');
+          await f.writeAsString('{}');
+          await f.setLastModified(DateTime(2026, 10, d - 20));
+        }
+
+        await BackupService.ruimOudeAutoBackupsOp(dir, behoud: 10);
+
+        final over = dir
+            .listSync()
+            .whereType<File>()
+            .map((f) => f.path.split('/').last)
+            .toList()
+          ..sort();
+        expect(over.length, 10);
+        expect(over.any((n) => n.contains('-W38')), isFalse,
+            reason: 'het oudste weekbestand gaat weg');
+        expect(over.any((n) => n.contains('-W39')), isFalse);
+        expect(over.any((n) => n.contains('2026-09-21')), isTrue,
+            reason: 'de verse dagbestanden blijven');
+        expect(over.any((n) => n.contains('2026-09-30')), isTrue);
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    });
   });
 
   group('saveLocalBackup: terugval bij geblokkeerde Downloads (structuur)', () {
