@@ -266,6 +266,71 @@ void main() {
         await dir.delete(recursive: true);
       }
     });
+    test('bestaande weekbestanden overleven de overgang naar dagelijks', () async {
+      // Wat er op het toestel staat: twee weekbestanden van vóór de fix.
+      // De bewaartermijn is bij 'dagelijks' nu 14, dus er is ruimte genoeg —
+      // ze mogen niet meteen verdwijnen.
+      final dir = await Directory.systemTemp.createTemp('overgang');
+      try {
+        final w38 = File('${dir.path}/ritme_backup_auto_2026-W38.json');
+        await w38.writeAsString('{"data":"week38"}');
+        await w38.setLastModified(DateTime(2026, 9, 20, 8));
+
+        final w39 = File('${dir.path}/ritme_backup_auto_2026-W39.json');
+        await w39.writeAsString('{"data":"week39"}');
+        await w39.setLastModified(DateTime(2026, 9, 25, 8));
+
+        await BackupService.ruimOudeAutoBackupsOp(dir, behoud: 14);
+
+        final namen = dir
+            .listSync()
+            .whereType<File>()
+            .map((f) => f.path.split('/').last)
+            .toList()
+          ..sort();
+        expect(namen.contains('ritme_backup_auto_2026-W38.json'), isTrue,
+            reason: 'bestaande backups worden niet opgeruimd zolang er minder '
+                'dan de bewaartermijn staat');
+        expect(namen.contains('ritme_backup_auto_2026-W39.json'), isTrue);
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    });
+
+    test('na 14 dagbestanden gaan de oudste weg, ook de oude weekbestanden', () async {
+      final dir = await Directory.systemTemp.createTemp('overgang2');
+      try {
+        for (final w in ['W38', 'W39']) {
+          final f = File('${dir.path}/ritme_backup_auto_2026-$w.json');
+          await f.writeAsString('{}');
+          await f.setLastModified(DateTime(2026, 9, 20));
+        }
+        for (var i = 0; i < 14; i++) {
+          final d = DateTime(2026, 9, 26).add(Duration(days: i));
+          final naam = 'ritme_backup_auto_${d.year}-'
+              '${d.month.toString().padLeft(2, '0')}-'
+              '${d.day.toString().padLeft(2, '0')}.json';
+          final f = File('${dir.path}/$naam');
+          await f.writeAsString('{}');
+          await f.setLastModified(DateTime(2026, 10, 1 + i));
+        }
+
+        await BackupService.ruimOudeAutoBackupsOp(dir, behoud: 14);
+
+        final namen = dir
+            .listSync()
+            .whereType<File>()
+            .map((f) => f.path.split('/').last)
+            .toList()
+          ..sort();
+        expect(namen.length, 14);
+        expect(namen.any((n) => n.contains('-W')), isFalse,
+            reason: 'de oude weekbestanden zijn dan het oudst en gaan weg');
+        expect(namen.last.contains('2026-10-09'), isTrue);
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    });
   });
 
   group('saveLocalBackup: terugval bij geblokkeerde Downloads (structuur)', () {
