@@ -103,6 +103,12 @@ class BackupMapService {
   }
 
   /// Ruimt oude auto-bestanden in de gekozen map op tot [behoud] stuks.
+  ///
+  /// Sorteert op WIJZIGINGSDATUM, niet op naam. Dat is nodig omdat oude
+  /// weekbestanden (`…-W39.json`) en nieuwe dagbestanden (`…-2026-09-25.json`)
+  /// naast elkaar kunnen staan, en lexicaal sorteert 'W' ná '9' — dan zouden de
+  /// oude weekbestanden als "nieuwste" gelden en verdwijnen de nieuwe
+  /// dagbestanden.
   static Future<void> ruimOp({int behoud = 4}) async {
     try {
       final uri = await mapUri();
@@ -114,10 +120,7 @@ class BackupMapService {
               b.name.startsWith('ritme_backup_auto_') &&
               b.name.endsWith('.json'))
           .toList()
-        // Nieuwste naam achteraan: werkt voor zowel datumnamen
-        // (2026-09-25) als weeknamen (2026-W39) — beide sorteren lexicaal
-        // in chronologische orde.
-        ..sort((a, b) => a.name.compareTo(b.name));
+        ..sort((a, b) => a.lastModified.compareTo(b.lastModified));
       if (autos.length <= behoud) return;
       for (final oud in autos.take(autos.length - behoud)) {
         try {
