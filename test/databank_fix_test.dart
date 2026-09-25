@@ -28,6 +28,7 @@ void main() {
     for (final b in [
       'settings',
       'daily_logs',
+      'srm_activities',
       'medication_config',
       'medication_intake',
       'medication_schedule',
@@ -186,6 +187,42 @@ void main() {
       expect(box.length, 30,
           reason: 'twee schrijfacties binnen 16 min 40 s mogen niet botsen '
               'op dezelfde sleutel; kwijt: $kwijt');
+    });
+  });
+
+  group('backup-restore', () {
+    test('een restore overschrijft geen bestaande activiteiten', () async {
+      // `insertSrmActivityMap` (de restore-weg) koos zijn sleutel uit
+      // `_nextId++`, dat in ELKE app-start weer op 1 begon. Staat er al een rij
+      // met sleutel 1 in de box, dan schrijft een restore daaroverheen.
+      //
+      // Nagebootst door sleutel 1 en 2 al in de box te zetten; een verse
+      // testproces-start laat `_nextId` weer bij 1 beginnen — precies de
+      // productiesituatie.
+      final box = Hive.box('srm_activities');
+      await box.put(1, {
+        'id': 1, 'date': '2026-09-19', 'activity_type': 'opstaan',
+        'actual_time': '07:00', 'p_score': '3',
+      });
+      await box.put(2, {
+        'id': 2, 'date': '2026-09-20', 'activity_type': 'opstaan',
+        'actual_time': '07:05', 'p_score': '3',
+      });
+
+      final helper = HiveDatabaseHelper.instance;
+      await helper.insertSrmActivityMap({
+        'date': '2026-09-21',
+        'activity_type': 'opstaan',
+        'actual_time': '07:30',
+        'p_score': 3,
+      });
+
+      final datums = box.toMap().values.map((v) => v['date']).toList();
+      print('  rijen: ${box.length}, datums: $datums');
+
+      expect(datums.contains('2026-09-19'), isTrue,
+          reason: 'de restore mag de oudste rij niet overschrijven');
+      expect(datums.contains('2026-09-21'), isTrue);
     });
   });
 }

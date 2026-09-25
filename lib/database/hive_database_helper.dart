@@ -4,7 +4,6 @@ import '../utils/logger.dart';
 import 'database_repository.dart';
 
 class HiveDatabaseHelper implements DatabaseRepository {
-  static int _nextId = 1;
   static final HiveDatabaseHelper instance = HiveDatabaseHelper._init();
   
   static const String _settingsBox = 'settings';
@@ -22,7 +21,6 @@ class HiveDatabaseHelper implements DatabaseRepository {
   static const String _episodeLogsBox = 'episode_logs';
   static const String _moodAssessmentBox = 'mood_assessment';
   static const String _dagboekBoxName = 'daily_dagboek';
-
   HiveDatabaseHelper._init();
 
   static Future<void> init() async {
@@ -415,18 +413,18 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // bedtijd corrigeerde kreeg zo een tweede slaaprij, en de lezer pakte de
     // oudste — de correctie kwam nooit op het scherm. Daarom: bestaat er al een
     // ochtendrij voor deze datum, werk die dan bij.
-    int? bestaandeSleutel;
+    dynamic bestaandeSleutel;
     for (final entry in _dailyLogs.toMap().entries) {
       final sleutelIsDatum = entry.key.toString() == date;
       final isSlaaprij = entry.value['date']?.toString() == date &&
           entry.value['sleep_hours'] != null;
       if (!sleutelIsDatum && isSlaaprij) {
-        bestaandeSleutel = entry.key as int?;
+        bestaandeSleutel = entry.key;
         break;
       }
     }
 
-    final id = bestaandeSleutel ?? _nextId++;
+    final id = bestaandeSleutel ?? _nieuweSleutel(_dailyLogs);
     await _dailyLogs.put(id, {
       'id': id,
       'date': date.toString(),
@@ -536,8 +534,10 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<int> insertSrmActivityMap(Map<String, dynamic> data) async {
-    // Use incremental counter for unique IDs
-    final id = _nextId++;
+    // Wordt gebruikt door backup-restore. `_nextId++` begon bij elke start op 1,
+    // dus een restore overschreef de eerste rijen van de box (id 1, 2, 3 …).
+    // Dezelfde veilige teller als de rest van dit bestand.
+    final id = _nieuweSleutel(_srmActivities);
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {
       cleanData[key] = value?.toString() ?? value;
