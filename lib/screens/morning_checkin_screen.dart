@@ -720,7 +720,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                     spacing: 8,
                     runSpacing: 8,
                     alignment: WrapAlignment.center,
-                    children: [0, 5, 10, 15, 30, 45, 60, 90]
+                    children: [0, 5, 10, 15, 30, 45, 60, 90, 120, 180, 240]
                         .map((m) => ChoiceChip(
                               label: Text('${m}m'),
                               selected: _awakeMinutes == m,

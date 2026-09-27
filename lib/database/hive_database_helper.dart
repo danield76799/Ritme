@@ -403,6 +403,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // ===================
   
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
+    // Wakker-gelegen is maximaal 4 uur (240 min). Langere invoer (of
+    // gerestorede data) wordt hier afgekapt tot de limiet.
+    final geclampteWakker = awakeMinutes.clamp(0, 240);
     // Deze rij hoort bij de OCHTEND-check-in: bed_time is de bedtijd van de
     // avond ERVÓÓR. De avond-check-in schrijft dezelfde datum onder de
     // datum-sleutel met bed_time van DIE avond — dat zijn twee verschillende
@@ -430,8 +433,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
       'date': date.toString(),
       'bed_time': bedTime.toString(),
       'wake_time': wakeTime.toString(),
-      'awake_minutes': awakeMinutes,
-      'sleep_hours': _calculateSleepHours(bedTime, wakeTime, awakeMinutes),
+      'awake_minutes': geclampteWakker,
+      'sleep_hours':
+          _calculateSleepHours(bedTime, wakeTime, geclampteWakker),
     });
     return id;
   }
@@ -793,6 +797,15 @@ class HiveDatabaseHelper implements DatabaseRepository {
         map.forEach((key, value) {
           cleanMap[key] = value?.toString() ?? value;
         });
+        // Wakker-gelegen afkappen op 4 uur (240 min) bij import — oude
+        // backups kunnen invoer boven de limiet bevatten.
+        final wakkerRaw = cleanMap['awake_minutes'];
+        if (wakkerRaw != null) {
+          final wakker = int.tryParse(wakkerRaw.toString());
+          if (wakker != null && wakker > 240) {
+            cleanMap['awake_minutes'] = '240';
+          }
+        }
         await _dailyLogs.put(map['id'], cleanMap);
       }
     }

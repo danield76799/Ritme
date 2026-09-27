@@ -938,7 +938,10 @@ class _AwakeTimePicker extends StatelessWidget {
         onChanged(index * 15);
       },
       backgroundColor: Theme.of(context).colorScheme.surface,
-      children: List.generate(49, (index) {
+      children: List.generate(17, (index) {
+        // Max 4 uur (240 min): indices 0..16 * 15 min. Bewust afgekapt — een
+        // langere periode wakker gelegen past niet in een 12-uurs slaapvenster
+        // en duidt op een invoerfout.
         final minutes = index * 15;
         final hours = minutes ~/ 60;
         final mins = minutes % 60;
