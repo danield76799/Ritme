@@ -50,6 +50,10 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // (eenmalig; laat per datum één rij staan).
     final h3 = HiveDatabaseHelper.instance;
     await h3.migrateDubbeleSlaaprijen();
+    // Voeg dubbele medicatie-configs samen (zelfde naam → één rij op de
+    // oudste id), zodat intake-rijen weer aan precies één config hangen.
+    final h4 = HiveDatabaseHelper.instance;
+    await h4.migrateDubbeleMedicatieConfigs();
   }
 
   Box get _settings => Hive.box(_settingsBox);
@@ -649,6 +653,118 @@ class HiveDatabaseHelper implements DatabaseRepository {
     await _settings.put(marker, true);
     if (opgeruimd > 0) {
       AppLogger.debug('Slaapmigratie: $opgeruimd dubbele slaaprijen opgeruimd');
+    }
+  }
+
+  /// Dubbele medicatie-configs samenvoegen (eenmalig bij opstarten).
+  ///
+  /// Ontstaan door de oude backup-restore: die schreef elke config met een
+  /// NIEUW gegenereerde id, terwijl de intake-rijen naar de ORIGINELE id
+  /// bleven wijzen. Na een restore stonden er dus twee rijen met dezelfde
+  /// naam (bv. twee keer "Lurasidon") en ging een dosisupdate maar naar de
+  /// ene helft. De backup-restore zet sinds 1161070 op de originele id terug,
+  /// maar bestaande duplicaten bleven dan staan — deze migratie ruimt ze op.
+  ///
+  /// Strategie: per naamgroep (naam genormaliseerd, case-insensitief) blijft
+  /// de rij met de LAAGSTE id over — dat is de oorspronkelijke rij waarnaar
+  /// de intake-historie verwijst. De dubbel(s) worden verwijderd. Als de
+  /// dubbel een hogere dosering droeg (de gebruiker had de dosis via de
+  /// vraag bijgewerkt op de originele rij) wint NIETS automatisch: de laagste
+  /// id-rij behoudt zijn eigen dosering, want de dosering is een medische
+  /// waarde die we niet stilletjes kiezen. Intake-rijen die naar een
+  /// verwijderde dubbel wijzen worden verplaatst naar de behouden rij —
+  /// er kan geen historie verloren gaan omdat beide rijen dezelfde inname-
+  /// rijen deelden (per (medication_id, date) bestaat er maar één rij).
+  Future<void> migrateDubbeleMedicatieConfigs() async {
+    const marker = 'migratie_dubbele_medicatie_configs_v1';
+    if (_settings.get(marker) == true) return;
+
+    // Groepeer actieve configs per genormaliseerde naam.
+    String normaliseer(String? naam) =>
+        (naam ?? '').trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+
+    final perNaam = <String, List<MapEntry<dynamic, Map<String, dynamic>>>>{};
+    for (final k in _medicationConfig.keys) {
+      final v = _medicationConfig.get(k);
+      if (v == null) continue;
+      final map = Map<String, dynamic>.from(v);
+      final del = map['deleted'];
+      if (del != null && del != 0 && del != '0' && del != false) continue;
+      final naam = normaliseer(map['naam']?.toString());
+      if (naam.isEmpty) continue;
+      perNaam.putIfAbsent(naam, () => []).add(MapEntry(k, map));
+    }
+
+    int samengevoegd = 0;
+    int intakesVerplaatst = 0;
+    for (final entry in perNaam.entries) {
+      final rijen = entry.value;
+      if (rijen.length < 2) continue;
+
+      // Sorteer op numerieke id (laagste eerst = oorspronkelijke rij).
+      int idVan(MapEntry<dynamic, Map<String, dynamic>> e) {
+        final raw = e.value['id'] ?? e.key;
+        return raw is int ? raw : int.tryParse(raw.toString()) ?? 0;
+      }
+      rijen.sort((a, b) => idVan(a).compareTo(idVan(b)));
+
+      final behouden = rijen.first;
+      final behoudenId = idVan(behouden);
+
+      for (final dubbel in rijen.skip(1)) {
+        final dubbelId = idVan(dubbel);
+
+        // Intake-rijen die naar de dubbel wijzen verplaatsen we naar de
+        // behouden rij. Rijen die er al zijn (zelfde date + medication_id)
+        // worden NIET overschreven — de behouden rij is de waarheid.
+        for (final intakeKey in _medicationIntake.keys.toList()) {
+          final intake = _medicationIntake.get(intakeKey);
+          if (intake == null) continue;
+          final imap = Map<String, dynamic>.from(intake);
+          final rawMid = imap['medication_id'];
+          final mid = rawMid is int ? rawMid : int.tryParse(rawMid?.toString() ?? '') ?? 0;
+          if (mid != dubbelId) continue;
+
+          final bestaande = _medicationIntake.toMap().entries.where((e) {
+            final raw = e.value['medication_id'];
+            final eid = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
+            return eid == behoudenId && e.value['date'] == imap['date'];
+          }).toList();
+
+          if (bestaande.isNotEmpty) {
+            // Bestaat al onder de behouden id: dubbele intake weggooien.
+            await _medicationIntake.delete(intakeKey);
+          } else {
+            imap['medication_id'] = behoudenId;
+            imap['id'] = intakeKey;
+            await _medicationIntake.put(intakeKey, imap);
+          }
+          intakesVerplaatst++;
+        }
+
+        // Schedule(s) die naar de dubbel wijzen verplaatsen we ook, zodat de
+        // herinnering blijft werken. Meerdere schedules per medicijn kunnen
+        // bestaan; we zetten ze op de behouden id.
+        for (final schedKey in _medicationSchedule.keys.toList()) {
+          final sched = _medicationSchedule.get(schedKey);
+          if (sched == null) continue;
+          final smap = Map<String, dynamic>.from(sched);
+          final rawMid = smap['medication_id'];
+          final mid = rawMid is int ? rawMid : int.tryParse(rawMid?.toString() ?? '') ?? 0;
+          if (mid != dubbelId) continue;
+          smap['medication_id'] = behoudenId;
+          await _medicationSchedule.put(schedKey, smap);
+        }
+
+        await _medicationConfig.delete(dubbel.key);
+        samengevoegd++;
+      }
+    }
+
+    await _settings.put(marker, true);
+    if (samengevoegd > 0 || intakesVerplaatst > 0) {
+      AppLogger.debug('Medicatie-migratie: $samengevoegd dubbele configs '
+          'samengevoegd, $intakesVerplaatst intake-rijen bijgewerkt');
     }
   }
 
