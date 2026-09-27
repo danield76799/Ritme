@@ -74,13 +74,14 @@ class _CustomTimePickerDialogState extends State<_CustomTimePickerDialog> {
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                   ),
                 ),
-                // Minute picker — vrije keuze per minuut (was per kwartier,
-                // waardoor tijden als 19:35 niet in te stellen waren).
+                // Minute picker — stappen van 10 minuten (verzoek: geen
+                // minuten-scrollen meer). Let op: tijden als 06:15 zijn dan
+                // niet meer direct te kiezen; 06:10/06:20 wel.
                 _buildNumberPicker(
                   value: selectedMinute,
                   min: 0,
                   max: 59,
-                  step: 1,
+                  step: 10,
                   onChanged: (value) => setState(() => selectedMinute = value),
                 ),
               ],
