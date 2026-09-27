@@ -747,6 +747,25 @@ class DatabaseHelper implements DatabaseRepository {
     });
   }
 
+  @override
+  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
+    // Zelfde contract als de Hive-variant: schrijf op de GEGEVEN id zodat een
+    // backup-restore de originele ids herstelt en intake-rijen blijven kloppen.
+    final db = await database;
+    await db.insert(
+      'medication_config',
+      {
+        'id': id,
+        'naam': naam,
+        'dosering': dosering,
+        'eenheid': eenheid,
+        'reminder_enabled': reminderEnabled ? 1 : 0,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    return id;
+  }
+
   /// Cleanup orphaned and duplicate medication schedules, then cancel all
   /// scheduled local notifications. Call this before rescheduling to ensure
   /// no stale or duplicate reminders remain.

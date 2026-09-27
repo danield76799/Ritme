@@ -34,6 +34,11 @@ abstract class DatabaseRepository {
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true});
   Future<int> deleteMedicationConfig(int id);
   Future<int> updateMedicationConfig(int id, Map<String, dynamic> data);
+  /// Upsert: schrijft de config op DE GEGEVEN id (of maakt hem aan), in
+  /// tegenstelling tot [insertMedicationConfig] dat altijd een nieuwe id
+  /// genereert. Backup-restore moet dit gebruiken, anders komen intake-
+  /// rijen en de config uit de pas te lopen en verschijnen dubbele kaarten.
+  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true});
   Future<List<Map<String, dynamic>>> getMedicationConfigs();
   Future<List<Map<String, dynamic>>> getMedicationConfigsAll();
 

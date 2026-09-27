@@ -986,6 +986,27 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
+    // Schrijft de config op de GEGEVEN hive-sleutel. Bestaat hij al, dan
+    // worden de velden bijgewerkt (overige sleutels blijven staan); bestaat
+    // hij niet, dan wordt hij aangemaakt. Backup-restore zet hiermee configs
+    // terug op hun originele id, zodat intake-rijen (die op die id wijzen)
+    // weer kloppen en er geen dubbele kaarten ontstaan.
+    final existing = _medicationConfig.get(id);
+    final data = Map<String, dynamic>.from(existing ?? {});
+    data['id'] = id;
+    data['naam'] = naam.toString();
+    data['dosering'] = dosering?.toString() ?? '';
+    data['eenheid'] = eenheid?.toString() ?? '';
+    data['reminder_enabled'] = reminderEnabled ? '1' : '0';
+    // soft-delete-markeer van een eerdere sessie ongedaan maken: de backup is
+    // de waarheid.
+    data.remove('deleted');
+    await _medicationConfig.put(id, data);
+    return id;
+  }
+
+  @override
   Future<int> deleteMedicationConfig(int id) async {
     // Soft-delete, zelfde als de SQLite-kant (database_helper.dart): het
     // medicijn verdwijnt uit de lijst maar de INNAME-HISTORIE BLIJFT. Eerder
