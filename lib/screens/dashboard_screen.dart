@@ -22,6 +22,8 @@ import 'appointments_screen.dart';
 import 'voortekenen_screen.dart';
 import 'crisisplan_screen.dart';
 import 'rapport_screen.dart';
+import 'sleep_detail_screen.dart';
+import 'rhythm_detail_screen.dart';
 import '../generated/l10n/app_localizations.dart';
 
 enum AlertSeverity { high, medium }
@@ -1170,11 +1172,27 @@ class _DashboardScreenState extends State<DashboardScreen>
     Widget? footer,
   }) {
     final theme = Theme.of(context);
-    return MetricCardShell(
-      icon: icon,
-      color: color,
-      onTap: () => Navigator.pushNamed(context, route),
-      content: Column(
+    return OpenContainer<bool>(
+      transitionType: ContainerTransitionType.fadeThrough,
+      transitionDuration: const Duration(milliseconds: 400),
+      closedElevation: 2,
+      closedShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+      ),
+      closedColor: theme.cardColor,
+      openColor: theme.scaffoldBackgroundColor,
+      onClosed: (_) {
+        _loadData();
+        if (_selectedDate.difference(DateTime.now()).inDays != 0) {
+          _loadDataForDate(_selectedDate);
+        }
+      },
+      openBuilder: (context, _) => _routeBuilder(route),
+      closedBuilder: (context, openContainer) => MetricCardShell(
+        icon: icon,
+        color: color,
+        onTap: openContainer,
+        content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -1226,6 +1244,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           if (footer != null) ...[const SizedBox(height: 8), footer],
         ],
+      ),
       ),
     );
   }
@@ -1286,6 +1305,10 @@ class _DashboardScreenState extends State<DashboardScreen>
         return CrisisPlanScreen();
       case '/rapport':
         return RapportScreen();
+      case '/sleep-detail':
+        return SleepDetailScreen();
+      case '/rhythm-detail':
+        return RhythmDetailScreen();
       default:
         return SizedBox.shrink();
     }

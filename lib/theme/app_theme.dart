@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   AppTheme._();
@@ -155,6 +156,16 @@ class AppTheme {
   static Color streakText(Brightness brightness) =>
       brightness == Brightness.dark ? const Color(0xFFFFB74D) : const Color(0xFF8A5A00);
 
+  /// App-breed lettertype: Manrope via google_fonts.
+  ///
+  /// Warm, ronde geometrische sans — past bij een zorg-/life-chart-app en
+  /// onderscheidt Ritme van de standaard Roboto. google_fonts bundelt de font
+  /// bij de build (geen runtime-fetch).
+  static TextTheme manropeTextTheme(TextTheme base) => GoogleFonts.manropeTextTheme(base);
+
+  /// Losse TextStyle in de app-font (voorAppBar-titel e.d.).
+  static TextStyle manrope(TextStyle? style) => GoogleFonts.manrope(textStyle: style);
+
   static ThemeData get lightTheme {
     final base = ThemeData.light(useMaterial3: true);
     return base.copyWith(
@@ -198,12 +209,13 @@ class AppTheme {
         // light mode #222222 en in dark mode #F0F5F7 — beide leesbaar op de
         // pagina-achtergrond (#F7F9FA resp. #0F1A1D).
         foregroundColor: textCharcoal,
-        titleTextStyle: TextStyle(
+        titleTextStyle: AppTheme.manrope(
+          const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: textCharcoal,
           letterSpacing: -0.3,
-        ),
+        )),
         iconTheme: const IconThemeData(color: textCharcoal),
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -305,7 +317,7 @@ class AppTheme {
         backgroundColor: textCharcoal,
         contentTextStyle: TextStyle(color: Colors.white),
       ),
-      textTheme: base.textTheme.copyWith(
+      textTheme: manropeTextTheme(base.textTheme).copyWith(
         displayLarge: const TextStyle(fontSize: 34, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.5),
         displayMedium: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: textCharcoal, letterSpacing: -0.4),
         displaySmall: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: textCharcoal),
@@ -350,12 +362,13 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         foregroundColor: darkText,
-        titleTextStyle: const TextStyle(
+        titleTextStyle: AppTheme.manrope(
+          const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: darkText,
           letterSpacing: -0.3,
-        ),
+        )),
         iconTheme: const IconThemeData(color: darkText),
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -408,7 +421,7 @@ class AppTheme {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      textTheme: base.textTheme.copyWith(
+      textTheme: manropeTextTheme(base.textTheme).copyWith(
         displayLarge: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: darkText, letterSpacing: -0.5),
         displayMedium: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: darkText, letterSpacing: -0.4),
         displaySmall: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: darkText),
