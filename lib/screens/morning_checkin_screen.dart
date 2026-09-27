@@ -112,14 +112,27 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
         return null;
       }
       final awakeRaw = log?['awake_minutes'];
-      if (awakeRaw is num) awake = awakeRaw.toInt();
+      if (awakeRaw is num) {
+        awake = awakeRaw.toInt();
+      } else {
+        // upsertDailyLog/getDailyLog stringen alle waarden; "60" moet dus
+        // ook als 60 gelezen worden (zelfde contract als activity_screen).
+        awake = int.tryParse(awakeRaw?.toString() ?? '') ?? 0;
+      }
       final q4Raw = assessment?['q4_slaapbehoefte'] ?? log?['q4_slaapbehoefte'];
-      if (q4Raw is num) q4 = q4Raw.toDouble();
+      if (q4Raw is num) {
+        q4 = q4Raw.toDouble();
+      } else {
+        q4 = double.tryParse(q4Raw?.toString() ?? '');
+      }
       final kwaliteitRaw = log?['sleep_quality'];
       int? kwaliteit;
       if (kwaliteitRaw is num) {
         final k = kwaliteitRaw.toInt();
         if (k >= 1 && k <= 5) kwaliteit = k;
+      } else {
+        final k = int.tryParse(kwaliteitRaw?.toString() ?? '');
+        if (k != null && k >= 1 && k <= 5) kwaliteit = k;
       }
 
       final heeftData = wakeTime != null && q4 != null;
