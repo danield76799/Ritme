@@ -326,12 +326,34 @@ class BackupService {
         final configs = boxesData['sqlite_medication_config'] as List<dynamic>;
         for (final config in configs) {
           final map = config as Map<String, dynamic>;
-          await _db.insertMedicationConfig(
-            map['naam']?.toString() ?? '',
-            map['dosering']?.toString(),
-            map['eenheid']?.toString(),
-            reminderEnabled: map['reminder_enabled'] != 0,
-          );
+          // UPSERT OP ORIGINELE ID, niet opnieuw genereren.
+          //
+          // De vorige versie gebruikte insertMedicationConfig(), wat altijd
+          // een NIEUWE id genereert en de originele id negeert. Maar intake-
+          // rijen verwijzen naar die originele id — en direct daarna worden de
+          // Hive-boxes met de originele data overschreven. Resultaat: de
+          // geïmporteerde config bleef als DUBBEL naast de Hive-origineel
+          // staan (twee keer "Lurasidon" in het scherm), en dosisupdates via
+          // Keuze A gingen alleen naar de ene helft.
+          final rawId = map['id'];
+          final id = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+          if (id != null) {
+            await _db.upsertMedicationConfigById(
+              id,
+              map['naam']?.toString() ?? '',
+              map['dosering']?.toString(),
+              map['eenheid']?.toString(),
+              reminderEnabled: map['reminder_enabled'] != 0,
+            );
+          } else {
+            // Geen bruikbare id in de backup: vallen terug op de oude weg.
+            await _db.insertMedicationConfig(
+              map['naam']?.toString() ?? '',
+              map['dosering']?.toString(),
+              map['eenheid']?.toString(),
+              reminderEnabled: map['reminder_enabled'] != 0,
+            );
+          }
         }
         debugPrint('BackupService: restored ${configs.length} medication configs');
       } catch (e) {
