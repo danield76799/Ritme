@@ -227,6 +227,19 @@ class _MedicationScreenState extends State<MedicationScreen> {
       },
     );
     if (confirmed == null || confirmed.isEmpty) return;
+
+    // Huidige standaarddosis uit de config opzoeken, zodat we die kunnen
+    // vergelijken met de nieuwe per-dag dosering.
+    final config = _configs.firstWhere(
+      (c) {
+        final rawId = c['id'];
+        final cfgId = rawId is int ? rawId : (rawId is String ? int.tryParse(rawId) : null);
+        return cfgId == configId;
+      },
+      orElse: () => {},
+    );
+    final standaard = config['dosering']?.toString() ?? '';
+
     try {
       await db.insertMedicationIntakeMap({
         'medication_id': configId,
@@ -234,6 +247,41 @@ class _MedicationScreenState extends State<MedicationScreen> {
         'aantal_ingenomen': _intakesForDay[configId] ?? 0,
         'dosering': confirmed,
       });
+
+      // Wijkt de per-dag dosering af van de standaarddosis, dan vragen of de
+      // standaarddosis mee aangepast moet worden. Zo blijft de config in sync
+      // met de werkelijke (structurele) dosisverandering.
+      final l10n = AppLocalizations.of(context);
+      if (standaard.isNotEmpty && standaard != confirmed) {
+        final updateStandaard = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) {
+            final cs = Theme.of(dialogContext).colorScheme;
+            return AlertDialog(
+              title: Text(l10n.medStandaardTitel),
+              content: Text(l10n.medStandaardBody(medName, confirmed, standaard)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: Text(l10n.nee),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cs.primary,
+                    foregroundColor: cs.onPrimary,
+                  ),
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: Text(l10n.ja),
+                ),
+              ],
+            );
+          },
+        );
+        if (updateStandaard == true) {
+          await db.updateMedicationConfig(configId, {'dosering': confirmed});
+        }
+      }
+
       _loadData();
     } catch (e) {
       AppLogger.error('Failed to edit intake dosage', error: e);

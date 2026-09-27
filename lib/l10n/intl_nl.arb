@@ -760,5 +760,18 @@
   "periodFourteenDays": "2 weken",
   "@periodFourteenDays": {
     "description": "Label for the sleep tile period switch: last 14 days"
+  },
+  "medStandaardTitel": "Ook de standaarddosis bijwerken?",
+  "@medStandaardTitel": {
+    "description": "Titel van de dialoog die vraagt of de standaarddosis ook bijgewerkt moet worden"
+  },
+  "medStandaardBody": "{medName}: vandaag heb je {nieuw} ingevuld als dosering. De standaarddosis staat nu op {standaard}. Moet de standaarddosis ook {nieuw} worden?",
+  "@medStandaardBody": {
+    "description": "Body van de dialoog die vraagt of de standaarddosis ook bijgewerkt moet worden",
+    "placeholders": {
+      "medName": {},
+      "nieuw": {},
+      "standaard": {}
+    }
   }
 }

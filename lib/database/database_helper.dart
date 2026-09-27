@@ -672,6 +672,9 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
     final db = await database;
+    // Wakker-gelegen is maximaal 4 uur (240 min). Langere invoer (of
+    // gerestorede data) wordt hier afgekapt tot de limiet.
+    final clampedAwake = awakeMinutes.clamp(0, 240);
     
     // Calculate sleep hours
     final bedParts = bedTime.split(':');
@@ -679,13 +682,13 @@ class DatabaseHelper implements DatabaseRepository {
     int bedMin = int.parse(bedParts[0]) * 60 + int.parse(bedParts[1]);
     int wakeMin = int.parse(wakeParts[0]) * 60 + int.parse(wakeParts[1]);
     if (wakeMin < bedMin) wakeMin += 24 * 60;
-    final sleepHours = (wakeMin - bedMin - awakeMinutes) / 60.0;
+    final sleepHours = (wakeMin - bedMin - clampedAwake) / 60.0;
     
     final data = {
       'date': date,
       'bed_time': bedTime,
       'wake_time': wakeTime,
-      'awake_minutes': awakeMinutes,
+      'awake_minutes': clampedAwake,
       'sleep_hours': sleepHours > 0 ? sleepHours : 0,
       'uren_slaap': sleepHours > 0 ? sleepHours : 0,
     };
