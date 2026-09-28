@@ -15,6 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ritme/theme/app_theme.dart';
 import 'package:ritme/widgets/tile_accent.dart';
 
+import 'helpers/manrope_test_fonts.dart';
+
 /// Relatieve luminantie volgens WCAG 2.1.
 double _luminance(Color c) {
   double channel(double v) {
@@ -43,6 +45,9 @@ Color blend(Color fg, Color bg, double alpha) => Color.from(
     );
 
 void main() {
+  setUpAll(() async {
+    await laadManropeVoorTests();
+  });
   group('Light mode: AppBar-titel is leesbaar', () {
     // De AppBar op ~20 schermen: titel in onPrimary op colorScheme.primary.
     // 20sp w700 is "large text" -> WCAG eist 3.0:1.

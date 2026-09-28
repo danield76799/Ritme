@@ -7,13 +7,12 @@ void main() {
   testWidgets('Result step buttons pop with true', (tester) async {
     bool popped = false;
     bool? popResult;
-    late BuildContext hostCtx;
+
     await tester.pumpWidget(MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: const Locale('nl'),
       home: Builder(builder: (ctx) {
-        hostCtx = ctx;
         return TextButton(
           onPressed: () async {
             popResult = await Navigator.push<bool>(
@@ -43,7 +42,7 @@ void main() {
     await tester.tap(find.text('Volgende'));
     await tester.pumpAndSettle();
     // Vraag 4
-    await tester.tap(find.text('Helemaal geen behoefte aan slaap').last);
+    await tester.tap(find.textContaining('Helemaal geen behoefte aan slaap').last);
     await tester.pump();
     await tester.tap(find.text('Volgende'));
     await tester.pumpAndSettle();

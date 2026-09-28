@@ -114,6 +114,13 @@ flutter:
     - assets/logo_icon.png
     - assets/logo_splash.png
     - assets/logo_hero.png
+    # Manrope-ttf's als app-assets: de test-suite draait met
+    # GoogleFonts.config.allowRuntimeFetching = false, en dan zoekt google_fonts
+    # de font in de assets (in productie haalt de runtime-fetch de echte
+    # statische gewichten op). Eén variable-font bestand gekopieerd onder de
+    # gewichtsnamen die google_fonts vraagt; gewicht-onderscheid is voor de
+    # contrasttests niet relevant.
+    - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
