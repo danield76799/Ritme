@@ -145,7 +145,7 @@ class WeeklyMoodChart extends StatelessWidget {
         value = (value - 50) / 10;
       }
       spots.add(FlSpot(i.toDouble(), value));
-      
+
       final date = log['date'] as String? ?? '';
       if (date.isNotEmpty) {
         final parts = date.split('-');
@@ -179,11 +179,16 @@ class WeeklyMoodChart extends StatelessWidget {
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: 20,
+                  horizontalInterval: 2.5,
                   getDrawingHorizontalLine: (value) {
+                    // De nul-lijn (neutraal) is de visueel belangrijkste
+                    // rasterlijn: donkerder dan de rest.
+                    final isNul = value == 0;
                     return FlLine(
-                      color: Colors.grey.withValues(alpha: 0.15),
-                      strokeWidth: 1,
+                      color: isNul
+                          ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25)
+                          : Colors.grey.withValues(alpha: 0.15),
+                      strokeWidth: isNul ? 1.5 : 1,
                     );
                   },
                 ),
@@ -271,8 +276,18 @@ class WeeklyMoodChart extends StatelessWidget {
                     },
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
+                        // Schaal is -5..+5; toon datum + waarde met teken.
+                        // De oude "/100"-tooltip stamde uit de 0-100-tijd en
+                        // klopte niet meer met de SRM-schaal.
+                        final idx = spot.x.toInt();
+                        final datum = (idx >= 0 && idx < titles.length) ? '${titles[idx]}  ' : '';
+                        final y = spot.y;
+                        final teken = y > 0 ? '+' : (y < 0 ? '−' : '');
+                        final afgerond = y.abs() == y.roundToDouble()
+                            ? y.abs().toInt().toString()
+                            : y.abs().toStringAsFixed(1);
                         return LineTooltipItem(
-                          '${spot.y.toInt()}/100',
+                          '$datum$teken$afgerond',
                           TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,

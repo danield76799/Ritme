@@ -17,6 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ritme/theme/app_theme.dart';
 
+import 'helpers/manrope_test_fonts.dart';
+
 double _luminance(Color c) {
   double channel(double v) =>
       v <= 0.03928 ? v / 12.92 : math.pow((v + 0.055) / 1.055, 2.4).toDouble();
@@ -46,6 +48,9 @@ List<String> _dartBestanden(String map) => Directory(map)
     .toList();
 
 void main() {
+  setUpAll(() async {
+    await laadManropeVoorTests();
+  });
   group('Destructieve knoppen halen de norm', () {
     test('onErrorContainer op errorContainer haalt 4.5:1 (beide modes)',
         () {

@@ -24,6 +24,8 @@ import 'package:ritme/generated/l10n/app_localizations.dart';
 import 'package:ritme/service_locator.dart';
 import 'package:ritme/theme/app_theme.dart';
 
+import 'helpers/manrope_test_fonts.dart';
+
 import 'package:ritme/screens/activities_detail_screen.dart';
 import 'package:ritme/screens/activity_screen.dart';
 import 'package:ritme/screens/appointments_screen.dart';
@@ -96,7 +98,12 @@ final _schermen = <String, Widget Function()>{
 };
 
 void main() {
+  // De for-loop hieronder maakt de themes al synchroon aan, vóórdat setUpAll
+  // draait: zonder geïnitialiseerde binding crasht de Manrope-fontload van
+  // google_fonts bij de allereerste theme-aanmaak.
+  bereidManropeTestBindingVoor();
   setUpAll(() async {
+    await laadManropeVoorTests();
     Hive.init('/tmp/hive_appbar_test');
     for (final n in _boxen) {
       if (!Hive.isBoxOpen(n)) await Hive.openBox(n);
@@ -106,6 +113,8 @@ void main() {
 
   for (final mode in [Brightness.light, Brightness.dark]) {
     final label = mode == Brightness.light ? 'LIGHT' : 'DARK';
+    // Binding staat inmiddels aan (zie boven): de fontload van google_fonts
+    // overleeft deze theme-aanmaak.
     final thema =
         mode == Brightness.light ? AppTheme.lightTheme : AppTheme.darkTheme;
 

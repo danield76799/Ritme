@@ -45,7 +45,7 @@ void main() {
     await tester.tap(find.text('Volgende'));
     await tester.pumpAndSettle();
     // Vraag 4
-    await tester.tap(find.text('Helemaal geen behoefte aan slaap').last);
+    await tester.tap(find.textContaining('Helemaal geen behoefte aan slaap').last);
     await tester.pump();
     await tester.tap(find.text('Volgende'));
     await tester.pumpAndSettle();

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../theme/app_theme.dart';
+import '../widgets/sparkline.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
 import '../services/bipolar_alert_service.dart';
@@ -477,13 +479,13 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.health_and_safety, color: AppTheme.error),
+            icon: Icon(LucideIcons.heartPulse, color: AppTheme.error),
             onPressed: () => Navigator.pushNamed(context, '/crisisplan'),
             tooltip: AppLocalizations.of(context).crisisplan,
           ),
           IconButton(
             icon: Icon(
-              Icons.settings,
+              LucideIcons.settings,
               color: Theme.of(context).colorScheme.onSurface,
             ),
             onPressed: () async {
@@ -494,7 +496,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
           PopupMenuButton<int>(
             icon: Icon(
-              Icons.more_vert,
+              LucideIcons.moreVertical,
               color: Theme.of(context).colorScheme.onSurface,
             ),
             tooltip: AppLocalizations.of(context).meer,
@@ -528,7 +530,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 0,
                     child: ListTile(
-                      leading: Icon(Icons.bar_chart),
+                      leading: Icon(LucideIcons.barChart),
                       title: Text(AppLocalizations.of(context).statistieken),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -538,7 +540,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 2,
                     child: ListTile(
-                      leading: Icon(Icons.monitor_weight),
+                      leading: Icon(LucideIcons.scale),
                       title: Text(AppLocalizations.of(context).gewicht),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -547,7 +549,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 3,
                     child: ListTile(
-                      leading: Icon(Icons.calendar_today),
+                      leading: Icon(LucideIcons.calendarDays),
                       title: Text(AppLocalizations.of(context).afspraken),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -556,7 +558,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 4,
                     child: ListTile(
-                      leading: Icon(Icons.warning_amber),
+                      leading: Icon(LucideIcons.alertTriangle),
                       title: Text(AppLocalizations.of(context).voortekenen),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -565,7 +567,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 5,
                     child: ListTile(
-                      leading: Icon(Icons.description),
+                      leading: Icon(LucideIcons.fileText),
                       title: Text(AppLocalizations.of(context).rapport),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -574,7 +576,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 6,
                     child: ListTile(
-                      leading: Icon(Icons.help_outline),
+                      leading: Icon(LucideIcons.helpCircle),
                       title: Text(
                         AppLocalizations.of(context).gebruiksaanwijzing,
                       ),
@@ -586,7 +588,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 7,
                     child: ListTile(
-                      leading: Icon(Icons.logout, color: AppTheme.error),
+                      leading: Icon(LucideIcons.logOut, color: AppTheme.error),
                       title: Text(
                         AppLocalizations.of(context).uitloggen,
                         style: TextStyle(color: AppTheme.error),
@@ -760,7 +762,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 children: [
                   _buildCheckinCard(
                     context,
-                    icon: Icons.wb_sunny,
+                    icon: LucideIcons.sun,
                     accent: TileAccent.morning,
                     title: AppLocalizations.of(context).ochtendCheckIn,
                     route: '/morning-checkin',
@@ -769,7 +771,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   _buildCheckinCard(
                     context,
-                    icon: Icons.nights_stay,
+                    icon: LucideIcons.moonStar,
                     accent: TileAccent.evening,
                     title: AppLocalizations.of(context).avondCheckIn,
                     route: '/evening-checkin',
@@ -778,7 +780,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   _buildActionCard(
                     context,
-                    icon: Icons.medication,
+                    icon: LucideIcons.pill,
                     accent: TileAccent.medication,
                     title: AppLocalizations.of(context).medicatie,
                     route: '/medication',
@@ -786,7 +788,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   _buildActionCard(
                     context,
-                    icon: Icons.menu_book,
+                    icon: LucideIcons.bookOpen,
                     accent: TileAccent.journal,
                     title: AppLocalizations.of(context).dagboek,
                     route: '/dagboek',
@@ -794,14 +796,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   _buildActionCard(
                     context,
-                    icon: Icons.description,
+                    icon: LucideIcons.fileText,
                     accent: TileAccent.report,
                     title: AppLocalizations.of(context).rapport,
                     route: '/rapport',
                   ),
                   _buildActionCard(
                     context,
-                    icon: Icons.calendar_today,
+                    icon: LucideIcons.calendarDays,
                     accent: TileAccent.appointments,
                     title: AppLocalizations.of(context).afspraken,
                     route: '/appointments',
@@ -846,7 +848,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
               _buildMetricCard(
                 context,
-                icon: Icons.bedtime,
+                icon: LucideIcons.bedDouble,
                 title: AppLocalizations.of(context).slaapduurLabel,
                 value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
                 emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
@@ -854,6 +856,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                 color: const Color(0xFF88B0C7),
                 route: '/sleep-detail',
                 isEmpty: _sleepQuality <= 0,
+                // Trend van de afgelopen dagen (chronologisch), zodat de
+                // tegel méér zegt dan één gemiddelde.
+                sparkline: _slaapSparkline(),
                 // Periode-schakelaar onder de waarde: gisteren / week / 14d.
                 footer: _SleepPeriodSwitch(
                   selected: _sleepPeriod,
@@ -870,7 +875,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               // ernaast was een dubbeling met een eigen, afwijkende telling.
               _buildMetricCard(
                 context,
-                icon: Icons.schedule,
+                icon: LucideIcons.activity,
                 title: AppLocalizations.of(context).srtScore,
                 value:
                     _rhythmStability > 0
@@ -885,6 +890,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 color: _getSrtColor(_rhythmStability),
                 route: '/rhythm-detail',
                 isEmpty: _rhythmStability <= 0,
+                // Dagelijkse p-score-trend (1–5, hoger = stabieler ritme).
+                sparkline: _srtSparkline(),
               ),
 
               const SizedBox(height: 24),
@@ -1157,6 +1164,39 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  /// Slaap-trend voor de sparkline: chronologische slaapuren per dag uit
+  /// [_sleepPerDay] (max 14, oud → nieuw).
+  List<double> _slaapSparkline() {
+    final gesorteerd = _sleepPerDay.keys.toList()..sort();
+    return [
+      for (final d in gesorteerd.skip(gesorteerd.length > 14 ? gesorteerd.length - 14 : 0))
+        _sleepPerDay[d]!,
+    ];
+  }
+
+  /// SRT-trend voor de sparkline: gemiddelde p-score per dag (1–5) uit
+  /// [_srmActivitiesList], alleen dagen met échte activiteiten, chronologisch
+  /// (max 14, oud → nieuw).
+  List<double> _srtSparkline() {
+    final perDag = <String, List<int>>{};
+    for (final a in _srmActivitiesList) {
+      final actualTime = a['actual_time'];
+      final rawPScore = a['p_score'];
+      if (actualTime == null || rawPScore == null) continue;
+      final int pScore =
+          rawPScore is int ? rawPScore : int.tryParse(rawPScore.toString()) ?? 0;
+      if (pScore <= 0) continue;
+      final date = a['date']?.toString();
+      if (date == null || date.isEmpty) continue;
+      perDag.putIfAbsent(date, () => []).add(pScore);
+    }
+    final gesorteerd = perDag.keys.toList()..sort();
+    return [
+      for (final d in gesorteerd.skip(gesorteerd.length > 14 ? gesorteerd.length - 14 : 0))
+        perDag[d]!.reduce((x, y) => x + y) / perDag[d]!.length,
+    ];
+  }
+
   Widget _buildMetricCard(
     BuildContext context, {
     required IconData icon,
@@ -1170,6 +1210,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     required String route,
     bool isEmpty = false,
     Widget? footer,
+    List<double>? sparkline,
+    Color? sparklineKleur,
   }) {
     final theme = Theme.of(context);
     return OpenContainer<bool>(
@@ -1243,6 +1285,15 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
           if (footer != null) ...[const SizedBox(height: 8), footer],
+          // Sparkline onder de inhoud, alleen bij gevulde tegels: geeft de
+          // trend een plek zonder de kaart hoger te maken.
+          if (!isEmpty && sparkline != null && sparkline.length >= 2) ...[
+            const SizedBox(height: 8),
+            Sparkline(
+              waarden: sparkline,
+              kleur: sparklineKleur ?? color,
+            ),
+          ],
         ],
       ),
       ),
