@@ -223,7 +223,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
       final weeks = days ~/ 7;
       final remainder = days % 7;
       if (remainder == 0) return l10n.weken(weeks);
-      return l10n.wekenDagen(weeks, remainder);
+      return l10n.wekenDagen(remainder, weeks);
     } catch (e) {
       return '?';
     }
