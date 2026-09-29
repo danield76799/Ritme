@@ -878,8 +878,8 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
             if (sleepHours != null) ...[
               Text(
                 l10n.ochtendGeslapenUren(
-                  sleepHours.floor(),
                   ((sleepHours - sleepHours.floor()) * 60).round(),
+                  sleepHours.floor(),
                 ),
                 style: TextStyle(
                   fontSize: 16,
