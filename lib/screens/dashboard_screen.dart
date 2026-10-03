@@ -85,18 +85,18 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   Map<String, dynamic>? _settings;
   bool _isLoading = true;
   double _sleepQuality = 0.0;
   double _rhythmStability = 0.0;
-  int _loggedDaysCount = 0;
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
   List<Map<String, dynamic>> _dailyLogs = [];
   Set<String> _checkinTypes = {};
   List<Map<String, dynamic>> _srmActivitiesList = [];
   List<Alert> _alerts = [];
+  DateTime _selectedDate = DateTime.now();
 
   /// Periode waarover de slaap-tegel rekent: gisteren, 7 of 14 dagen.
   _SleepPeriod _sleepPeriod = _SleepPeriod.fourteenDays;
@@ -106,20 +106,48 @@ class _DashboardScreenState extends State<DashboardScreen>
   Map<String, double> _sleepPerDay = const {};
 
   int _dagStreak = 0;
-  DateTime _selectedDate = DateTime.now();
+
+  // Animation controllers
+  late AnimationController _staggerController;
+  late List<Animation<double>> _cardAnimations;
+  late Animation<double> _greetingAnimation;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _initAnimations();
     _loadData();
     _setupNotifications();
-    // Koude start vanuit een notificatie: de payload ligt dan al klaar.
     _openPendingCheckin();
+  }
+
+  void _initAnimations() {
+    _staggerController = AnimationController(
+      duration: const Duration(milliseconds: 900),
+      vsync: this,
+    );
+    _greetingAnimation = CurvedAnimation(
+      parent: _staggerController,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeOutCubic),
+    );
+
+    // Staggered animations for 8 grid cards + 3 metric cards + mood chart = 12 items
+    _cardAnimations = List.generate(12, (index) {
+      final start = 0.2 + (index * 0.06).clamp(0.0, 0.5);
+      final end = (start + 0.35).clamp(0.0, 1.0);
+      return CurvedAnimation(
+        parent: _staggerController,
+        curve: Interval(start, end, curve: Curves.easeOutCubic),
+      );
+    });
+
+    _staggerController.forward();
   }
 
   @override
   void dispose() {
+    _staggerController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -242,7 +270,6 @@ class _DashboardScreenState extends State<DashboardScreen>
 
       double totalSleep = 0;
       int sleepCount = 0;
-      int loggedDaysCount = 0;
       final sleepPerDay = <String, double>{};
 
       for (final log in dailyLogs) {
@@ -266,7 +293,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         }
         if (sleep != null && sleep > 0 && !sleepPerDay.containsKey(dateStr)) {
           sleepPerDay[dateStr] = sleep;
-          loggedDaysCount++;
           totalSleep += sleep;
           sleepCount++;
         }
@@ -337,7 +363,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           _settings = settings;
           _sleepQuality = periodAvg;
           _rhythmStability = stability;
-          _loggedDaysCount = loggedDaysCount;
           _dailyLogs = dailyLogs;
           _srmActivitiesList = weeklyActivities;
           _weeklyLogs = dailyLogs;
@@ -615,29 +640,43 @@ class _DashboardScreenState extends State<DashboardScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Greeting card - compacter
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient:
-                      isDark
-                          ? LinearGradient(
-                            colors: [Color(0xFF2A3D42), Color(0xFF1A2B30)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                          : AppTheme.brandGradient,
-                  borderRadius: BorderRadius.circular(AppTheme.largeRadius),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isDark ? Colors.black : const Color(0xFFB4A8D4))
-                          .withValues(alpha: 0.25),
-                      blurRadius: 16,
-                      offset: Offset(0, 8),
+              AnimatedBuilder(
+                animation: _greetingAnimation,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _greetingAnimation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.3),
+                        end: Offset.zero,
+                      ).animate(_greetingAnimation),
+                      child: child,
                     ),
-                  ],
-                ),
-                child: Column(
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient:
+                        isDark
+                            ? LinearGradient(
+                              colors: [Color(0xFF2A3D42), Color(0xFF1A2B30)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                            : AppTheme.brandGradient,
+                    borderRadius: BorderRadius.circular(AppTheme.largeRadius),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isDark ? Colors.black : const Color(0xFFB4A8D4))
+                            .withValues(alpha: 0.25),
+                        blurRadius: 16,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FittedBox(
@@ -697,6 +736,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                   ],
                 ),
+              ),
               ),
 
               const SizedBox(height: 24),
@@ -760,53 +800,71 @@ class _DashboardScreenState extends State<DashboardScreen>
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.35,
                 children: [
-                  _buildCheckinCard(
-                    context,
-                    icon: LucideIcons.sun,
-                    accent: TileAccent.morning,
-                    title: AppLocalizations.of(context).ochtendCheckIn,
-                    route: '/morning-checkin',
-                    date: _selectedDate,
-                    isOchtend: true,
+                  _StaggeredCard(
+                    animation: _cardAnimations[0],
+                    child: _buildCheckinCard(
+                      context,
+                      icon: LucideIcons.sun,
+                      accent: TileAccent.morning,
+                      title: AppLocalizations.of(context).ochtendCheckIn,
+                      route: '/morning-checkin',
+                      date: _selectedDate,
+                      isOchtend: true,
+                    ),
                   ),
-                  _buildCheckinCard(
-                    context,
-                    icon: LucideIcons.moonStar,
-                    accent: TileAccent.evening,
-                    title: AppLocalizations.of(context).avondCheckIn,
-                    route: '/evening-checkin',
-                    date: _selectedDate,
-                    isOchtend: false,
+                  _StaggeredCard(
+                    animation: _cardAnimations[1],
+                    child: _buildCheckinCard(
+                      context,
+                      icon: LucideIcons.moonStar,
+                      accent: TileAccent.evening,
+                      title: AppLocalizations.of(context).avondCheckIn,
+                      route: '/evening-checkin',
+                      date: _selectedDate,
+                      isOchtend: false,
+                    ),
                   ),
-                  _buildActionCard(
-                    context,
-                    icon: LucideIcons.pill,
-                    accent: TileAccent.medication,
-                    title: AppLocalizations.of(context).medicatie,
-                    route: '/medication',
-                    isCompleted: _checkinTypes.contains('medicatie'),
+                  _StaggeredCard(
+                    animation: _cardAnimations[2],
+                    child: _buildActionCard(
+                      context,
+                      icon: LucideIcons.pill,
+                      accent: TileAccent.medication,
+                      title: AppLocalizations.of(context).medicatie,
+                      route: '/medication',
+                      isCompleted: _checkinTypes.contains('medicatie'),
+                    ),
                   ),
-                  _buildActionCard(
-                    context,
-                    icon: LucideIcons.bookOpen,
-                    accent: TileAccent.journal,
-                    title: AppLocalizations.of(context).dagboek,
-                    route: '/dagboek',
-                    isCompleted: _checkinTypes.contains('dagboek'),
+                  _StaggeredCard(
+                    animation: _cardAnimations[3],
+                    child: _buildActionCard(
+                      context,
+                      icon: LucideIcons.bookOpen,
+                      accent: TileAccent.journal,
+                      title: AppLocalizations.of(context).dagboek,
+                      route: '/dagboek',
+                      isCompleted: _checkinTypes.contains('dagboek'),
+                    ),
                   ),
-                  _buildActionCard(
-                    context,
-                    icon: LucideIcons.fileText,
-                    accent: TileAccent.report,
-                    title: AppLocalizations.of(context).rapport,
-                    route: '/rapport',
+                  _StaggeredCard(
+                    animation: _cardAnimations[4],
+                    child: _buildActionCard(
+                      context,
+                      icon: LucideIcons.fileText,
+                      accent: TileAccent.report,
+                      title: AppLocalizations.of(context).rapport,
+                      route: '/rapport',
+                    ),
                   ),
-                  _buildActionCard(
-                    context,
-                    icon: LucideIcons.calendarDays,
-                    accent: TileAccent.appointments,
-                    title: AppLocalizations.of(context).afspraken,
-                    route: '/appointments',
+                  _StaggeredCard(
+                    animation: _cardAnimations[5],
+                    child: _buildActionCard(
+                      context,
+                      icon: LucideIcons.calendarDays,
+                      accent: TileAccent.appointments,
+                      title: AppLocalizations.of(context).afspraken,
+                      route: '/appointments',
+                    ),
                   ),
                 ],
               ),
@@ -846,71 +904,84 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
               const SizedBox(height: 12),
 
-              _buildMetricCard(
-                context,
-                icon: LucideIcons.bedDouble,
-                title: AppLocalizations.of(context).slaapduurLabel,
-                value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
-                emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
-                emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
-                color: const Color(0xFF88B0C7),
-                route: '/sleep-detail',
-                isEmpty: _sleepQuality <= 0,
-                // Trend van de afgelopen dagen (chronologisch), zodat de
-                // tegel méér zegt dan één gemiddelde.
-                sparkline: _slaapSparkline(),
-                // Periode-schakelaar onder de waarde: gisteren / week / 14d.
-                footer: _SleepPeriodSwitch(
-                  selected: _sleepPeriod,
-                  onChanged:
-                      (p) => setState(() {
-                        _sleepPeriod = p;
-                        _recomputeSleepValue();
-                      }),
+              _StaggeredCard(
+                animation: _cardAnimations[6],
+                child: _buildMetricCard(
+                  context,
+                  icon: LucideIcons.bedDouble,
+                  title: AppLocalizations.of(context).slaapduurLabel,
+                  value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
+                  emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
+                  emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
+                  color: const Color(0xFF88B0C7),
+                  route: '/sleep-detail',
+                  isEmpty: _sleepQuality <= 0,
+                  // Trend van de afgelopen dagen (chronologisch), zodat de
+                  // tegel méér zegt dan één gemiddelde.
+                  sparkline: _slaapSparkline(),
+                  // Periode-schakelaar onder de waarde: gisteren / week / 14d.
+                  footer: _SleepPeriodSwitch(
+                    selected: _sleepPeriod,
+                    onChanged:
+                        (p) => setState(() {
+                          _sleepPeriod = p;
+                          _recomputeSleepValue();
+                        }),
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
               // SRT Score staat op volle breedte: de SRT-berekening ís de
               // activiteiten-op-tijd-score, dus een aparte activiteitentegel
               // ernaast was een dubbeling met een eigen, afwijkende telling.
-              _buildMetricCard(
-                context,
-                icon: LucideIcons.activity,
-                title: AppLocalizations.of(context).srtScore,
-                value:
-                    _rhythmStability > 0
-                        ? '${_rhythmStability.round()}%'
-                        : null,
-                emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
-                subtitle:
-                    _rhythmStability > 0
-                        ? _getSrtLabel(_rhythmStability, context)
-                        : null,
-                emptyHint: AppLocalizations.of(context).srtTooltip,
-                color: _getSrtColor(_rhythmStability),
-                route: '/rhythm-detail',
-                isEmpty: _rhythmStability <= 0,
-                // Dagelijkse p-score-trend (1–5, hoger = stabieler ritme).
-                sparkline: _srtSparkline(),
+              _StaggeredCard(
+                animation: _cardAnimations[7],
+                child: _buildMetricCard(
+                  context,
+                  icon: LucideIcons.activity,
+                  title: AppLocalizations.of(context).srtScore,
+                  value:
+                      _rhythmStability > 0
+                          ? '${_rhythmStability.round()}%'
+                          : null,
+                  emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
+                  subtitle:
+                      _rhythmStability > 0
+                          ? _getSrtLabel(_rhythmStability, context)
+                          : null,
+                  emptyHint: AppLocalizations.of(context).srtTooltip,
+                  color: _getSrtColor(_rhythmStability),
+                  route: '/rhythm-detail',
+                  isEmpty: _rhythmStability <= 0,
+                  // Dagelijkse p-score-trend (1–5, hoger = stabieler ritme).
+                  sparkline: _srtSparkline(),
+                ),
               ),
 
               const SizedBox(height: 24),
 
-              Row(
-                children: [
-                  Text(
-                    AppLocalizations.of(context).stemmingTrend,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              Container(
-                height: 200,
-                decoration: AppTheme.cardDecoration(context),
-                clipBehavior: Clip.antiAlias,
-                child: WeeklyMoodChart(logs: _weeklyLogs),
+              _StaggeredCard(
+                animation: _cardAnimations[8],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          AppLocalizations.of(context).stemmingTrend,
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 200,
+                      decoration: AppTheme.cardDecoration(context),
+                      clipBehavior: Clip.antiAlias,
+                      child: WeeklyMoodChart(logs: _weeklyLogs),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -1563,6 +1634,33 @@ class _SleepPeriodSwitch extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Wrapper voor stagger-animatie (fade + slide up) van een dashboard-tegel.
+class _StaggeredCard extends StatelessWidget {
+  final Animation<double> animation;
+  final Widget child;
+
+  const _StaggeredCard({required this.animation, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.2),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }
