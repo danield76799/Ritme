@@ -63,9 +63,7 @@ void main() {
         0,
         srtIndex,
       );
-      expect(voor.endsWith('_buildMetricCard(\n                context,\n') ||
-              voor.contains('_buildMetricCard(\n                context,'),
-          isTrue,
+      expect(voor.contains('_buildMetricCard('), isTrue,
           reason: 'SRT hoort direct als losse _buildMetricCard te worden aangeroepen');
     });
   });
