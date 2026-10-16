@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import '../theme/app_theme.dart';
 import '../widgets/sparkline.dart';
 import '../service_locator.dart';
@@ -29,6 +28,30 @@ import 'rhythm_detail_screen.dart';
 import '../generated/l10n/app_localizations.dart';
 
 enum AlertSeverity { high, medium }
+
+/// Vervangt de Lucide-iconen (lucide_icons package is incompatible met
+/// Flutter 3.47 — IconData is final geworden). Material Symbols bieten
+/// vergelijkbare iconen.
+const _lucideIcons = <String, IconData>{
+  'heartPulse': Icons.monitor_heart,
+  'settings': Icons.settings,
+  'moreVertical': Icons.more_vert,
+  'barChart': Icons.bar_chart,
+  'scale': Icons.scale,
+  'calendarDays': Icons.calendar_month,
+  'alertTriangle': Icons.warning_amber,
+  'fileText': Icons.description,
+  'helpCircle': Icons.help_outline,
+  'logOut': Icons.logout,
+  'sun': Icons.wb_sunny,
+  'moonStar': Icons.nightlight_round,
+  'pill': Icons.medication,
+  'bookOpen': Icons.menu_book,
+  'bedDouble': Icons.bed,
+  'activity': Icons.directions_run,
+};
+
+IconData lucideIcon(String name) => _lucideIcons[name] ?? Icons.help_outline;
 
 /// De vier SRM-rijen die samen de avond-check-in vormen.
 /// Let op: alleen Avondeten + Naar bed. 'Eerste contact' en 'Werk / Hobby'
@@ -504,13 +527,13 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         actions: [
           IconButton(
-            icon: Icon(LucideIcons.heartPulse, color: AppTheme.error),
+            icon: Icon(lucideIcon('heartPulse'), color: AppTheme.error),
             onPressed: () => Navigator.pushNamed(context, '/crisisplan'),
             tooltip: AppLocalizations.of(context).crisisplan,
           ),
           IconButton(
             icon: Icon(
-              LucideIcons.settings,
+              lucideIcon('settings'),
               color: Theme.of(context).colorScheme.onSurface,
             ),
             onPressed: () async {
@@ -521,7 +544,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
           PopupMenuButton<int>(
             icon: Icon(
-              LucideIcons.moreVertical,
+              lucideIcon('moreVertical'),
               color: Theme.of(context).colorScheme.onSurface,
             ),
             tooltip: AppLocalizations.of(context).meer,
@@ -555,7 +578,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 0,
                     child: ListTile(
-                      leading: Icon(LucideIcons.barChart),
+                      leading: Icon(lucideIcon('barChart')),
                       title: Text(AppLocalizations.of(context).statistieken),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -565,7 +588,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 2,
                     child: ListTile(
-                      leading: Icon(LucideIcons.scale),
+                      leading: Icon(lucideIcon('scale')),
                       title: Text(AppLocalizations.of(context).gewicht),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -574,7 +597,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 3,
                     child: ListTile(
-                      leading: Icon(LucideIcons.calendarDays),
+                      leading: Icon(lucideIcon('calendarDays')),
                       title: Text(AppLocalizations.of(context).afspraken),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -583,7 +606,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 4,
                     child: ListTile(
-                      leading: Icon(LucideIcons.alertTriangle),
+                      leading: Icon(lucideIcon('alertTriangle')),
                       title: Text(AppLocalizations.of(context).voortekenen),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -592,7 +615,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 5,
                     child: ListTile(
-                      leading: Icon(LucideIcons.fileText),
+                      leading: Icon(lucideIcon('fileText')),
                       title: Text(AppLocalizations.of(context).rapport),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -601,7 +624,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 6,
                     child: ListTile(
-                      leading: Icon(LucideIcons.helpCircle),
+                      leading: Icon(lucideIcon('helpCircle')),
                       title: Text(
                         AppLocalizations.of(context).gebruiksaanwijzing,
                       ),
@@ -613,7 +636,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem(
                     value: 7,
                     child: ListTile(
-                      leading: Icon(LucideIcons.logOut, color: AppTheme.error),
+                      leading: Icon(lucideIcon('logOut'), color: AppTheme.error),
                       title: Text(
                         AppLocalizations.of(context).uitloggen,
                         style: TextStyle(color: AppTheme.error),
@@ -804,7 +827,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     animation: _cardAnimations[0],
                     child: _buildCheckinCard(
                       context,
-                      icon: LucideIcons.sun,
+                      icon: lucideIcon('sun'),
                       accent: TileAccent.morning,
                       title: AppLocalizations.of(context).ochtendCheckIn,
                       route: '/morning-checkin',
@@ -816,7 +839,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     animation: _cardAnimations[1],
                     child: _buildCheckinCard(
                       context,
-                      icon: LucideIcons.moonStar,
+                      icon: lucideIcon('moonStar'),
                       accent: TileAccent.evening,
                       title: AppLocalizations.of(context).avondCheckIn,
                       route: '/evening-checkin',
@@ -828,7 +851,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     animation: _cardAnimations[2],
                     child: _buildActionCard(
                       context,
-                      icon: LucideIcons.pill,
+                      icon: lucideIcon('pill'),
                       accent: TileAccent.medication,
                       title: AppLocalizations.of(context).medicatie,
                       route: '/medication',
@@ -839,7 +862,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     animation: _cardAnimations[3],
                     child: _buildActionCard(
                       context,
-                      icon: LucideIcons.bookOpen,
+                      icon: lucideIcon('bookOpen'),
                       accent: TileAccent.journal,
                       title: AppLocalizations.of(context).dagboek,
                       route: '/dagboek',
@@ -850,7 +873,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     animation: _cardAnimations[4],
                     child: _buildActionCard(
                       context,
-                      icon: LucideIcons.fileText,
+                      icon: lucideIcon('fileText'),
                       accent: TileAccent.report,
                       title: AppLocalizations.of(context).rapport,
                       route: '/rapport',
@@ -860,7 +883,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     animation: _cardAnimations[5],
                     child: _buildActionCard(
                       context,
-                      icon: LucideIcons.calendarDays,
+                      icon: lucideIcon('calendarDays'),
                       accent: TileAccent.appointments,
                       title: AppLocalizations.of(context).afspraken,
                       route: '/appointments',
@@ -908,7 +931,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 animation: _cardAnimations[6],
                 child: _buildMetricCard(
                   context,
-                  icon: LucideIcons.bedDouble,
+                  icon: lucideIcon('bedDouble'),
                   title: AppLocalizations.of(context).slaapduurLabel,
                   value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
                   emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
@@ -938,7 +961,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 animation: _cardAnimations[7],
                 child: _buildMetricCard(
                   context,
-                  icon: LucideIcons.activity,
+                  icon: lucideIcon('activity'),
                   title: AppLocalizations.of(context).srtScore,
                   value:
                       _rhythmStability > 0
