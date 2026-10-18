@@ -1,0 +1,21 @@
+Ritme ondersteunt het dagelijks bijhouden van je sociale ritme: stemming, activiteiten, medicatie, slaap, afspraken, gewicht en rapportages. Gegevens blijven op je toestel, opgeborgen met een pincode en optioneel biometrische ontgrendeling.
+
+Functies
+- Stemming en SRT-check-ins met chips voor activiteiten, energie en slaap
+- Medicatieplanner met herinneringen op klok of SRT-tijd, plus voortnemingsoverzicht
+- Agenda met afspraken, crisisplan met vaste contacten, dagboek en voortekenen
+- Statistieken en rapporten om patronen te herkennen
+- Biometrische authenticatie met pincode als terugval
+
+Privacy
+Geen account nodig. Ritme gebruikt lokaal Hive en SQLite. Meldingen worden op het apparaat zelf afgehandeld, er is geen tracking.
+
+Voor wie
+Bedoeld voor mensen die hun ritme willen monitoren, inclusief in begeleiding. Ritme is zelfobservatie en vervangt geen medisch advies: raadpleeg bij medicatie- en behandelsvragen steeds je zorggroep.
+
+Inhoud in één oogopslag
+- Dashboard met gemiddelde stemming en slaapgrafiek
+- Medicatieoverzicht met herinneringen en voortneming
+- Afsprakenagenda met waarschuwingen
+- Gewichtspagina met doelwaarden
+- Export van rapportages

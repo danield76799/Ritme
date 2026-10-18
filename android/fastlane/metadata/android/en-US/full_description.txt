@@ -1,0 +1,21 @@
+Ritme supports daily tracking of your social rhythm: mood, activities, medication, sleep, appointments, weight, and reports. Everything stays on your device, protected with a PIN and optional biometric unlock.
+
+What Ritme does
+- Morning and evening mood checks with chips for activities, energy, and sleep
+- Medication planner with reminders on clock time or SRT time
+- Appointments, crisis plan with key contacts, diary, and voortekeningen
+- Statistics and reports to spot patterns
+- Biometric authentication with PIN fallback
+
+Privacy
+No account required. Ritme stores data locally with Hive (Android) and SQLite (iOS). Notifications run on the device itself - no tracking.
+
+Who it is for
+Built for people who want to monitor their rhythm, including in guided care. Ritme is self-observation and replaces no medical advice - always consult your care team for medication and treatment questions.
+
+At a glance
+- Dashboard with average mood and sleep chart
+- Medication overview with reminders
+- Appointments calendar with alerts
+- Weight page with goals
+- Report export
