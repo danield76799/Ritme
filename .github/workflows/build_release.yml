@@ -76,6 +76,31 @@ jobs:
           $BUILD_TOOLS_DIR/apksigner verify -v "$apk"
         done
 
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+
+    - name: Install Fastlane
+      run: gem install fastlane
+
+    - name: Setup Play Console service account key
+      env:
+        PLAY_JSON_KEY: ${{ secrets.PLAY_JSON_KEY }}
+      run: |
+        if [ -n "${PLAY_JSON_KEY}" ]; then
+          echo "${PLAY_JSON_KEY}" > android/fastlane/keys.json
+          echo "Keys written."
+        else
+          echo "PLAY_JSON_KEY secret is empty; skipping metadata upload."
+          exit 0
+        fi
+
+    - name: Upload metadata (Fastlane)
+      if: ${{ secrets.PLAY_JSON_KEY != '' }}
+      run: |
+        cd android && fastlane deploy_internal_test
+
     - name: Create Release
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v2
