@@ -239,7 +239,12 @@ class RapportGenerator {
         final name = med['naam']?.toString() ?? 'Onbekend';
         final dosis = med['dosering']?.toString() ?? '?';
         final eenheid = med['eenheid']?.toString() ?? '';
-        final intakes = await db.getMedicationIntakeForMedication(id);
+        final intakes = (await db.getMedicationIntakeForMedication(id))
+            .where((r) {
+              final d = r['date']?.toString() ?? '';
+              return d.compareTo(startStr) >= 0;
+            })
+            .toList();
         final taken = intakes.where((r) {
           final v = r['aantal_ingenomen'];
           return (v is int && v > 0) || (v is String && (int.tryParse(v) ?? 0) > 0);
