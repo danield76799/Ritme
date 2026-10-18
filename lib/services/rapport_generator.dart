@@ -95,6 +95,25 @@ class RapportGenerator {
     final dailyLogs = await db.getDailyLogs();
     final medicationConfigs = await db.getMedicationConfigsAll();
 
+    final medicationSchedules = await db.getMedicationSchedules();
+    final nowEndStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final intakeRange = await db.getMedicationIntakeRange(startStr, nowEndStr);
+
+    // Per dag een map medicatie_id -> intake-rijen, voor een kalender-gebaseerde
+    // adherence-berekening (ook niet-gelogde dagen tellen mee).
+    final intakesByDate = <String, List<Map<String, dynamic>>>{};
+    for (final r in intakeRange) {
+      final d = r['date']?.toString() ?? '';
+      intakesByDate.putIfAbsent(d, () => []).add(r);
+    }
+    final schedulesByMed = <int, List<Map<String, dynamic>>>{};
+    for (final med in medicationConfigs) {
+      final id = _asInt(med['id']);
+      schedulesByMed[id] = medicationSchedules.where((s) {
+        return _asInt(s['medication_id']) == id;
+      }).toList();
+    }
+
     double totalMood = 0;
     int moodCount = 0;
     double totalSleep = 0;
@@ -148,12 +167,27 @@ class RapportGenerator {
         }
         if (pCount > 0) { wP += pSum / pCount; wPN++; }
 
-        final intake = await db.getMedicationIntake(dateStr);
-        for (var m in intake) {
-          wIntake++;
-          final val = m['aantal_ingenomen'];
-          final ingenomen = (val is int && val > 0) || (val is String && (int.tryParse(val) ?? 0) > 0);
-          if (ingenomen) wTaken++;
+        final dayIntakes = intakesByDate[dateStr] ?? [];
+        for (final med in medicationConfigs) {
+          final id = _asInt(med['id']);
+          final scheds = schedulesByMed[id] ?? const [];
+          if (scheds.isEmpty) continue;
+          for (final sched in scheds) {
+            final days = (sched['days_of_week']?.toString() ?? '1,2,3,4,5,6,7')
+                .split(',')
+                .map(int.tryParse)
+                .whereType<int>();
+            if (!days.contains(d.weekday)) continue;
+            wIntake++;
+            final row = dayIntakes.firstWhere(
+              (r) => _asInt(r['medication_id']) == id,
+              orElse: () => const {},
+            );
+            final val = row.isEmpty ? null : row['aantal_ingenomen'];
+            final ingenomen = (val is int && val > 0) ||
+                (val is String && (int.tryParse(val) ?? 0) > 0);
+            if (ingenomen) wTaken++;
+          }
         }
       }
 
@@ -206,16 +240,24 @@ class RapportGenerator {
     if (dagboekEntries.isNotEmpty) {
       double totalScore = 0;
       int scoreCount = 0;
+      final scoreCounts = <int, int>{};
       for (final entry in dagboekEntries) {
         final sc = _extractDouble(entry['score']);
-        if (sc != null) { totalScore += sc; scoreCount++; }
+        if (sc != null) {
+          totalScore += sc;
+          scoreCount++;
+          scoreCounts[sc.toInt()] = (scoreCounts[sc.toInt()] ?? 0) + 1;
+        }
       }
       buf.writeln('## ${s.dagboekTitle}');
       buf.writeln();
       if (scoreCount > 0) {
+        final distribution = scoreCounts.entries
+            .map((e) => '${e.key}×${e.value}')
+            .join(', ');
         buf.writeln('| ${s.dagboekScore} | ${s.dagboekEntries} |');
         buf.writeln('|---------|--------|');
-        buf.writeln('| **${(totalScore / scoreCount).toStringAsFixed(0)}** | ${dagboekEntries.length} |');
+        buf.writeln('| **${(totalScore / scoreCount).toStringAsFixed(1)}** ($distribution) | ${dagboekEntries.length} |');
         buf.writeln();
       }
       for (final entry in dagboekEntries.reversed) {
@@ -407,6 +449,12 @@ class RapportGenerator {
     } catch (_) {
       return dateStr;
     }
+  }
+
+  int _asInt(dynamic val) {
+    if (val is int) return val;
+    if (val == null) return 0;
+    return int.tryParse('$val') ?? 0;
   }
 
   double? _extractDouble(dynamic val) {
