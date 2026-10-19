@@ -87,6 +87,12 @@ class RapportGenerator {
         buf.writeln(signalLines.join('\n'));
         buf.writeln();
       }
+      // Losstaande meting: de 5-vragen stemmingcheck is een apart
+      // instrument van de dagelijkse stemming die in het
+      // weekoverzicht staat — de twee zijn niet rechtstreeks
+      // vergelijkbaar.
+      buf.writeln('_Opmerking: dit is de 5-vragen stemmingcheck, een apart instrument van de dagelijkse stemming-tracking (weekoverzicht)._');
+      buf.writeln();
       buf.writeln('---');
       buf.writeln();
     }
