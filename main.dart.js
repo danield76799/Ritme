@@ -143975,7 +143975,11 @@ b3.push("- **"+b5+"**: "+n+"\xd7 ("+B.n.aE(n*100/k1.gv(l))+"%)")}if(b3.length!==
 k0.a=k1
 k1+=B.l.cI(b3,"\n")+"\n"
 k0.a=k1
-k0.a=k1+"\n"}k0.a=(k0.a+="---\n")+"\n"}k1=$.an
+k0.a=k1+"\n"}k1=(k0.a+="_Opmerking: dit is de 5-vragen stemmingcheck, een apart instrument van de dagelijkse stemming-tracking (weekoverzicht)._\n")+"\n"
+k0.a=k1
+k1+="---\n"
+k0.a=k1
+k0.a=k1+"\n"}k1=$.an
 if(k1==null)A.B(A.O(u.O))
 s=5
 return A.i(k1.qb(),$async$jc)
