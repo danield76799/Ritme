@@ -533,6 +533,7 @@
   "dagboekExport": "Dagboek Export",
   "alsTekstDelen": "Als tekst delen",
   "alsPdfDelen": "Als PDF delen",
+  "exporteerAlsCsv": "Exporteer als CSV",
   "exporterenDelen": "Exporteren & delen",
   "stapXvanY": "Stap {step} van {total}",
   "genereerRapportDesc": "Genereer een Life Chart Methode (LCM) rapport voor je behandelaar. Bevat stemming, slaap, medicatie, episodes en voortekenen.",
