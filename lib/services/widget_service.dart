@@ -80,7 +80,7 @@ class WidgetService {
 
       developer.log('Widget medication logged: $medId', name: 'WidgetService');
     } catch (e, stackTrace) {
-      developer.log('Failed to log widget medication',\
+      developer.log('Failed to log widget medication',
           name: 'WidgetService', error: e, stackTrace: stackTrace);
     }
   }
