@@ -19,6 +19,24 @@ class RapportStrings {
   String get moodCheckTitle => nl
       ? '🧠 Stemmingscheck (5 vragen)'
       : '🧠 Mood check (5 questions)';
+
+  String get correlationTitle => nl
+      ? '🧬 Correlatie: Medicatie-trouw vs Stemming'
+      : '🧬 Correlation: Medication Adherence vs Mood';
+
+  String correlationHighAdherence(double v) =>
+      nl ? 'Bij hoge trouw (>90%) is de gemiddelde stemming: ${v.toStringAsFixed(1)}' : 'With high adherence (>90%), avg mood: ${v.toStringAsFixed(1)}';
+
+  String correlationLowAdherence(double v) =>
+      nl ? 'Bij lage trouw (<70%) is de gemiddelde stemming: ${v.toStringAsFixed(1)}' : 'With low adherence (<70%), avg mood: ${v.toStringAsFixed(1)}';
+
+  String get correlationNoData => nl
+      ? 'Onvoldoende data voor correlatie-analyse.'
+      : 'Insufficient data for correlation analysis.';
+
+  String correlationDiff(double v) =>
+      nl ? 'Verschil in stemming: ${v.toStringAsFixed(1)}' : 'Mood difference: ${v.toStringAsFixed(1)}';
+
   String get intakeMoments => nl ? 'invulmomenten' : 'entries';
 
   String get metric => nl ? 'Metriek' : 'Metric';

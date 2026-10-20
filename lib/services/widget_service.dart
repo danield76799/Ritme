@@ -30,9 +30,15 @@ class WidgetService {
   static Future<dynamic> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case 'onMoodSelected':
-        final mood = call.arguments['mood'] as double?;
+        final mood = call.arguments['mood'] as double? ;
         if (mood != null) {
           await _saveMood(mood);
+        }
+        return null;
+      case 'onMedicationLogged':
+        final medId = call.arguments['medId'] as int?;
+        if (medId != null) {
+          await _logMedication(medId);
         }
         return null;
       default:
@@ -55,6 +61,27 @@ class WidgetService {
       }
     } catch (e) {
       developer.log('No pending mood from widget', name: 'WidgetService');
+    }
+  }
+
+  /// Log a medication intake from a widget tap.
+  static Future<void> _logMedication(int medId) async {
+    try {
+      final now = DateTime.now();
+      final today =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      // We use a simple 1-dose confirmation for widget taps.
+      await db.insertMedicationIntakeMap({
+        'medication_id': medId,
+        'date': today,
+        'aantal_ingenomen': 1,
+      });
+
+      developer.log('Widget medication logged: $medId', name: 'WidgetService');
+    } catch (e, stackTrace) {
+      developer.log('Failed to log widget medication',\
+          name: 'WidgetService', error: e, stackTrace: stackTrace);
     }
   }
 
