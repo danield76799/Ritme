@@ -526,6 +526,12 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
         actions: [
+          if (!_isLoading && _dailyLogs.isEmpty)
+            IconButton(
+              icon: const Icon(Icons.cloud_off),
+              tooltip: 'Offline – geen gegevens geladen',
+              onPressed: () => _loadData(),
+            ),
           IconButton(
             icon: Icon(lucideIcon('heartPulse'), color: AppTheme.error),
             onPressed: () => Navigator.pushNamed(context, '/crisisplan'),
