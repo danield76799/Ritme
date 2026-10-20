@@ -335,9 +335,38 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
           : ListView.builder(
               padding: const EdgeInsets.fromLTRB(
                   AppTheme.screenPadding, 16, AppTheme.screenPadding, 40),
-              itemCount: _sections.length,
+              itemCount: _sections.length + 1,
               itemBuilder: (context, i) {
-                final section = _sections[i];
+                if (i == 0) {
+                  final emptyCount = _sections
+                      .where((s) =>
+                          (s['content'] as String? ?? '').trim().isEmpty)
+                      .length;
+                  if (emptyCount == 0) return const SizedBox.shrink();
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.tips_and_updates,
+                            color: theme.colorScheme.onTertiaryContainer),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Tip: vul nog $emptyCount leeg(e) sectie(n) in voor een completer crisisplan.',
+                            style: TextStyle(
+                                color: theme.colorScheme.onTertiaryContainer),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                final section = _sections[i - 1];
                 final info = _displayInfo(section);
                 final sectionKey = section['section'] as String?;
                 final hasContent =
