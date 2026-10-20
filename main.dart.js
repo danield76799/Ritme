@@ -144209,7 +144209,7 @@ b2=j5?"Gem. P-Score":"Avg. P-Score"
 b2=n+("| **"+b2+"** | "+B.n.ac(g7,1)+" / 5 (SRT: "+B.n.aE(g7/5*100)+"%) |\n")
 k0.a=b2
 n=b2}if(d5>0){g8=B.n.aE(d4*100/d5)
-b2=j5?"Medicatie-trouw":"Medication adherence"
+b2=j5?"Verwachte doses":"Expected doses"
 c3=j5?"ingenomen":"taken"
 c3=k0.a=n+("| **"+b2+"** | "+d4+"/"+d5+" "+c3+" ("+g8+"%) |\n")
 n=c3}n+="\n"
