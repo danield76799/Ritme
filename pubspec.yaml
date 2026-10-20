@@ -95,6 +95,7 @@ flutter_launcher_icons:
 # (handled by flutter_native_splash)
 
 flutter:
+  uses-material-design: true
   # Enable flutter_localizations codegen
   generate: true
 
