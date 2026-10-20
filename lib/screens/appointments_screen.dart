@@ -645,6 +645,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
               : DateTime.now(),
             firstDate: DateTime(2020),
             lastDate: DateTime(2030),
+            locale: Localizations.localeOf(field.context).languageCode == 'nl' ? const Locale('nl', 'NL') : null,
           );
           if (picked != null) {
             setState(() {

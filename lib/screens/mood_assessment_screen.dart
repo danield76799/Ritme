@@ -89,6 +89,7 @@ class _MoodAssessmentScreenState extends State<MoodAssessmentScreen> {
       initialDate: _geselecteerdeDatum,
       firstDate: now.subtract(const Duration(days: 30)),
       lastDate: now,
+      locale: Localizations.localeOf(context).languageCode == 'nl' ? const Locale('nl', 'NL') : null,
     );
     if (picked == null || !mounted) return;
     setState(() => _geselecteerdeDatum = picked);
