@@ -443,6 +443,44 @@ class RapportGenerator {
     return report;
   }
 
+  /// Genereer een compacte CSV-export van de dagelijkse data. Handig voor
+  /// Excel of andere analyse-tools; waarnemingen die niet ingevuld zijn
+  /// blijven leeg (geen `0`), zodat lege-velden onderscheiden blijven.
+  Future<String> generateCsvReport({int days = 30}) async {
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: days));
+    final startStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+
+    final dailyLogs = await db.getDailyLogs();
+    final rows = dailyLogs.where((l) {
+      final d = l['date']?.toString() ?? '';
+      return d.compareTo(startStr) >= 0;
+    }).toList()
+      ..sort((a, b) =>
+          (a['date'] as String).compareTo(b['date'] as String));
+
+    final buf = StringBuffer();
+    buf.writeln('date,mood_high,split_mood,sleep_hours,life_event');
+
+    for (final l in rows) {
+      final date = l['date']?.toString() ?? '';
+      final ho = _extractDouble(l['stemming_hoog']);
+      final split = _extractDouble(l['gesplitste_stemming']);
+      final sleep = _extractDouble(l['sleep_hours']) ??
+          _extractDouble(l['uren_slaap']);
+      final event = (l['life_event']?.toString() ?? '')
+          .replaceAll('"', '""');
+      buf.writeln([
+        date,
+        ho == null ? '' : ho.toStringAsFixed(1),
+        split == null ? '' : split.toStringAsFixed(1),
+        sleep == null ? '' : sleep.toStringAsFixed(1),
+        '"$event"',
+      ].join(','));
+    }
+
+    return buf.toString();
+  }
   String _formatNL(DateTime d) {
     return '${d.day}-${d.month}-${d.year}';
   }
