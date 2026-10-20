@@ -143,6 +143,25 @@ class _RapportScreenState extends State<RapportScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              // CSV-export: compact tabellair voor Excel/Obsidian
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: OutlinedButton.icon(
+                  onPressed: _isSharing ? null : _exporterenAlsCsv,
+                  icon: const Icon(Icons.table_chart, size: 22),
+                  label: Text(
+                    AppLocalizations.of(context).exporteerAlsCsv,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
               Row(
                 children: [
                   Container(width: 4, height: 24, decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(2))),
@@ -267,6 +286,34 @@ class _RapportScreenState extends State<RapportScreen> {
           files: [XFile(file.path)],
           subject: AppLocalizations.of(context).ritmeRapportOnderwerp,
           title: AppLocalizations.of(context).ritmeRapportOnderwerp,
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).fout(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  Future<void> _exporterenAlsCsv() async {
+    if (_reportText == null || _reportText!.isEmpty) return;
+    setState(() => _isSharing = true);
+    try {
+      final csv = await RapportGenerator.instance.generateCsvReport(days: _selectedDays);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/ritme_export_${DateTime.now().millisecondsSinceEpoch}.csv');
+      await file.writeAsString(csv);
+
+      await SharePlus.instance.share(
+        ShareParams(
+          text: csv,
+          files: [XFile(file.path)],
+          subject: AppLocalizations.of(context).ritmeRapportOnderwerp,
+          title: AppLocalizations.of(context).exporteerAlsCsv,
         ),
       );
     } catch (e) {
