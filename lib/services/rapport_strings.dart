@@ -40,7 +40,7 @@ class RapportStrings {
   String get daysWithData => nl ? 'Dagen met data' : 'Days with data';
   String get avgMoodLong => nl ? 'Gem. stemming' : 'Avg. mood';
   String get avgSleepDuration => nl ? 'Gem. slaapduur' : 'Avg. sleep duration';
-  String get medicationAdherence => nl ? 'Medicatie-trouw' : 'Medication adherence';
+  String get medicationAdherence => nl ? 'Verwachte doses' : 'Expected doses';
   String get taken => nl ? 'ingenomen' : 'taken';
   String get unknown => nl ? 'Onbekend' : 'Unknown';
   String get lastBloodLevel => nl ? 'Laatste bloedspiegel' : 'Last blood level';
