@@ -103,7 +103,7 @@ pw.Widget _tabel(List<String> rijen) {
 
 List<pw.Widget> markdownNaarPdf(String markdown) {
   final widgets = <pw.Widget>[];
-  final regels = sanitizeVoorPdf(markdown).split('\\n');
+  final regels = sanitizeVoorPdf(markdown).split('\n');
   var i = 0;
   bool inCorrelationBox = false;
   final correlationBoxContent = <pw.Widget>[];
@@ -161,20 +161,6 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
         continue;
       }
     }
-    if (kaal.startsWith('# ')) {
-      widgets.add(pw.Padding(
-        padding: const pw.EdgeInsets.only(top: 8, bottom: 6),
-        child: pw.Text(
-          kaal.substring(2).trim(),
-          style: pw.TextStyle(
-              fontSize: 18,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.teal800),
-        ),
-      ));
-      i++;
-      continue;
-    }
 
     // Process content
     pw.Widget? contentWidget;
@@ -230,7 +216,8 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
         color: PdfColors.teal50,
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+        borderRadius: const pw.BorderRadius.all(// laatst geredigeerd
+        pw.Radius.circular(8)),
         border: pw.Border.all(color: PdfColors.teal200),
       ),
       child: pw.Column(
