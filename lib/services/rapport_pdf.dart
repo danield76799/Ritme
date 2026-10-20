@@ -1,14 +1,4 @@
-// Zet het LCM-rapport (markdown) om in een echte PDF (09-2026).
-//
-// Puur Dart (geen Flutter): direct unit-testbaar. Dekt de constructies die
-// RapportGenerator schrijft: ##-headers, tabellen, **bold**, --- en bullets.
-//
-// Lettertypes: het standaard PDF-font (Helvetica/WinAnsi) mist emoji en
-// speciale tekens (U+2212 −, U+2192 →). Die worden in [sanitizeVoorPdf]
-// vervangen of weggelaten — anders staan er lege vakjes in de PDF.
-
 import 'dart:typed_data';
-
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -18,24 +8,18 @@ String sanitizeVoorPdf(String s) {
   out = out.replaceAll('−', '-'); // U+2212 min-teken -> ASCII
   out = out.replaceAll('→', '->');
   out = out.replaceAll('✓', 'v');
-  // Emoji en symbolen die WinAnsi mist: weghalen (woord ervoor/blijft staan).
-  // Astrale tekens (emoji) als \u{...} met unicode:true: \u1F000 zonder
-  // accolades leest Dart als \u1F00 + '0' en slokt dan halve alfabetten op.
   out = out.replaceAll(
       RegExp(
           '[\\u2190-\\u21FF\\u2600-\\u26FF\\u2700-\\u27BF\\u2B00-\\u2BFF\\uFE00-\\uFE0F'
           '\\u200D\\u2640\\u2642\\u2764\\u2705\\u274C\\u{1F000}-\\u{1FAFF}]',
           unicode: true),
       '');
-  // Dubbele spaties door verwijderde emoji opruimen.
   out = out.replaceAll(RegExp('  +'), ' ');
   return out;
 }
 
-/// Eén paragraaf met **bold**-delen als RichText.
 pw.Widget _paragraaf(String regel, {double grootte = 11}) {
   final pat = RegExp(r'\*\*(.+?)\*\*');
-  // Geen (complete) bold-markers: gewone tekst, losse ** eraf.
   if (!pat.hasMatch(regel)) {
     return pw.Text(
       regel.replaceAll('**', ''),
@@ -57,14 +41,10 @@ pw.Widget _paragraaf(String regel, {double grootte = 11}) {
   if (pos < regel.length) {
     kinderen.add(pw.TextSpan(text: regel.substring(pos)));
   }
-  final schoon = kinderen
-      .map((s) =>
-          pw.TextSpan(text: (s.text ?? '').replaceAll('**', ''), style: s.style))
-      .toList();
   return pw.RichText(
     text: pw.TextSpan(
       style: pw.TextStyle(fontSize: grootte),
-      children: schoon,
+      children: kinderen,
     ),
   );
 }
@@ -121,31 +101,65 @@ pw.Widget _tabel(List<String> rijen) {
   );
 }
 
-/// Zet het rapport-markdown om in PDF-widgets (header/footer doet de caller).
 List<pw.Widget> markdownNaarPdf(String markdown) {
   final widgets = <pw.Widget>[];
-  final regels = sanitizeVoorPdf(markdown).split('\n');
+  final regels = sanitizeVoorPdf(markdown).split('\\n');
   var i = 0;
+  bool inCorrelationBox = false;
+  final correlationBoxContent = <pw.Widget>[];
+
   while (i < regels.length) {
     final regel = regels[i].trimRight();
     final kaal = regel.trim();
+
     if (kaal.isEmpty) {
+      if (inCorrelationBox) correlationBoxContent.add(pw.SizedBox(height: 5));
       i++;
       continue;
     }
+
     if (kaal.startsWith('## ')) {
-      widgets.add(pw.Padding(
-        padding: const pw.EdgeInsets.only(top: 12, bottom: 6),
-        child: pw.Text(
-          kaal.substring(3).trim(),
-          style: pw.TextStyle(
-              fontSize: 15,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.teal800),
-        ),
-      ));
-      i++;
-      continue;
+      // If we were in a box, close it first
+      if (inCorrelationBox) {
+        widgets.add(pw.Container(
+          padding: const pw.EdgeInsets.all(10),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.teal50,
+            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+            border: pw.Border.all(color: PdfColors.teal200),
+          ),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                '🧬 Correlatie Analyse',
+                style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900),
+              ),
+              pw.SizedBox(height: 8),
+              ...correlationBoxContent,
+            ],
+          ),
+        ));
+        inCorrelationBox = false;
+        correlationBoxContent.clear();
+      }
+
+      final title = kaal.substring(3).trim();
+      if (title.contains('Correlatie') || title.contains('Correlation')) {
+        inCorrelationBox = true;
+        i++;
+        continue;
+      } else {
+        widgets.add(pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 12, bottom: 6),
+          child: pw.Text(
+            title,
+            style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold, color: PdfColors.teal800),
+          ),
+        ));
+        i++;
+        continue;
+      }
     }
     if (kaal.startsWith('# ')) {
       widgets.add(pw.Padding(
@@ -161,26 +175,32 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
       i++;
       continue;
     }
+
+    // Process content
+    pw.Widget? contentWidget;
     if (kaal == '---') {
-      widgets.add(pw.Padding(
+      contentWidget = pw.Padding(
         padding: const pw.EdgeInsets.symmetric(vertical: 8),
         child: pw.Divider(color: PdfColors.grey300),
-      ));
-      i++;
-      continue;
-    }
-    if (kaal.startsWith('|')) {
+      );
+    } else if (kaal.startsWith('|')) {
       final groep = <String>[];
       while (i < regels.length && regels[i].trim().startsWith('|')) {
         groep.add(regels[i].trim());
         i++;
       }
-      widgets.add(_tabel(groep));
-      widgets.add(pw.SizedBox(height: 8));
+      contentWidget = pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          _tabel(groep),
+          pw.SizedBox(height: 8),
+        ],
+      );
+      if (inCorrelationBox) correlationBoxContent.add(contentWidget);
+      else widgets.add(contentWidget);
       continue;
-    }
-    if (kaal.startsWith('- ') || kaal.startsWith('• ')) {
-      widgets.add(pw.Padding(
+    } else if (kaal.startsWith('- ') || kaal.startsWith('• ')) {
+      contentWidget = pw.Padding(
         padding: const pw.EdgeInsets.only(bottom: 3),
         child: pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -189,16 +209,44 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
             pw.Expanded(child: _paragraaf(kaal.substring(2).trim())),
           ],
         ),
-      ));
-      i++;
-      continue;
+      );
+    } else {
+      contentWidget = pw.Padding(
+        padding: const pw.EdgeInsets.only(bottom: 5),
+        child: _paragraaf(kaal),
+      );
     }
-    widgets.add(pw.Padding(
-      padding: const pw.EdgeInsets.only(bottom: 5),
-      child: _paragraaf(kaal),
-    ));
+
+    if (contentWidget != null) {
+      if (inCorrelationBox) correlationBoxContent.add(contentWidget);
+      else widgets.add(contentWidget);
+    }
     i++;
   }
+
+  // Final close for box if it was the last section
+  if (inCorrelationBox) {
+    widgets.add(pw.Container(
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.teal50,
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+        border: pw.Border.all(color: PdfColors.teal200),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            '🧬 Correlatie Analyse',
+            style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900),
+          ),
+          pw.SizedBox(height: 8),
+          ...correlationBoxContent,
+        ],
+      ),
+    ));
+  }
+
   return widgets;
 }
 
@@ -206,22 +254,35 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
 Future<Uint8List> bouwRapportPdf({
   required String titel,
   required String markdown,
+  String? patientName,
 }) async {
   final pdf = pw.Document();
   pdf.addPage(
     pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(32),
-      header: (pw.Context ctx) => pw.Container(
-        alignment: pw.Alignment.centerRight,
-        margin: const pw.EdgeInsets.only(bottom: 20),
-        child: pw.Text(
-          titel,
-          style: pw.TextStyle(
-              fontSize: 20,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.teal800),
-        ),
+      header: (pw.Context ctx) => pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.end,
+        children: [
+          pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(bottom: 5),
+            child: pw.Text(
+              titel,
+              style: pw.TextStyle(
+                  fontSize: 22,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.teal900),
+            ),
+          ),
+          if (patientName != null)
+            pw.Text(
+              'Patiënt: $patientName',
+              style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
+            ),
+          pw.SizedBox(height: 10),
+          pw.Divider(color: PdfColors.teal200),
+        ],
       ),
       footer: (pw.Context ctx) => pw.Container(
         alignment: pw.Alignment.centerRight,

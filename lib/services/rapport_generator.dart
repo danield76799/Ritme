@@ -220,6 +220,58 @@ class RapportGenerator {
     buf.writeln('---');
     buf.writeln();
 
+    // === CORRELATIE ANALYSE (Medication vs Mood) ===
+    double highAdhMood = 0, lowAdhMood = 0;
+    int highAdhCount = 0, lowAdhCount = 0;
+
+    for (int i = 0; i < fullWeeks * 7; i++) {
+      final d = now.subtract(Duration(days: i));
+      if (d.isAfter(now)) continue;
+      final dateStr = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+      // Mood for this day
+      var log = dailyLogs.where((l) => l['date'] == dateStr).firstOrNull;
+      final mood = log != null ? _extractDouble(log['stemming_hoog']) : null;
+      if (mood == null) continue;
+
+      // Adherence for this day
+      int dTaken = 0, dExpected = 0;
+      final dayIntakes = intakesByDate[dateStr] ?? [];
+      for (final med in medicationConfigs) {
+        final id = _asInt(med['id']);
+        final scheds = schedulesByMed[id] ?? const [];
+        for (final sched in scheds) {
+          final days = (sched['days_of_week']?.toString() ?? '1,2,3,4,5,6,7').split(',').map(int.tryParse).whereType<int>();
+          if (!days.contains(d.weekday)) continue;
+          dExpected++;
+          final row = dayIntakes.firstWhere((r) => _asInt(r['medication_id']) == id, orElse: () => const {});
+          final val = row.isEmpty ? null : row['aantal_ingenomen'];
+          if ((val is int && val > 0) || (val is String && (int.tryParse(val) ?? 0) > 0)) dTaken++;
+        }
+      }
+
+      if (dExpected > 0) {
+        final pct = dTaken * 100 / dExpected;
+        if (pct >= 90) { highAdhMood += mood; highAdhCount++; }
+        else if (pct < 70) { lowAdhMood += mood; lowAdhCount++; }
+      }
+    }
+
+    buf.writeln('## ${s.correlationTitle}');
+    buf.writeln();
+    if (highAdhCount > 0 || lowAdhCount > 0) {
+      if (highAdhCount > 0) buf.writeln(s.correlationHighAdherence(highAdhMood / highAdhCount));
+      if (lowAdhCount > 0) buf.writeln(s.correlationLowAdherence(lowAdhMood / lowAdhCount));
+      if (highAdhCount > 0 && lowAdhCount > 0) {
+        final diff = (highAdhMood / highAdhCount) - (lowAdhMood / lowAdhCount);
+        buf.writeln();
+        buf.writeln(s.correlationDiff(diff));
+      }
+    } else {
+      buf.writeln(s.correlationNoData);
+    }
+    buf.writeln();
+
     // === 3. SAMENVATTING ===
     buf.writeln('## 📈 Samenvatting');
     buf.writeln();
