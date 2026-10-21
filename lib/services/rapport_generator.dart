@@ -112,6 +112,15 @@ class RapportGenerator {
       final d = r['date']?.toString() ?? '';
       intakesByDate.putIfAbsent(d, () => []).add(r);
     }
+
+    // SRM activiteiten in bulk ophalen om N+1 queries te voorkomen
+    final srmRange = await db.getSrmActivitiesRange(startStr, nowEndStr);
+    final srmByDate = <String, List<Map<String, dynamic>>>{};
+    for (final a in srmRange) {
+      final d = a['date']?.toString() ?? '';
+      srmByDate.putIfAbsent(d, () => []).add(a);
+    }
+
     final schedulesByMed = <int, List<Map<String, dynamic>>>{};
     for (final med in medicationConfigs) {
       final id = _asInt(med['id']);
@@ -161,7 +170,7 @@ class RapportGenerator {
           if (sle != null) { wSleep += sle; wSleepN++; }
         }
 
-        final srmActs = await db.getSrmActivities(dateStr);
+        final srmActs = srmByDate[dateStr] ?? [];
         double pSum = 0;
         int pCount = 0;
         for (var a in srmActs) {
