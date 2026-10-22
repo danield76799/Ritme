@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import android.widget.Toast
 
 /**
  * Home screen widget for quick Ritme check-in.
@@ -15,7 +16,7 @@ import android.widget.RemoteViews
  * - Tap 😐 for neutral mood (0)
  * - Tap 😄 for positive mood (+3)
  *
- * Each tap opens the app and passes the selected mood via intent extras.
+ * Uses BroadcastReceiver pattern to avoid Android 14+ background activity restrictions.
  */
 class QuickCheckInWidget : AppWidgetProvider() {
 
@@ -56,17 +57,43 @@ class QuickCheckInWidget : AppWidgetProvider() {
         }
 
         private fun createMoodPendingIntent(context: Context, appWidgetId: Int, moodValue: Double): PendingIntent {
-            val intent = Intent(context, MainActivity::class.java).apply {
+            val intent = Intent(context, QuickCheckInWidget::class.java).apply {
                 action = ACTION_MOOD_SELECTED
                 putExtra(EXTRA_MOOD_VALUE, moodValue)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
             }
-            return PendingIntent.getActivity(
+            // Unique request code per widget + mood value
+            val requestCode = appWidgetId * 10 + when (moodValue) {
+                -3.0 -> 1
+                0.0 -> 2
+                3.0 -> 3
+                else -> 0
+            }
+            return PendingIntent.getBroadcast(
                 context,
-                appWidgetId + moodValue.toInt(), // Unique request code
+                requestCode,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+        }
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == ACTION_MOOD_SELECTED) {
+            val moodValue = intent.getDoubleExtra(EXTRA_MOOD_VALUE, 0.0)
+            val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+            prefs.edit().putString("flutter.pendingMoodValue", moodValue.toString()).apply()
+            // Also store in legacy location for MainActivity
+            MainActivity.pendingMoodValue = moodValue
+            
+            val moodText = when (moodValue) {
+                -3.0 -> "Slecht (-3)"
+                0.0 -> "OK (0)"
+                3.0 -> "Goed (+3)"
+                else -> moodValue.toString()
+            }
+            Toast.makeText(context, "Stemming opgeslagen: $moodText", Toast.LENGTH_SHORT).show()
         }
     }
 
