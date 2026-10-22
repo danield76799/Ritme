@@ -496,7 +496,26 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (_isLoading) {
       return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context).laden,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.secondaryText(context),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -1029,7 +1048,12 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🔥', style: TextStyle(fontSize: 13)),
+          Icon(
+            Icons.local_fire_department,
+            size: 13,
+            color: AppTheme.streakText(Theme.of(context).brightness),
+            semanticLabel: AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
+          ),
           const SizedBox(width: 5),
           Text(
             _dagStreak == 1
@@ -1202,6 +1226,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     required String title,
     required String route,
     bool isCompleted = false,
+    String? emptyHint,
   }) {
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
@@ -1242,15 +1267,33 @@ class _DashboardScreenState extends State<DashboardScreen>
                 const SizedBox(height: 12),
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 120),
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (!isCompleted && emptyHint != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          emptyHint,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.secondaryText(context),
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
