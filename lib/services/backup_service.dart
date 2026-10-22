@@ -21,6 +21,7 @@ class BackupService {
   /// Export all data - SQLite AND Hive
   static Future<Map<String, dynamic>> exportAllData() async {
     final export = <String, dynamic>{
+      'schema_version': '2',
       'export_date': DateTime.now().toIso8601String(),
       'app_version': '1.0.0',
       'data': {},
@@ -160,6 +161,7 @@ class BackupService {
   static Future<String> saveLocalBackup({bool auto = false, String? freq}) async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
+    final zipped = Uint8List.fromList(GZipCodec().encode(utf8.encode(jsonString)));
 
     final gekozenFreq = freq ?? await huidigeFrequentie();
     final bestandsnaam = auto
@@ -173,7 +175,7 @@ class BackupService {
     // terugval faalde de automatische backup bij ELKE opstart stil (09-2026).
     // Eerst de SAF-map: die schrijft via ContentResolver, niet via File.
     if (await BackupMapService.schrijf(
-        bestandsnaam, Uint8List.fromList(utf8.encode(jsonString)))) {
+        bestandsnaam, zipped)) {
       if (auto) {
         await BackupMapService.ruimOp(behoud: autoBackupBehoudVoor(gekozenFreq));
       }
@@ -203,7 +205,7 @@ class BackupService {
     for (final dir in pogingen) {
       try {
         final file = File('${dir.path}/$bestandsnaam');
-        await file.writeAsString(jsonString);
+        await file.writeAsBytes(zipped, flush: true);
         gelukt = file;
         break;
       } catch (e) {
@@ -232,8 +234,8 @@ class BackupService {
   static Future<void> shareBackup() async {
     final data = await exportAllData();
     final jsonString = jsonEncode(data);
-    
-    // Try to save to Downloads folder first
+    final zipped = Uint8List.fromList(GZipCodec().encode(utf8.encode(jsonString)));
+    debugPrint('BackupService: share zip bytes ${zipped.length}');
     String filePath;
     try {
       final dir = await getExternalStorageDirectory();
@@ -241,7 +243,7 @@ class BackupService {
         final downloadsPath = dir.path.replaceAll('/Android/data/com.danield.ritme/files', '/Download');
         final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
         final file = File('$downloadsPath/ritme_backup_$timestamp.json');
-        await file.writeAsString(jsonString);
+        await file.writeAsBytes(zipped, flush: true);
         filePath = file.path;
       } else {
         throw Exception('No external storage');
@@ -251,7 +253,7 @@ class BackupService {
       final dir = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
       final file = File('${dir.path}/ritme_backup_$timestamp.json');
-      await file.writeAsString(jsonString);
+      await file.writeAsBytes(zipped, flush: true);
       filePath = file.path;
     }
     
@@ -420,8 +422,17 @@ class BackupService {
     final file = File(filePath);
     if (!await file.exists()) throw Exception('File not found');
 
-    final jsonString = await file.readAsString();
+    final bytes = await file.readAsBytes();
+    final jsonString = (bytes.length >= 2 && bytes[0] == 0x1f && bytes[1] == 0x8b)
+        ? utf8.decode(GZipCodec().decode(bytes))
+        : utf8.decode(bytes);
     final data = jsonDecode(jsonString) as Map<String, dynamic>;
+
+    final version = (data['schema_version'] ?? '1').toString();
+    if (int.tryParse(version) == null || int.parse(version) < 1) {
+      throw Exception('Invalid backup schema_version: $version');
+    }
+
     await restoreFromData(data);
   }
 
