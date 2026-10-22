@@ -80,8 +80,18 @@ class MainActivity : FlutterFragmentActivity() {
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getPendingMood" -> {
-                    result.success(pendingMoodValue)
-                    pendingMoodValue = null
+                    var value = pendingMoodValue
+                    if (value == null) {
+                        val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+                        val str = prefs.getString("flutter.pendingMoodValue", null)
+                        if (str != null) {
+                            value = str.toDoubleOrNull()
+                            prefs.edit().remove("flutter.pendingMoodValue").apply()
+                        }
+                    } else {
+                        pendingMoodValue = null
+                    }
+                    result.success(value)
                 }
                 else -> result.notImplemented()
             }
