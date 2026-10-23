@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../screens/login_screen.dart';
+import '../screens/onboarding_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   SplashScreen({super.key});
@@ -86,11 +88,11 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => LoginScreen()),
-        );
-      }
+      if (!mounted) return;
+      final done = Hive.isBoxOpen('settings') ? Hive.box('settings').get('onboarding_done') == true : true;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => done ? const LoginScreen() : const OnboardingScreen()),
+      );
     });
   }
 
