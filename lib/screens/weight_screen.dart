@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../widgets/datum_navigator.dart';
 import '../utils/logger.dart';
+import '../widgets/empty_state.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class WeightScreen extends StatefulWidget {
@@ -400,17 +401,10 @@ class _WeightScreenState extends State<WeightScreen> {
                     const SizedBox(height: 16),
 
                     if (_weightLogs.isEmpty)
-                      Center(
-                        child: Column(
-                          children: [
-                            Icon(Icons.monitor_weight_outlined, size: 64, color: Theme.of(context).colorScheme.outline),
-                            const SizedBox(height: 16),
-                            Text(
-                              AppLocalizations.of(context).nogGeenGewichtGelogd,
-                              style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 16),
-                            ),
-                          ],
-                        ),
+                      EmptyState(
+                        icon: Icons.monitor_weight_outlined,
+                        title: AppLocalizations.of(context).nogGeenGewichtGelogd,
+                        subtitle: 'Voeg je eerste meting toe om je trend te zien.',
                       )
                     else
                       ListView.builder(
