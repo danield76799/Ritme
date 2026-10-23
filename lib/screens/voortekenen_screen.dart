@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
+import '../widgets/empty_state.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class VoortekenenScreen extends StatefulWidget {
@@ -455,7 +456,11 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
             future: db.getRecentProdromalTrends(14),
             builder: (context, snapshot) {
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text(AppLocalizations.of(context).nogGeenHistorie));
+                return EmptyState(
+                  icon: Icons.flag_outlined,
+                  title: AppLocalizations.of(context).nogGeenHistorie,
+                  subtitle: 'Geen voortekenen geregistreerd in de laatste 14 dagen.',
+                );
               }
               return ListView.builder(
                 itemCount: snapshot.data!.length,
