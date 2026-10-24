@@ -545,17 +545,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
         actions: [
-          if (!_isLoading && _dailyLogs.isEmpty)
-            IconButton(
-              icon: const Icon(Icons.cloud_off),
-              tooltip: 'Offline – geen gegevens geladen',
-              onPressed: () => _loadData(),
-            ),
-          IconButton(
-            icon: Icon(lucideIcon('heartPulse'), color: AppTheme.error),
-            onPressed: () => Navigator.pushNamed(context, '/crisisplan'),
-            tooltip: AppLocalizations.of(context).crisisplan,
-          ),
           IconButton(
             icon: Icon(
               lucideIcon('settings'),
@@ -676,15 +665,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       body: RefreshIndicator(
         onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(
-            AppTheme.screenPadding,
-            8,
-            AppTheme.screenPadding,
-            24,
-          ),
-          child: Column(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Greeting card - compacter
@@ -894,30 +879,19 @@ class _DashboardScreenState extends State<DashboardScreen>
                       isCompleted: _checkinTypes.contains('dagboek'),
                     ),
                   ),
-                  _StaggeredCard(
-                    animation: _cardAnimations[4],
-                    child: _buildActionCard(
-                      context,
-                      icon: lucideIcon('fileText'),
-                      accent: TileAccent.report,
-                      title: AppLocalizations.of(context).rapport,
-                      route: '/rapport',
-                    ),
-                  ),
-                  _StaggeredCard(
-                    animation: _cardAnimations[5],
-                    child: _buildActionCard(
-                      context,
-                      icon: lucideIcon('calendarDays'),
-                      accent: TileAccent.appointments,
-                      title: AppLocalizations.of(context).afspraken,
-                      route: '/appointments',
-                    ),
-                  ),
                 ],
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(child: _SecondaryNavChip(icon: lucideIcon('fileText'), label: AppLocalizations.of(context).rapport, onTap: () => Navigator.pushNamed(context, '/rapport'))),
+                  const SizedBox(width: 8),
+                  Expanded(child: _SecondaryNavChip(icon: lucideIcon('calendarDays'), label: AppLocalizations.of(context).afspraken, onTap: () => Navigator.pushNamed(context, '/appointments'))),
+                ],
+              ),
+
+              const SizedBox(height: 16),
 
               Row(
                 children: [
@@ -1033,6 +1007,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -1185,31 +1160,36 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withValues(alpha: 0.20),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(context, '/settings'),
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
-          const SizedBox(width: 8),
-          // Geen Flexible/ellipsis meer: de chip staat nu in een Wrap en mag
-          // zijn natuurlijke breedte houden. De vorige krimp-constructie kapte
-          // de TIJD af ("Opstaan 08…") — precies het stuk dat de gebruiker
-          // nodig heeft. Past het niet, dan schuift de chip naar de volgende
-          // regel in plaats van te krimpen.
-          Text(
-            AppLocalizations.of(context).labelEnTijd(label, time),
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor.withValues(alpha: 0.20),
+            borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
           ),
-        ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context).labelEnTijd(label, time),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.edit_outlined, size: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1234,6 +1214,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       closedElevation: 2,
       closedShape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        side: isCompleted ? BorderSide(color: const Color(0xFF4ECDC4).withValues(alpha: 0.5), width: 1.2) : BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1),
       ),
       closedColor: Theme.of(context).cardColor,
       openColor: Theme.of(context).scaffoldBackgroundColor,
@@ -1733,6 +1714,34 @@ class _StaggeredCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SecondaryNavChip extends StatelessWidget {
+  final IconData icon; final String label; final VoidCallback onTap;
+  const _SecondaryNavChip({required this.icon, required this.label, required this.onTap});
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFF182229),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(icon, size: 18, color: const Color(0xFF7AC8D3)),
+            const SizedBox(width: 8),
+            Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
+          ]),
+        ),
+      ),
     );
   }
 }
