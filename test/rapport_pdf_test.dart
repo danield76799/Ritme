@@ -57,7 +57,17 @@ void main() {
     test('tabel: scheidingsrij weg, eerste rij vet', () {
       final widgets = markdownNaarPdf(
           '| A | B |\n|---|---|\n| **x** | 1 |\n');
-      final tabellen = widgets.whereType<pw.Table>();
+      // De tabel zit in een Column (met opvulling eronder), dus zoek
+      // recursief in de widget-structuur.
+      final tabellen = <pw.Table>[];
+      void zoek(pw.Widget w) {
+        if (w is pw.Table) {
+          tabellen.add(w);
+        } else if (w is pw.Column) {
+          w.children.forEach(zoek);
+        }
+      }
+      widgets.forEach(zoek);
       expect(tabellen.length, 1);
       final rijen = tabellen.first.children;
       expect(rijen.length, 2); // header + 1 datarij
