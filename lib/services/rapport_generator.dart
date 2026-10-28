@@ -640,7 +640,6 @@ class RapportGenerator {
                 d.compareTo(_dateStr(period.endDate)) <= 0;
           })
           .toList();
-      if (intakes.isEmpty) continue;
 
       final scheds = period.schedulesFor(id);
 
@@ -663,12 +662,12 @@ class RapportGenerator {
 
       // Vaste medicatie: de noemer is het aantal dagen in de rapportperiode
       // waarop een dosis verwacht wordt — hetzelfde als in het
-      // weekoverzicht en de samenvatting.
+      // weekoverzicht en de samenvatting. Een dag telt één keer, ook als
+      // er meerdere schema's op die dag staan.
       final expectedDays = <DateTime>[];
       for (final d in period.allDays) {
-        for (final sched in scheds) {
-          if (period.isScheduledOn(sched, d)) expectedDays.add(d);
-        }
+        final heeftSchema = scheds.any((sched) => period.isScheduledOn(sched, d));
+        if (heeftSchema) expectedDays.add(d);
       }
       if (expectedDays.isEmpty) continue;
 
