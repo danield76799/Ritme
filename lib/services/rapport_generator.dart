@@ -155,7 +155,7 @@ class RapportGenerator {
     final period = await _loadPeriodData(startDate, endDate);
     final totals = await _buildWeeklyOverview(buf, s, period);
     _buildCorrelation(buf, s, period, now);
-    _buildSummary(buf, s, period, totals);
+    _buildSummary(buf, s, totals);
     await _buildDagboek(buf, s, startStr, endStr);
     await _buildMedicationSection(buf, s, period);
     await _buildEpisodes(buf, s, period);
@@ -539,7 +539,6 @@ class RapportGenerator {
   void _buildSummary(
     StringBuffer buf,
     RapportStrings s,
-    _PeriodData period,
     _WeeklyTotals totals,
   ) {
     buf.writeln('## 📈 Samenvatting');
