@@ -24,10 +24,15 @@ String _dateStr(DateTime d) =>
 /// [avondTijd] is de herinneringstijd van lithium. Die bepaalt of de
 /// rapportdag nog 'open' staat (tijd in de toekomst) of al afgelopen is.
 class RapportTestDb implements DatabaseRepository {
-  RapportTestDb(this.today, {required this.avondTijd});
+  RapportTestDb(this.today,
+      {required this.avondTijd, this.metExtraVastMiddel = false});
 
   final DateTime today;
   final String avondTijd;
+
+  /// Voegt een vast middel toe dat in de periode helemaal niet is
+  /// ingenomen (0/14 moet zichtbaar zijn in het rapport).
+  final bool metExtraVastMiddel;
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
@@ -72,6 +77,13 @@ class RapportTestDb implements DatabaseRepository {
           'dosering': '5',
           'eenheid': 'mg',
         },
+        if (metExtraVastMiddel)
+          {
+            'id': 4,
+            'naam': 'Sertraline',
+            'dosering': '50',
+            'eenheid': 'mg',
+          },
       ];
 
   @override
@@ -88,6 +100,13 @@ class RapportTestDb implements DatabaseRepository {
           'reminder_time': avondTijd,
           'days_of_week': '1,2,3,4,5,6,7',
         },
+        if (metExtraVastMiddel)
+          {
+            'id': 12,
+            'medication_id': 4,
+            'reminder_time': '12:00',
+            'days_of_week': '1,2,3,4,5,6,7',
+          },
       ];
 
   @override
@@ -164,10 +183,14 @@ class RapportTestDb implements DatabaseRepository {
 }
 
 /// Bouwt het rapport voor de gegeven [avondTijd].
-Future<String> _rapport(String avondTijd) async {
+Future<String> _rapport(String avondTijd, {bool metExtraVastMiddel = false}) async {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
-  setDbForTesting(RapportTestDb(today, avondTijd: avondTijd));
+  setDbForTesting(RapportTestDb(
+    today,
+    avondTijd: avondTijd,
+    metExtraVastMiddel: metExtraVastMiddel,
+  ));
   return RapportGenerator.instance
       .generateLCMReport(days: 14, localeCode: 'nl');
 }
@@ -258,6 +281,12 @@ void main() {
         final index = regels.indexWhere((l) => l.contains('**Lurasidon**'));
         expect(regels[index + 14], contains('❌'));
       });
+    });
+
+    test('een vast middel zonder inname blijft zichtbaar (0/14)', () async {
+      final rapport =
+          await _rapport(_toekomstigeTijd(), metExtraVastMiddel: true);
+      expect(rapport, contains('- **Sertraline** 50 mg: 0/14 (0%)'));
     });
 
     test('medicatienamen zijn opgeschoond', () {
