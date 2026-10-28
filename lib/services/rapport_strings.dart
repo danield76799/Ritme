@@ -71,6 +71,16 @@ class RapportStrings {
   String get crisisPlan => nl ? '🚨 Crisisplan' : '🚨 Crisis plan';
   String get medTakenDays => nl ? '💊 Medicatie — ingenomen dagen' : '💊 Medication — days taken';
   String get med => nl ? '💊 Medicatie' : '💊 Medication';
+  /// Overzicht van wat er voorgeschreven staat (in plaats van de
+  /// dubbele lijst met alleen namen en doseringen).
+  String get medSchema => nl ? '📋 Actief Medicatieschema' : '📋 Active medication schedule';
+  /// Vaste, dagelijkse medicatie.
+  String get medFixed => nl ? 'Dagelijks (vast)' : 'Daily (fixed)';
+  /// 'Zo nodig'-medicatie: geen dagelijkse dosis, dus geen percentage.
+  String get medAsNeeded => nl ? 'Zo nodig (PRN)' : 'As needed (PRN)';
+  String takenAsNeededInPeriod(int n) => nl
+      ? '${n}x ingenomen in deze periode (zo nodig)'
+      : '${n}x taken in this period (as needed)';
   String get episodesTitle => nl ? '🏥 Episodes' : '🏥 Episodes';
 
   // Dagboek
