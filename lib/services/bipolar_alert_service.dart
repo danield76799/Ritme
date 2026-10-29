@@ -18,6 +18,8 @@ class BipolarAlertService {
       int sleepDays = 0;
       double lastNightSleep = 0;
       bool hasLastNight = false;
+      // Het aantal dagen sinds de log van de laatste nacht (0 = vandaag).
+      int lastNightDaysAgo = 99;
 
       for (var log in dailyLogs) {
         final dateStr = log['date']?.toString();
@@ -26,11 +28,16 @@ class BipolarAlertService {
           final logDate = DateTime.parse(dateStr);
           final daysAgo = now.difference(logDate).inDays;
 
-          // Last night (today or yesterday)
-          if (daysAgo <= 1 && !hasLastNight) {
+          // De LAATSTE nacht: het log van vandaag heeft voorrang op dat
+          // van gisteren. De logs staan oplopend gesorteerd (oudste
+          // eerst), dus zonder deze vergelijking won de één-na-laatste
+          // nacht — de nacht waarvan je de ochtend-check-in van vanochtend
+          // net hebt ingevuld zou dan worden genegeerd.
+          if (daysAgo <= 1) {
             final sleep = _extractSleep(log);
-            if (sleep > 0) {
+            if (sleep > 0 && daysAgo < lastNightDaysAgo) {
               lastNightSleep = sleep;
+              lastNightDaysAgo = daysAgo;
               hasLastNight = true;
             }
           }
