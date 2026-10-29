@@ -143990,14 +143990,14 @@ A.b88.prototype={
 $2(a,b){return a+b},
 $S:32}
 A.ao2.prototype={
-Jo(){var s=0,r=A.w(t.CM),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8
-var $async$Jo=A.x(function(b0,b1){if(b0===1){o.push(b1)
+Jo(){var s=0,r=A.w(t.CM),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9
+var $async$Jo=A.x(function(b1,b2){if(b1===1){o.push(b2)
 s=p}for(;;)switch(s){case 0:p=4
-a2=$.an
-if(a2==null)A.B(A.O(u.O))
+a3=$.an
+if(a3==null)A.B(A.O(u.O))
 s=7
-return A.i(a2.ow(),$async$Jo)
-case 7:m=b1
+return A.i(a3.ow(),$async$Jo)
+case 7:m=b2
 if(J.bx(m)<7){q=null
 s=1
 break}l=new A.b8(Date.now(),0,!1)
@@ -144005,51 +144005,53 @@ k=0
 j=0
 i=0
 h=!1
-for(a2=J.b4(m);a2.t();){g=a2.gO(a2)
-a3=J.r(g,"date")
-f=a3==null?null:J.V(a3)
-if(f==null)continue
-try{e=A.vO(f)
-a3=l
-a4=e
-a5=a3.a
-a6=a4.ge3()
-d=B.p.c7(a3.b-a4.ghu()+1000*(a5-a6),864e8)
-if(d<=1&&!h){c=n.a4Q(g)
-if(c>0){i=c
-h=!0}}if(d<=14){b=n.a4Q(g)
-if(b>0){k+=b;++j}}}catch(a9){}}if(j<5||!h){q=null
+g=99
+for(a3=J.b4(m);a3.t();){f=a3.gO(a3)
+a4=J.r(f,"date")
+e=a4==null?null:J.V(a4)
+if(e==null)continue
+try{d=A.vO(e)
+a4=l
+a5=d
+a6=a4.a
+a7=a5.ge3()
+c=B.p.c7(a4.b-a5.ghu()+1000*(a6-a7),864e8)
+if(c<=1){b=n.a4Q(f)
+if(b>0&&c<g){i=b
+g=c
+h=!0}}if(c<=14){a=n.a4Q(f)
+if(a>0){k+=a;++j}}}catch(b0){}}if(j<5||!h){q=null
 s=1
-break}a=k/j
-a0=Math.abs((i-a)/a*100)
-a1=i<a
-if(a1&&i<6&&a0>30){a2=$.bn()
-a3=a2.c.f
-a3=(a3.length===0?B.hQ:B.l.gY(a3)).gdI(0).toLowerCase()==="nl"?"\u26a0\ufe0f Slaapwaarschuwing":"\u26a0\ufe0f Sleep warning"
-a4=i
-a5=J.bbW(a0,0)
-a6=a
-a2=a2.c.f
-a2=(a2.length===0?B.hQ:B.l.gY(a2)).gdI(0).toLowerCase()==="nl"?"Je sliep "+B.n.a7(a4,1)+"u \u2014 dat is "+a5+"% minder dan je gemiddelde van "+B.n.a7(a6,1)+"u. Verminderde slaap is een belangrijk voorteken van manie.":"You slept "+B.n.a7(a4,1)+"h \u2014 that is "+a5+"% less than your average of "+B.n.a7(a6,1)+"h. Reduced sleep is an important early sign of mania."
-q=new A.xX(a3,a2,"high")
+break}a0=k/j
+a1=Math.abs((i-a0)/a0*100)
+a2=i<a0
+if(a2&&i<6&&a1>30){a3=$.bn()
+a4=a3.c.f
+a4=(a4.length===0?B.hQ:B.l.gY(a4)).gdI(0).toLowerCase()==="nl"?"\u26a0\ufe0f Slaapwaarschuwing":"\u26a0\ufe0f Sleep warning"
+a5=i
+a6=J.bbW(a1,0)
+a7=a0
+a3=a3.c.f
+a3=(a3.length===0?B.hQ:B.l.gY(a3)).gdI(0).toLowerCase()==="nl"?"Je sliep "+B.n.a7(a5,1)+"u \u2014 dat is "+a6+"% minder dan je gemiddelde van "+B.n.a7(a7,1)+"u. Verminderde slaap is een belangrijk voorteken van manie.":"You slept "+B.n.a7(a5,1)+"h \u2014 that is "+a6+"% less than your average of "+B.n.a7(a7,1)+"h. Reduced sleep is an important early sign of mania."
+q=new A.xX(a4,a3,"high")
 s=1
-break}if(a1&&i<7&&a0>20){a2=$.bn()
-a3=a2.c.f
-a3=(a3.length===0?B.hQ:B.l.gY(a3)).gdI(0).toLowerCase()==="nl"?"\ud83d\udca4 Minder slaap":"\ud83d\udca4 Less sleep"
-a4=i
-a5=J.bbW(a0,0)
-a2=a2.c.f
-a2=(a2.length===0?B.hQ:B.l.gY(a2)).gdI(0).toLowerCase()==="nl"?"Je sliep "+B.n.a7(a4,1)+"u, "+a5+"% onder je gemiddelde. Houd je stemming extra in de gaten vandaag.":"You slept "+B.n.a7(a4,1)+"h, "+a5+"% below your average. Keep an extra eye on your mood today."
-q=new A.xX(a3,a2,"medium")
+break}if(a2&&i<7&&a1>20){a3=$.bn()
+a4=a3.c.f
+a4=(a4.length===0?B.hQ:B.l.gY(a4)).gdI(0).toLowerCase()==="nl"?"\ud83d\udca4 Minder slaap":"\ud83d\udca4 Less sleep"
+a5=i
+a6=J.bbW(a1,0)
+a3=a3.c.f
+a3=(a3.length===0?B.hQ:B.l.gY(a3)).gdI(0).toLowerCase()==="nl"?"Je sliep "+B.n.a7(a5,1)+"u, "+a6+"% onder je gemiddelde. Houd je stemming extra in de gaten vandaag.":"You slept "+B.n.a7(a5,1)+"h, "+a6+"% below your average. Keep an extra eye on your mood today."
+q=new A.xX(a4,a3,"medium")
 s=1
-break}if(!a1&&i>a*1.5&&i>10){a2=$.bn()
-a3=a2.c.f
-a3=(a3.length===0?B.hQ:B.l.gY(a3)).gdI(0).toLowerCase()==="nl"?"\ud83d\udd35 Veel slaap":"\ud83d\udd35 Much sleep"
-a4=i
-a5=a
-a2=a2.c.f
-a2=(a2.length===0?B.hQ:B.l.gY(a2)).gdI(0).toLowerCase()==="nl"?"Je sliep "+B.n.a7(a4,1)+"u \u2014 veel meer dan normaal ("+B.n.a7(a5,1)+"u). Dit kan een teken zijn van depressie.":"You slept "+B.n.a7(a4,1)+"h \u2014 much more than usual ("+B.n.a7(a5,1)+"h). This can be a sign of depression."
-q=new A.xX(a3,a2,"medium")
+break}if(!a2&&i>a0*1.5&&i>10){a3=$.bn()
+a4=a3.c.f
+a4=(a4.length===0?B.hQ:B.l.gY(a4)).gdI(0).toLowerCase()==="nl"?"\ud83d\udd35 Veel slaap":"\ud83d\udd35 Much sleep"
+a5=i
+a6=a0
+a3=a3.c.f
+a3=(a3.length===0?B.hQ:B.l.gY(a3)).gdI(0).toLowerCase()==="nl"?"Je sliep "+B.n.a7(a5,1)+"u \u2014 veel meer dan normaal ("+B.n.a7(a6,1)+"u). Dit kan een teken zijn van depressie.":"You slept "+B.n.a7(a5,1)+"h \u2014 much more than usual ("+B.n.a7(a6,1)+"h). This can be a sign of depression."
+q=new A.xX(a4,a3,"medium")
 s=1
 break}q=null
 s=1
@@ -144058,7 +144060,7 @@ p=2
 s=6
 break
 case 4:p=3
-a8=o.pop()
+a9=o.pop()
 q=null
 s=1
 break
