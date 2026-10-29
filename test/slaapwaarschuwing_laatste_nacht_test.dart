@@ -84,6 +84,24 @@ void main() {
       expect(alert.type, 'slaap_afname');
     });
 
+    test('de afwijkende nacht telt niet mee in het gemiddelde', () async {
+      // 13 nachten van 8.8u, vandaag 5.3u. Het gemiddelde in de melding
+      // moet 8.8 zijn — de korte nacht zelf hoort niet in de referentie.
+      setDbForTesting(_SlaapDb(_logs(
+        aantal: 13,
+        slaap: 8.8,
+        vandaag: 5.3,
+      )));
+
+      final alert = await BipolarAlertService.instance.checkSleepBaseline();
+      expect(alert, isNotNull);
+      expect(alert!.message, contains('8.8'),
+          reason: 'de baseline is het gemiddelde van de nachten vóór de '
+              'afwijkende nacht');
+      expect(alert.message, isNot(contains('8.5')),
+          reason: 'met de afwijkende nacht erin zou het gemiddelde 8.5 zijn');
+    });
+
     test('zonder slaap van vandaag valt de nacht van gisteren terug', () async {
       setDbForTesting(_SlaapDb(_logs(
         aantal: 13,
