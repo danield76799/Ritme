@@ -12,14 +12,19 @@ class BipolarAlertService {
       final dailyLogs = await db.getDailyLogs();
       if (dailyLogs.length < 7) return null;
 
-      // Calculate baseline sleep (14d average)
       final now = DateTime.now();
-      double totalSleep = 0;
-      int sleepDays = 0;
+
+      // De laatste nacht bepalen: het log van vandaag heeft voorrang op dat
+      // van gisteren. De logs staan oplopend gesorteerd (oudste eerst), dus
+      // zonder deze vergelijking won de één-na-laatste nacht — de nacht
+      // waarvan je de ochtend-check-in van vanochtend net hebt ingevuld zou
+      // dan worden genegeerd.
       double lastNightSleep = 0;
-      bool hasLastNight = false;
-      // Het aantal dagen sinds de log van de laatste nacht (0 = vandaag).
+      DateTime? lastNightDate;
       int lastNightDaysAgo = 99;
+
+      // De nachten waarop de baseline steunt: datum -> uren.
+      final slaapPerDatum = <DateTime, double>{};
 
       for (var log in dailyLogs) {
         final dateStr = log['date']?.toString();
@@ -27,33 +32,49 @@ class BipolarAlertService {
         try {
           final logDate = DateTime.parse(dateStr);
           final daysAgo = now.difference(logDate).inDays;
+          final sleep = _extractSleep(log);
+          if (sleep <= 0) continue;
 
-          // De LAATSTE nacht: het log van vandaag heeft voorrang op dat
-          // van gisteren. De logs staan oplopend gesorteerd (oudste
-          // eerst), dus zonder deze vergelijking won de één-na-laatste
-          // nacht — de nacht waarvan je de ochtend-check-in van vanochtend
-          // net hebt ingevuld zou dan worden genegeerd.
-          if (daysAgo <= 1) {
-            final sleep = _extractSleep(log);
-            if (sleep > 0 && daysAgo < lastNightDaysAgo) {
-              lastNightSleep = sleep;
-              lastNightDaysAgo = daysAgo;
-              hasLastNight = true;
-            }
+          if (daysAgo <= 1 && daysAgo < lastNightDaysAgo) {
+            lastNightSleep = sleep;
+            lastNightDate = logDate;
+            lastNightDaysAgo = daysAgo;
           }
 
-          // Baseline: last 14 days
+          // Baseline: de nachten van de afgelopen 14 dagen.
           if (daysAgo <= 14) {
-            final sleep = _extractSleep(log);
-            if (sleep > 0) {
-              totalSleep += sleep;
-              sleepDays++;
-            }
+            slaapPerDatum[logDate] = sleep;
           }
         } catch (_) {}
       }
 
-      if (sleepDays < 5 || !hasLastNight) return null;
+      if (lastNightDate == null) return null;
+
+      // De baseline is het gemiddelde van de twee weken VÓÓR de laatste
+      // nacht. De afwijkende nacht zelf telt niet mee: anders trekt hij
+      // zijn eigen referentie omlaag en wordt de afwijking onderschat
+      // ("5.3u, 40% minder" zou dan een stillere baseline opleveren dan
+      // het werkelijke gemiddelde).
+      final laatsteNacht = lastNightDate;
+      final baselineStart = DateTime(
+        laatsteNacht.year,
+        laatsteNacht.month,
+        laatsteNacht.day - 14,
+      );
+      final baselineEnd = DateTime(
+        laatsteNacht.year,
+        laatsteNacht.month,
+        laatsteNacht.day - 1,
+      );
+      double totalSleep = 0;
+      int sleepDays = 0;
+      slaapPerDatum.forEach((datum, uren) {
+        if (datum.isBefore(baselineStart) || datum.isAfter(baselineEnd)) return;
+        totalSleep += uren;
+        sleepDays++;
+      });
+
+      if (sleepDays < 5) return null;
 
       final baseline = totalSleep / sleepDays;
       final deviation = ((lastNightSleep - baseline) / baseline * 100).abs();
