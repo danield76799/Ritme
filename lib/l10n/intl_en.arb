@@ -784,5 +784,16 @@
       "nieuw": {},
       "standaard": {}
     }
+  },
+  "dashboardTijdchip": "{label} {time}",
+  "@dashboardTijdchip": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
   }
 }

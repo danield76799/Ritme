@@ -184,8 +184,15 @@ void main() {
         .join('\n');
     final start = zonderCommentaar.indexOf('Widget _buildTimeChip');
     expect(start, greaterThan(-1));
-    final einde = zonderCommentaar.indexOf('Widget _buildActionCard', start);
-    final chip = zonderCommentaar.substring(start, einde);
+    // Het bereik moet ALLEEN de chip zijn. Vroeger liep het tot de volgende
+    // methode (_buildActionCard), en omdat _buildTodayHeader daartussen
+    // stond, werd onbedoeld de hele methode meegemeten.
+    final rest = zonderCommentaar.substring(start + 'Widget _buildTimeChip'.length);
+    final einde = rest.indexOf('\n  Widget ');
+    final chip = zonderCommentaar.substring(
+      start,
+      einde == -1 ? zonderCommentaar.length : start + 'Widget _buildTimeChip'.length + einde,
+    );
     expect(
       chip.contains('TextOverflow.ellipsis'),
       isFalse,

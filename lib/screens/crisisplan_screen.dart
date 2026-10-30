@@ -348,7 +348,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.tertiaryContainer,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
