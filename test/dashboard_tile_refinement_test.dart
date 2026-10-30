@@ -105,7 +105,13 @@ void main() {
     });
 
     test('het oude donkere success (#2E7D32) faalde op de donkere kaart', () {
-      expect(_contrast(const Color(0xFF2E7D32), darkCard), lessThan(3.0));
+      // De kaart waarop de hardcoded kleur ooit onleesbaar was: #223236.
+      // Tegen de huidige donkere kaart haalt #2E7D32 net 3.1:1, dus de
+      // drempel alleen op de huidige kaart toetsen zou de reden van de
+      // vervanging (successOn(dark)) vergeten.
+      const donkereKaartToen = Color(0xFF223236);
+      expect(_contrast(const Color(0xFF2E7D32), donkereKaartToen),
+          lessThan(3.0));
     });
 
     test('streakText haalt AA op zijn chip', () {

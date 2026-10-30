@@ -26,9 +26,10 @@ class AppTheme {
   static const Color surfaceColor = Color(0xFFFFFFFF);
   static const Color dividerColor = Color(0xFFE8ECEF);
 
-  static const Color darkBackground = Color(0xFF0F171C);
-  static const Color darkSurface = Color(0xFF182229);
-  static const Color darkCard = Color(0xFF182229);
+  static const Color darkBackground = Color(0xFF0D1117);
+  static const Color darkSurface = Color(0xFF161B22);
+  static const Color darkCard = Color(0xFF1C232B);
+  static const Color accentMint = Color(0xFF34D399);
   static const Color darkText = Color(0xFFF0F5F7);
   static const Color darkTextSecondary = Color(0xFFB8C5C8);
 

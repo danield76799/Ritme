@@ -29,9 +29,6 @@ import '../generated/l10n/app_localizations.dart';
 
 enum AlertSeverity { high, medium }
 
-/// Vervangt de Lucide-iconen (lucide_icons package is incompatible met
-/// Flutter 3.47 — IconData is final geworden). Material Symbols bieten
-/// vergelijkbare iconen.
 const _lucideIcons = <String, IconData>{
   'heartPulse': Icons.monitor_heart,
   'settings': Icons.settings,
@@ -53,19 +50,8 @@ const _lucideIcons = <String, IconData>{
 
 IconData lucideIcon(String name) => _lucideIcons[name] ?? Icons.help_outline;
 
-/// De vier SRM-rijen die samen de avond-check-in vormen.
-/// Let op: alleen Avondeten + Naar bed. 'Eerste contact' en 'Werk / Hobby'
-/// schrijft de OCHTENDFLOW sinds v59 al weg — die hier meetellen maakte de
-/// avondtegel groen na alleen een ochtend-check-in.
 const avondSrmTypes = {'Avondeten', 'Naar bed'};
 
-/// Eén definitie van "ochtend-check-in gedaan", overal gebruikt: tegel,
-/// dagteller, streak en terugkijkweergave.
-///
-/// Een afgeronde ochtendflow schrijft altijd awake_minutes + q4 weg; de
-/// slaapuren ontbreken als de bedtijd van gisteren niet bekend is. Daarom
-/// telt q4 mee — anders zou een ingevulde ochtend de ene keer wel en de
-/// andere keer niet meetellen.
 bool ochtendGedaan(Map<String, dynamic> log) {
   final s = log['uren_slaap'];
   final sNum = s is num ? s.toDouble() : double.tryParse(s?.toString() ?? '');
@@ -75,9 +61,6 @@ bool ochtendGedaan(Map<String, dynamic> log) {
   return (sNum != null && sNum > 0) || aNum > 0 || q != null;
 }
 
-/// Eén definitie van "avond-check-in gedaan": minstens één avond-SRM-rij
-/// met een echte tijd. Rijen zonder tijd zijn nooit afgerond, dus die
-/// tellen nergens mee — ook niet op de tegel van vandaag.
 bool avondGedaan(Iterable<Map<String, dynamic>> activiteiten, String datum) {
   return activiteiten.any((a) {
     if (a['date']?.toString() != datum) return false;
@@ -91,9 +74,6 @@ bool avondGedaan(Iterable<Map<String, dynamic>> activiteiten, String datum) {
 String _datumStr(DateTime d) =>
     '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-/// Weekvenster van 7 dagen EINdigend op [datum] (inclusief), als
-/// [start, end] in yyyy-MM-dd. Het venster hangt aan de bekeken datum,
-/// niet aan vandaag — anders valt een oude datum buiten zijn eigen range.
 List<String> weekVenster(DateTime datum) {
   final end = DateTime(datum.year, datum.month, datum.day);
   final start = end.subtract(const Duration(days: 6));
@@ -120,17 +100,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   List<Map<String, dynamic>> _srmActivitiesList = [];
   List<Alert> _alerts = [];
   DateTime _selectedDate = DateTime.now();
-
-  /// Periode waarover de slaap-tegel rekent: gisteren, 7 of 14 dagen.
   _SleepPeriod _sleepPeriod = _SleepPeriod.fourteenDays;
-
-  /// Slaapduur per dag (datum-string → uren), gevuld door [_loadData].
-  /// De periode-schakelaar recomputet hieruit zonder nieuwe DB-load.
   Map<String, double> _sleepPerDay = const {};
-
   int _dagStreak = 0;
 
-  // Animation controllers
   late AnimationController _staggerController;
   late List<Animation<double>> _cardAnimations;
   late Animation<double> _greetingAnimation;
@@ -154,8 +127,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       parent: _staggerController,
       curve: const Interval(0.0, 0.4, curve: Curves.easeOutCubic),
     );
-
-    // Staggered animations for 8 grid cards + 3 metric cards + mood chart = 12 items
     _cardAnimations = List.generate(12, (index) {
       final start = 0.2 + (index * 0.06).clamp(0.0, 0.5);
       final end = (start + 0.35).clamp(0.0, 1.0);
@@ -164,7 +135,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         curve: Interval(start, end, curve: Curves.easeOutCubic),
       );
     });
-
     _staggerController.forward();
   }
 
@@ -183,17 +153,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Opent de check-in waar de gebruiker op tikte in een notificatie.
-  ///
-  /// De notificatie zet de route klaar in NotificationHelper; hier wordt hij
-  /// opgepikt. Dit gebeurt bij het hervatten van de app, zodat het werkt of de
-  /// app nu koud startte of al open stond. Elke route wordt maar één keer
-  /// verbruikt (zie consumePendingCheckinRoute).
   void _openPendingCheckin() {
     final route = NotificationHelper.instance.consumePendingCheckinRoute();
     if (route == null || !mounted) return;
-    // Licht uitgesteld: bij een koude start is het dashboard nog aan het
-    // opbouwen, en dan kan pushNamed midden in een frame vallen.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       Navigator.pushNamed(context, route).then((_) {
@@ -222,10 +184,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       final weeklyActivities = results[2] as List<Map<String, dynamic>>;
 
       final todayStr = endDateStr;
-      final todayLog =
-          dailyLogs.where((l) => l['date'] == todayStr).firstOrNull;
-      final todayActs =
-          weeklyActivities.where((a) => a['date'] == todayStr).toList();
+      final todayLog = dailyLogs.where((l) => l['date'] == todayStr).firstOrNull;
+      final todayActs = weeklyActivities.where((a) => a['date'] == todayStr).toList();
 
       final checkinTypesToday = <String>{};
       if (todayLog != null && ochtendGedaan(todayLog)) {
@@ -246,8 +206,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       } catch (_) {}
       if (avondGedaan(todayActs, todayStr)) checkinTypesToday.add('avond');
 
-      // Dagstreak — tellen vanaf vandaag achterwaarts (max 14 dagen); een dag telt als er minimaal 1 check-in type is (ochtend/avond/medicatie)
-      // Haal eerst alle data op voor de lookback-periode
       final streakLookback = now.subtract(const Duration(days: 14));
       final streakLookbackStr =
           '${streakLookback.year}-${streakLookback.month.toString().padLeft(2, '0')}-${streakLookback.day.toString().padLeft(2, '0')}';
@@ -268,22 +226,15 @@ class _DashboardScreenState extends State<DashboardScreen>
         final ds =
             '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
         final dayTypes = <String>{};
-
-        // Ochtend: zelfde definitie als de tegel (zie ochtendGedaan).
         final dayLog = dailyLogs.where((l) => l['date'] == ds).firstOrNull;
         if (dayLog != null && ochtendGedaan(dayLog)) {
           dayTypes.add('ochtend');
         }
-
-        // Medicatie: ingenomen?
         if (medDates.contains(ds)) dayTypes.add('medicatie');
-
-        // Avond: zelfde definitie als de tegel (zie avondGedaan).
         final dayActs = weeklyActivities.where((a) => a['date'] == ds).toList();
         if (avondGedaan(dayActs, ds)) {
           dayTypes.add('avond');
         }
-
         if (dayTypes.isNotEmpty) {
           streak++;
         } else {
@@ -294,25 +245,17 @@ class _DashboardScreenState extends State<DashboardScreen>
       double totalSleep = 0;
       int sleepCount = 0;
       final sleepPerDay = <String, double>{};
-
       for (final log in dailyLogs) {
         final dateStr = log['date']?.toString();
         if (dateStr == null) continue;
-
         final rawSleep = log['sleep_hours'];
         final rawUren = log['uren_slaap'];
         double? sleep;
         if (rawSleep != null) {
-          sleep =
-              rawSleep is num
-                  ? rawSleep.toDouble()
-                  : double.tryParse(rawSleep.toString());
+          sleep = rawSleep is num ? rawSleep.toDouble() : double.tryParse(rawSleep.toString());
         }
         if (sleep == null || sleep <= 0) {
-          sleep =
-              rawUren is num
-                  ? rawUren.toDouble()
-                  : double.tryParse(rawUren?.toString() ?? '');
+          sleep = rawUren is num ? rawUren.toDouble() : double.tryParse(rawUren?.toString() ?? '');
         }
         if (sleep != null && sleep > 0 && !sleepPerDay.containsKey(dateStr)) {
           sleepPerDay[dateStr] = sleep;
@@ -321,19 +264,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         }
       }
       final avgSleep = sleepCount > 0 ? totalSleep / sleepCount : 0.0;
-
-      // Bewaar de per-dag slaapmap zodat de periode-schakelaar de waarde
-      // kan recomputen zonder een nieuwe DB-load.
       _sleepPerDay = Map.of(sleepPerDay);
 
       final weekAgo = now.subtract(const Duration(days: 7));
       final weekAgoStr =
           '${weekAgo.year}-${weekAgo.month.toString().padLeft(2, '0')}-${weekAgo.day.toString().padLeft(2, '0')}';
 
-      // Periode-gemiddelde voor de tegel: gisteren / 7 dagen / 14 dagen.
-      // "Gisteren" = de nacht die vanmorgen eindigde — die staat in de DB
-      // onder de ochtend-datum van VANDAAG (ochtend-checkin logt de nacht
-      // onder de dag waarop je opstaat). Fallback: gisterens ochtend-entry.
       double periodSleep() {
         switch (_sleepPeriod) {
           case _SleepPeriod.yesterday:
@@ -356,7 +292,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             });
             return n > 0 ? total / n : 0.0;
           case _SleepPeriod.fourteenDays:
-            return avgSleep; // hele 14-daagse range is al het gemiddelde
+            return avgSleep;
         }
       }
 
@@ -368,18 +304,14 @@ class _DashboardScreenState extends State<DashboardScreen>
         final actualTime = activity['actual_time'];
         final rawPScore = activity['p_score'];
         if (actualTime != null && rawPScore != null) {
-          final int pScore =
-              rawPScore is int
-                  ? rawPScore
-                  : int.tryParse(rawPScore.toString()) ?? 0;
+          final int pScore = rawPScore is int ? rawPScore : int.tryParse(rawPScore.toString()) ?? 0;
           if (pScore > 0) {
             totalPScore += pScore;
             totalActivities++;
           }
         }
       }
-      final stability =
-          totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0.0;
+      final stability = totalActivities > 0 ? (totalPScore / totalActivities / 5 * 100) : 0.0;
 
       if (mounted) {
         setState(() {
@@ -405,8 +337,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Rekent de tegelwaarde opnieuw uit [_sleepPerDay] voor de gekozen periode.
-  /// Wordt aangeroepen door de periode-schakelaar (gisteren / week / 14 dagen).
   void _recomputeSleepValue() {
     final now = DateTime.now();
     String dateStr(DateTime d) =>
@@ -415,14 +345,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     double value;
     switch (_sleepPeriod) {
       case _SleepPeriod.yesterday:
-        // De "nacht van gisteren" = de slaap die vanmorgen eindigde, en die
-        // staat in de DB onder de ochtend-datum van VANDAAG (ochtend-checkin
-        // logt de nacht onder de dag waarop je opstaat). Vandaar nu-1 → de
-        // ochtend van gisteren, nu → de ochtend van vandaag (de nacht van
-        // gisteren op vandaag). Pak vandaags als die er is, anders gisterens.
         final vandaag = _sleepPerDay[dateStr(now)];
-        value =
-            vandaag ??
+        value = vandaag ??
             _sleepPerDay[dateStr(now.subtract(const Duration(days: 1)))] ??
             0.0;
       case _SleepPeriod.week:
@@ -437,7 +361,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         });
         value = n > 0 ? total / n : 0.0;
       case _SleepPeriod.fourteenDays:
-        // Hele 14-daagse map is al gefilterd op de load-range: gemiddelde.
         var total = 0.0;
         _sleepPerDay.forEach((_, hours) => total += hours);
         value = _sleepPerDay.isNotEmpty ? total / _sleepPerDay.length : 0.0;
@@ -462,9 +385,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   String _getGreeting(String name) {
     final l10n = AppLocalizations.of(context);
     final hour = DateTime.now().hour;
-    // Begroeting + naam als één vertaalbare string: NL schrijft "Goedemiddag
-    // Daan" zonder komma, EN "Good afternoon, Daan" met. De komma hoort dus
-    // in de vertaling, niet in de code.
     if (hour < 6) return l10n.greetingNightMetNaam(name);
     if (hour < 12) return l10n.greetingMorningMetNaam(name);
     if (hour < 18) return l10n.greetingAfternoonMetNaam(name);
@@ -532,11 +452,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        // backgroundColor en elevation staan in appBarTheme: de balk is overal
-        // transparant. Alleen de uitlijning blijft hier scherm-specifiek.
-        //
-        // Zelfde offset als de body-padding, zodat "Ritme" exact boven de
-        // welkomstkaart en het grid uitlijnt.
         titleSpacing: AppTheme.screenPadding,
         title: Text(
           'Ritme',
@@ -546,10 +461,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         actions: [
           IconButton(
-            icon: Icon(
-              lucideIcon('settings'),
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            icon: Icon(lucideIcon('settings'), color: theme.colorScheme.onSurface),
             onPressed: () async {
               await Navigator.pushNamed(context, '/settings');
               _loadData();
@@ -557,109 +469,30 @@ class _DashboardScreenState extends State<DashboardScreen>
             tooltip: AppLocalizations.of(context).instellingen,
           ),
           PopupMenuButton<int>(
-            icon: Icon(
-              lucideIcon('moreVertical'),
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            icon: Icon(lucideIcon('moreVertical'), color: theme.colorScheme.onSurface),
             tooltip: AppLocalizations.of(context).meer,
             onSelected: (value) async {
               switch (value) {
-                case 0:
-                  Navigator.pushNamed(context, '/statistics');
-                  break;
-                case 2:
-                  Navigator.pushNamed(context, '/weight');
-                  break;
-                case 3:
-                  Navigator.pushNamed(context, '/appointments');
-                  break;
-                case 4:
-                  Navigator.pushNamed(context, '/voortekenen');
-                  break;
-                case 5:
-                  Navigator.pushNamed(context, '/rapport');
-                  break;
-                case 6:
-                  Navigator.pushNamed(context, '/help');
-                  break;
-                case 7:
-                  _logout();
-                  break;
+                case 0: Navigator.pushNamed(context, '/statistics'); break;
+                case 2: Navigator.pushNamed(context, '/weight'); break;
+                case 3: Navigator.pushNamed(context, '/appointments'); break;
+                case 4: Navigator.pushNamed(context, '/voortekenen'); break;
+                case 5: Navigator.pushNamed(context, '/rapport'); break;
+                case 6: Navigator.pushNamed(context, '/help'); break;
+                case 7: _logout(); break;
               }
             },
-            itemBuilder:
-                (context) => [
-                  PopupMenuItem(
-                    value: 0,
-                    child: ListTile(
-                      leading: Icon(lucideIcon('barChart')),
-                      title: Text(AppLocalizations.of(context).statistieken),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem(
-                    value: 2,
-                    child: ListTile(
-                      leading: Icon(lucideIcon('scale')),
-                      title: Text(AppLocalizations.of(context).gewicht),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 3,
-                    child: ListTile(
-                      leading: Icon(lucideIcon('calendarDays')),
-                      title: Text(AppLocalizations.of(context).afspraken),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 4,
-                    child: ListTile(
-                      leading: Icon(lucideIcon('alertTriangle')),
-                      title: Text(AppLocalizations.of(context).voortekenen),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 5,
-                    child: ListTile(
-                      leading: Icon(lucideIcon('fileText')),
-                      title: Text(AppLocalizations.of(context).rapport),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 6,
-                    child: ListTile(
-                      leading: Icon(lucideIcon('helpCircle')),
-                      title: Text(
-                        AppLocalizations.of(context).gebruiksaanwijzing,
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem(
-                    value: 7,
-                    child: ListTile(
-                      leading: Icon(lucideIcon('logOut'), color: AppTheme.error),
-                      title: Text(
-                        AppLocalizations.of(context).uitloggen,
-                        style: TextStyle(color: AppTheme.error),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                  ),
-                ],
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 0, child: ListTile(leading: Icon(lucideIcon('barChart')), title: Text(AppLocalizations.of(context).statistieken), contentPadding: EdgeInsets.zero, dense: true)),
+              const PopupMenuDivider(),
+              PopupMenuItem(value: 2, child: ListTile(leading: Icon(lucideIcon('scale')), title: Text(AppLocalizations.of(context).gewicht), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 3, child: ListTile(leading: Icon(lucideIcon('calendarDays')), title: Text(AppLocalizations.of(context).afspraken), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 4, child: ListTile(leading: Icon(lucideIcon('alertTriangle')), title: Text(AppLocalizations.of(context).voortekenen), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 5, child: ListTile(leading: Icon(lucideIcon('fileText')), title: Text(AppLocalizations.of(context).rapport), contentPadding: EdgeInsets.zero, dense: true)),
+              PopupMenuItem(value: 6, child: ListTile(leading: Icon(lucideIcon('helpCircle')), title: Text(AppLocalizations.of(context).gebruiksaanwijzing), contentPadding: EdgeInsets.zero, dense: true)),
+              const PopupMenuDivider(),
+              PopupMenuItem(value: 7, child: ListTile(leading: Icon(lucideIcon('logOut'), color: AppTheme.error), title: Text(AppLocalizations.of(context).uitloggen, style: TextStyle(color: AppTheme.error)), contentPadding: EdgeInsets.zero, dense: true)),
+            ],
           ),
         ],
       ),
@@ -670,520 +503,173 @@ class _DashboardScreenState extends State<DashboardScreen>
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Greeting card - compacter
-              AnimatedBuilder(
-                animation: _greetingAnimation,
-                builder: (context, child) {
-                  return FadeTransition(
-                    opacity: _greetingAnimation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.3),
-                        end: Offset.zero,
-                      ).animate(_greetingAnimation),
-                      child: child,
-                    ),
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient:
-                        isDark
-                            ? LinearGradient(
-                              colors: [Color(0xFF2A3D42), Color(0xFF1A2B30)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                            : AppTheme.brandGradient,
-                    borderRadius: BorderRadius.circular(AppTheme.largeRadius),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isDark ? Colors.black : const Color(0xFFB4A8D4))
-                            .withValues(alpha: 0.25),
-                        blurRadius: 16,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        _getGreeting(username),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      dateStr,
-                      style: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.85),
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    // Wrap, niet Row+Expanded.
-                    //
-                    // Gemeten: "Opstaan 08:00" vraagt 236px en "Slapen 23:00"
-                    // 222px, samen 466px. In de kaart is zelfs op 412dp maar
-                    // 339px beschikbaar (op 320dp 248px). Twee chips naast
-                    // elkaar MET label passen dus op geen enkele telefoonbreedte
-                    // — `Expanded` gaf elk de helft (112px) en kapte de tijd af
-                    // ("Opstaan 08…" terwijl de tijd juist de informatie is).
-                    //
-                    // Wrap laat de chips op hun natuurlijke breedte en schuift
-                    // ze naar een tweede regel zodra ze samen niet passen. Op
-                    // een telefoon staat er dus één chip per regel; op een
-                    // tablet of in landscape passen ze wél naast elkaar, wat de
-                    // bedoelde look daar is. Geen enkele maat wordt afgekapt.
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _buildTimeChip(
-                          Icons.wb_sunny_outlined,
-                          AppLocalizations.of(context).opstaan,
-                          _settings?['target_opstaan'] ?? '08:00',
-                          isDark,
-                        ),
-                        _buildTimeChip(
-                          Icons.bedtime,
-                          AppLocalizations.of(context).slapen,
-                          _settings?['target_slapen'] ?? '23:00',
-                          isDark,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Alerts
-              if (_alerts.isNotEmpty) ...[
-                ..._alerts.map((alert) => _buildAlertCard(alert, theme)),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildGreetingCard(username, dateStr, isDark),
+                const SizedBox(height: 24),
+                if (_alerts.isNotEmpty) ...[
+                  ..._alerts.map((alert) => _buildAlertCard(alert, theme)),
+                  const SizedBox(height: 16),
+                ],
+                _buildTodayHeader(),
+                const SizedBox(height: 12),
+                _buildTaskGrid(),
                 const SizedBox(height: 16),
-              ],
-
-              // Datum-picker + dagstatus-metertje + streak-chip
-              Row(
-                children: [
-                  // Expanded (i.p.v. Spacer): de datum mag krimpen met ellipsis
-                  // in plaats van de Row te laten overlopen. Gemeten: 76 px
-                  // overflow op 320dp met de lange datumnotatie.
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _selectDate(context),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                _buildSecondaryActions(),
+                const SizedBox(height: 24),
+                _buildOverviewHeader(),
+                const SizedBox(height: 12),
+                _StaggeredCard(
+                  animation: _cardAnimations[6],
+                  child: _buildMetricCard(
+                    context,
+                    icon: lucideIcon('bedDouble'),
+                    title: AppLocalizations.of(context).slaapduurLabel,
+                    value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
+                    emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
+                    emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
+                    color: const Color(0xFF88B0C7),
+                    route: '/sleep-detail',
+                    isEmpty: _sleepQuality <= 0,
+                    sparkline: _slaapSparkline(),
+                    footer: _SleepPeriodSwitch(
+                      selected: _sleepPeriod,
+                      onChanged: (p) => setState(() {
+                        _sleepPeriod = p;
+                        _recomputeSleepValue();
+                      }),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _StaggeredCard(
+                  animation: _cardAnimations[7],
+                  child: _buildMetricCard(
+                    context,
+                    icon: lucideIcon('activity'),
+                    title: AppLocalizations.of(context).srtScore,
+                    value: _rhythmStability > 0 ? '${_rhythmStability.round()}%' : null,
+                    emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
+                    subtitle: _rhythmStability > 0 ? _getSrtLabel(_rhythmStability, context) : null,
+                    emptyHint: AppLocalizations.of(context).srtTooltip,
+                    color: _getSrtColor(_rhythmStability),
+                    route: '/rhythm-detail',
+                    isEmpty: _rhythmStability <= 0,
+                    sparkline: _srtSparkline(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _StaggeredCard(
+                  animation: _cardAnimations[8],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Flexible(
-                            child: Text(
-                              _formatSelectedDate(context),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(
-                            Icons.calendar_today,
-                            size: 18,
-                            color: Theme.of(context).colorScheme.primary,
+                          Text(
+                            AppLocalizations.of(context).stemmingTrend,
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Container(
+                        height: 200,
+                        decoration: AppTheme.cardDecoration(context),
+                        clipBehavior: Clip.antiAlias,
+                        child: WeeklyMoodChart(logs: _weeklyLogs),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  _DagStatusMeter(gelogd: _checkinTypes.length, totaal: 4),
-                ],
-              ),
-              if (_dagStreak > 0) ...[
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _buildStreakChip(),
                 ),
               ],
-
-              GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.35,
-                children: [
-                  _StaggeredCard(
-                    animation: _cardAnimations[0],
-                    child: _buildCheckinCard(
-                      context,
-                      icon: lucideIcon('sun'),
-                      accent: TileAccent.morning,
-                      title: AppLocalizations.of(context).ochtendCheckIn,
-                      route: '/morning-checkin',
-                      date: _selectedDate,
-                      isOchtend: true,
-                    ),
-                  ),
-                  _StaggeredCard(
-                    animation: _cardAnimations[1],
-                    child: _buildCheckinCard(
-                      context,
-                      icon: lucideIcon('moonStar'),
-                      accent: TileAccent.evening,
-                      title: AppLocalizations.of(context).avondCheckIn,
-                      route: '/evening-checkin',
-                      date: _selectedDate,
-                      isOchtend: false,
-                    ),
-                  ),
-                  _StaggeredCard(
-                    animation: _cardAnimations[2],
-                    child: _buildActionCard(
-                      context,
-                      icon: lucideIcon('pill'),
-                      accent: TileAccent.medication,
-                      title: AppLocalizations.of(context).medicatie,
-                      route: '/medication',
-                      isCompleted: _checkinTypes.contains('medicatie'),
-                    ),
-                  ),
-                  _StaggeredCard(
-                    animation: _cardAnimations[3],
-                    child: _buildActionCard(
-                      context,
-                      icon: lucideIcon('bookOpen'),
-                      accent: TileAccent.journal,
-                      title: AppLocalizations.of(context).dagboek,
-                      route: '/dagboek',
-                      isCompleted: _checkinTypes.contains('dagboek'),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(child: _SecondaryNavChip(icon: lucideIcon('fileText'), label: AppLocalizations.of(context).rapport, onTap: () => Navigator.pushNamed(context, '/rapport'))),
-                  const SizedBox(width: 8),
-                  Expanded(child: _SecondaryNavChip(icon: lucideIcon('calendarDays'), label: AppLocalizations.of(context).afspraken, onTap: () => Navigator.pushNamed(context, '/appointments'))),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              Row(
-                children: [
-                  // Flexible: "Overzicht" + tijdstempel past niet op 320dp
-                  // (gemeten: 115 px overflow). De kop krimpt nu met ellipsis.
-                  Flexible(
-                    child: Text(
-                      AppLocalizations.of(context).overzicht,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  if (_lastUpdated != null)
-                    Flexible(
-                      child: Text(
-                        _formatLastUpdated(context),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.secondaryText(context),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              _StaggeredCard(
-                animation: _cardAnimations[6],
-                child: _buildMetricCard(
-                  context,
-                  icon: lucideIcon('bedDouble'),
-                  title: AppLocalizations.of(context).slaapduurLabel,
-                  value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
-                  emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
-                  emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
-                  color: const Color(0xFF88B0C7),
-                  route: '/sleep-detail',
-                  isEmpty: _sleepQuality <= 0,
-                  // Trend van de afgelopen dagen (chronologisch), zodat de
-                  // tegel méér zegt dan één gemiddelde.
-                  sparkline: _slaapSparkline(),
-                  // Periode-schakelaar onder de waarde: gisteren / week / 14d.
-                  footer: _SleepPeriodSwitch(
-                    selected: _sleepPeriod,
-                    onChanged:
-                        (p) => setState(() {
-                          _sleepPeriod = p;
-                          _recomputeSleepValue();
-                        }),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              // SRT Score staat op volle breedte: de SRT-berekening ís de
-              // activiteiten-op-tijd-score, dus een aparte activiteitentegel
-              // ernaast was een dubbeling met een eigen, afwijkende telling.
-              _StaggeredCard(
-                animation: _cardAnimations[7],
-                child: _buildMetricCard(
-                  context,
-                  icon: lucideIcon('activity'),
-                  title: AppLocalizations.of(context).srtScore,
-                  value:
-                      _rhythmStability > 0
-                          ? '${_rhythmStability.round()}%'
-                          : null,
-                  emptyValue: AppLocalizations.of(context).logVandaagOmTeZien,
-                  subtitle:
-                      _rhythmStability > 0
-                          ? _getSrtLabel(_rhythmStability, context)
-                          : null,
-                  emptyHint: AppLocalizations.of(context).srtTooltip,
-                  color: _getSrtColor(_rhythmStability),
-                  route: '/rhythm-detail',
-                  isEmpty: _rhythmStability <= 0,
-                  // Dagelijkse p-score-trend (1–5, hoger = stabieler ritme).
-                  sparkline: _srtSparkline(),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              _StaggeredCard(
-                animation: _cardAnimations[8],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).stemmingTrend,
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      height: 200,
-                      decoration: AppTheme.cardDecoration(context),
-                      clipBehavior: Clip.antiAlias,
-                      child: WeeklyMoodChart(logs: _weeklyLogs),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStreakChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.local_fire_department,
-            size: 13,
-            color: AppTheme.streakText(Theme.of(context).brightness),
-            semanticLabel: AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            _dagStreak == 1
-                ? AppLocalizations.of(context).streakEenDag
-                : AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              // orange.shade700 haalde maar 3.6:1 op de chip; deze tint 7.5:1.
-              color: AppTheme.streakText(Theme.of(context).brightness),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020, 1, 1),
-      lastDate: DateTime.now(),
-      locale:
-          Localizations.localeOf(context).languageCode == 'nl'
-              ? const Locale('nl', 'NL')
-              : null,
-      helpText: AppLocalizations.of(context).kiesDatum,
-      cancelText: AppLocalizations.of(context).annuleren,
-      confirmText: AppLocalizations.of(context).bekijken,
-    );
-    if (picked != null && mounted) {
-      setState(() => _selectedDate = picked);
-      _loadDataForDate(picked);
-    }
-  }
-
-  Future<void> _loadDataForDate(DateTime date) async {
-    try {
-      final ds =
-          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      // Venster van 7 dagen eindigend op de BEKEKEN datum. Eerst hing de
-      // start aan vandaag, waardoor een datum ouder dan 6 dagen buiten zijn
-      // eigen range viel en er niets terugkwam.
-      final venster = weekVenster(date);
-      final startDateStr = venster[0];
-      final endDateStr = venster[1];
-      final results = await Future.wait([
-        db.getSettings(),
-        db.getDailyLogsRange(startDateStr, endDateStr),
-        db.getSrmActivitiesRange(startDateStr, endDateStr),
-      ]);
-      if (!mounted) return;
-      final settings = results[0] as Map<String, dynamic>?;
-      final dailyLogs = results[1] as List<Map<String, dynamic>>;
-      final weeklyActivities = results[2] as List<Map<String, dynamic>>;
-      final selectedDs = ds;
-      final todayLogForDate =
-          dailyLogs.where((l) => l['date'] == selectedDs).firstOrNull;
-      final todayActsForDate =
-          weeklyActivities.where((a) => a['date'] == selectedDs).toList();
-      final checkinTypesForDate = <String>{};
-      if (todayLogForDate != null && ochtendGedaan(todayLogForDate)) {
-        checkinTypesForDate.add('ochtend');
-      }
-      try {
-        final intake = await db.getMedicationIntake(selectedDs);
-        final hasMed = intake.any((row) {
-          final raw = row['aantal_ingenomen'];
-          final n = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
-          return n > 0;
-        });
-        if (hasMed) checkinTypesForDate.add('medicatie');
-      } catch (_) {}
-      try {
-        final dagboek = await db.getDagboek(selectedDs);
-        if (dagboek != null) checkinTypesForDate.add('dagboek');
-      } catch (_) {}
-      if (avondGedaan(todayActsForDate, selectedDs)) {
-        checkinTypesForDate.add('avond');
-      }
-      setState(() {
-        _settings = settings;
-        _dailyLogs = dailyLogs;
-        _srmActivitiesList = weeklyActivities;
-        _checkinTypes = checkinTypesForDate;
-      });
-    } catch (_) {}
-  }
-
-  String _formatSelectedDate(BuildContext context) {
-    final now = DateTime.now();
-    final diff = _selectedDate.difference(now).inDays;
-    final locale = Localizations.localeOf(context).languageCode;
-    if (diff == 0) return locale == 'nl' ? 'Vandaag' : 'Today';
-    if (diff == -1) return locale == 'nl' ? 'Gisteren' : 'Yesterday';
-    if (diff == -2)
-      return locale == 'nl' ? 'Eergisteren' : 'Day before yesterday';
-    if (diff > 0) return locale == 'nl' ? 'Overmorgen' : 'Tomorrow';
-    final fmt = DateFormat('d MMMM', locale);
-    return fmt.format(_selectedDate);
-  }
-
-  Widget _buildCheckinCard(
-    BuildContext context, {
-    required IconData icon,
-    required TileAccent accent,
-    required String title,
-    required String route,
-    DateTime? date,
-    bool isOchtend = false,
-  }) {
-    final ds =
-        '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    bool hasLog;
-    if (isOchtend) {
-      hasLog = _dailyLogs.where((l) => l['date'] == ds).any(ochtendGedaan);
-    } else {
-      hasLog = avondGedaan(_srmActivitiesList, ds);
-    }
-    return _buildActionCard(
-      context,
-      icon: icon,
-      accent: accent,
-      title: title,
-      route: route,
-      isCompleted: hasLog,
+  Widget _buildGreetingCard(String username, String dateStr, bool isDark) {
+    return AnimatedBuilder(
+      animation: _greetingAnimation,
+      builder: (context, child) => FadeTransition(
+        opacity: _greetingAnimation,
+        child: SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(_greetingAnimation),
+          child: child,
+        ),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: isDark
+              ? LinearGradient(colors: [const Color(0xFF2A3D42), const Color(0xFF1A2B30)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+              : AppTheme.brandGradient,
+          borderRadius: BorderRadius.circular(AppTheme.largeRadius),
+          boxShadow: [BoxShadow(color: (isDark ? Colors.black : const Color(0xFFB4A8D4)).withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 8))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                _getGreeting(username),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(dateStr, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85), fontSize: 16)),
+                ),
+                if (_dagStreak > 0) _buildStreakChip(),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildTimeChip(Icons.wb_sunny_outlined, AppLocalizations.of(context).opstaan, _settings?['target_opstaan'] ?? '08:00'),
+                _buildTimeChip(Icons.bedtime, AppLocalizations.of(context).slapen, _settings?['target_slapen'] ?? '23:00'),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildTimeChip(IconData icon, String label, String time, bool isDark) {
+  Widget _buildTimeChip(IconData icon, String label, String time) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => Navigator.pushNamed(context, '/settings'),
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor.withValues(alpha: 0.20),
+            color: Theme.of(context).cardColor.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(AppTheme.smallRadius),
             border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18),
-              const SizedBox(width: 8),
+              Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 16),
+              const SizedBox(width: 6),
+              // De chip mag niet krimpen: dan wordt de tijd afgeknipt.
+              // Hij staat in een Wrap, dus hij springt op de volgende regel
+              // in plaats van te krimpen.
               Text(
-                AppLocalizations.of(context).labelEnTijd(label, time),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                AppLocalizations.of(context)
+                    .dashboardTijdchip(label, time),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13, fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 4),
               Icon(Icons.edit_outlined, size: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
@@ -1194,232 +680,238 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  /// Bouwt een dashboardtegel.
-  ///
-  /// [isCompleted] toont het groene vinkje + accentrand en correspondeert met de
-  /// teller bovenaan ("X/4 ingevuld"). Navigatie-tegels (Rapport, Afspraken)
-  /// krijgen géén eigen pijl meer — alle tegels blijven zo visueel uniform.
-  Widget _buildActionCard(
-    BuildContext context, {
-    required IconData icon,
-    required TileAccent accent,
-    required String title,
-    required String route,
-    bool isCompleted = false,
-    String? emptyHint,
-  }) {
+  Widget _buildTodayHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Tikbaar: hiermee kies je de dag waarvan het dashboard de
+        // check-ins toont (de herbouw had de datumkiezer verloren).
+        Flexible(
+          child: InkWell(
+            onTap: () => _selectDate(context),
+            borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.calendar_today, size: 20, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      _formatSelectedDate(context),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.expand_more, size: 18, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            AppLocalizations.of(context)
+                .dagStatusMeter(_checkinTypes.length, 4),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTaskGrid() {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1.3,
+      children: [
+        _StaggeredCard(
+          animation: _cardAnimations[0],
+          child: _buildCheckinCard(context, icon: lucideIcon('sun'), accent: TileAccent.morning, title: AppLocalizations.of(context).ochtendCheckIn, route: '/morning-checkin', date: _selectedDate, isOchtend: true),
+        ),
+        _StaggeredCard(
+          animation: _cardAnimations[1],
+          child: _buildCheckinCard(context, icon: lucideIcon('moonStar'), accent: TileAccent.evening, title: AppLocalizations.of(context).avondCheckIn, route: '/evening-checkin', date: _selectedDate, isOchtend: false),
+        ),
+        _StaggeredCard(
+          animation: _cardAnimations[2],
+          child: _buildActionCard(context, icon: lucideIcon('pill'), accent: TileAccent.medication, title: AppLocalizations.of(context).medicatie, route: '/medication', isCompleted: _checkinTypes.contains('medicatie')),
+        ),
+        _StaggeredCard(
+          animation: _cardAnimations[3],
+          child: _buildActionCard(context, icon: lucideIcon('bookOpen'), accent: TileAccent.journal, title: AppLocalizations.of(context).dagboek, route: '/dagboek', isCompleted: _checkinTypes.contains('dagboek')),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSecondaryActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _SecondaryActionButton(
+            icon: lucideIcon('fileText'),
+            label: AppLocalizations.of(context).rapport,
+            onTap: () => Navigator.pushNamed(context, '/rapport'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _SecondaryActionButton(
+            icon: lucideIcon('calendarDays'),
+            label: AppLocalizations.of(context).afspraken,
+            onTap: () => Navigator.pushNamed(context, '/appointments'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCheckinCard(BuildContext context, {required IconData icon, required TileAccent accent, required String title, required String route, DateTime? date, bool isOchtend = false}) {
+    final ds = '${date!.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    bool hasLog = isOchtend ? _dailyLogs.where((l) => l['date'] == ds).any(ochtendGedaan) : avondGedaan(_srmActivitiesList, ds);
+    return _buildActionCard(context, icon: icon, accent: accent, title: title, route: route, isCompleted: hasLog);
+  }
+
+  Widget _buildActionCard(BuildContext context, {required IconData icon, required TileAccent accent, required String title, required String route, bool isCompleted = false}) {
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
-      transitionDuration: Duration(milliseconds: 400),
-      closedElevation: 2,
+      transitionDuration: const Duration(milliseconds: 400),
+      closedElevation: 0,
       closedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        side: isCompleted ? BorderSide(color: const Color(0xFF4ECDC4).withValues(alpha: 0.5), width: 1.2) : BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1),
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: isCompleted ? AppTheme.accentMint.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.08), width: isCompleted ? 1.5 : 1),
       ),
       closedColor: Theme.of(context).cardColor,
       openColor: Theme.of(context).scaffoldBackgroundColor,
       onClosed: (_) {
         _loadData();
-        if (_selectedDate.difference(DateTime.now()).inDays != 0) {
-          _loadDataForDate(_selectedDate);
-        }
+        if (_selectedDate.difference(DateTime.now()).inDays != 0) _loadDataForDate(_selectedDate);
       },
-      closedBuilder: (context, openContainer) {
-        return InkWell(
-          onTap: () => openContainer(),
-          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-          // FittedBox: de tegelinhoud (badge 60px + label) past niet in elke
-          // tegelmaat. Gemeten: 21 px verticale overflow op 320dp, waar het
-          // label naar 2 regels wikkelt. scaleDown krimpt de inhoud dan in
-          // plaats van hem onzichtbaar af te snijden.
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
+      closedBuilder: (context, openContainer) => InkWell(
+        onTap: openContainer,
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.center,
               children: [
-                TileIconBadge(
-                  icon: icon,
-                  accent: accent,
-                  size: 60,
-                  iconSize: 28,
-                  isCompleted: isCompleted,
-                ),
-                const SizedBox(height: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 120),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (!isCompleted && emptyHint != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          emptyHint,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.secondaryText(context),
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
+                TileIconBadge(icon: icon, accent: accent, size: 56, iconSize: 24, isCompleted: isCompleted),
+                if (isCompleted)
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Icon(Icons.check_circle, color: AppTheme.accentMint, size: 20),
                   ),
-                ),
               ],
             ),
-          ),
-        );
-      },
-      openBuilder: (context, closeContainer) {
-        return _routeBuilder(route, closeContainer: closeContainer);
-      },
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+      openBuilder: (context, closeContainer) => _routeBuilder(route, closeContainer: closeContainer),
     );
   }
 
-  /// Slaap-trend voor de sparkline: chronologische slaapuren per dag uit
-  /// [_sleepPerDay] (max 14, oud → nieuw).
-  List<double> _slaapSparkline() {
-    final gesorteerd = _sleepPerDay.keys.toList()..sort();
-    return [
-      for (final d in gesorteerd.skip(gesorteerd.length > 14 ? gesorteerd.length - 14 : 0))
-        _sleepPerDay[d]!,
-    ];
+  Widget _buildOverviewHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(
+            AppLocalizations.of(context).overzicht,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          ),
+        ),
+        if (_lastUpdated != null)
+          Flexible(
+            child: Text(
+              _formatLastUpdated(context),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+              style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)),
+            ),
+          ),
+      ],
+    );
   }
 
-  /// SRT-trend voor de sparkline: gemiddelde p-score per dag (1–5) uit
-  /// [_srmActivitiesList], alleen dagen met échte activiteiten, chronologisch
-  /// (max 14, oud → nieuw).
+  // --- Helper methods from original file ---
+  List<double> _slaapSparkline() {
+    final gesorteerd = _sleepPerDay.keys.toList()..sort();
+    return [for (final d in gesorteerd.skip(gesorteerd.length > 14 ? gesorteerd.length - 14 : 0)) _sleepPerDay[d]!];
+  }
+
   List<double> _srtSparkline() {
     final perDag = <String, List<int>>{};
     for (final a in _srmActivitiesList) {
       final actualTime = a['actual_time'];
       final rawPScore = a['p_score'];
       if (actualTime == null || rawPScore == null) continue;
-      final int pScore =
-          rawPScore is int ? rawPScore : int.tryParse(rawPScore.toString()) ?? 0;
+      final int pScore = rawPScore is int ? rawPScore : int.tryParse(rawPScore.toString()) ?? 0;
       if (pScore <= 0) continue;
       final date = a['date']?.toString();
       if (date == null || date.isEmpty) continue;
       perDag.putIfAbsent(date, () => []).add(pScore);
     }
     final gesorteerd = perDag.keys.toList()..sort();
-    return [
-      for (final d in gesorteerd.skip(gesorteerd.length > 14 ? gesorteerd.length - 14 : 0))
-        perDag[d]!.reduce((x, y) => x + y) / perDag[d]!.length,
-    ];
+    return [for (final d in gesorteerd.skip(gesorteerd.length > 14 ? gesorteerd.length - 14 : 0)) perDag[d]!.reduce((x, y) => x + y) / perDag[d]!.length];
   }
 
-  Widget _buildMetricCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String? value,
-    String? emptyValue,
-    String? subtitle,
-    String? secondSubtitle,
-    String? emptyHint,
-    required Color color,
-    required String route,
-    bool isEmpty = false,
-    Widget? footer,
-    List<double>? sparkline,
-    Color? sparklineKleur,
-  }) {
+  Widget _buildMetricCard(BuildContext context, {required IconData icon, required String title, required String? value, String? emptyValue, String? subtitle, String? secondSubtitle, String? emptyHint, required Color color, required String route, bool isEmpty = false, Widget? footer, List<double>? sparkline, Color? sparklineKleur}) {
     final theme = Theme.of(context);
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: const Duration(milliseconds: 400),
-      closedElevation: 2,
-      closedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-      ),
+      closedElevation: 0,
+      closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
       closedColor: theme.cardColor,
       openColor: theme.scaffoldBackgroundColor,
-      onClosed: (_) {
-        _loadData();
-        if (_selectedDate.difference(DateTime.now()).inDays != 0) {
-          _loadDataForDate(_selectedDate);
-        }
-      },
+      onClosed: (_) { _loadData(); if (_selectedDate.difference(DateTime.now()).inDays != 0) _loadDataForDate(_selectedDate); },
       openBuilder: (context, _) => _routeBuilder(route),
       closedBuilder: (context, openContainer) => MetricCardShell(
-        icon: icon,
-        color: color,
-        onTap: openContainer,
+        icon: icon, color: color, onTap: openContainer,
         content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          ),
-          const SizedBox(height: 4),
-          if (isEmpty && emptyHint != null)
-            Text(
-              emptyHint,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppTheme.secondaryText(context),
-              ),
-            )
-          else if (subtitle != null)
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
-            ),
-          if (value != null)
-            Text(
-              value,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: value.length > 12 ? 14 : 18,
-              ),
-            )
-          else if (emptyValue != null)
-            Text(
-              emptyValue,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-                color: AppTheme.secondaryText(context),
-              ),
-            ),
-          if (secondSubtitle != null)
-            Text(
-              secondSubtitle,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppTheme.secondaryText(context),
-              ),
-            ),
-          if (footer != null) ...[const SizedBox(height: 8), footer],
-          // Sparkline onder de inhoud, alleen bij gevulde tegels: geeft de
-          // trend een plek zonder de kaart hoger te maken.
-          if (!isEmpty && sparkline != null && sparkline.length >= 2) ...[
-            const SizedBox(height: 8),
-            Sparkline(
-              waarden: sparkline,
-              kleur: sparklineKleur ?? color,
-            ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            const SizedBox(height: 4),
+            if (isEmpty && emptyHint != null)
+              Text(emptyHint, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
+            else if (subtitle != null)
+              Text(subtitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color)),
+            if (value != null)
+              Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
+            else if (emptyValue != null)
+              Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
+            if (secondSubtitle != null) Text(secondSubtitle, style: TextStyle(fontSize: 13, color: AppTheme.secondaryText(context))),
+            if (footer != null) ...[const SizedBox(height: 8), footer],
+            if (!isEmpty && sparkline != null && sparkline.length >= 2) ...[const SizedBox(height: 8), Sparkline(waarden: sparkline, kleur: sparklineKleur ?? color)],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -1431,116 +923,49 @@ class _DashboardScreenState extends State<DashboardScreen>
     return '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
   }
 
-  Widget _routeBuilder(
-    String route, {
-    void Function({bool? returnValue})? closeContainer,
-  }) {
+  Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
     switch (route) {
-      case '/mood':
-        return MoodAssessmentScreen(
-          onClose:
-              closeContainer == null
-                  ? null
-                  : (saved) => closeContainer(returnValue: saved),
-        );
-      case '/dagboek':
-        return DagboekScreen(
-          onClose:
-              closeContainer == null
-                  ? null
-                  : (saved) => closeContainer(returnValue: saved),
-        );
-      case '/morning-checkin':
-        return MorningCheckInScreen(
-          initialDate: _initialDateArg,
-          onClose:
-              closeContainer == null
-                  ? null
-                  : (saved) => closeContainer(returnValue: saved),
-        );
-      case '/evening-checkin':
-        return EveningCheckInScreen(
-          initialDate: _initialDateArg,
-          onClose:
-              closeContainer == null
-                  ? null
-                  : (saved) => closeContainer(returnValue: saved),
-        );
-      case '/activity':
-        return ActivityScreen();
-      case '/medication':
-        return MedicationScreen();
-      case '/weight':
-        return WeightScreen();
-      case '/appointments':
-        return AppointmentsScreen();
-      case '/voortekenen':
-        return VoortekenenScreen();
-      case '/crisisplan':
-        return CrisisPlanScreen();
-      case '/rapport':
-        return RapportScreen();
-      case '/sleep-detail':
-        return SleepDetailScreen();
-      case '/rhythm-detail':
-        return RhythmDetailScreen();
-      default:
-        return SizedBox.shrink();
+      case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/dagboek': return DagboekScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/morning-checkin': return MorningCheckInScreen(initialDate: _initialDateArg, onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/evening-checkin': return EveningCheckInScreen(initialDate: _initialDateArg, onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/activity': return ActivityScreen();
+      case '/medication': return MedicationScreen();
+      case '/weight': return WeightScreen();
+      case '/appointments': return AppointmentsScreen();
+      case '/voortekenen': return VoortekenenScreen();
+      case '/crisisplan': return CrisisPlanScreen();
+      case '/rapport': return RapportScreen();
+      case '/sleep-detail': return SleepDetailScreen();
+      case '/rhythm-detail': return RhythmDetailScreen();
+      default: return SizedBox.shrink();
     }
   }
 
   Widget _buildAlertCard(Alert alert, ThemeData theme) {
-    AlertSeverity severity =
-        alert.severity == 'high' ? AlertSeverity.high : AlertSeverity.medium;
+    AlertSeverity severity = alert.severity == 'high' ? AlertSeverity.high : AlertSeverity.medium;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-        border: Border.all(
-          color:
-              severity == AlertSeverity.high
-                  ? AppTheme.error
-                  : AppTheme.warning.withValues(alpha: 0.5),
-        ),
+        border: Border.all(color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                severity == AlertSeverity.high
-                    ? Icons.warning_amber
-                    : Icons.warning,
-                color:
-                    severity == AlertSeverity.high
-                        ? AppTheme.error
-                        : AppTheme.warning,
-                size: 24,
-              ),
+              Icon(severity == AlertSeverity.high ? Icons.warning_amber : Icons.warning, color: severity == AlertSeverity.high ? AppTheme.error : AppTheme.warning, size: 24),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  alert.title,
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                ),
-              ),
+              Expanded(child: Text(alert.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16))),
             ],
           ),
           const SizedBox(height: 8),
-          Text(alert.message, style: TextStyle(fontSize: 14)),
+          Text(alert.message, style: const TextStyle(fontSize: 14)),
           const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context).geregistreerdOp(
-              DateTime.now().toLocal().toString().split(' ')[0],
-            ),
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.textTheme.bodyMedium?.color,
-            ),
-          ),
+          Text(AppLocalizations.of(context).geregistreerdOp(DateTime.now().toLocal().toString().split(' ')[0]), style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
         ],
       ),
     );
@@ -1560,51 +985,86 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (score <= 60) return l10n.goed;
     return l10n.uitstekendLabel;
   }
-}
 
-class _DagStatusMeter extends StatelessWidget {
-  final int gelogd;
-  final int totaal;
+  Future<void> _selectDate(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020, 1, 1),
+      lastDate: DateTime.now(),
+      locale: Localizations.localeOf(context).languageCode == 'nl' ? const Locale('nl', 'NL') : null,
+      helpText: AppLocalizations.of(context).kiesDatum,
+      cancelText: AppLocalizations.of(context).annuleren,
+      confirmText: AppLocalizations.of(context).bekijken,
+    );
+    if (picked != null && mounted) {
+      setState(() => _selectedDate = picked);
+      _loadDataForDate(picked);
+    }
+  }
 
-  const _DagStatusMeter({required this.gelogd, required this.totaal});
+  Future<void> _loadDataForDate(DateTime date) async {
+    try {
+      final ds = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final venster = weekVenster(date);
+      final results = await Future.wait([
+        db.getSettings(),
+        db.getDailyLogsRange(venster[0], venster[1]),
+        db.getSrmActivitiesRange(venster[0], venster[1]),
+      ]);
+      if (!mounted) return;
+      final settings = results[0] as Map<String, dynamic>?;
+      final dailyLogs = results[1] as List<Map<String, dynamic>>;
+      final weeklyActivities = results[2] as List<Map<String, dynamic>>;
+      final selectedDs = ds;
+      final todayLogForDate = dailyLogs.where((l) => l['date'] == selectedDs).firstOrNull;
+      final todayActsForDate = weeklyActivities.where((a) => a['date'] == selectedDs).toList();
+      final checkinTypesForDate = <String>{};
+      if (todayLogForDate != null && ochtendGedaan(todayLogForDate)) checkinTypesForDate.add('ochtend');
+      try {
+        final intake = await db.getMedicationIntake(selectedDs);
+        if (intake.any((row) => (row['aantal_ingenomen'] is int ? row['aantal_ingenomen'] : int.tryParse(row['aantal_ingenomen']?.toString() ?? '') ?? 0) > 0)) checkinTypesForDate.add('medicatie');
+      } catch (_) {}
+      try {
+        final dagboek = await db.getDagboek(selectedDs);
+        if (dagboek != null) checkinTypesForDate.add('dagboek');
+      } catch (_) {}
+      if (avondGedaan(todayActsForDate, selectedDs)) checkinTypesForDate.add('avond');
+      setState(() {
+        _settings = settings;
+        _dailyLogs = dailyLogs;
+        _srmActivitiesList = weeklyActivities;
+        _checkinTypes = checkinTypesForDate;
+      });
+    } catch (_) {}
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-    final allesKlaar = gelogd >= totaal;
-    final brightness = theme.brightness;
-    // #ED6C02 haalt 4.94:1 op de chip; in dark mode is #FFB74D ruimer (6.7:1).
-    final color =
-        allesKlaar
-            ? AppTheme.successOn(brightness)
-            : (gelogd > 0
-                ? (brightness == Brightness.dark
-                    ? const Color(0xFFFFB74D)
-                    : AppTheme.warning)
-                : AppTheme.secondaryText(context));
+  String _formatSelectedDate(BuildContext context) {
+    final now = DateTime.now();
+    final diff = _selectedDate.difference(now).inDays;
+    final locale = Localizations.localeOf(context).languageCode;
+    if (diff == 0) return locale == 'nl' ? 'Vandaag' : 'Today';
+    if (diff == -1) return locale == 'nl' ? 'Gisteren' : 'Yesterday';
+    if (diff == -2) return locale == 'nl' ? 'Eergisteren' : 'Day before yesterday';
+    if (diff > 0) return locale == 'nl' ? 'Overmorgen' : 'Tomorrow';
+    return DateFormat('d MMMM', locale).format(_selectedDate);
+  }
+
+  Widget _buildStreakChip() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: Colors.orange.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            allesKlaar ? Icons.check_circle : Icons.radio_button_unchecked,
-            size: 14,
-            color: color,
-          ),
+          Icon(Icons.local_fire_department, size: 13, color: AppTheme.streakText(Theme.of(context).brightness), semanticLabel: AppLocalizations.of(context).streakMeerdereDagen(_dagStreak)),
           const SizedBox(width: 5),
           Text(
-            l10n.dagStatusMeter(gelogd, totaal),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+            _dagStreak == 1 ? AppLocalizations.of(context).streakEenDag : AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.streakText(Theme.of(context).brightness)),
           ),
         ],
       ),
@@ -1612,17 +1072,10 @@ class _DagStatusMeter extends StatelessWidget {
   }
 }
 
-/// Periode waarover de slaap-tegel rekent.
-enum _SleepPeriod { yesterday, week, fourteenDays }
-
-/// Periode-schakelaar onder de slaap-waarde: gisteren / week / 14 dagen.
-/// Compacte pill-rij, thema-veilig (selected = primary-container).
 class _SleepPeriodSwitch extends StatelessWidget {
   final _SleepPeriod selected;
   final ValueChanged<_SleepPeriod> onChanged;
-
   const _SleepPeriodSwitch({required this.selected, required this.onChanged});
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -1648,14 +1101,7 @@ class _SleepPeriodSwitch extends StatelessWidget {
       ],
     );
   }
-
-  Widget _periodPill(
-    BuildContext context, {
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-    required ThemeData theme,
-  }) {
+  Widget _periodPill(BuildContext context, {required String label, required bool isSelected, required VoidCallback onTap, required ThemeData theme}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
@@ -1663,85 +1109,65 @@ class _SleepPeriodSwitch extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? theme.colorScheme.primaryContainer
-                  : theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.5,
-                  ),
+          color: isSelected ? theme.colorScheme.primaryContainer : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(999),
         ),
         alignment: Alignment.center,
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            color:
-                isSelected
-                    ? theme.colorScheme.onPrimaryContainer
-                    : AppTheme.secondaryText(context),
-          ),
-        ),
+        child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400, color: isSelected ? theme.colorScheme.onPrimaryContainer : AppTheme.secondaryText(context))),
       ),
     );
   }
 }
 
-/// Wrapper voor stagger-animatie (fade + slide up) van een dashboard-tegel.
 class _StaggeredCard extends StatelessWidget {
   final Animation<double> animation;
   final Widget child;
-
   const _StaggeredCard({required this.animation, required this.child});
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      builder: (context, _) {
-        return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.2),
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _SecondaryNavChip extends StatelessWidget {
-  final IconData icon; final String label; final VoidCallback onTap;
-  const _SecondaryNavChip({required this.icon, required this.label, required this.onTap});
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xFF182229),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-          ),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(icon, size: 18, color: const Color(0xFF7AC8D3)),
-            const SizedBox(width: 8),
-            Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
-          ]),
+      builder: (context, _) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(animation),
+          child: child,
         ),
       ),
     );
   }
 }
+
+class _SecondaryActionButton extends StatelessWidget {
+  final IconData icon; final String label; final VoidCallback onTap;
+  const _SecondaryActionButton({required this.icon, required this.label, required this.onTap});
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: AppTheme.accentMint.withValues(alpha: 0.8)),
+              const SizedBox(width: 8),
+              Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14))),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _SleepPeriod { yesterday, week, fourteenDays }
