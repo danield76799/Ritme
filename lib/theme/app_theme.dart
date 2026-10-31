@@ -510,6 +510,40 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
+  /// Gradient van de begroetingskaart in DARK mode.
+  ///
+  /// Vervangt de handmatige gradient die in het dashboard stond
+  /// (#2A3D42 -> #1A2B30): dat was het kleurenschema van vóór de donkere
+  /// herbouw en stond dus niet meer bij het palet van het thema
+  /// (#0D1117 / #161B22 / #1C232B). Deze loopt van een teal-getinte
+  /// bovenkant naar de donkere kaarttoon, zodat de kaart in het donkere
+  /// palet zweeft in plaats van ernaast te staan.
+  static LinearGradient get darkHeroGradient => LinearGradient(
+    colors: [Color(0xFF1B3A42), Color(0xFF11222A)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// De gradient van de begroetingskaart voor de actieve brightness.
+  static LinearGradient heroGradient(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+      ? darkHeroGradient
+      : brandGradient;
+
+  /// Kaartachtergrond met een subtiele tint van het tegelaccent.
+  ///
+  /// Maakt de dashboardtegels onderscheidbaar zonder dat de tint opdringt:
+  /// 8% accent over de kaartkleur in dark mode, 6% in light mode (daar is
+  /// de kaart wit en zou een tint van 10% al zwaar worden).
+  static Color tileSurface(BuildContext context, Color accent) {
+    final theme = Theme.of(context);
+    final alpha = theme.brightness == Brightness.dark ? 0.08 : 0.06;
+    return Color.alphaBlend(
+      accent.withValues(alpha: alpha),
+      theme.cardColor,
+    );
+  }
+
   // Warm gradient alias (alias for brandGradient for legacy code)
   static LinearGradient get warmGradient => brandGradient;
 

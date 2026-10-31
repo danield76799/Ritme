@@ -11,6 +11,7 @@ import '../utils/logger.dart';
 import '../widgets/weekly_mood_chart.dart';
 import '../widgets/metric_card_shell.dart';
 import '../widgets/tile_accent.dart';
+import '../widgets/week_strip.dart';
 import 'login_screen.dart';
 import 'mood_assessment_screen.dart';
 import 'morning_checkin_screen.dart';
@@ -512,6 +513,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   const SizedBox(height: 16),
                 ],
                 _buildTodayHeader(),
+                const SizedBox(height: 8),
+                _buildWeekStrip(),
                 const SizedBox(height: 12),
                 _buildTaskGrid(),
                 const SizedBox(height: 16),
@@ -568,7 +571,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         children: [
                           Text(
                             AppLocalizations.of(context).stemmingTrend,
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ],
                       ),
@@ -604,11 +607,23 @@ class _DashboardScreenState extends State<DashboardScreen>
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: isDark
-              ? LinearGradient(colors: [const Color(0xFF2A3D42), const Color(0xFF1A2B30)], begin: Alignment.topLeft, end: Alignment.bottomRight)
-              : AppTheme.brandGradient,
+          // De gradient komt uit het thema, zodat hij meebeweegt met de
+          // brightness. De handmatige variant hierboven stond nog op het
+          // kleurenschema van vóór de donkere herbouw.
+          gradient: AppTheme.heroGradient(context),
           borderRadius: BorderRadius.circular(AppTheme.largeRadius),
-          boxShadow: [BoxShadow(color: (isDark ? Colors.black : const Color(0xFFB4A8D4)).withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 8))],
+          boxShadow: [
+            BoxShadow(
+              // In light mode was dit #B4A8D4 (paars) — een kleur uit een
+              // ander merk. Nu een teal-tint die bij de kaart hoort.
+              color: (isDark
+                      ? Colors.black
+                      : const Color(0xFF4FB2C1))
+                  .withValues(alpha: isDark ? 0.35 : 0.22),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -617,7 +632,9 @@ class _DashboardScreenState extends State<DashboardScreen>
               fit: BoxFit.scaleDown,
               child: Text(
                 _getGreeting(username),
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
             const SizedBox(height: 4),
@@ -625,7 +642,12 @@ class _DashboardScreenState extends State<DashboardScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
-                  child: Text(dateStr, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85), fontSize: 16)),
+                  child: Text(
+                    dateStr,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
                 if (_dagStreak > 0) _buildStreakChip(),
               ],
@@ -702,7 +724,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       _formatSelectedDate(context),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -725,6 +747,27 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildWeekStrip() {
+    return WeekStrip(
+      weekStart: WeekStrip.mondayOf(_selectedDate),
+      selected: _selectedDate,
+      onSelected: (dag) {
+        if (dag.year == _selectedDate.year &&
+            dag.month == _selectedDate.month &&
+            dag.day == _selectedDate.day) {
+          return;
+        }
+        setState(() => _selectedDate = dag);
+        _loadDataForDate(dag);
+      },
+      onShiftWeek: (stap) {
+        final nieuw = _selectedDate.add(Duration(days: stap * 7));
+        setState(() => _selectedDate = nieuw);
+        _loadDataForDate(nieuw);
+      },
     );
   }
 
@@ -786,6 +829,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildActionCard(BuildContext context, {required IconData icon, required TileAccent accent, required String title, required String route, bool isCompleted = false}) {
+    final theme = Theme.of(context);
+    final accentKleur = accent.colorFor(theme.brightness);
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: const Duration(milliseconds: 400),
@@ -794,8 +839,10 @@ class _DashboardScreenState extends State<DashboardScreen>
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: isCompleted ? AppTheme.accentMint.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.08), width: isCompleted ? 1.5 : 1),
       ),
-      closedColor: Theme.of(context).cardColor,
-      openColor: Theme.of(context).scaffoldBackgroundColor,
+      // Een subtiele tint van het tegelaccent: de tegels zijn dan van
+      // elkaar te onderscheiden zonder dat de kleur opdringt.
+      closedColor: AppTheme.tileSurface(context, accentKleur),
+      openColor: theme.scaffoldBackgroundColor,
       onClosed: (_) {
         _loadData();
         if (_selectedDate.difference(DateTime.now()).inDays != 0) _loadDataForDate(_selectedDate);
@@ -821,7 +868,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.brightness == Brightness.dark
+                    ? AppTheme.darkText
+                    : AppTheme.textCharcoal,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -842,7 +894,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             AppLocalizations.of(context).overzicht,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
         if (_lastUpdated != null)
@@ -897,16 +949,31 @@ class _DashboardScreenState extends State<DashboardScreen>
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            Text(title, style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             if (isEmpty && emptyHint != null)
               Text(emptyHint, style: TextStyle(fontSize: 14, color: AppTheme.secondaryText(context)))
             else if (subtitle != null)
               Text(subtitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color)),
             if (value != null)
-              Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: value.length > 12 ? 14 : 18))
+              // Het getal is de held van de kaart: 28px, met een
+              // terugval voor ongewoon lange waarden ("Niet beschikbaar").
+              Text(
+                value,
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: value.length > 12 ? 16 : 28,
+                  height: 1.15,
+                ),
+              )
             else if (emptyValue != null)
-              Text(emptyValue, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.secondaryText(context))),
+              // Dit is een zin, geen getal — daarom blijft hij klein.
+              Text(
+                emptyValue,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: AppTheme.secondaryText(context),
+                ),
+              ),
             if (secondSubtitle != null) Text(secondSubtitle, style: TextStyle(fontSize: 13, color: AppTheme.secondaryText(context))),
             if (footer != null) ...[const SizedBox(height: 8), footer],
             if (!isEmpty && sparkline != null && sparkline.length >= 2) ...[const SizedBox(height: 8), Sparkline(waarden: sparkline, kleur: sparklineKleur ?? color)],
