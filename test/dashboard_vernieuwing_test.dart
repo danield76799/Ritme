@@ -16,8 +16,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:ritme/database/hive_database_helper.dart';
+import 'package:ritme/generated/l10n/app_localizations.dart';
 import 'package:ritme/screens/dashboard_screen.dart';
+import 'package:ritme/service_locator.dart';
 import 'package:ritme/theme/app_theme.dart';
 import 'package:ritme/widgets/week_strip.dart';
 
@@ -31,7 +35,23 @@ String _bronZonderCommentaar(String pad) {
       .join('\n');
 }
 
+/// De dozenen die het dashboard nodig heeft.
+const _boxen = [
+  'settings', 'daily_logs', 'srm_activities', 'mood_assessment',
+  'medication_config', 'medication_intake', 'medication_schedule',
+  'life_events', 'weight_logs', 'medical_appointments', 'crisis_plan',
+  'prodromal_checklist', 'prodromal_logs', 'episode_logs', 'daily_dagboek',
+];
+
 void main() {
+  setUpAll(() async {
+    Hive.init('/tmp/hive_vernieuwing');
+    for (final naam in _boxen) {
+      if (!Hive.isBoxOpen(naam)) await Hive.openBox(naam);
+    }
+    setDbForTesting(HiveDatabaseHelper.instance);
+  });
+
   group('de begroetingskaart', () {
     test('neemt de gradient uit het thema', () {
       final code = _bronZonderCommentaar('lib/screens/dashboard_screen.dart');
@@ -87,6 +107,39 @@ void main() {
           reason: 'tekst op de begroetingskaart moet leesbaar blijven',
         );
       }
+    });
+  });
+
+  group('de weekstrip', () {
+    testWidgets('past zonder overflow in dark mode', (tester) async {
+      // De bestaande overflow-test in visuele_audit_regressie_test.dart
+      // controleert alleen de lichte modus, terwijl de weekstrip en de
+      // getinte tegels in beide modes staan.
+      final meldingen = <String>[];
+      final vorige = FlutterError.onError;
+      FlutterError.onError = (d) {
+        final s = d.exception.toString();
+        if (s.contains('overflow')) meldingen.add(s.split('\n').first);
+      };
+
+      tester.view.physicalSize = const Size(640, 1280);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('nl'),
+        theme: AppTheme.darkTheme,
+        home: const DashboardScreen(),
+      ));
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 120));
+      }
+      FlutterError.onError = vorige;
+
+      expect(meldingen, isEmpty, reason: 'dashboard loopt over in dark mode');
     });
   });
 
