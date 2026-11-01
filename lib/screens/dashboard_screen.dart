@@ -7,6 +7,7 @@ import '../widgets/sparkline.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
 import '../services/bipolar_alert_service.dart';
+import '../utils/datum_sleutel.dart';
 import '../utils/logger.dart';
 import '../widgets/weekly_mood_chart.dart';
 import '../widgets/metric_card_shell.dart';
@@ -845,7 +846,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       openColor: theme.scaffoldBackgroundColor,
       onClosed: (_) {
         _loadData();
-        if (_selectedDate.difference(DateTime.now()).inDays != 0) _loadDataForDate(_selectedDate);
+        if (dagenVerschil(_selectedDate) != 0) _loadDataForDate(_selectedDate);
       },
       closedBuilder: (context, openContainer) => InkWell(
         onTap: openContainer,
@@ -942,7 +943,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
       closedColor: theme.cardColor,
       openColor: theme.scaffoldBackgroundColor,
-      onClosed: (_) { _loadData(); if (_selectedDate.difference(DateTime.now()).inDays != 0) _loadDataForDate(_selectedDate); },
+      onClosed: (_) { _loadData(); if (dagenVerschil(_selectedDate) != 0) _loadDataForDate(_selectedDate); },
       openBuilder: (context, _) => _routeBuilder(route),
       closedBuilder: (context, openContainer) => MetricCardShell(
         icon: icon, color: color, onTap: openContainer,
@@ -983,17 +984,15 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  String? get _initialDateArg {
-    final now = DateTime.now();
-    final diff = _selectedDate.difference(now).inDays;
-    if (diff == 0) return null;
-    return '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
-  }
+  /// De geselecteerde dag om aan een scherm mee te geven, of null als het
+  /// vandaag is. Zie [dagboekDatumArgument] voor waarom dit niet uit een
+  /// Duration mag worden afgeleid.
+  String? get _initialDateArg => dagboekDatumArgument(_selectedDate);
 
   Widget _routeBuilder(String route, {void Function({bool? returnValue})? closeContainer}) {
     switch (route) {
       case '/mood': return MoodAssessmentScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
-      case '/dagboek': return DagboekScreen(onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
+      case '/dagboek': return DagboekScreen(initialDate: _initialDateArg, onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
       case '/morning-checkin': return MorningCheckInScreen(initialDate: _initialDateArg, onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
       case '/evening-checkin': return EveningCheckInScreen(initialDate: _initialDateArg, onClose: closeContainer == null ? null : (saved) => closeContainer(returnValue: saved));
       case '/activity': return ActivityScreen();
@@ -1107,8 +1106,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   String _formatSelectedDate(BuildContext context) {
-    final now = DateTime.now();
-    final diff = _selectedDate.difference(now).inDays;
+    // Niet uit een Duration: dat gaf 0 voor 'gisteren 23:00 tegenover
+    // vandaag 01:00', waarna de kop "Vandaag" zei terwijl je op een verleden
+    // dag stond. Zie dagenVerschil.
+    final diff = dagenVerschil(_selectedDate);
     final locale = Localizations.localeOf(context).languageCode;
     if (diff == 0) return locale == 'nl' ? 'Vandaag' : 'Today';
     if (diff == -1) return locale == 'nl' ? 'Gisteren' : 'Yesterday';
