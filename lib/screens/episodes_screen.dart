@@ -289,7 +289,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     ),
                     title: Row(
                       children: [
-                        Text(typeInfo?['label'] as String? ?? type, style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textCharcoal)),
+                        Text(typeInfo?['label'] as String? ?? type, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                         if (isActive) ...[
                           SizedBox(width: 8),
                           Container(

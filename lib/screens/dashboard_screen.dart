@@ -532,7 +532,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     value: _sleepQuality > 0 ? _formatHours(_sleepQuality) : null,
                     emptyValue: AppLocalizations.of(context).nogNietGelogdVandaag,
                     emptyHint: AppLocalizations.of(context).slaapVerbeterStemming,
-                    color: const Color(0xFF88B0C7),
+                    color: AppTheme.accentOn(Theme.of(context).brightness),
                     route: '/sleep-detail',
                     isEmpty: _sleepQuality <= 0,
                     sparkline: _slaapSparkline(),
