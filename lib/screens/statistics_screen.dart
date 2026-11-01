@@ -351,7 +351,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                     SizedBox(height: 16),
                     _bouwSlaapGrafiek(),
                     SizedBox(height: 32),
-                    Text(AppLocalizations.of(context).samenvatting, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textCharcoal)),
+                    Text(AppLocalizations.of(context).samenvatting, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                     SizedBox(height: 16),
                     GridView.count(
                       crossAxisCount: 2,
@@ -408,7 +408,18 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
         LineChartData(
           minY: -5,
           maxY: 5,
-          gridData: FlGridData(show: true, drawVerticalLine: false),
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            // Rasterlijnen volgen het thema: de standaardkleur van fl_chart is
+            // een grijs dat in dark mode óf te fel óf wegvalt.
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.4),
+              strokeWidth: 1,
+            ),
+          ),
           titlesData: FlTitlesData(
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
