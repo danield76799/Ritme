@@ -162,31 +162,4 @@ class DatabaseCleanup {
       await db.close();
     }
   }
-  
-  static double _calculateSleepHours(String bedTime, String wakeTime, int awakeMinutes) {
-    final bed = _parseTime(bedTime);
-    final wake = _parseTime(wakeTime);
-    
-    if (bed == null || wake == null) return 0.0;
-    
-    var duration = wake.difference(bed);
-    if (duration.isNegative) {
-      duration = duration + const Duration(days: 1);
-    }
-    
-    final totalMinutes = duration.inMinutes - awakeMinutes;
-    return totalMinutes / 60.0;
-  }
-  
-  static DateTime? _parseTime(String time) {
-    final parts = time.split(':');
-    if (parts.length != 2) return null;
-    
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
-    
-    if (hour == null || minute == null) return null;
-    
-    return DateTime(2000, 1, 1, hour, minute);
-  }
 }

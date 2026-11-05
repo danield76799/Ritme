@@ -214,29 +214,6 @@ class NotificationHelper {
     }
   }
 
-  Future<bool> _requestPermissions() async {
-    try {
-      // Standard notification permission
-      final notifStatus = await Permission.notification.request();
-      if (!notifStatus.isGranted) return false;
-
-      // Exact alarm permission (Android 12+ — required for exactAllowWhileIdle)
-      try {
-        final alarmStatus = await Permission.scheduleExactAlarm.request();
-        if (!alarmStatus.isGranted) {
-          AppLogger.warning('Exact alarm permission denied — notifications may be delayed');
-        }
-      } catch (_) {
-        // scheduleExactAlarm only exists on Android 12+
-      }
-
-      return true;
-    } catch (e) {
-      AppLogger.error('Permission request error', error: e);
-      return false;
-    }
-  }
-
   /// Controleer of alle benodigde notificatiepermissies zijn gegeven.
   /// Opent de systeeminstellingen als SCHEDULE_EXACT_ALARM ontbreekt.
   /// Geeft true terug als het veilig is om exacte alarmen in te plannen.
@@ -1126,14 +1103,7 @@ class NotificationHelper {
           });
           AppLogger.debug('Medication $medicationId marked as skipped');
         } else if (actionId == 'snooze') {
-          // Snooze for 15 minutes
-          final snoozeTime = DateTime.now().add(const Duration(minutes: 15));
-          
-          // We need the medication name to reschedule. 
-          // For now, we'll use a generic "Medicatie" or fetch it from DB if available.
-          // Since we don't have easy access to the name here without a DB call, 
-          // we'll use the payload to identify it.
-          
+          // De notificatie wordt hieronder direct 15 minuten later gepland.
           debugPrint('Snoozing medication $medicationId for 15 minutes...');
           
           // Reschedule a one-time notification for 15 mins from now

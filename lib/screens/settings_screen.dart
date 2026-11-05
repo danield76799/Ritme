@@ -599,7 +599,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      geenMap ? l10n.geenMap : mapWeergave!,
+                      geenMap ? l10n.geenMap : mapWeergave,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

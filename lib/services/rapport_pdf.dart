@@ -203,10 +203,8 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
       );
     }
 
-    if (contentWidget != null) {
-      if (inCorrelationBox) correlationBoxContent.add(contentWidget);
-      else widgets.add(contentWidget);
-    }
+    if (inCorrelationBox) correlationBoxContent.add(contentWidget);
+    else widgets.add(contentWidget);
     i++;
   }
 

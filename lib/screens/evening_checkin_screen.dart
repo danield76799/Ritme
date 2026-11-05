@@ -87,7 +87,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
       final q3 = toDouble(assessment?['q3_energie_detail']);
       final q5 = toDouble(assessment?['q5_gebeurtenis']);
       final q2 = toDouble(assessment?['q2_energie_slider']);
-      final score = assessment?['berekende_score'];
 
       TimeOfDay? parseTime(String? s) {
         if (s == null || !s.contains(':')) return null;

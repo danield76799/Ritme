@@ -13,7 +13,6 @@ class EpisodesScreen extends StatefulWidget {
 class _EpisodesScreenState extends State<EpisodesScreen> {
   List<Map<String, dynamic>> _episodes = [];
   bool _isLoading = true;
-  Map<String, dynamic>? _activeEpisode;
 
   // Semantiek per type (manie = rood, depressie = blauw, ...) blijft;
   // de tint wordt pas bij gebruik modus-bewust gekozen (zie _typeKleur),
@@ -63,11 +62,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     setState(() => _isLoading = true);
     try {
       final episodes = await db.getEpisodes();
-      final active = await db.getActiveEpisode();
       if (mounted) {
         setState(() {
           _episodes = episodes;
-          _activeEpisode = active;
           _isLoading = false;
         });
       }

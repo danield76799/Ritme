@@ -671,7 +671,6 @@ class DatabaseHelper implements DatabaseRepository {
   
   @override
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
-    final db = await database;
     // Wakker-gelegen is maximaal 4 uur (240 min). Langere invoer (of
     // gerestorede data) wordt hier afgekapt tot de limiet.
     final clampedAwake = awakeMinutes.clamp(0, 240);
@@ -1318,7 +1317,6 @@ class DatabaseHelper implements DatabaseRepository {
   @override
   Future<int> upsertMoodAssessment(Map<String, dynamic> data) async {
     final db = await database;
-    final date = data['date'] as String;
     return await db.insert(
       'mood_assessment',
       data,

@@ -319,8 +319,8 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => false,  // Blokkeer back-button
+      builder: (context) => PopScope(
+        canPop: false, // Blokkeer back-button
         child: AlertDialog(
           title: Text(AppLocalizations.of(context).biometrieVerplichtTitel),
           content: Text(
@@ -375,7 +375,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ElevatedButton(
             onPressed: () async {
               // Request notification permission
-              final status = await Permission.notification.request();
+              await Permission.notification.request();
               if (mounted) {
                 Navigator.pop(context);
                 Navigator.pushReplacement(

@@ -249,9 +249,11 @@ class _DagboekScreenState extends State<DagboekScreen> {
       if (!mounted) return;
       // Delen als TEKST (niet als .md-bestand) zodat WhatsApp/Gemini het
       // direct als leesbare tekst tonen in plaats van een bestandsbijlage.
-      await Share.share(
-        buffer.toString(),
-        subject: AppLocalizations.of(context).dagboekExport,
+      await SharePlus.instance.share(
+        ShareParams(
+          text: buffer.toString(),
+          subject: AppLocalizations.of(context).dagboekExport,
+        ),
       );
     } catch (e) {
       AppLogger.error('Dagboek: exporteren mislukt', error: e);

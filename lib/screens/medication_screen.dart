@@ -375,7 +375,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           child: DropdownButtonFormField<String>(
                             style: TextStyle(color: textColor),
                             dropdownColor: cs.surface,
-                            value: unit,
+                            initialValue: unit,
                             decoration: InputDecoration(
                               labelText: AppLocalizations.of(context).eenheidMgMlStuks,
                               labelStyle: TextStyle(color: labelColor),
@@ -600,7 +600,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       title: Text(AppLocalizations.of(context).herinnering, style: TextStyle(color: textColor)),
                       value: reminderEnabled,
                       onChanged: (value) => setDialogState(() => reminderEnabled = value),
-                      activeColor: Theme.of(context).colorScheme.primary,
+                      activeThumbColor: Theme.of(context).colorScheme.primary,
                     ),
                     if (reminderEnabled)
                       InkWell(

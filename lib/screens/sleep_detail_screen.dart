@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
-import '../utils/logger.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class SleepDetailScreen extends StatefulWidget {
@@ -18,7 +17,6 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
   double _avgSleep = 0;
   double _bestSleep = 0;
   double _worstSleep = 0;
-  int _daysTracked = 0;
 
   // Format hours as "9u 30m" instead of "9.5u"
   String _formatHours(double hours) {
@@ -41,25 +39,25 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
       final dailyLogs = await db.getDailyLogs();
       final now = DateTime.now();
       final weekAgo = now.subtract(const Duration(days: 7));
-      
-      List<Map<String, dynamic>> sleepEntries = [];
+
+      final sleepEntries = <Map<String, dynamic>>[];
+      final seenDates = <String>{};
       double totalSleep = 0;
       double best = 0;
       double worst = double.infinity;
       int count = 0;
 
-      for (var log in dailyLogs) {
-        if (log['date'] == null) continue;
-        
-        // DEBUG: Log alle rijen voor debugging
-        AppLogger.debug('DEBUG sleep_detail: date=${log['date']}, id=${log['id']}, sleep_hours=${log['sleep_hours']}, uren_slaap=${log['uren_slaap']}, awake_minutes=${log['awake_minutes']}, bed_time=${log['bed_time']}, wake_time=${log['wake_time']}');
-        
+      for (final log in dailyLogs) {
+        final date = log['date']?.toString();
+        if (date == null) continue;
+
         try {
-          final logDate = DateTime.parse(log['date'] as String);
+          final logDate = DateTime.parse(date);
           if (logDate.isBefore(weekAgo)) continue;
 
-          // Skip if we already have an entry for this date (take the first/latest one)
-          if (sleepEntries.any((e) => e['date'] == log['date'])) continue;
+          // Alleen een eerder toegevoegde geldige slaapregel wint. Een nieuwere
+          // lege/ongeldige rij mag een oudere geldige meting niet verbergen.
+          if (seenDates.contains(date)) continue;
 
           double? sleep;
           final rawSleep = log['sleep_hours'];
@@ -70,7 +68,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             if (rawAwake is num) awakeMinutes = rawAwake.toInt();
             else if (rawAwake is String) awakeMinutes = int.tryParse(rawAwake) ?? 0;
           }
-          
+
           // EERST kijken naar sleep_hours (van slaap tracking - al correct berekend)
           if (rawSleep != null) {
             if (rawSleep is num) sleep = rawSleep.toDouble();
@@ -82,35 +80,37 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             if (rawUren is num) sleep = rawUren.toDouble();
             else if (rawUren is String) sleep = double.tryParse(rawUren);
           }
-          
+
           // Alleen toevoegen als we geldige sleep data hebben
           if (sleep != null && sleep > 0) {
+            seenDates.add(date);
             sleepEntries.add({
-              'date': log['date'],
+              'date': date,
               'sleep': sleep,
               'day': _dayName(logDate.weekday),
               'dateShort': '${logDate.day}/${logDate.month}',
-              'awakeMinutes': awakeMinutes,  // Toon ook wakker tijd
+              'awakeMinutes': awakeMinutes,
             });
             totalSleep += sleep;
             if (sleep > best) best = sleep;
             if (sleep < worst) worst = sleep;
             count++;
           }
-        } catch (e) {
+        } catch (_) {
           continue;
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _sleepData = sleepEntries;
         _avgSleep = count > 0 ? totalSleep / count : 0;
         _bestSleep = best;
         _worstSleep = worst == double.infinity ? 0 : worst;
-        _daysTracked = count;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (_) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
