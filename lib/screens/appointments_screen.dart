@@ -183,64 +183,6 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     }
   }
 
-  Future<void> _showDeleteConfirmation(int id) async {
-    debugPrint('=== SHOW DELETE CONFIRMATION ===');
-    debugPrint('ID to delete: $id');
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context).deleteTappedId(id)), duration: const Duration(seconds: 2)),
-    );
-    
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context).afspraakVerwijderen),
-        content: Text(AppLocalizations.of(context).dezeActieOngedaan),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(AppLocalizations.of(context).annuleren),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text(AppLocalizations.of(context).verwijderen, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await _performDelete(id);
-    }
-  }
-
-  Future<void> _performDelete(int id) async {
-    debugPrint('=== PERFORM DELETE ===');
-    debugPrint('ID: $id');
-    try {
-      // Cancel any scheduled notification
-      await NotificationHelper.instance.cancelAppointmentReminder(id);
-      
-      // Delete from database
-      await db.deleteMedicalAppointment(id);
-      
-      // Reload appointments and check remaining notifications
-      _loadAppointments();
-      
-      // Show confirmation
-      if (mounted) {
-        final pending = await NotificationHelper.instance.getPendingNotificationCount();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).afspraakVerwijderdNogNotificatiesPending(pending))),
-        );
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to delete appointment', error: e, stackTrace: stackTrace);
-      _showError(AppLocalizations.of(context).konAfspraakNietVerwijderen);
-    }
-  }
-
   void _showError(String message) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -338,7 +280,6 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final title = appointment['title'] ?? l10n.onbekend;
     final doctor = appointment['doctor_name'] ?? '';
     final location = appointment['location'] ?? '';
-    final date = appointment['appointment_date'] ?? '';
     final time = appointment['appointment_time'] ?? '';
 
     return Card(
@@ -658,7 +599,7 @@ class _AppointmentDialogState extends State<_AppointmentDialog> {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-            border: Border.all(color: field.errorText != null ? Colors.red : Colors.grey.shade400!),
+            border: Border.all(color: field.errorText != null ? Colors.red : Colors.grey.shade400),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(

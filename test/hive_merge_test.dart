@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:ritme/database/hive_database_helper.dart';
 
 void main() {
   setUpAll(() {
@@ -32,13 +31,6 @@ void main() {
       'stemming_laag': 2,
       'gesplitste_stemming': 0,
     });
-
-    final helper = HiveDatabaseHelper.instance;
-    // getDailyLogs leest via _dailyLogs getter — box moet open zijn onder
-    // de productienaam; we testen de merge-logica via de publieke methode
-    // door de box-lookup te mocken met onze test-box.
-    // (Directe unit-test van de merge: we lezen de box zelf en repliceren
-    //  de merge niet — we roepen getDailyLogs aan na het registreren.)
 
     // Aangezien de helper naar 'daily_logs' kijkt, heropenen onder die naam
     // in de test-omgeving is niet mogelijk als de app-box al open is; daarom

@@ -10,8 +10,6 @@
 // Zonder gekozen map valt BackupService terug op de app-map (altijd
 // schrijfbaar, maar weg bij verwijderen).
 
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:saf/saf.dart';
 

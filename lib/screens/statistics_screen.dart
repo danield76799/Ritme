@@ -142,8 +142,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       
       // Build PDF
       final pdf = pw.Document();
-      final theme = Theme.of(context);
-      
+
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,

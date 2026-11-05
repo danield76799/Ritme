@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import '../utils/notif_strings.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -257,10 +256,12 @@ class BackupService {
       filePath = file.path;
     }
     
-    await Share.shareXFiles(
-      [XFile(filePath)],
-      subject: 'Ritme Backup ${DateTime.now().toString().split(' ')[0]}',
-      text: NotifStrings.backupText,
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(filePath)],
+        subject: 'Ritme Backup ${DateTime.now().toString().split(' ')[0]}',
+        text: NotifStrings.backupText,
+      ),
     );
   }
 

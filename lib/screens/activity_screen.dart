@@ -720,7 +720,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           color: hasValue ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.05) : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(AppTheme.smallRadius),
           border: Border.all(
-            color: hasValue ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3) : Colors.grey.shade300!,
+            color: hasValue ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3) : Colors.grey.shade300,
             width: 1.5,
           ),
         ),
