@@ -47,3 +47,17 @@ app.*.map.json
 # Generated localization files (flutter gen-l10n regenerates these on build)
 lib/generated/l10n/
 
+# Signing material — nooit in git. CI haalt de keystore uit GitHub Secrets.
+*.jks
+*.keystore
+*.p12
+*.pem
+pepk.jar
+*keystore*.zip
+*keystore*.txt
+*keystore*.tar.gz
+*base64*.txt
+upload*.zip
+unzip_keystore_fixed/
+android/key.properties
+
