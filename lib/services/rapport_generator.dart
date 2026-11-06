@@ -280,7 +280,7 @@ class RapportGenerator {
       final label = s.flagLabel(entry.key);
       if (label == null) continue;
       final pct = (entry.value * 100 / assessments.length).round();
-      signalLines.add('- **$label**: ${entry.value}× (${pct}%)');
+      signalLines.add('- **$label**: ${entry.value}× ($pct%)');
     }
     if (signalLines.isNotEmpty) {
       buf.writeln('**Bipolaire analyse-signalen:**');
@@ -427,7 +427,7 @@ class RapportGenerator {
       final weekLabel =
           '${weekStart.day}/${weekStart.month} – ${weekEnd.day}/${weekEnd.month}';
       final moodStr = wMoodN > 0 ? (wMood / wMoodN).toStringAsFixed(1) : '-';
-      final sleepStr = wSleepN > 0 ? '${s.formatHours(wSleep / wSleepN)}' : '-';
+      final sleepStr = wSleepN > 0 ? s.formatHours(wSleep / wSleepN) : '-';
       final pStr = wPN > 0 ? (wP / wPN).toStringAsFixed(1) : '-';
       final medStr = wIntake > 0 ? '$wTaken/$wIntake' : '-';
       buf.writeln('| $weekLabel | $moodStr | $sleepStr | $pStr | $medStr |');

@@ -525,7 +525,7 @@ class BackupService {
     final donderdag = now.add(Duration(days: 4 - now.weekday));
     final weekjaar = donderdag.year;
     final week = isoWeekNummer(now);
-    return 'ritme_backup_auto_${weekjaar}-W${week.toString().padLeft(2, '0')}.json';
+    return 'ritme_backup_auto_$weekjaar-W${week.toString().padLeft(2, '0')}.json';
   }
 
   /// Hoeveel automatische bestanden bewaard blijven, afhankelijk van de

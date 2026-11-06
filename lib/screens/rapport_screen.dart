@@ -11,7 +11,7 @@ import 'package:printing/printing.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class RapportScreen extends StatefulWidget {
-  RapportScreen({super.key});
+  const RapportScreen({super.key});
 
   @override
   State<RapportScreen> createState() => _RapportScreenState();

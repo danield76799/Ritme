@@ -1023,26 +1023,31 @@ class DatabaseHelper implements DatabaseRepository {
   // PRODROMAL CHECKLIST
   // ===================
 
+  @override
   Future<List<Map<String, dynamic>>> getProdromalChecklist() async {
     final db = await database;
     return await db.query('prodromal_checklist', orderBy: 'sort_order ASC');
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getEnabledProdromalChecklist() async {
     final db = await database;
     return await db.query('prodromal_checklist', where: 'enabled = 1', orderBy: 'sort_order ASC');
   }
 
+  @override
   Future<int> insertProdromalSign(Map<String, dynamic> data) async {
     final db = await database;
     return await db.insert('prodromal_checklist', data);
   }
 
+  @override
   Future<int> updateProdromalSign(int id, Map<String, dynamic> data) async {
     final db = await database;
     return await db.update('prodromal_checklist', data, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<int> deleteProdromalSign(int id) async {
     final db = await database;
     return await db.delete('prodromal_checklist', where: 'id = ?', whereArgs: [id]);
@@ -1052,11 +1057,13 @@ class DatabaseHelper implements DatabaseRepository {
   // PRODROMAL LOGS
   // ===================
 
+  @override
   Future<int> insertProdromalLog(Map<String, dynamic> data) async {
     final db = await database;
     return await db.insert('prodromal_logs', data);
   }
 
+  @override
   Future<void> upsertProdromalLog(Map<String, dynamic> data) async {
     final db = await database;
     final date = data['date']?.toString();
@@ -1084,11 +1091,13 @@ class DatabaseHelper implements DatabaseRepository {
     }
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getProdromalLogs(String date) async {
     final db = await database;
     return await db.query('prodromal_logs', where: 'date = ?', whereArgs: [date]);
   }
 
+  @override
   Future<Map<String, dynamic>?> getProdromalSummary(String date) async {
     final db = await database;
     final results = await db.rawQuery('''
@@ -1104,6 +1113,7 @@ class DatabaseHelper implements DatabaseRepository {
     return results.isNotEmpty ? results.first : null;
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getRecentProdromalTrends(int days) async {
     final db = await database;
     final startDate = DateTime.now().subtract(Duration(days: days));
@@ -1117,6 +1127,7 @@ class DatabaseHelper implements DatabaseRepository {
     ''', [dateStr]);
   }
 
+  @override
   Future<String?> getLastProdromalDate() async {
     final db = await database;
     final result = await db.rawQuery('''
@@ -1130,6 +1141,7 @@ class DatabaseHelper implements DatabaseRepository {
     return result.first['date']?.toString();
   }
 
+  @override
   Future<void> copyProdromalLogs(String fromDate, String toDate) async {
     final db = await database;
     // Delete existing logs for target date
@@ -1148,26 +1160,31 @@ class DatabaseHelper implements DatabaseRepository {
   // CRISIS PLAN
   // ===================
 
+  @override
   Future<List<Map<String, dynamic>>> getCrisisPlan() async {
     final db = await database;
     return await db.query('crisis_plan', orderBy: 'sort_order ASC');
   }
 
+  @override
   Future<int> insertCrisisPlanSection(Map<String, dynamic> data) async {
     final db = await database;
     return await db.insert('crisis_plan', data);
   }
 
+  @override
   Future<int> updateCrisisPlanSection(int id, Map<String, dynamic> data) async {
     final db = await database;
     return await db.update('crisis_plan', data, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<int> updateCrisisPlanSectionBySection(String section, Map<String, dynamic> data) async {
     final db = await database;
     return await db.update('crisis_plan', data, where: 'section = ?', whereArgs: [section]);
   }
 
+  @override
   Future<int> deleteCrisisPlanSection(int id) async {
     final db = await database;
     return await db.delete('crisis_plan', where: 'id = ?', whereArgs: [id]);
@@ -1177,16 +1194,19 @@ class DatabaseHelper implements DatabaseRepository {
   // EPISODE LOGS
   // ===================
 
+  @override
   Future<int> insertEpisode(Map<String, dynamic> data) async {
     final db = await database;
     return await db.insert('episode_logs', data);
   }
 
+  @override
   Future<int> updateEpisode(int id, Map<String, dynamic> data) async {
     final db = await database;
     return await db.update('episode_logs', data, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getEpisodes({String? type, int limit = 50}) async {
     final db = await database;
     if (type != null) {
@@ -1195,17 +1215,20 @@ class DatabaseHelper implements DatabaseRepository {
     return await db.query('episode_logs', orderBy: 'start_date DESC', limit: limit);
   }
 
+  @override
   Future<Map<String, dynamic>?> getActiveEpisode() async {
     final db = await database;
     final results = await db.query('episode_logs', where: 'end_date IS NULL', orderBy: 'start_date DESC', limit: 1);
     return results.isNotEmpty ? results.first : null;
   }
 
+  @override
   Future<int> endEpisode(int id, String endDate) async {
     final db = await database;
     return await db.update('episode_logs', {'end_date': endDate}, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<int> deleteEpisode(int id) async {
     final db = await database;
     return await db.delete('episode_logs', where: 'id = ?', whereArgs: [id]);
@@ -1215,16 +1238,19 @@ class DatabaseHelper implements DatabaseRepository {
   // MEDICATION LEVELS
   // ===================
 
+  @override
   Future<int> insertMedicationLevel(Map<String, dynamic> data) async {
     final db = await database;
     return await db.insert('medication_levels', data);
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getMedicationLevels(int medicationId) async {
     final db = await database;
     return await db.query('medication_levels', where: 'medication_id = ?', whereArgs: [medicationId], orderBy: 'date DESC');
   }
 
+  @override
   Future<Map<String, dynamic>?> getLatestMedicationLevel(int medicationId) async {
     final db = await database;
     final results = await db.query('medication_levels', where: 'medication_id = ?', whereArgs: [medicationId], orderBy: 'date DESC', limit: 1);

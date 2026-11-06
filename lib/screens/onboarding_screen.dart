@@ -92,8 +92,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (_index == _pages.length - 1) _finish();
-                    else _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                    if (_index == _pages.length - 1) {
+                      _finish();
+                    } else {
+                      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                    }
                   },
                   child: Text(_index == _pages.length - 1 ? 'Aan de slag' : 'Volgende'),
                 ),

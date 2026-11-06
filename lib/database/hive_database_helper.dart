@@ -406,6 +406,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   // SLEEP TRACKING
   // ===================
   
+  @override
   Future<int> insertSleepLog(String date, String bedTime, String wakeTime, int awakeMinutes) async {
     // Wakker-gelegen is maximaal 4 uur (240 min). Langere invoer (of
     // gerestorede data) wordt hier afgekapt tot de limiet.
@@ -444,6 +445,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     return id;
   }
 
+  @override
   Future<Map<String, dynamic>?> getSleepLog(String date) async {
     final logs = _dailyLogs.toMap().entries.where((entry) {
       return entry.value['date'] == date && entry.value['bed_time'] != null;
@@ -1533,6 +1535,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     }).toList();
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getAllLifeEvents() async {
     return _lifeEvents.toMap().entries.map((entry) {
       final map = Map<String, dynamic>.from(entry.value);
@@ -1565,6 +1568,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     return date.hashCode;
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getWeightLogs() async {
     return _weightLogs.toMap().entries.map((entry) {
       final map = Map<String, dynamic>.from(entry.value);
@@ -1589,11 +1593,13 @@ class HiveDatabaseHelper implements DatabaseRepository {
       ..sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
   }
 
+  @override
   Future<Map<String, dynamic>?> getLatestWeightLog() async {
     final logs = await getWeightLogs();
     return logs.isNotEmpty ? logs.first : null;
   }
 
+  @override
   Future<int> deleteWeightLog(int id) async {
     // Find entry by hashCode-based id and delete by key
     final entry = _weightLogs.toMap().entries.firstWhere(
@@ -1650,6 +1656,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     }
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getMedicalAppointments() async {
     return _medicalAppointments.toMap().entries.map((entry) {
       final map = Map<String, dynamic>.from(entry.value);
@@ -1672,6 +1679,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getUpcomingAppointments() async {
     final today = DateTime.now().toIso8601String().split('T')[0];
     return _medicalAppointments.toMap().entries.where((entry) {
@@ -1691,6 +1699,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       ..sort((a, b) => (a['appointment_date'] as String).compareTo(b['appointment_date'] as String));
   }
 
+  @override
   Future<int> updateMedicalAppointment(int id, Map<String, dynamic> data) async {
     // Ensure all values are properly typed for Hive (zie insert: reminder_days als int).
     final cleanData = <String, dynamic>{
@@ -1709,6 +1718,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     return 1;
   }
 
+  @override
   Future<int> deleteMedicalAppointment(int id) async {
     await _medicalAppointments.delete(id);
     return 1;
@@ -1877,8 +1887,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
           orElse: () => <String, dynamic>{},
         );
         final category = item['category']?.toString() ?? '';
-        if (category == 'manie') manieCount++;
-        else if (category == 'depressie') depressieCount++;
+        if (category == 'manie') {
+          manieCount++;
+        } else if (category == 'depressie') depressieCount++;
         else if (category == 'gemengd') gemengdCount++;
       }
     }

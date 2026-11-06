@@ -4,7 +4,7 @@ import '../screens/login_screen.dart';
 import '../screens/onboarding_screen.dart';
 
 class SplashScreen extends StatelessWidget {
-  SplashScreen({super.key});
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

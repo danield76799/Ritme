@@ -182,8 +182,11 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
           pw.SizedBox(height: 8),
         ],
       );
-      if (inCorrelationBox) correlationBoxContent.add(contentWidget);
-      else widgets.add(contentWidget);
+      if (inCorrelationBox) {
+        correlationBoxContent.add(contentWidget);
+      } else {
+        widgets.add(contentWidget);
+      }
       continue;
     } else if (kaal.startsWith('- ') || kaal.startsWith('• ')) {
       contentWidget = pw.Padding(
@@ -203,8 +206,11 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
       );
     }
 
-    if (inCorrelationBox) correlationBoxContent.add(contentWidget);
-    else widgets.add(contentWidget);
+    if (inCorrelationBox) {
+      correlationBoxContent.add(contentWidget);
+    } else {
+      widgets.add(contentWidget);
+    }
     i++;
   }
 

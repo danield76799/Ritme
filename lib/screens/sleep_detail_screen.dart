@@ -65,20 +65,23 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
           final rawAwake = log['awake_minutes'];
           int awakeMinutes = 0;
           if (rawAwake != null) {
-            if (rawAwake is num) awakeMinutes = rawAwake.toInt();
-            else if (rawAwake is String) awakeMinutes = int.tryParse(rawAwake) ?? 0;
+            if (rawAwake is num) {
+              awakeMinutes = rawAwake.toInt();
+            } else if (rawAwake is String) awakeMinutes = int.tryParse(rawAwake) ?? 0;
           }
 
           // EERST kijken naar sleep_hours (van slaap tracking - al correct berekend)
           if (rawSleep != null) {
-            if (rawSleep is num) sleep = rawSleep.toDouble();
-            else if (rawSleep is String) sleep = double.tryParse(rawSleep);
+            if (rawSleep is num) {
+              sleep = rawSleep.toDouble();
+            } else if (rawSleep is String) sleep = double.tryParse(rawSleep);
           }
           // Dan kijken naar uren_slaap (van mood/quick check-in - GEEN awake_minutes aftrekken)
           // uren_slaap is altijd de netto slaapduur zoals de user deze heeft ingevoerd
           if (sleep == null && rawUren != null) {
-            if (rawUren is num) sleep = rawUren.toDouble();
-            else if (rawUren is String) sleep = double.tryParse(rawUren);
+            if (rawUren is num) {
+              sleep = rawUren.toDouble();
+            } else if (rawUren is String) sleep = double.tryParse(rawUren);
           }
 
           // Alleen toevoegen als we geldige sleep data hebben
@@ -384,7 +387,7 @@ class _SleepDetailScreenState extends State<SleepDetailScreen> {
             ),
           ),
           Text(
-            '${_formatHours(sleep)}',
+            _formatHours(sleep),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

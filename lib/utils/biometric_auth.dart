@@ -51,7 +51,7 @@ class BiometricAuth {
       final bool didAuthenticate = await _localAuth.authenticate(
         localizedReason: 'Authenticate to access Ritme',
         authMessages: const [
-          const AndroidAuthMessages(
+          AndroidAuthMessages(
             signInTitle: 'Biometric Authentication',
             cancelButton: 'Cancel',
             biometricHint: 'Verify your identity',
@@ -63,7 +63,7 @@ class BiometricAuth {
             goToSettingsButton: 'Go to Settings',
             goToSettingsDescription: 'Please set up biometric authentication in your device settings',
           ),
-          const IOSAuthMessages(
+          IOSAuthMessages(
             cancelButton: 'Cancel',
             goToSettingsButton: 'Go to Settings',
             goToSettingsDescription: 'Please set up biometric authentication in your device settings',

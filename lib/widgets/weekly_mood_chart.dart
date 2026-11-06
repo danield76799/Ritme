@@ -6,7 +6,7 @@ import '../generated/l10n/app_localizations.dart';
 class WeeklyMoodChart extends StatelessWidget {
   final List<Map<String, dynamic>> logs;
   
-  WeeklyMoodChart({super.key, required this.logs});
+  const WeeklyMoodChart({super.key, required this.logs});
 
   @override
   Widget build(BuildContext context) {

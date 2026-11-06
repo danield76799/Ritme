@@ -162,14 +162,14 @@ class RitmeApp extends StatefulWidget {
 
   /// Globale toegang tot de actieve app-state zodat schermen de thema-modus
   /// kunnen wijzigen (bijv. vanuit Instellingen).
-  static _RitmeAppState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_RitmeAppState>();
+  static RitmeAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<RitmeAppState>();
 
   @override
-  State<RitmeApp> createState() => _RitmeAppState();
+  RitmeAppState createState() => RitmeAppState();
 }
 
-class _RitmeAppState extends State<RitmeApp> {
+class RitmeAppState extends State<RitmeApp> {
   ThemeMode themeMode = ThemeMode.system;
 
   @override

@@ -9,8 +9,10 @@ import '../utils/logger.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class StatistiekenScherm extends StatefulWidget {
+  const StatistiekenScherm({super.key});
+
   @override
-  _StatistiekenSchermState createState() => _StatistiekenSchermState();
+  State<StatistiekenScherm> createState() => _StatistiekenSchermState();
 }
 
 class _StatistiekenSchermState extends State<StatistiekenScherm> {
@@ -214,10 +216,14 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                   ..._logs.where((l) => l['stemming_hoog'] != null).take(14).map((log) {
                     final raw = log['stemming_hoog'];
                     double val = 0;
-                    if (raw is num) val = raw.toDouble();
-                    else if (raw is String) val = double.tryParse(raw) ?? 0;
-                    if (val > 10) val = ((val / 100) * 10 - 5).clamp(-5.0, 5.0);
-                    else val = val.clamp(-5.0, 5.0);
+                    if (raw is num) {
+                      val = raw.toDouble();
+                    } else if (raw is String) val = double.tryParse(raw) ?? 0;
+                    if (val > 10) {
+                      val = ((val / 100) * 10 - 5).clamp(-5.0, 5.0);
+                    } else {
+                      val = val.clamp(-5.0, 5.0);
+                    }
                     return pw.TableRow(
                       children: [
                         _buildTableCell(log['date']?.toString() ?? '-'),
@@ -250,13 +256,15 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
                     double? sleepVal;
                     if (log['sleep_hours'] != null) {
                       final raw = log['sleep_hours'];
-                      if (raw is num) sleepVal = raw.toDouble();
-                      else if (raw is String) sleepVal = double.tryParse(raw);
+                      if (raw is num) {
+                        sleepVal = raw.toDouble();
+                      } else if (raw is String) sleepVal = double.tryParse(raw);
                     }
                     if (sleepVal == null && log['uren_slaap'] != null) {
                       final raw = log['uren_slaap'];
-                      if (raw is num) sleepVal = raw.toDouble();
-                      else if (raw is String) sleepVal = double.tryParse(raw);
+                      if (raw is num) {
+                        sleepVal = raw.toDouble();
+                      } else if (raw is String) sleepVal = double.tryParse(raw);
                     }
                     return pw.TableRow(
                       children: [
@@ -492,12 +500,14 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       
       if (_logs[i]['sleep_hours'] != null) {
         dynamic rawSleep = _logs[i]['sleep_hours'];
-        if (rawSleep is num) slaapUren = rawSleep.toDouble();
-        else if (rawSleep is String) slaapUren = double.tryParse(rawSleep);
+        if (rawSleep is num) {
+          slaapUren = rawSleep.toDouble();
+        } else if (rawSleep is String) slaapUren = double.tryParse(rawSleep);
       } else if (_logs[i]['uren_slaap'] != null) {
         dynamic rawSlaap = _logs[i]['uren_slaap'];
-        if (rawSlaap is num) slaapUren = rawSlaap.toDouble();
-        else if (rawSlaap is String) slaapUren = double.tryParse(rawSlaap);
+        if (rawSlaap is num) {
+          slaapUren = rawSlaap.toDouble();
+        } else if (rawSlaap is String) slaapUren = double.tryParse(rawSlaap);
       }
       
       if (slaapUren != null && slaapUren > 0) {

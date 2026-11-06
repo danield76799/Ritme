@@ -9,20 +9,20 @@ class DatumNavigator extends StatelessWidget {
   final DateTime? maximaleDatum;
 
   const DatumNavigator({
-    Key? key,
+    super.key,
     required this.geselecteerdeDatum,
     required this.onDatumVeranderd,
     this.maximaleDatum,
-  }) : super(key: key);
+  });
 
   String _formatteerDatum(BuildContext context, DateTime datum) {
     final vandaag = DateTime.now();
     final gisteren = vandaag.subtract(const Duration(days: 1));
     
     if (datum.year == vandaag.year && datum.month == vandaag.month && datum.day == vandaag.day) {
-      return AppLocalizations.of(context).vandaag + ', ${DateFormat('d MMMM', Localizations.localeOf(context).toString().split('_').first).format(datum)}';
+      return '${AppLocalizations.of(context).vandaag}, ${DateFormat('d MMMM', Localizations.localeOf(context).toString().split('_').first).format(datum)}';
     } else if (datum.year == gisteren.year && datum.month == gisteren.month && datum.day == gisteren.day) {
-      return AppLocalizations.of(context).gisteren + ', ${DateFormat('d MMMM', Localizations.localeOf(context).toString().split('_').first).format(datum)}';
+      return '${AppLocalizations.of(context).gisteren}, ${DateFormat('d MMMM', Localizations.localeOf(context).toString().split('_').first).format(datum)}';
     } else {
       return DateFormat('EEEE d MMMM', Localizations.localeOf(context).toString().split('_').first).format(datum);
     }

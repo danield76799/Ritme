@@ -16,7 +16,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 
-String _code_bestand(String pad) {
+String _codeBestand(String pad) {
   final zonderBlok = File(pad)
       .readAsStringSync()
       .replaceAll(RegExp(r'/\\*[\\s\\S]*?\\*/'), '');
@@ -73,7 +73,7 @@ void main() {
 
   group('Planningsfouten worden zichtbaar', () {
     test('rescheduleCheckinReminders geeft de fout terug', () {
-      final helper = _code_bestand('lib/services/notification_helper.dart');
+      final helper = _codeBestand('lib/services/notification_helper.dart');
       expect(helper.contains('Future<String?> rescheduleCheckinReminders()'),
           isTrue,
           reason: 'de Herplan-knop moet de echte fout kunnen tonen');
@@ -81,7 +81,7 @@ void main() {
     });
 
     test('één falende herinnering blokkeert de ander niet', () {
-      final helper = _code_bestand('lib/services/notification_helper.dart');
+      final helper = _codeBestand('lib/services/notification_helper.dart');
       // Beide herinneringen hebben een eigen try/catch.
       expect(
           RegExp('Ochtendherinnering plannen mislukt')
@@ -93,10 +93,10 @@ void main() {
 
     test('herplannen gebeurt bij de opstart, niet via een knop', () {
       // De Herplan-knop is weg (09-2026); de borging zit in main + WorkManager.
-      final main = _code_bestand('lib/main.dart');
+      final main = _codeBestand('lib/main.dart');
       expect(main.contains('rescheduleAllMedicationReminders()'), isTrue,
           reason: 'elke opstart plant opnieuw');
-      final work = _code_bestand('lib/services/work_manager_service.dart');
+      final work = _codeBestand('lib/services/work_manager_service.dart');
       expect(work.contains('registerPeriodicTask'), isTrue,
           reason: 'elke 12u opnieuw, ook zonder openen');
     });

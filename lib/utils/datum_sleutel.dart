@@ -2,6 +2,7 @@
 ///
 /// Apart gehouden van het dashboard zodat de regel getest kan worden: het
 /// doorgeven van de juiste dag is precies het ding dat ooit misging.
+library;
 
 /// De dag als 'j-m-d' — hetzelfde formaat als de databasesleutel.
 String datumSleutel(DateTime d) =>

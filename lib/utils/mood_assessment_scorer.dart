@@ -20,7 +20,7 @@ class MoodAssessmentScorer {
   static const _w4 = 2.0; // slaapbehoefte
   static const _w5 = 1.0; // gebeurtenis
 
-  static double _sumWeights = _w1 + _w2 + _w3 + _w4 + _w5; // 9.0
+  static final double _sumWeights = _w1 + _w2 + _w3 + _w4 + _w5; // 9.0
 
   /// Map q2 (0..100 slider, 100=manisch, 0=depressief) naar de Ritme-schaal.
   /// Zachtere variant: de slider meet een *globaal* energiegevoel, niet een

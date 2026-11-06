@@ -381,11 +381,11 @@ class _DagboekScreenState extends State<DagboekScreen> {
 
   String _scoreLabel(int score) {
     switch (score) {
-      case 1: return '★☆☆☆☆ ' + AppLocalizations.of(context).zeerSlecht;
-      case 2: return '★★☆☆☆ ' + AppLocalizations.of(context).slecht;
-      case 3: return '★★★☆☆ ' + AppLocalizations.of(context).neutraal;
-      case 4: return '★★★★☆ ' + AppLocalizations.of(context).goed;
-      case 5: return '★★★★★ ' + AppLocalizations.of(context).zeerGoed;
+      case 1: return '★☆☆☆☆ ${AppLocalizations.of(context).zeerSlecht}';
+      case 2: return '★★☆☆☆ ${AppLocalizations.of(context).slecht}';
+      case 3: return '★★★☆☆ ${AppLocalizations.of(context).neutraal}';
+      case 4: return '★★★★☆ ${AppLocalizations.of(context).goed}';
+      case 5: return '★★★★★ ${AppLocalizations.of(context).zeerGoed}';
       default: return '';
     }
   }

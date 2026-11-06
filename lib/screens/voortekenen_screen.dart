@@ -146,10 +146,10 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
       if (mounted) {
         String message = 'Voortekenen opgeslagen ✓';
         if (manieCount != null && manieCount > 3) {
-          message += '\n⚠️ Let op: ${manieCount} manie-voortekenen vandaag';
+          message += '\n⚠️ Let op: $manieCount manie-voortekenen vandaag';
         }
         if (depressieCount != null && depressieCount > 3) {
-          message += '\n⚠️ Let op: ${depressieCount} depressie-voortekenen vandaag';
+          message += '\n⚠️ Let op: $depressieCount depressie-voortekenen vandaag';
         }
 
         ScaffoldMessenger.of(context).showSnackBar(

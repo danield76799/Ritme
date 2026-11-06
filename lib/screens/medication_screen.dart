@@ -84,8 +84,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
           (s) {
             dynamic rawSchedId = s['medication_id'];
             int? schedId;
-            if (rawSchedId is int) schedId = rawSchedId;
-            else if (rawSchedId is String) schedId = int.tryParse(rawSchedId);
+            if (rawSchedId is int) {
+              schedId = rawSchedId;
+            } else if (rawSchedId is String) schedId = int.tryParse(rawSchedId);
             return schedId != null && schedId == configId;
           },
           orElse: () => {},
@@ -783,7 +784,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
   Widget _buildCompactMedCard(Map<String, dynamic> config) {
     dynamic rawId = config['id'];
     int? configId;
-    if (rawId is int) configId = rawId; else if (rawId is String) configId = int.tryParse(rawId);
+    if (rawId is int) {
+      configId = rawId;
+    } else if (rawId is String) configId = int.tryParse(rawId);
     if (configId == null) return SizedBox.shrink();
     int count = _intakesForDay[configId] ?? 0;
     String name = config['naam']?.toString() ?? AppLocalizations.of(context).onbekend;

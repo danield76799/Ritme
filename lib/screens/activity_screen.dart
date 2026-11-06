@@ -586,7 +586,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               padding: const EdgeInsets.only(bottom: 8),
                               child: _buildCompactActivityCard(entry.key),
                             );
-                          }).toList(),
+                          }),
                         ],
                       ),
           ),
