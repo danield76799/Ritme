@@ -493,7 +493,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     AppLocalizations.of(context).backupHerstellen,
           () async {
             try {
-              final result = await FilePicker.platform.pickFiles(
+              final result = await FilePicker.pickFiles(
                 type: FileType.custom,
                 allowedExtensions: ['json'],
               );
