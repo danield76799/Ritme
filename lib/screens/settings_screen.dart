@@ -649,6 +649,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             laatsteTekst(),
             style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
           ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () async {
+              if (!mounted) return;
+              try {
+                final made = await BackupService.maybeAutoBackup(now: DateTime.now().subtract(const Duration(days: 10)));
+                if (!mounted) return;
+                if (made) {
+                  _showSuccess(AppLocalizations.of(context).backupSuccesvolHersteld);
+                } else {
+                  _showError('Test: Geen backup gemaakt (Interval niet verstreken)');
+                }
+              } catch (e) {
+                if (!mounted) return;
+                _showError('Test fout: $e');
+              }
+              if (mounted) _loadData();
+            },
+            child: const Text('Test automatische backup'),
+          ),
         ],
       ),
     );
