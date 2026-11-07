@@ -1080,8 +1080,11 @@ animations
 cross_file
 flutter_plugin_android_lifecycle
 google_fonts
+local_auth
 local_auth_android
+local_auth_darwin
 local_auth_platform_interface
+local_auth_windows
 path_provider
 path_provider_android
 path_provider_foundation
@@ -5928,9 +5931,6 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 flutter_lints
-local_auth
-local_auth_darwin
-local_auth_windows
 path_provider_windows
 plugin_platform_interface
 shared_preferences_linux
