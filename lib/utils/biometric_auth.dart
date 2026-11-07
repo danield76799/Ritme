@@ -2,8 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class BiometricAuth {
@@ -50,31 +48,9 @@ class BiometricAuth {
 
       final bool didAuthenticate = await _localAuth.authenticate(
         localizedReason: 'Authenticate to access Ritme',
-        authMessages: const [
-          AndroidAuthMessages(
-            signInTitle: 'Biometric Authentication',
-            cancelButton: 'Cancel',
-            biometricHint: 'Verify your identity',
-            biometricNotRecognized: 'Not recognized, try again',
-            biometricRequiredTitle: 'Biometric authentication required',
-            biometricSuccess: 'Authentication successful',
-            deviceCredentialsRequiredTitle: 'Device credentials required',
-            deviceCredentialsSetupDescription: 'Please set up device credentials',
-            goToSettingsButton: 'Go to Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
-          ),
-          IOSAuthMessages(
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Go to Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
-            lockOut: 'Please reenable biometric authentication',
-          ),
-        ],
-        options: const AuthenticationOptions(
-          useErrorDialogs: true,
-          stickyAuth: true,
-          biometricOnly: false,
-        ),
+        biometricOnly: false,
+        sensitiveTransaction: false,
+        persistAcrossBackgrounding: false,
       );
 
       return didAuthenticate;

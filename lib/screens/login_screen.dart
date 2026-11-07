@@ -2,8 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../service_locator.dart';
@@ -105,31 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final bool didAuthenticate = await _localAuth.authenticate(
         localizedReason: AppLocalizations.of(context).authenticateerOmRitme,
-        authMessages: [
-          AndroidAuthMessages(
-            signInTitle: AppLocalizations.of(context).biometrischeLogin,
-            cancelButton: AppLocalizations.of(context).annuleer,
-            biometricHint: AppLocalizations.of(context).verifieerJeIdentiteit,
-            biometricNotRecognized: AppLocalizations.of(context).nietHerkend,
-            biometricRequiredTitle: AppLocalizations.of(context).biometrischeAuthVereist,
-            biometricSuccess: AppLocalizations.of(context).authenticatieGeslaagd,
-            deviceCredentialsRequiredTitle: AppLocalizations.of(context).apparaatcodeVereist,
-            deviceCredentialsSetupDescription: AppLocalizations.of(context).stelSchermvergrendelingIn,
-            goToSettingsButton: AppLocalizations.of(context).naarInstellingen,
-            goToSettingsDescription: AppLocalizations.of(context).stelBiometrieInViaApparaat,
-          ),
-          IOSAuthMessages(
-            cancelButton: AppLocalizations.of(context).annuleer,
-            goToSettingsButton: AppLocalizations.of(context).naarInstellingen,
-            goToSettingsDescription: AppLocalizations.of(context).stelFaceIdTouchIdIn,
-            lockOut: AppLocalizations.of(context).schakelBiometrieOpnieuwIn,
-          ),
-        ],
-        options: const AuthenticationOptions(
-          useErrorDialogs: true,
-          stickyAuth: true,
-          biometricOnly: false,
-        ),
+        biometricOnly: false,
+        sensitiveTransaction: false,
+        persistAcrossBackgrounding: true,
       );
 
       if (didAuthenticate && mounted) {
