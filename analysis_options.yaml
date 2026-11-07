@@ -25,7 +25,7 @@ linter:
     # Bekende follow-up: 31 plekken gebruiken context na een await zonder
     # mounted-check. Dat is een echte bugklasse, maar vereist per plek een
     # zorgvuldige guard; nu niet blind aanzetten.
-    use_build_context_synchronously: false
+    use_build_context_synchronously: true
 
     # Wel direct aan: echte fouten en veelvoorkomende valkuilen.
     cancel_subscriptions: true

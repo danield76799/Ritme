@@ -227,8 +227,8 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                   onPressed: () async {
                     await db.updateCrisisPlanSectionBySection(
                         sectionKey, {'content': controller.text});
-                    _loadData();
-                    if (mounted) Navigator.pop(ctx);
+                    if (mounted) _loadData();
+                    if (ctx.mounted) Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
@@ -620,8 +620,8 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                           '${titleController.text.trim()}\n\n${contentController.text.trim()}',
                       'sort_order': 999,
                     });
-                    _loadData();
-                    if (mounted) Navigator.pop(ctx);
+                    if (mounted) _loadData();
+                    if (ctx.mounted) Navigator.pop(ctx);
                   },
                   child: Text(l10n.toevoegen,
                       style: const TextStyle(fontWeight: FontWeight.bold)),

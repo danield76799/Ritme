@@ -227,6 +227,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
     try {
       final now = DateTime.now();
       final dagboeken = await _dagboekenLaatste30Dagen();
+      if (!mounted) return;
       if (dagboeken.isEmpty) return;
 
       final buffer = StringBuffer();

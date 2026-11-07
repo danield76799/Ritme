@@ -252,6 +252,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       // Wijkt de per-dag dosering af van de standaarddosis, dan vragen of de
       // standaarddosis mee aangepast moet worden. Zo blijft de config in sync
       // met de werkelijke (structurele) dosisverandering.
+      if (!mounted) return;
       final l10n = AppLocalizations.of(context);
       if (standaard.isNotEmpty && standaard != confirmed) {
         final updateStandaard = await showDialog<bool>(
@@ -409,9 +410,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         'eenheid': unit,
                         'reminder_enabled': reminderEnabled ? 1 : 0,
                       });
+                      if (!mounted) return;
                       _loadData();
                     }
-                    Navigator.pop(context);
+                    if (mounted && context.mounted) Navigator.pop(context);
                   },
                   child: Text(AppLocalizations.of(context).opslaan),
                 ),

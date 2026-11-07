@@ -149,6 +149,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                       'episode_type': selectedType,
                       'severity': 3,
                     });
+                    if (!ctx.mounted) return;
                     Navigator.pop(ctx);
                     _loadData();
                   },

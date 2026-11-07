@@ -43,7 +43,8 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
         final checkDate = now.subtract(Duration(days: i));
         final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
         final dayActivities = await db.getSrmActivities(checkDateStr);
-        
+        if (!context.mounted) return;
+
         if (dayActivities.isNotEmpty) {
           List<Map<String, dynamic>> acts = [];
           for (var activity in dayActivities) {

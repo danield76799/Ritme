@@ -212,6 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       final settings = await db.getSettings();
+      if (!mounted) return;
       final appState = RitmeApp.of(context);
       setState(() {
         _settings = settings;

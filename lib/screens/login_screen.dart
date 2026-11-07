@@ -136,6 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Zorg dat er altijd een PIN bestaat voordat we verdergaan. Anders
         // zou biometrie de PIN volledig kunnen omzeilen.
         final pinSet = await db.hasPinSet();
+        if (!mounted) return didAuthenticate;
         if (!pinSet) {
           setState(() => _isFirstTime = true);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -146,6 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
           );
           return didAuthenticate;
         }
+        if (!mounted) return didAuthenticate;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -155,6 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // gebruiker weet dat hij via PIN kan inloggen. Alleen tonen als er
         // al een PIN bestaat (anders is dit een eerste-setup flow).
         final pinExists = await db.hasPinSet();
+        if (!mounted) return didAuthenticate;
         if (pinExists) {
           setState(() {
             _errorMessage = AppLocalizations.of(context).biometrieGeannuleerdPinInvoeren;
@@ -291,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 try {
                   await db.updateBiometricEnabled(true);
                 } catch (_) {}
-                if (mounted) {
+                if (mounted && context.mounted) {
                   setState(() => _biometricEnabled = true);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -336,7 +339,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   try {
                     await db.updateBiometricEnabled(true);
                   } catch (_) {}
-                  if (mounted) {
+                  if (mounted && context.mounted) {
                     Navigator.pop(context);
                     _showNotificationDialog();
                   }
@@ -376,7 +379,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () async {
               // Request notification permission
               await Permission.notification.request();
-              if (mounted) {
+              if (mounted && context.mounted) {
                 Navigator.pop(context);
                 Navigator.pushReplacement(
                   context,

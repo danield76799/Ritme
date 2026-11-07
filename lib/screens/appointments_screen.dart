@@ -75,7 +75,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           if (mounted) _toonHerinneringUitslag(fout, result['appointment_date']?.toString() ?? '');
         }
 
-        _loadAppointments();
+        if (mounted) _loadAppointments();
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add appointment', error: e, stackTrace: stackTrace);
@@ -130,12 +130,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           if (appointmentId > 0) {
             debugPrint('Calling deleteMedicalAppointment with id: $appointmentId');
             await db.deleteMedicalAppointment(appointmentId);
-            debugPrint('Delete completed, reloading appointments');
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(AppLocalizations.of(context).afspraakVerwijderd), backgroundColor: Colors.green),
             );
             // Reload appointments after a small delay to ensure dialog is closed
             await Future.delayed(const Duration(milliseconds: 100));
+            if (!mounted) return;
             await _loadAppointments();
             debugPrint('Reload completed');
           } else {
@@ -143,9 +144,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           }
         } catch (e) {
           debugPrint('Delete error: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).konAfspraakVerwijderen(e)), backgroundColor: Colors.red),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(AppLocalizations.of(context).konAfspraakVerwijderen(e)), backgroundColor: Colors.red),
+            );
+          }
         }
         return;
       }
@@ -175,11 +178,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           if (mounted) _toonHerinneringUitslag(fout, result['appointment_date']?.toString() ?? '');
         }
 
-        _loadAppointments();
+        if (mounted) _loadAppointments();
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to edit appointment', error: e, stackTrace: stackTrace);
-      _showError(AppLocalizations.of(context).konAfspraakNietBewerken);
+      if (mounted) _showError(AppLocalizations.of(context).konAfspraakNietBewerken);
     }
   }
 

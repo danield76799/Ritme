@@ -280,6 +280,7 @@ class _RapportScreenState extends State<RapportScreen> {
       final file = File('${dir.path}/ritme_rapport_${DateTime.now().millisecondsSinceEpoch}.md');
       await file.writeAsString(_reportText!);
 
+      if (!mounted) return;
       await SharePlus.instance.share(
         ShareParams(
           text: _reportText,
@@ -308,6 +309,7 @@ class _RapportScreenState extends State<RapportScreen> {
       final file = File('${dir.path}/ritme_export_${DateTime.now().millisecondsSinceEpoch}.csv');
       await file.writeAsString(csv);
 
+      if (!mounted) return;
       await SharePlus.instance.share(
         ShareParams(
           text: csv,
