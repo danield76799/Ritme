@@ -134,7 +134,7 @@ class NotificationHelper {
       );
 
       final initialized = await _notifications.initialize(
-        settings: initSettings,
+        initSettings,
         onDidReceiveNotificationResponse: _onNotificationResponse,
       );
       if (initialized == null || !initialized) {
@@ -379,12 +379,14 @@ class NotificationHelper {
       );
 
       await _notifications.zonedSchedule(
-        id: 0,
-        title: title,
-        body: body,
-        scheduledDate: scheduledDate,
-        notificationDetails: details,
+        0,
+        title,
+        body,
+        scheduledDate,
+        details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         payload: payload,
         matchDateTimeComponents: DateTimeComponents.time,
       );
@@ -426,10 +428,10 @@ class NotificationHelper {
       );
 
       await _notifications.show(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
-        title: title,
-        body: body,
-        notificationDetails: details,
+        DateTime.now().millisecondsSinceEpoch % 100000,
+        title,
+        body,
+        details,
         payload: payload,
       );
 
@@ -485,12 +487,13 @@ class NotificationHelper {
       final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
       await _notifications.zonedSchedule(
-        id: 99999,
-        title: '🧪 Test Notificatie',
-        body: 'Dit is je test notificatie om ${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}',
-        scheduledDate: scheduledTime,
-        notificationDetails: details,
+        99999,
+        '🧪 Test Notificatie',
+        'Dit is je test notificatie om ${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}',
+        scheduledTime,
+        details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
       debugPrint('Test notification scheduled for $scheduledTime');
     } catch (e) {
@@ -548,7 +551,7 @@ class NotificationHelper {
       final notificationId = (id % 90000) + 10000;
 
       // Cancel any prior version of this notification first
-      await _notifications.cancel(id: notificationId);
+      await _notifications.cancel(notificationId);
 
       // Check exact alarm permission, but ALWAYS schedule — fallback to inexact
       final androidImpl = _notifications.resolvePlatformSpecificImplementation<
@@ -563,14 +566,16 @@ class NotificationHelper {
         }
 
         await _notifications.zonedSchedule(
-          id: notificationId,
-          title: '💊 $medicationName',
-          body: NotifStrings.timeToTakeMedication(daysStr),
-          scheduledDate: scheduledDate,
-          notificationDetails: details,
+          notificationId,
+          '💊 $medicationName',
+          NotifStrings.timeToTakeMedication(daysStr),
+          scheduledDate,
+          details,
           androidScheduleMode: canScheduleExact
               ? AndroidScheduleMode.exactAllowWhileIdle
               : AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
           payload: 'medication:$id',
           matchDateTimeComponents: DateTimeComponents.time,
         );
@@ -581,19 +586,21 @@ class NotificationHelper {
         // tz.TZDateTime: weekday: Monday=1, Sunday=7 (same as ISO)
         for (final dayOfWeek in days) {
           final dayNotificationId = notificationId * 10 + dayOfWeek;
-          await _notifications.cancel(id: dayNotificationId);
+          await _notifications.cancel(dayNotificationId);
 
           var scheduledDate = _nextWeekday(now, dayOfWeek, hour, minute);
 
           await _notifications.zonedSchedule(
-            id: dayNotificationId,
-            title: '💊 $medicationName',
-            body: NotifStrings.timeToTakeMedication(daysStr),
-            scheduledDate: scheduledDate,
-            notificationDetails: details,
+            dayNotificationId,
+            '💊 $medicationName',
+            NotifStrings.timeToTakeMedication(daysStr),
+            scheduledDate,
+            details,
             androidScheduleMode: canScheduleExact
                 ? AndroidScheduleMode.exactAllowWhileIdle
                 : AndroidScheduleMode.inexactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
             payload: 'medication:$id',
             matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
           );
@@ -622,10 +629,10 @@ class NotificationHelper {
     if (kIsWeb) return;
     try {
       final notificationId = (id % 90000) + 10000;
-      await _notifications.cancel(id: notificationId);
+      await _notifications.cancel(notificationId);
       // Also cancel per-day-of-week variants (id*10 + dayOfWeek)
       for (var dayOfWeek = 1; dayOfWeek <= 7; dayOfWeek++) {
-        await _notifications.cancel(id: notificationId * 10 + dayOfWeek);
+        await _notifications.cancel(notificationId * 10 + dayOfWeek);
       }
       AppLogger.info('Medication reminder cancelled: $id (notificationId=$notificationId)');
     } catch (e) {
@@ -737,16 +744,17 @@ class NotificationHelper {
         debugPrint('Afspraak exact-alarm check mislukt, val terug op inexact: $e');
       }
 
-      await _notifications.cancel(id: notificationId);
+      await _notifications.cancel(notificationId);
       await _notifications.zonedSchedule(
-        id: notificationId,
-        title: NotifStrings.appointmentReminder,
-        body: NotifStrings.appointmentBody(title, doctorName, reminderDays),
-        scheduledDate: reminderDateTime,
-        notificationDetails: details,
+        notificationId,
+        NotifStrings.appointmentReminder,
+        NotifStrings.appointmentBody(title, doctorName, reminderDays),
+        reminderDateTime,
+        details,
         androidScheduleMode: canScheduleExact
             ? AndroidScheduleMode.exactAllowWhileIdle
             : AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'appointment:$appointmentId',
       );
       debugPrint('Afspraak herinnering gepland voor $title op $reminderDateTime');
@@ -798,7 +806,7 @@ class NotificationHelper {
     if (kIsWeb) return;
     try {
       final notificationId = (appointmentId % 9000) + 1000;
-      await _notifications.cancel(id: notificationId);
+      await _notifications.cancel(notificationId);
       debugPrint('Afspraak herinnering geannuleerd');
     } catch (e) {
       debugPrint('Afspraak herinnering annulering error: $e');
@@ -923,7 +931,7 @@ class NotificationHelper {
         }
       } else {
         try {
-          await _notifications.cancel(id: _ochtendNotifId);
+          await _notifications.cancel(_ochtendNotifId);
         } catch (e) {
           eersteFout ??= e.toString();
           AppLogger.error('Ochtendherinnering annuleren mislukt', error: e);
@@ -943,7 +951,7 @@ class NotificationHelper {
         }
       } else {
         try {
-          await _notifications.cancel(id: _avondNotifId);
+          await _notifications.cancel(_avondNotifId);
         } catch (e) {
           eersteFout ??= e.toString();
           AppLogger.error('Avondherinnering annuleren mislukt', error: e);
@@ -1031,16 +1039,18 @@ class NotificationHelper {
           error: e);
     }
 
-    await _notifications.cancel(id: id);
+    await _notifications.cancel(id);
     await _notifications.zonedSchedule(
-      id: id,
-      title: NotifStrings.checkinTitle(ochtend: ochtend, gisterenGemist: gisterenGemist),
-      body: NotifStrings.checkinBody(ochtend: ochtend, gisterenGemist: gisterenGemist),
-      scheduledDate: scheduled,
-      notificationDetails: NotificationDetails(android: androidDetails, iOS: iosDetails),
+      id,
+      NotifStrings.checkinTitle(ochtend: ochtend, gisterenGemist: gisterenGemist),
+      NotifStrings.checkinBody(ochtend: ochtend, gisterenGemist: gisterenGemist),
+      scheduled,
+      NotificationDetails(android: androidDetails, iOS: iosDetails),
       androidScheduleMode: canScheduleExact
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: ochtend ? 'checkin:ochtend' : 'checkin:avond',
     );
@@ -1098,11 +1108,11 @@ class NotificationHelper {
           
           // Reschedule a one-time notification for 15 mins from now
           await _notifications.zonedSchedule(
-            id: (medicationId % 90000) + 10000,
-            title: NotifStrings.medicationReminderShort,
-            body: NotifStrings.timeToTakeMedicationSnoozed(),
-            scheduledDate: tz.TZDateTime.now(tz.local).add(const Duration(minutes: 15)),
-            notificationDetails: NotificationDetails(
+            (medicationId % 90000) + 10000,
+            NotifStrings.medicationReminderShort,
+            NotifStrings.timeToTakeMedicationSnoozed(),
+            tz.TZDateTime.now(tz.local).add(const Duration(minutes: 15)),
+            NotificationDetails(
               android: AndroidNotificationDetails(
                 'medication_reminders',
                 NotifStrings.medicationReminders,
@@ -1111,6 +1121,7 @@ class NotificationHelper {
               ),
             ),
             androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
             payload: 'medication:$medicationId',
           );
         }
