@@ -836,5 +836,6 @@
         "type": "int"
       }
     }
-  }
+  },
+  "veertienDagen": "14 dagen"
 }

@@ -3,105 +3,52 @@ import 'package:fl_chart/fl_chart.dart';
 import '../theme/app_theme.dart';
 import '../generated/l10n/app_localizations.dart';
 
-class WeeklyMoodChart extends StatelessWidget {
+/// Stemming-trend met periodekiezer (7 of 14 dagen).
+///
+/// De kiezer staat in de kaartkop zodat één tik de grafiek omzet zonder
+/// dat het dashboard opnieuw hoeft te laden: alle data komt al binnen als
+/// 14-dagen-venster uit [_loadData] van het dashboard.
+class WeeklyMoodChart extends StatefulWidget {
   final List<Map<String, dynamic>> logs;
-  
+
   const WeeklyMoodChart({super.key, required this.logs});
 
   @override
+  State<WeeklyMoodChart> createState() => _WeeklyMoodChartState();
+}
+
+class _WeeklyMoodChartState extends State<WeeklyMoodChart> {
+  /// Gekozen periode in unieke dagen. Standaard 7, want dat is wat het
+  /// dashboard tot nu toe toonde — 14 dagen is een bewuste tik extra.
+  int _selectedDays = 7;
+
+  @override
   Widget build(BuildContext context) {
-    if (logs.isEmpty) {
-      return Container(
+    if (widget.logs.isEmpty) {
+      return _LegeStemmingKaart(
         height: 160,
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.show_chart,
-                  size: 48,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  AppLocalizations.of(context).nogGeenStemmingData,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  AppLocalizations.of(context).voegMinimaal2LogsToe,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
+        icon: Icons.show_chart,
+        iconColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+        title: AppLocalizations.of(context).nogGeenStemmingData,
+        hint: AppLocalizations.of(context).voegMinimaal2LogsToe,
       );
     }
 
     // Need at least 2 data points for a meaningful trend line
-    if (logs.length < 2) {
-      return Container(
+    if (widget.logs.length < 2) {
+      return _LegeStemmingKaart(
         height: 160,
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.trending_up,
-                size: 48,
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-              ),
-              SizedBox(height: 12),
-              Text(
-                AppLocalizations.of(context).eenLogOpgeslagen,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                AppLocalizations.of(context).voegNogEenLogToe,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
+        icon: Icons.trending_up,
+        iconColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+        title: AppLocalizations.of(context).eenLogOpgeslagen,
+        hint: AppLocalizations.of(context).voegNogEenLogToe,
       );
     }
 
     // Prepare chart data - Life Chart 0-100 scale
     // Deduplicate by date - only show latest entry per unique date
     final Map<String, Map<String, dynamic>> uniqueLogsByDate = {};
-    for (var log in logs) {
+    for (var log in widget.logs) {
       final date = log['date'] as String? ?? '';
       if (date.isNotEmpty) {
         // Always keep the latest entry for each date (first in DESC ordered list)
@@ -111,23 +58,23 @@ class WeeklyMoodChart extends StatelessWidget {
       }
     }
     final deduplicatedLogs = uniqueLogsByDate.values.toList();
-    
+
     // Sort by date to ensure chronological order
     deduplicatedLogs.sort((a, b) {
       final dateA = a['date'] as String? ?? '';
       final dateB = b['date'] as String? ?? '';
       return dateA.compareTo(dateB);
     });
-    
-    // Take only last 7 unique dates
-    final recentLogs = deduplicatedLogs.length > 7 
-        ? deduplicatedLogs.sublist(deduplicatedLogs.length - 7) 
+
+    // Neem alleen de laatste [aantal] unieke dagen
+    final recentLogs = deduplicatedLogs.length > _selectedDays
+        ? deduplicatedLogs.sublist(deduplicatedLogs.length - _selectedDays)
         : deduplicatedLogs;
-    
+
     final spots = <FlSpot>[];
     final titles = <String>[];
-    
-    for (int i = 0; i < recentLogs.length && i < 7; i++) {
+
+    for (int i = 0; i < recentLogs.length; i++) {
       final log = recentLogs[i];
       // SRM Methode: stemming -5 tot +5
       // Converteer oude 0-100 waarden naar nieuwe schaal
@@ -155,6 +102,12 @@ class WeeklyMoodChart extends StatelessWidget {
       }
     }
 
+    // Bij 14 punten wordt elk label te krap: toon er dan de helft, maar
+    // houd de laatste altijd zichtbaar zodat de meest recente dag klopt.
+    final labelStap = recentLogs.length > 8 ? 2 : 1;
+
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       height: 200,
       padding: EdgeInsets.all(16),
@@ -162,18 +115,51 @@ class WeeklyMoodChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            recentLogs.length == 1 
-                ? AppLocalizations.of(context).stemmingTrendDag
-                : AppLocalizations.of(context).stemmingTrendDagen(recentLogs.length),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  recentLogs.length == 1
+                      ? l10n.stemmingTrendDag
+                      : l10n.stemmingTrendDagen(recentLogs.length),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Periodekiezer: compacte M3-segmented knoppen, zodat de kaart
+              // blijft wat hij was en de grafiek de rest van de hoogte pakt.
+              SegmentedButton<int>(
+                segments: [
+                  ButtonSegment(value: 7, label: Text(l10n.zevenDagen)),
+                  ButtonSegment(value: 14, label: Text(l10n.veertienDagen)),
+                ],
+                selected: {_selectedDays},
+                showSelectedIcon: false,
+                style: const ButtonStyle(
+                  visualDensity: VisualDensity.compact,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  textStyle: WidgetStatePropertyAll(
+                    TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                  padding: WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  ),
+                ),
+                onSelectionChanged: (keuze) {
+                  if (keuze.first != _selectedDays) {
+                    setState(() => _selectedDays = keuze.first);
+                  }
+                },
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 100,
+          const SizedBox(height: 8),
+          Expanded(
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
@@ -205,16 +191,19 @@ class WeeklyMoodChart extends StatelessWidget {
                         // wordt dezelfde datum meerdere keren weergegeven).
                         if (value % 1 != 0) return const Text('');
                         final index = value.toInt();
-                        if (index >= 0 && index < titles.length) {
-                          return Padding(
-                            padding: EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              titles[index],
-                              style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
-                            ),
-                          );
+                        if (index < 0 || index >= titles.length) {
+                          return const Text('');
                         }
-                        return const Text('');
+                        final toonLabel =
+                            index % labelStap == 0 || index == titles.length - 1;
+                        if (!toonLabel) return const Text('');
+                        return Padding(
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            titles[index],
+                            style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -308,7 +297,7 @@ class WeeklyMoodChart extends StatelessWidget {
   Color _getStemmingKleur(double waarde, BuildContext context) {
     // Use theme-aware colors with safe fallbacks (no null assertions)
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     if (waarde <= -4) return isDark ? Colors.grey.shade400 : Colors.grey.shade800;
     if (waarde <= -3) return isDark ? Colors.grey.shade500 : Colors.grey.shade700;
     if (waarde <= -2) return isDark ? Colors.blue.shade400 : Colors.blue.shade300;
@@ -319,5 +308,66 @@ class WeeklyMoodChart extends StatelessWidget {
     if (waarde <= 3) return isDark ? Colors.orange.shade700 : Colors.orange.shade800;
     if (waarde <= 4) return isDark ? Colors.red.shade300 : Colors.red.shade500;
     return isDark ? Colors.red.shade400 : Colors.red.shade600;
+  }
+}
+
+/// Lege/een-log staat van de stemmingtrend: zelfde kaartstijl, zonder grafiek
+/// en zonder periodekiezer (die heeft zonder data geen zin).
+class _LegeStemmingKaart extends StatelessWidget {
+  final double height;
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String hint;
+
+  const _LegeStemmingKaart({
+    required this.height,
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.hint,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: height,
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
+      ),
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 48, color: iconColor),
+              SizedBox(height: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                hint,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
