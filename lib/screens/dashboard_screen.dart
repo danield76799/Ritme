@@ -645,7 +645,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Flexible(
                   child: Text(
                     dateStr,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
