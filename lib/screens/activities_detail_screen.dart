@@ -220,6 +220,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
+                              border: AppTheme.cardBorder(context),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.05),
@@ -326,6 +327,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: AppTheme.cardBorder(context),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -449,6 +451,7 @@ class _ActivitiesDetailScreenState extends State<ActivitiesDetailScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: AppTheme.cardBorder(context),
       ),
       child: Column(
         children: [

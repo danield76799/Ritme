@@ -585,6 +585,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+        border: AppTheme.cardBorder(context),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
@@ -606,6 +607,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+        border: AppTheme.cardBorder(context),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
@@ -636,6 +638,7 @@ class _StatistiekenSchermState extends State<StatistiekenScherm> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+        border: AppTheme.cardBorder(context),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(

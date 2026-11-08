@@ -70,6 +70,7 @@ class DatumNavigator extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+        border: AppTheme.cardBorder(context),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),

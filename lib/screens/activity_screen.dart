@@ -627,6 +627,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: AppTheme.cardBorder(context),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),

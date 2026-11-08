@@ -329,6 +329,7 @@ class _WeightScreenState extends State<WeightScreen> {
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(16),
+                          border: AppTheme.cardBorder(context),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.05),
@@ -433,6 +434,7 @@ class _WeightScreenState extends State<WeightScreen> {
                               decoration: BoxDecoration(
                                 color: Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
+                                border: AppTheme.cardBorder(context),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(alpha: 0.04),

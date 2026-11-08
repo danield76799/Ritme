@@ -468,6 +468,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+                border: AppTheme.cardBorder(context),
               ),
               child: Text(_opgeslagenTekst!),
             ),
