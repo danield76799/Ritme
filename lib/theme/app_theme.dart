@@ -547,12 +547,26 @@ class AppTheme {
   // Warm gradient alias (alias for brandGradient for legacy code)
   static LinearGradient get warmGradient => brandGradient;
 
+  /// Subtiele kaartrand die in BEIDE modes zichtbaar is.
+  ///
+  /// In dark mode is de rand wit op 8% (design-system), in light mode donker
+  /// op 8% — een witte rand zou op de lichte kaart onzichtbaar zijn. Gebruik
+  /// dit voor alle surface-cards zodat ze consistent afgebakend zijn.
+  static Color cardBorderColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white.withValues(alpha: 0.08)
+          : Colors.black.withValues(alpha: 0.08);
+
+  static Border cardBorder(BuildContext context) =>
+      Border.all(color: cardBorderColor(context), width: 1);
+
   // Card decoration helper
   static BoxDecoration cardDecoration(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return BoxDecoration(
       color: isDark ? darkCard : surfaceColor,
       borderRadius: BorderRadius.circular(borderRadius),
+      border: cardBorder(context),
       boxShadow: [
         BoxShadow(
           color: (isDark ? Colors.black : Colors.black).withValues(alpha: isDark ? 0.3 : 0.04),

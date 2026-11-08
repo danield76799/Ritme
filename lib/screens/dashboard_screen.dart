@@ -679,7 +679,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            border: AppTheme.cardBorder(context),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -838,7 +838,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       closedElevation: 0,
       closedShape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isCompleted ? AppTheme.accentMint.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.08), width: isCompleted ? 1.5 : 1),
+        side: BorderSide(color: isCompleted ? AppTheme.accentMint.withValues(alpha: 0.5) : AppTheme.cardBorderColor(context), width: isCompleted ? 1.5 : 1),
       ),
       // Een subtiele tint van het tegelaccent: de tegels zijn dan van
       // elkaar te onderscheiden zonder dat de kleur opdringt.
@@ -940,7 +940,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: const Duration(milliseconds: 400),
       closedElevation: 0,
-      closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+      closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: AppTheme.cardBorderColor(context))),
       closedColor: theme.cardColor,
       openColor: theme.scaffoldBackgroundColor,
       onClosed: (_) { _loadData(); if (dagenVerschil(_selectedDate) != 0) _loadDataForDate(_selectedDate); },
