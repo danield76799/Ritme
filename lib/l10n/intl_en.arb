@@ -795,5 +795,56 @@
         "type": "String"
       }
     }
+  },
+  "backupOngeldig": "This is not a valid Ritme backup file.",
+  "backupVoorbeeldTitel": "Restore backup?",
+  "backupBevat": "This backup contains:",
+  "backupExportDatum": "Created: {datum}",
+  "@backupExportDatum": {
+    "placeholders": {
+      "datum": {
+        "type": "String"
+      }
+    }
+  },
+  "backupDaglogs": "Daily logs: {n}",
+  "@backupDaglogs": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "backupAfspraken": "Appointments: {n}",
+  "@backupAfspraken": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "backupMedicatie": "Medication: {n}",
+  "@backupMedicatie": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "backupDagboek": "Journal entries: {n}",
+  "@backupDagboek": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "backupGewicht": "Weight entries: {n}",
+  "@backupGewicht": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }

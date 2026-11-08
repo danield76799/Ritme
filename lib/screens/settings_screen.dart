@@ -491,46 +491,88 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 12),
         _buildActionButton(
                     AppLocalizations.of(context).backupHerstellen,
-          () async {
-            try {
-              final result = await FilePicker.pickFiles(
-                type: FileType.custom,
-                allowedExtensions: ['json'],
-              );
-              
-              if (result != null && result.files.isNotEmpty) {
-                final filePath = result.files.first.path!;
-                await BackupService.restoreFromFile(filePath);
-                
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context).backupSuccesvolHersteld),
-                      backgroundColor: Colors.green[700],
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
-                }
-                _loadData(); // Reload settings
-              }
-            } catch (e) {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(AppLocalizations.of(context).herstelError(e)),
-                    backgroundColor: Colors.red[700],
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              }
-            }
-          },
+          _herstellenBackup,
         ),
       ],
+    );
+  }
+
+  /// Kiest een backupbestand, valideert het en toont eerst een preview vóór
+  /// er echt hersteld wordt. Zo voorkom je per ongeluk importeren van een
+  /// beschadigd of verkeerd bestand.
+  Future<void> _herstellenBackup() async {
+    if (!mounted) return;
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+    if (result == null || result.files.isEmpty) return;
+    final filePath = result.files.first.path;
+    if (filePath == null) return;
+
+    final Map<String, dynamic> summary;
+    try {
+      summary = await BackupService.inspectBackupFile(filePath);
+    } catch (_) {
+      if (mounted) _showError(AppLocalizations.of(context).backupOngeldig);
+      return;
+    }
+
+    if (!mounted) return;
+    final bevestig = await _toonBackupVoorbeeld(summary);
+    if (bevestig != true || !mounted) return;
+
+    try {
+      await BackupService.restoreFromFile(filePath);
+      if (mounted) {
+        _showSuccess(AppLocalizations.of(context).backupSuccesvolHersteld);
+        _loadData();
+      }
+    } catch (e) {
+      if (mounted) _showError(AppLocalizations.of(context).herstelError(e));
+    }
+  }
+
+  /// Toont een samenvatting van wat er in de backup zit en vraagt om
+  /// bevestiging vóór het daadwerkelijke herstel.
+  Future<bool?> _toonBackupVoorbeeld(Map<String, dynamic> summary) {
+    final l10n = AppLocalizations.of(context);
+    int n(String key) => (summary[key] as num?)?.toInt() ?? 0;
+    final exportDatum = summary['export_date']?.toString();
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.backupVoorbeeldTitel),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (exportDatum != null && exportDatum.isNotEmpty)
+              Text(l10n.backupExportDatum(exportDatum)),
+            const SizedBox(height: 12),
+            Text(
+              l10n.backupBevat,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(l10n.backupDaglogs(n('daily_logs'))),
+            Text(l10n.backupAfspraken(n('appointments'))),
+            Text(l10n.backupMedicatie(n('medication_config'))),
+            Text(l10n.backupDagboek(n('dagboek'))),
+            Text(l10n.backupGewicht(n('weight_logs'))),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.annuleren),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.backupHerstellen),
+          ),
+        ],
+      ),
     );
   }
 

@@ -420,21 +420,76 @@ class BackupService {
 
   /// Restore from local file
   static Future<void> restoreFromFile(String filePath) async {
+    final data = await _readBackupJson(filePath);
+    await restoreFromData(data);
+  }
+
+  /// Leest een backupbestand, decomprimeert indien nodig en valideert de
+  /// structuur. Geeft de JSON-map terug, of gooit een duidelijke fout die de
+  /// UI netjes kan tonen (in plaats van een raw `FormatException`).
+  static Future<Map<String, dynamic>> _readBackupJson(String filePath) async {
     final file = File(filePath);
     if (!await file.exists()) throw Exception('File not found');
 
     final bytes = await file.readAsBytes();
-    final jsonString = (bytes.length >= 2 && bytes[0] == 0x1f && bytes[1] == 0x8b)
-        ? utf8.decode(GZipCodec().decode(bytes))
-        : utf8.decode(bytes);
-    final data = jsonDecode(jsonString) as Map<String, dynamic>;
+    if (bytes.isEmpty) throw Exception('Leeg bestand');
 
-    final version = (data['schema_version'] ?? '1').toString();
-    if (int.tryParse(version) == null || int.parse(version) < 1) {
-      throw Exception('Invalid backup schema_version: $version');
+    final String jsonString;
+    try {
+      jsonString = (bytes.length >= 2 && bytes[0] == 0x1f && bytes[1] == 0x8b)
+          ? utf8.decode(GZipCodec().decode(bytes))
+          : utf8.decode(bytes);
+    } catch (_) {
+      throw Exception('Bestand kon niet worden gelezen');
     }
 
-    await restoreFromData(data);
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(jsonString);
+    } catch (_) {
+      throw Exception('Geen geldige JSON');
+    }
+
+    if (decoded is! Map<String, dynamic>) {
+      throw Exception('Geen geldig Ritme-backupbestand');
+    }
+
+    final version = (decoded['schema_version'] ?? '1').toString();
+    if (int.tryParse(version) == null || int.parse(version) < 1) {
+      throw Exception('Ongeldige schema-versie: $version');
+    }
+
+    return decoded;
+  }
+
+  /// Telt de elementen van een lijst of map (0 als onbekend type).
+  static int _tel(Object? v) {
+    if (v is List) return v.length;
+    if (v is Map) return v.length;
+    return 0;
+  }
+
+  /// Leest en valideert een backupbestand en geeft een samenvatting terug
+  /// zónder iets te herstellen. Zo kan de UI eerst laten zien wat er in het
+  /// bestand zit (preview) vóór het daadwerkelijke herstel.
+  static Future<Map<String, dynamic>> inspectBackupFile(String filePath) async {
+    final data = await _readBackupJson(filePath);
+    final raw = data['data'];
+    final d = (raw is Map<String, dynamic>) ? raw : const <String, dynamic>{};
+    return <String, dynamic>{
+      'export_date': data['export_date']?.toString(),
+      'app_version': data['app_version']?.toString(),
+      'schema_version': int.tryParse((data['schema_version'] ?? '1').toString()) ?? 1,
+      'daily_logs': _tel(d['sqlite_daily_logs']) + _tel(d['daily_logs']),
+      'appointments': _tel(d['medical_appointments']),
+      'srm_activities': _tel(d['sqlite_srm_activities']) + _tel(d['srm_activities']),
+      'medication_config': _tel(d['sqlite_medication_config']) + _tel(d['medication_config']),
+      'medication_schedule': _tel(d['sqlite_medication_schedule']) + _tel(d['medication_schedule']),
+      'medication_intake': _tel(d['sqlite_medication_intake']) + _tel(d['medication_intake']),
+      'dagboek': _tel(d['daily_dagboek']),
+      'weight_logs': _tel(d['weight_logs']),
+      'life_events': _tel(d['life_events']),
+    };
   }
 
   // ===================
