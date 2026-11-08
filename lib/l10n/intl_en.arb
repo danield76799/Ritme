@@ -847,5 +847,21 @@
       }
     }
   },
-  "veertienDagen": "14 days"
+  "veertienDagen": "14 days",
+  "dertigDagen": "30 days",
+  "periodeKiezer": "Period",
+  "onboardingWelkomTitel": "Welcome to Ritme",
+  "onboardingWelkomBeschrijving": "Ritme helps you track your daily social rhythm: mood, sleep, activities, medication and appointments. Your data stays on your phone.",
+  "onboardingCheckinTitel": "Morning & evening check-in",
+  "onboardingCheckinBeschrijving": "Start your day with the morning check-in (sleep & mood) and end it with the evening check-in (5 SRM moments). The dashboard shows whether your day is complete.",
+  "onboardingCrisisplanTitel": "Crisis plan always within reach",
+  "onboardingCrisisplanBeschrijving": "Your crisis plan is always in the menu (heart icon). Add contacts and early warning signs so you can reach it quickly when needed.",
+  "overslaan": "Skip",
+  "volgende": "Next",
+  "aanDeSlag": "Get started",
+  "eersteGewichtsmeting": "Add your first measurement to see your trend.",
+  "geenVoortekenenLaatste14Dagen": "No early warning signs recorded in the last 14 days.",
+  "testAutomatischeBackup": "Test automatic backup",
+  "statistiekenPeriode": "Period",
+  "statistiekenAllePeriodes": "All"
 }

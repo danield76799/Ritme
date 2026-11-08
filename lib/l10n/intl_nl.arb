@@ -837,5 +837,21 @@
       }
     }
   },
-  "veertienDagen": "14 dagen"
+  "veertienDagen": "14 dagen",
+  "dertigDagen": "30 dagen",
+  "periodeKiezer": "Periode",
+  "onboardingWelkomTitel": "Welkom bij Ritme",
+  "onboardingWelkomBeschrijving": "Ritme helpt je dagelijks je sociale ritme bij te houden: stemming, slaap, activiteiten, medicatie en afspraken. Jouw data blijft op je telefoon.",
+  "onboardingCheckinTitel": "Ochtend & avond check-in",
+  "onboardingCheckinBeschrijving": "Start je dag met de ochtend-check-in (slaap & stemming) en sluit af met de avond-check-in (5 SRM-momenten). Dashboard toont of je dag compleet is.",
+  "onboardingCrisisplanTitel": "Crisisplan binnen handbereik",
+  "onboardingCrisisplanBeschrijving": "Je crisisplan staat altijd in het menu (hart-icoon). Voeg contacten en voortekenen toe, zodat je er snel bij kunt als het nodig is.",
+  "overslaan": "Overslaan",
+  "volgende": "Volgende",
+  "aanDeSlag": "Aan de slag",
+  "eersteGewichtsmeting": "Voeg je eerste meting toe om je trend te zien.",
+  "geenVoortekenenLaatste14Dagen": "Geen voortekenen geregistreerd in de laatste 14 dagen.",
+  "testAutomatischeBackup": "Test automatische backup",
+  "statistiekenPeriode": "Periode",
+  "statistiekenAllePeriodes": "Alle"
 }

@@ -709,7 +709,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
               if (mounted) _loadData();
             },
-            child: const Text('Test automatische backup'),
+            child: Text(AppLocalizations.of(context).testAutomatischeBackup),
           ),
         ],
       ),

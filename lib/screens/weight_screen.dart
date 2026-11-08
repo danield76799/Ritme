@@ -405,7 +405,7 @@ class _WeightScreenState extends State<WeightScreen> {
                       EmptyState(
                         icon: Icons.monitor_weight_outlined,
                         title: AppLocalizations.of(context).nogGeenGewichtGelogd,
-                        subtitle: 'Voeg je eerste meting toe om je trend te zien.',
+                        subtitle: AppLocalizations.of(context).eersteGewichtsmeting,
                       )
                     else
                       ListView.builder(

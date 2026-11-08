@@ -1,3 +1,31 @@
+# Onontwikkeld
+
+## Verbeteringen
+- **Statistieken: periodekiezer (7 / 14 / 30 dagen / alle)** — de Life Chart-grafieken
+  en de KPI-kaarten laten nu zien over welke periode ze gaan. Met veel historie was de
+  grafiek anders onleesbaar. Zelfde patroon als de stemming-trend op het dashboard.
+- **Statistieken: slaapgrafiek toont de juiste datums** — de balken werden compact
+  geteld terwijl de datumlabels uit de volledige lijst kwamen. Zodra er dagen zonder
+  slaapdata tussen zaten, schoven de datums naar voren en toonde elke balk de
+  verkeerde dag.
+- **PDF-rapport: periode loopt van oud naar nieuw** — stond omgekeerd (nieuw → oud).
+- **PDF-rapport: toont de 14 meest recente dagen** — stond de 14 oudste dagen.
+- **PDF-rapport gaat over de volle historie** — los van de periode die op het scherm
+  gekozen is; een rapport moet compleet zijn.
+
+## Vertaling
+- **Onboarding volledig vertaald** — de drie introductiepagina's, "Overslaan",
+  "Volgende" en "Aan de slag" stonden hardcoded in het Nederlands.
+- **Lege staten vertaald** — eerste gewichtsmeting en "geen voortekenen in de
+  laatste 14 dagen".
+- **Instellingen vertaald** — "Test automatische backup".
+
+## Tests
+- `test/statistieken_periode_test.dart` — regressietests voor de periodekiezer, de
+  slaapgrafiek-datums en de PDF-periode.
+- `test/geen_hardcoded_teksten_test.dart` — faalt zodra er weer een hardcoded
+  Nederlandse gebruikerstekst in de schermen komt.
+
 # Ritme v1.3.0
 
 ## Verbeteringen

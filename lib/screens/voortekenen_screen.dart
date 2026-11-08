@@ -459,7 +459,7 @@ class _VoortekenenScreenState extends State<VoortekenenScreen> {
                 return EmptyState(
                   icon: Icons.flag_outlined,
                   title: AppLocalizations.of(context).nogGeenHistorie,
-                  subtitle: 'Geen voortekenen geregistreerd in de laatste 14 dagen.',
+                  subtitle: AppLocalizations.of(context).geenVoortekenenLaatste14Dagen,
                 );
               }
               return ListView.builder(
