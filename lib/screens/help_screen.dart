@@ -10,21 +10,15 @@ class HelpScreen extends StatefulWidget {
 }
 
 class _HelpScreenState extends State<HelpScreen> {
-  /// Dezelfde taal als de rest van de app — geen eigen schakelaar meer.
-  /// Eerst had dit scherm een losse NL/EN-knop (met Platform.localeName),
-  /// waardoor Help in een andere taal kon staan dan de app zelf.
-  bool get _isNederlands =>
-      Localizations.localeOf(context).languageCode == 'nl';
-
   @override
   Widget build(BuildContext context) {
-    final isDutch = _isNederlands;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
         title: Text(
-          isDutch ? 'Gebruiksaanwijzing' : 'User Guide',
+          l10n.helpTitel,
           style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
         ),
         leading: IconButton(
@@ -46,49 +40,79 @@ class _HelpScreenState extends State<HelpScreen> {
               // ("Stemming-tegel", "Activiteit & Slaap-tegel") — nu check-ins.
               _buildUitklap(
                 icon: Icons.wb_sunny_outlined,
-                title: isDutch ? 'Check-ins (ochtend & avond)' : 'Check-ins (morning & evening)',
+                title: l10n.helpCheckinsTitel,
                 children: [
                   _bullets([
-                    isDutch ? 'Ochtend: opstaantijd, slaap (behoefte + kwaliteit), stemming, gebeurtenis, eerste contact, werk/hobby' : 'Morning: wake time, sleep (need + quality), mood, event, first contact, work/hobby',
-                    isDutch ? 'Avond: stemming (3x), gebeurtenis, avondeten, bedtijd' : 'Evening: mood (3x), event, dinner, bedtime',
-                    isDutch ? 'Een afgeronde check-in kleurt de tegel groen op het dashboard' : 'A finished check-in turns the dashboard tile green',
+                    l10n.helpCheckinOchtend,
+                    l10n.helpCheckinAvond,
+                    l10n.helpCheckinGroen,
                   ]),
                   const SizedBox(height: 8),
                   Text(
-                    isDutch ? 'Stemmingsschaal (−5 tot +5)' : 'Mood scale (−5 to +5)',
+                    l10n.helpStemmingsschaalTitel,
                     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                   ),
                   const SizedBox(height: 8),
-                  _buildScaleItem(color: AppTheme.accentOn(Theme.of(context).brightness), label: isDutch ? '−5: Uiterst depressief' : '−5: Extremely depressed'),
-                  _buildScaleItem(color: AppTheme.infoOn(Theme.of(context).brightness), label: isDutch ? '−3: Matig depressief' : '−3: Moderately depressed'),
-                  _buildScaleItem(color: Theme.of(context).colorScheme.primary, label: '0: ${isDutch ? 'Neutraal' : 'Neutral'}'),
-                  _buildScaleItem(color: AppTheme.streakText(Theme.of(context).brightness), label: isDutch ? '+3: Matig manisch' : '+3: Moderately manic'),
-                  _buildScaleItem(color: AppTheme.dangerOn(Theme.of(context).brightness), label: isDutch ? '+5: Uiterst manisch' : '+5: Extremely manic'),
+                  _buildScaleItem(color: AppTheme.accentOn(Theme.of(context).brightness), label: l10n.helpSchaalMin5),
+                  _buildScaleItem(color: AppTheme.infoOn(Theme.of(context).brightness), label: l10n.helpSchaalMin3),
+                  _buildScaleItem(color: Theme.of(context).colorScheme.primary, label: l10n.helpSchaalNul),
+                  _buildScaleItem(color: AppTheme.streakText(Theme.of(context).brightness), label: l10n.helpSchaalPlus3),
+                  _buildScaleItem(color: AppTheme.dangerOn(Theme.of(context).brightness), label: l10n.helpSchaalPlus5),
                 ],
               ),
               const SizedBox(height: 12),
 
               _buildUitklap(
                 icon: Icons.directions_walk,
-                title: isDutch ? 'P-score legenda (sociaal ritme)' : 'P-score legend (social rhythm)',
+                title: l10n.helpPScoreTitel,
                 children: [
-                  _buildPScoreItem(icon: Icons.check_circle, color: AppTheme.successOn(Theme.of(context).brightness), label: isDutch ? '✓✓ Binnen 15 min' : '✓✓ Within 15 min', points: '5 ${isDutch ? 'punten' : 'points'}'),
-                  _buildPScoreItem(icon: Icons.check_circle_outline, color: AppTheme.successOn(Theme.of(context).brightness), label: isDutch ? '✓ Binnen 30 min' : '✓ Within 30 min', points: '4 ${isDutch ? 'punten' : 'points'}'),
-                  _buildPScoreItem(icon: Icons.remove_circle_outline, color: AppTheme.streakText(Theme.of(context).brightness), label: isDutch ? '~ Binnen 45 min' : '~ Within 45 min', points: '3 ${isDutch ? 'punten' : 'points'}'),
-                  _buildPScoreItem(icon: Icons.warning_amber, color: AppTheme.streakText(Theme.of(context).brightness), label: isDutch ? '! Binnen 60 min' : '! Within 60 min', points: '2 ${isDutch ? 'punten' : 'points'}'),
-                  _buildPScoreItem(icon: Icons.error_outline, color: AppTheme.dangerOn(Theme.of(context).brightness), label: isDutch ? '!! Meer dan 60 min' : '!! More than 60 min', points: '1 ${isDutch ? 'punt' : 'point'}'),
-                  _buildPScoreItem(icon: Icons.circle_outlined, color: Theme.of(context).colorScheme.outline, label: isDutch ? 'Geen activiteit' : 'No activity', points: '0 ${isDutch ? 'punten' : 'points'}'),
+                  _buildPScoreItem(
+                    icon: Icons.check_circle,
+                    color: AppTheme.successOn(Theme.of(context).brightness),
+                    label: l10n.helpPScore15,
+                    points: '5 ${l10n.helpPunten}',
+                  ),
+                  _buildPScoreItem(
+                    icon: Icons.check_circle_outline,
+                    color: AppTheme.successOn(Theme.of(context).brightness),
+                    label: l10n.helpPScore30,
+                    points: '4 ${l10n.helpPunten}',
+                  ),
+                  _buildPScoreItem(
+                    icon: Icons.remove_circle_outline,
+                    color: AppTheme.streakText(Theme.of(context).brightness),
+                    label: l10n.helpPScore45,
+                    points: '3 ${l10n.helpPunten}',
+                  ),
+                  _buildPScoreItem(
+                    icon: Icons.warning_amber,
+                    color: AppTheme.streakText(Theme.of(context).brightness),
+                    label: l10n.helpPScore60,
+                    points: '2 ${l10n.helpPunten}',
+                  ),
+                  _buildPScoreItem(
+                    icon: Icons.error_outline,
+                    color: AppTheme.dangerOn(Theme.of(context).brightness),
+                    label: l10n.helpPScoreMeer60,
+                    points: '1 ${l10n.helpPunt}',
+                  ),
+                  _buildPScoreItem(
+                    icon: Icons.circle_outlined,
+                    color: Theme.of(context).colorScheme.outline,
+                    label: l10n.helpPScoreGeen,
+                    points: '0 ${l10n.helpPunten}',
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
 
               _buildUitklap(
                 icon: Icons.medication,
-                title: isDutch ? 'Medicatie' : 'Medication',
+                title: l10n.helpMedicatieTitel,
                 children: [
                   _bullets([
-                    isDutch ? 'Voeg medicijnen toe met naam, dosering en vaste tijden' : 'Add medications with name, dosage and fixed times',
-                    isDutch ? 'Herinneringen komen via notificaties; markeer als genomen of overgeslagen' : 'Reminders arrive via notifications; mark as taken or skipped',
+                    l10n.helpMedicatieToevoegen,
+                    l10n.helpMedicatieHerinnering,
                   ]),
                 ],
               ),
@@ -96,29 +120,29 @@ class _HelpScreenState extends State<HelpScreen> {
 
               _buildUitklap(
                 icon: Icons.schedule,
-                title: AppLocalizations.of(context).srtScoreBegrijpen,
+                title: l10n.srtScoreBegrijpen,
                 children: [
-                  Text(AppLocalizations.of(context).srtScoreDesc, style: const TextStyle(fontSize: 14, height: 1.5)),
+                  Text(l10n.srtScoreDesc, style: const TextStyle(fontSize: 14, height: 1.5)),
                   const SizedBox(height: 12),
-                  Text(AppLocalizations.of(context).srtScoreInterpretatie, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text(l10n.srtScoreInterpretatie, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                   const SizedBox(height: 8),
-                  _buildScoreRange(range: '80-100%', color: Colors.green, label: isDutch ? 'Uitstekend stabiel' : 'Excellent stability', action: '✅ ${isDutch ? 'Blijf zo doorgaan' : 'Keep it up'}'),
-                  _buildScoreRange(range: '60-79%', color: Colors.lightGreen, label: isDutch ? 'Goed, kleine variaties' : 'Good, small variations', action: '✅ ${isDutch ? 'Acceptabel' : 'Acceptable'}'),
-                  _buildScoreRange(range: '40-59%', color: Colors.orange, label: isDutch ? 'Matig, aandacht nodig' : 'Moderate, attention needed', action: '⚠️ ${isDutch ? 'Monitor je ritme' : 'Monitor your rhythm'}'),
-                  _buildScoreRange(range: '20-39%', color: Colors.deepOrange, label: isDutch ? 'Instabiel' : 'Unstable', action: '🔴 ${isDutch ? 'Bespreek met behandelaar' : 'Discuss with therapist'}'),
-                  _buildScoreRange(range: '0-19%', color: Colors.red, label: isDutch ? 'Zeer instabiel' : 'Very unstable', action: '🚨 ${isDutch ? 'Hulp zoeken' : 'Seek help'}'),
+                  _buildScoreRange(range: '80-100%', color: Colors.green, label: l10n.helpSrtUitstekend, action: l10n.helpSrtUitstekendActie),
+                  _buildScoreRange(range: '60-79%', color: Colors.lightGreen, label: l10n.helpSrtGoed, action: l10n.helpSrtGoedActie),
+                  _buildScoreRange(range: '40-59%', color: Colors.orange, label: l10n.helpSrtMatig, action: l10n.helpSrtMatigActie),
+                  _buildScoreRange(range: '20-39%', color: Colors.deepOrange, label: l10n.helpSrtInstabiel, action: l10n.helpSrtInstabielActie),
+                  _buildScoreRange(range: '0-19%', color: Colors.red, label: l10n.helpSrtZeerInstabiel, action: l10n.helpSrtZeerInstabielActie),
                 ],
               ),
               const SizedBox(height: 12),
 
               _buildUitklap(
                 icon: Icons.explore_outlined,
-                title: isDutch ? 'Rondkijken (statistieken, episodes, instellingen)' : 'Explore (statistics, episodes, settings)',
+                title: l10n.helpRondkijkenTitel,
                 children: [
                   _bullets([
-                    isDutch ? 'Statistieken: weekgrafiek, slaap- en ritmedetails, SRT-trend' : 'Statistics: week graph, sleep and rhythm details, SRT trend',
-                    isDutch ? 'Episodes, voortekenen, gewicht, afspraken en dagboek staan in het menu' : 'Episodes, prodromes, weight, appointments and journal live in the menu',
-                    isDutch ? 'Doeltijden, thema en automatische backup stel je in bij Instellingen' : 'Target times, theme and automatic backup live in Settings',
+                    l10n.helpRondkijkenStatistieken,
+                    l10n.helpRondkijkenMenu,
+                    l10n.helpRondkijkenInstellingen,
                   ]),
                 ],
               ),
@@ -126,13 +150,13 @@ class _HelpScreenState extends State<HelpScreen> {
 
               _buildUitklap(
                 icon: Icons.lightbulb_outline,
-                title: isDutch ? 'Tips voor succes' : 'Tips for success',
+                title: l10n.helpTipsTitel,
                 children: [
                   _bullets([
-                    isDutch ? 'Vul dagelijks in, liefst op vaste tijden — ook in het weekend' : 'Fill in daily, preferably at fixed times — weekends included',
-                    isDutch ? 'Neem medicatie op de afgesproken tijden' : 'Take medication at the agreed times',
-                    isDutch ? 'Bekijk je statistieken wekelijks om patronen te herkennen' : 'Review your statistics weekly to recognize patterns',
-                    isDutch ? 'Alle gegevens blijven lokaal op je toestel (PIN/biometrie mogelijk)' : 'All data stays locally on your device (PIN/biometrics available)',
+                    l10n.helpTipDagelijks,
+                    l10n.helpTipMedicatie,
+                    l10n.helpTipStatistieken,
+                    l10n.helpTipLokaal,
                   ]),
                 ],
               ),
@@ -145,6 +169,7 @@ class _HelpScreenState extends State<HelpScreen> {
   }
 
   Widget _buildIntro() {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -164,17 +189,7 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           SizedBox(height: 12),
           Text(
-            _isNederlands
-              ? 'Ritme is gebaseerd op Social Rhythm Therapy (SRT), '
-                'een bewezen methode om je dagelijks ritme te verbeteren. '
-                'Door regelmatigheid in slaap, activiteiten, sociale contacten en medicatie '
-                'kun je je stemming en welbevinden positief beïnvloeden. '
-                'Alle inzichten zijn bedoeld ter ondersteuning, niet als medisch advies.'
-              : 'Ritme is based on Social Rhythm Therapy (SRT), '
-                'a proven method to improve your daily rhythm. '
-                'Through regularity in sleep, activities, social contact and medication '
-                'you can positively influence your mood and well-being. '
-                'All insights are meant as support, not medical advice.',
+            l10n.helpIntro,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Theme.of(context).textTheme.bodyMedium?.color ?? AppTheme.textCharcoal,

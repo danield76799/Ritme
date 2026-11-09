@@ -124,7 +124,10 @@ void main() {
       expect(code.contains('_toggleLanguage'), isFalse);
       expect(code.contains('Platform.localeName'), isFalse);
       expect(code.contains('dart:io'), isFalse);
-      expect(code.contains('localeOf(context)'), isTrue);
+      // De help volgt de app-taal via de arb-bestanden: het scherm leest
+      // geen eigen taal meer uit, maar de l10n-sleutels van de app.
+      expect(code.contains('AppLocalizations.of(context)'), isTrue);
+      expect(code.contains('isDutch ?'), isFalse);
     });
 
     testWidgets('Nederlandse app toont Nederlandse help', (tester) async {

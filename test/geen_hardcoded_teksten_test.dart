@@ -54,4 +54,32 @@ void main() {
           'gebruik AppLocalizations.of(context).\n${treffers.join('\n')}',
     );
   });
+
+  test('schermen gebruiken geen isDutch-schakelaar meer', () {
+    // Een `isDutch ? '…' : '…'`-blok negeert de taalinstelling van de app:
+    // alleen Nederlands en Engels bestaan, en de tekst staat buiten de
+    // arb-bestanden. Alle schermen gebruiken AppLocalizations.
+    final schermen = Directory('lib/screens')
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .toList();
+
+    final treffers = <String>[];
+    for (final scherm in schermen) {
+      final inhoud = scherm.readAsStringSync();
+      if (inhoud.contains('isDutch ?')) {
+        treffers.add(scherm.path);
+      }
+    }
+
+    expect(
+      treffers,
+      isEmpty,
+      reason:
+          'Deze schermen kiezen zelf tussen NL en EN in plaats van de '
+          'taalinstelling van de app te volgen. Zet de teksten in '
+          'lib/l10n/intl_nl.arb en intl_en.arb.\n${treffers.join('\n')}',
+    );
+  });
 }

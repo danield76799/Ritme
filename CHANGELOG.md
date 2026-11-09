@@ -1,6 +1,10 @@
 # Onontwikkeld
 
 ## Verbeteringen
+- **Help-scherm volledig vertaald** — het scherm had 35 hardcoded
+  `isDutch ? '…' : '…'`-blokken. Daardoor bestonden er maar twee talen en stond
+  de tekst buiten de arb-bestanden. Nu komen alle teksten uit
+  `AppLocalizations`, dus de help volgt de taalinstelling van de app.
 - **Statistieken: periodekiezer (7 / 14 / 30 dagen / alle)** — de Life Chart-grafieken
   en de KPI-kaarten laten nu zien over welke periode ze gaan. Met veel historie was de
   grafiek anders onleesbaar. Zelfde patroon als de stemming-trend op het dashboard.
@@ -24,7 +28,7 @@
 - `test/statistieken_periode_test.dart` — regressietests voor de periodekiezer, de
   slaapgrafiek-datums en de PDF-periode.
 - `test/geen_hardcoded_teksten_test.dart` — faalt zodra er weer een hardcoded
-  Nederlandse gebruikerstekst in de schermen komt.
+  Nederlandse gebruikerstekst in de schermen komt, of een `isDutch ?`-blok.
 
 # Ritme v1.3.0
 
