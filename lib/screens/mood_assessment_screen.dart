@@ -1,5 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import '../generated/l10n/app_localizations.dart';
 import '../service_locator.dart';
 import '../utils/mood_assessment_scorer.dart';
@@ -767,56 +769,514 @@ class _SliderQuestion extends StatelessWidget {
     required this.onChanged,
   });
 
+  /// Spreekt uit waar de schuif staat, in gewone mensentaal.
+  static String _bandLabel(double v) {
+    if (v <= 15) return 'Heel laag';
+    if (v <= 35) return 'Laag';
+    if (v <= 65) return 'In balans';
+    if (v <= 85) return 'Hoog';
+    return 'Zeer hoog';
+  }
+
+  /// Trek de accentkleur mee van koel (links) naar warm (rechts).
+  static Color _bandColor(double v) {
+    if (v <= 15) return const Color(0xFF3F51B5);
+    if (v <= 35) return const Color(0xFF5C6BC0);
+    if (v <= 65) return const Color(0xFF4DB6AC);
+    if (v <= 85) return const Color(0xFFFFA726);
+    return const Color(0xFFEF6C00);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final band = _bandLabel(value);
+    final accent = _bandColor(value);
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.outline,
+            ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
+
+          // Score-uitlezing boven de slider.
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                leftLabel,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 180),
+                style: TextStyle(
+                  fontSize: 44,
+                  height: 1,
+                  fontWeight: FontWeight.w800,
+                  color: accent,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+                child: Text(value.round().toString()),
               ),
-              Text(
-                rightLabel,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+              const SizedBox(width: 10),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 180),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: accent,
+                ),
+                child: Text(band),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Slider(
-            value: value,
-            min: 0,
-            max: 100,
-            divisions: 10,
-            label: value.round().toString(),
-            onChanged: onChanged,
+          const SizedBox(height: 18),
+
+          // De bipolaire slider: blauw (depressief) naar oranje (manisch).
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackShape: const _GradientTrackShape(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF3F51B5),
+                    Color(0xFF5C6BC0),
+                    Color(0xFF8D9BB3),
+                    Color(0xFFFFB74D),
+                    Color(0xFFEF6C00),
+                  ],
+                  stops: [0.0, 0.22, 0.5, 0.78, 1.0],
+                ),
+              ),
+              trackHeight: 14,
+              thumbShape: const RoundSliderThumbShape(
+                enabledThumbRadius: 13,
+                elevation: 3,
+                pressedElevation: 5,
+              ),
+              thumbColor: Colors.white,
+              overlayColor: accent.withValues(alpha: 0.18),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
+            ),
+            child: Slider(
+              value: value,
+              min: 0,
+              max: 100,
+              onChanged: onChanged,
+            ),
           ),
-          const SizedBox(height: 16),
-          Center(
-            child: Text(
-              value.round().toString(),
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w600,
+          const SizedBox(height: 10),
+
+          // Eindlabels met icoon.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.battery_0_bar,
+                      size: 18, color: theme.colorScheme.outline),
+                  const SizedBox(width: 6),
+                  Text(
+                    leftLabel,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                    rightLabel,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(Icons.bolt, size: 18, color: theme.colorScheme.outline),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rounded gradient-track met een subtiele middenstreep voor de bipolaire
+/// energieslider.
+class _GradientTrackShape extends SliderTrackShape
+    with BaseSliderTrackShape {
+  final Gradient gradient;
+
+  const _GradientTrackShape({required this.gradient});
+
+  @override
+  bool get isRounded => true;
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset offset, {
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required Animation<double> enableAnimation,
+    required TextDirection textDirection,
+    required Offset thumbCenter,
+    Offset? secondaryOffset,
+    bool isDiscrete = false,
+    bool isEnabled = false,
+  }) {
+    final canvas = context.canvas;
+    final rect = getPreferredRect(
+      parentBox: parentBox,
+      offset: offset,
+      sliderTheme: sliderTheme,
+      isEnabled: isEnabled,
+      isDiscrete: isDiscrete,
+    );
+    final rrect = RRect.fromRectAndRadius(
+      rect,
+      Radius.circular(rect.height / 2),
+    );
+    canvas.drawRRect(rrect, Paint()..shader = gradient.createShader(rect));
+    // Middenstreep = neutraal punt (50%).
+    final cx = rect.center.dx;
+    canvas.drawLine(
+      Offset(cx, rect.top + 3),
+      Offset(cx, rect.bottom - 3),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.85)
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+}
+
+class _ResultStep extends StatefulWidget {
+  final MoodScoreResult? result;
+  final VoidCallback onContinue;
+  const _ResultStep({
+    super.key,
+    required this.result,
+    required this.onContinue,
+  });
+
+  @override
+  State<_ResultStep> createState() => _ResultStepState();
+}
+
+class _ResultStepState extends State<_ResultStep>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _gauge;
+  late final Animation<double> _fade1;
+  late final Animation<double> _fade2;
+  late final Animation<double> _fade3;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..forward();
+    _gauge = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.75, curve: Curves.easeOutCubic),
+    );
+    _fade1 = _fade(0.0);
+    _fade2 = _fade(0.30);
+    _fade3 = _fade(0.55);
+  }
+
+  Animation<double> _fade(double begin) => CurvedAnimation(
+        parent: _controller,
+        curve: Interval(begin, begin + 0.45, curve: Curves.easeOutCubic),
+      );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Color _scoreColor(double t) {
+    const c0 = Color(0xFF3F51B5); // diep blauw (laag)
+    const c1 = Color(0xFF26A69A); // teal (neutraal)
+    const c2 = Color(0xFFF9A825); // amber (hoog)
+    const c3 = Color(0xFFE53935); // rood (zeer hoog)
+    if (t < 0.38) return Color.lerp(c0, c1, t / 0.38)!;
+    if (t < 0.62) return c1;
+    if (t < 0.85) return Color.lerp(c1, c2, (t - 0.62) / 0.23)!;
+    return Color.lerp(c2, c3, (t - 0.85) / 0.15)!;
+  }
+
+  String _moodLabel(BuildContext context, int score) {
+    final l10n = AppLocalizations.of(context);
+    switch (score) {
+      case 4:
+        return l10n.stemmingsCheckOptieExtreemPositief;
+      case 3:
+        return l10n.stemmingsCheckOptiePositiefHoog;
+      case 2:
+        return l10n.stemmingsCheckOptiePositiefMatig;
+      case 1:
+        return l10n.stemmingsCheckOptieLichtPositief;
+      case 0:
+        return l10n.stemmingsCheckOptieNeutraal;
+      case -1:
+        return l10n.stemmingsCheckOptieLichtNegatief;
+      case -2:
+        return l10n.stemmingsCheckOptieNegatiefMatig;
+      case -3:
+        return l10n.stemmingsCheckOptieNegatiefHoog;
+      default:
+        return l10n.stemmingsCheckOptieExtreemNegatief;
+    }
+  }
+
+  Color _tagColor(BipolarTag tag, ThemeData theme) {
+    switch (tag) {
+      case BipolarTag.maniaShift:
+      case BipolarTag.probableMania:
+      case BipolarTag.sleepReductionAlone:
+      case BipolarTag.positiveLifeEventTrigger:
+        return const Color(0xFFB45309); // amber-700, leesbaar op beide
+      case BipolarTag.depressionShift:
+      case BipolarTag.probableDepression:
+      case BipolarTag.negativeLifeEventTrigger:
+        return const Color(0xFF3949AB); // indigo-600
+      case BipolarTag.mixedEpisode:
+      case BipolarTag.opposingSignals:
+        return const Color(0xFF6A3FB5); // paars
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final tags = widget.result?.bipolarTags ?? const <BipolarTag>[];
+    final score = widget.result?.ritmeScore ?? 0;
+    final frac = ((score + 4) / 8.0).clamp(0.0, 1.0);
+    final accent = _scoreColor(frac);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Hero: gauge met score ───────────────────────────────
+          FadeTransition(
+            opacity: _fade1,
+            child: _StaggeredSlide(
+              animation: _fade1,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppTheme.largeRadius),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      accent.withValues(alpha: 0.30),
+                      accent.withValues(alpha: 0.08),
+                    ],
+                  ),
+                  border: Border.all(color: accent.withValues(alpha: 0.45)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.auto_awesome, size: 18, color: accent),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.stemmingsCheckSuccesTitel,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.6,
+                            color: accent,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    SizedBox(
+                      height: 100,
+                      child: AnimatedBuilder(
+                        animation: _gauge,
+                        builder: (context, _) => CustomPaint(
+                          size: Size.infinite,
+                          painter: _MoodGaugePainter(
+                            progress: _gauge.value * frac,
+                            trackColor: theme.colorScheme.outline.withValues(
+                              alpha: 0.35,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    AnimatedBuilder(
+                      animation: _gauge,
+                      builder: (context, _) {
+                        final shown = (_gauge.value * score).round();
+                        return Text(
+                          shown >= 0 ? '+$shown' : '$shown',
+                          style: TextStyle(
+                            fontSize: 44,
+                            height: 1,
+                            fontWeight: FontWeight.w800,
+                            color: accent,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _moodLabel(context, score),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // ── Analyse / tags ───────────────────────────────────────
+          FadeTransition(
+            opacity: _fade2,
+            child: _StaggeredSlide(
+              animation: _fade2,
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+                  border: Border.all(color: theme.dividerColor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.psychology_outlined,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.stemmingsCheckAnalyseTitel,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    if (tags.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(
+                          l10n.stemmingsCheckAnalyseGeen,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      )
+                    else
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: tags.map((tag) {
+                          final color = _tagColor(tag, theme);
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.15),
+                              border: Border.all(
+                                color: color.withValues(alpha: 0.6),
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  size: 14,
+                                  color: color,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  tag.localizedLabel(l10n),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: color,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    const SizedBox(height: 10),
+                    Text(
+                      l10n.stemmingsCheckAnalyseTip,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // ── Knoppen ──────────────────────────────────────────────
+          FadeTransition(
+            opacity: _fade3,
+            child: _StaggeredSlide(
+              animation: _fade3,
+              child: Row(
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.stemmingsCheckSluiten),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: widget.onContinue,
+                      icon: const Icon(Icons.check_rounded),
+                      label: Text(l10n.stemmingsCheckSuccesDoorNaar),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -826,155 +1286,92 @@ class _SliderQuestion extends StatelessWidget {
   }
 }
 
-class _ResultStep extends StatelessWidget {
-  final MoodScoreResult? result;
-  final VoidCallback onContinue;
-  const _ResultStep({
-    super.key,
-    required this.result,
-    required this.onContinue,
-  });
+/// Fade + slide omhoog voor staggered entrance.
+class _StaggeredSlide extends StatelessWidget {
+  final Animation<double> animation;
+  final Widget child;
 
-  Color _tagColor(BipolarTag tag, ThemeData theme) {
-    switch (tag) {
-      case BipolarTag.maniaShift:
-      case BipolarTag.probableMania:
-      case BipolarTag.sleepReductionAlone:
-      case BipolarTag.positiveLifeEventTrigger:
-        return Colors.orange.shade700;
-      case BipolarTag.depressionShift:
-      case BipolarTag.probableDepression:
-      case BipolarTag.negativeLifeEventTrigger:
-        return Colors.indigo.shade400;
-      case BipolarTag.mixedEpisode:
-      case BipolarTag.opposingSignals:
-        return Colors.deepPurple.shade400;
-    }
-  }
+  const _StaggeredSlide({required this.animation, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final tags = result?.bipolarTags ?? const <BipolarTag>[];
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 16),
-          Icon(
-            Icons.check_circle_outline,
-            size: 96,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.stemmingsCheckSuccesTitel,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleLarge,
-          ),
-          const SizedBox(height: 24),
-
-          // Bipolaire analyse-sectie
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-              border: Border.all(color: theme.dividerColor),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.psychology_outlined,
-                      size: 20,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.stemmingsCheckAnalyseTitel,
-                      style: theme.textTheme.titleMedium,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                if (tags.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Text(
-                      l10n.stemmingsCheckAnalyseGeen,
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  )
-                else
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: tags.map((tag) {
-                      final color = _tagColor(tag, theme);
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.15),
-                          border: Border.all(
-                            color: color.withValues(alpha: 0.6),
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.warning_amber_rounded,
-                              size: 14,
-                              color: color,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              tag.localizedLabel(l10n),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: color,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                const SizedBox(height: 10),
-                Text(
-                  l10n.stemmingsCheckAnalyseTip,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.outline,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: onContinue,
-            child: Text(l10n.stemmingsCheckSuccesDoorNaar),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.stemmingsCheckSluiten),
-          ),
-        ],
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) => Opacity(
+        opacity: animation.value,
+        child: Transform.translate(
+          offset: Offset(0, 24 * (1 - animation.value)),
+          child: child,
+        ),
       ),
+      child: child,
     );
   }
+}
+
+/// 270°-boog die het stemmingsresultaat toont (blauw → teal → amber → rood).
+class _MoodGaugePainter extends CustomPainter {
+  final double progress; // 0..1
+  final Color trackColor;
+
+  const _MoodGaugePainter({required this.progress, required this.trackColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height * 0.86);
+    final radius = size.height * 0.78;
+    final strokeWidth = size.height * 0.16;
+    const startAngle = math.pi * 0.75;
+    const sweep = math.pi * 1.5;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    final track = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = strokeWidth
+      ..color = trackColor;
+    canvas.drawArc(rect, startAngle, sweep, false, track);
+
+    if (progress <= 0) return;
+    final arc = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = strokeWidth
+      ..shader = SweepGradient(
+        startAngle: startAngle,
+        endAngle: startAngle + sweep,
+        colors: const [
+          Color(0xFF3F51B5),
+          Color(0xFF26A69A),
+          Color(0xFFF9A825),
+          Color(0xFFE53935),
+        ],
+        stops: const [0.0, 0.38, 0.66, 1.0],
+      ).createShader(rect);
+    canvas.drawArc(rect, startAngle, sweep * progress, false, arc);
+
+    // Knopje op het einde van de gevulde boog.
+    final endAngle = startAngle + sweep * progress;
+    final knob = Offset(
+      center.dx + radius * math.cos(endAngle),
+      center.dy + radius * math.sin(endAngle),
+    );
+    canvas.drawCircle(
+      knob,
+      strokeWidth * 0.42,
+      Paint()..color = Colors.white,
+    );
+    canvas.drawCircle(
+      knob,
+      strokeWidth * 0.42,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = const Color(0xFF263238).withValues(alpha: 0.25),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MoodGaugePainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.trackColor != trackColor;
 }
