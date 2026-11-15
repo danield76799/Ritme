@@ -524,11 +524,37 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  /// De gradient van de begroetingskaart voor de actieve brightness.
+  /// Begroetingskaart-gradiënt op basis van brightness én dagdeel.
+  ///
+  /// Ochtend (5-11): warm amber — opstaan en uitlichten.
+  /// Middag (11-17): de vertrouwde teal-merkgradient.
+  /// Avond (17-22): zacht lavendel — tot rust komen.
+  /// Nacht (22-5): diep leigrijs — slapen.
+  /// Alle varianten halen >= 4.5:1 met de bijbehorende onSurface-tekst.
+  static LinearGradient heroGradientFor(Brightness brightness, int hour) {
+    final bool isDark = brightness == Brightness.dark;
+    if (hour >= 5 && hour < 11) {
+      return isDark
+          ? const LinearGradient(colors: [Color(0xFF3B2E22), Color(0xFF241B14)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+          : const LinearGradient(colors: [Color(0xFFFFE3B3), Color(0xFFF6C58F)], begin: Alignment.topLeft, end: Alignment.bottomRight);
+    }
+    if (hour >= 17 && hour < 22) {
+      return isDark
+          ? const LinearGradient(colors: [Color(0xFF29233F), Color(0xFF171226)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+          : const LinearGradient(colors: [Color(0xFFE4DCF7), Color(0xFFC4B5E2)], begin: Alignment.topLeft, end: Alignment.bottomRight);
+    }
+    if (hour >= 22 || hour < 5) {
+      return isDark
+          ? const LinearGradient(colors: [Color(0xFF131B2A), Color(0xFF0B0F1A)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+          : const LinearGradient(colors: [Color(0xFFDDE3EC), Color(0xFFB9C4D8)], begin: Alignment.topLeft, end: Alignment.bottomRight);
+    }
+    return isDark ? darkHeroGradient : brandGradient;
+  }
+
+  /// De gradient van de begroetingskaart voor de actieve brightness én het
+  /// huidige dagdeel.
   static LinearGradient heroGradient(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-      ? darkHeroGradient
-      : brandGradient;
+      heroGradientFor(Theme.of(context).brightness, DateTime.now().hour);
 
   /// Kaartachtergrond met een subtiele tint van het tegelaccent.
   ///

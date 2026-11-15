@@ -92,10 +92,22 @@ class TileIconBadge extends StatelessWidget {
           Positioned(
             right: -2,
             top: -2,
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(color: cardColor, shape: BoxShape.circle),
-              child: Icon(Icons.check_circle, color: success, size: 18),
+            // Het vinkje plopt met een veer (elasticOut) in beeld zodra de
+            // taak is afgevinkt — een klein dopaminedie momentje bij de
+            // check-in. De badge wordt vervangen (niet in-place geanimeerd),
+            // dus de pop speelt bij het opnieuw samenstellen van de tegel.
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 550),
+              curve: Curves.elasticOut,
+              builder: (context, value, child) =>
+                  Transform.scale(scale: value, child: child),
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration:
+                    BoxDecoration(color: cardColor, shape: BoxShape.circle),
+                child: Icon(Icons.check_circle, color: success, size: 18),
+              ),
             ),
           ),
       ],

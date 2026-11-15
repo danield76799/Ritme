@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
@@ -604,29 +605,53 @@ class _DashboardScreenState extends State<DashboardScreen>
           child: child,
         ),
       ),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          // De gradient komt uit het thema, zodat hij meebeweegt met de
-          // brightness. De handmatige variant hierboven stond nog op het
-          // kleurenschema van vóór de donkere herbouw.
-          gradient: AppTheme.heroGradient(context),
-          borderRadius: BorderRadius.circular(AppTheme.largeRadius),
-          boxShadow: [
-            BoxShadow(
-              // In light mode was dit #B4A8D4 (paars) — een kleur uit een
-              // ander merk. Nu een teal-tint die bij de kaart hoort.
-              color: (isDark
-                      ? Colors.black
-                      : const Color(0xFF4FB2C1))
-                  .withValues(alpha: isDark ? 0.35 : 0.22),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppTheme.largeRadius),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: AppTheme.heroGradient(context),
+            boxShadow: [
+              BoxShadow(
+                // In light mode was dit #B4A8D4 (paars) — een kleur uit een
+                // ander merk. Nu een teal-tint die bij de kaart hoort.
+                color: (isDark
+                        ? Colors.black
+                        : const Color(0xFF4FB2C1))
+                    .withValues(alpha: isDark ? 0.35 : 0.22),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Decoratieve gloeiende vormen (geen interactie, geen tekst).
+              Positioned(
+                top: -48,
+                right: -42,
+                child: _HeroOrb(size: 150, brightness: Theme.of(context).brightness),
+              ),
+              Positioned(
+                bottom: -56,
+                left: -52,
+                child: _HeroOrb(size: 120, brightness: Theme.of(context).brightness, strong: false),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: _buildGreetingContent(username, dateStr),
+              ),
+            ],
+          ),
         ),
-        child: Column(
+      ),
+    );
+  }
+
+  /// De inhoud van de begroetingskaart (losse widget zodat de hero met
+  /// decoratieve vormen kan lay-outen zonder dat de boom te diep wordt).
+  Widget _buildGreetingContent(String username, String dateStr) {
+    return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FittedBox(
@@ -663,8 +688,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               ],
             ),
           ],
-        ),
-      ),
     );
   }
 
@@ -849,7 +872,10 @@ class _DashboardScreenState extends State<DashboardScreen>
         if (dagenVerschil(_selectedDate) != 0) _loadDataForDate(_selectedDate);
       },
       closedBuilder: (context, openContainer) => InkWell(
-        onTap: openContainer,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          openContainer();
+        },
         borderRadius: BorderRadius.circular(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1128,7 +1154,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.local_fire_department, size: 13, color: AppTheme.streakText(Theme.of(context).brightness), semanticLabel: AppLocalizations.of(context).streakMeerdereDagen(_dagStreak)),
+          _PulsingFlame(
+            color: AppTheme.streakText(Theme.of(context).brightness),
+            semanticLabel: AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
+          ),
           const SizedBox(width: 5),
           Text(
             _dagStreak == 1 ? AppLocalizations.of(context).streakEenDag : AppLocalizations.of(context).streakMeerdereDagen(_dagStreak),
@@ -1239,3 +1268,84 @@ class _SecondaryActionButton extends StatelessWidget {
 }
 
 enum _SleepPeriod { yesterday, week, fourteenDays }
+/// Gloeiende cirkel voor de hero-kaart. Puur decoratief: geen interactie,
+/// geen tekst. Twee varianten: een heldere kern en een zachte schijn.
+class _HeroOrb extends StatelessWidget {
+  final double size;
+  final Brightness brightness;
+  final bool strong;
+
+  const _HeroOrb({required this.size, required this.brightness, this.strong = true});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = brightness == Brightness.dark;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: isDark
+              ? [
+                  Colors.white.withValues(alpha: strong ? 0.16 : 0.07),
+                  Colors.white.withValues(alpha: 0.0),
+                ]
+              : [
+                  Colors.white.withValues(alpha: strong ? 0.85 : 0.45),
+                  Colors.white.withValues(alpha: 0.0),
+                ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Vlammetje in de streak-chip dat zacht pulseert. Kleine, constante
+/// beweging die de streak "levend" maakt zonder afleiding.
+class _PulsingFlame extends StatefulWidget {
+  final Color color;
+  final String? semanticLabel;
+
+  const _PulsingFlame({required this.color, this.semanticLabel});
+
+  @override
+  State<_PulsingFlame> createState() => _PulsingFlameState();
+}
+
+class _PulsingFlameState extends State<_PulsingFlame>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _scale = Tween<double>(begin: 0.9, end: 1.18).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scale,
+      child: Icon(
+        Icons.local_fire_department,
+        size: 13,
+        color: widget.color,
+        semanticLabel: widget.semanticLabel,
+      ),
+    );
+  }
+}
