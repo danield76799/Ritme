@@ -7,6 +7,7 @@ import '../utils/logger.dart';
 import '../utils/mood_assessment_scorer.dart';
 import '../utils/checkin_colors.dart';
 import '../widgets/overzicht_rij.dart';
+import '../services/notification_helper.dart';
 
 /// Avond check-in: de terugblik op de dag, vlak voordat je gaat slapen.
 ///
@@ -263,6 +264,12 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
         }
         await db.insertSrmActivity(today, entry.key, timeStr, pScore, null,
             targetTime: (targetStr != null && targetStr != '--:--') ? targetStr : null);
+      }
+      // Vandaag is de avond check-in ingevuld — geen herinnering meer vandaag.
+      try {
+        await NotificationHelper.instance.rescheduleCheckinReminders();
+      } catch (e) {
+        AppLogger.error('Herplannen check-in herinnering mislukt', error: e);
       }
       return true;
     } catch (e) {

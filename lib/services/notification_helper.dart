@@ -558,10 +558,14 @@ class NotificationHelper {
           AndroidFlutterLocalNotificationsPlugin>();
       final canScheduleExact = await androidImpl?.canScheduleExactNotifications() ?? false;
 
+      // Heeft de gebruiker dit medicijn vandaag al ingenomen of afgevinkt?
+      // Dan geen herinnering meer vandaag.
+      final medHandled = await _medHandledToday(id);
+
       if (days.length == 7) {
         // Every day — use daily repeating schedule
         var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-        if (scheduledDate.isBefore(now)) {
+        if (scheduledDate.isBefore(now) || medHandled) {
           scheduledDate = scheduledDate.add(const Duration(days: 1));
         }
 
@@ -589,6 +593,14 @@ class NotificationHelper {
           await _notifications.cancel(dayNotificationId);
 
           var scheduledDate = _nextWeekday(now, dayOfWeek, hour, minute);
+          if (dayOfWeek == now.weekday && medHandled) {
+            // Vandaag is een van de dagen én de gebruiker heeft het medicijn
+            // al afgevinkt — schuif deze specifieke dag een week op.
+            final todayAt = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+            if (todayAt.isAfter(now)) {
+              scheduledDate = todayAt.add(const Duration(days: 7));
+            }
+          }
 
           await _notifications.zonedSchedule(
             dayNotificationId,
@@ -609,6 +621,25 @@ class NotificationHelper {
       }
     } catch (e) {
       AppLogger.error('Medication scheduling error for $medicationName', error: e);
+    }
+  }
+
+  /// Heeft de gebruiker dit medicijn vandaag al afgevinkt (ingenomen of
+  /// expliciet overgeslagen)? Elke rij in medication_intakes voor vandaag
+  /// betekent "gebruiker heeft actie genomen" → geen reminder meer vandaag.
+  Future<bool> _medHandledToday(int medicationId) async {
+    try {
+      final today = CheckinStatus.dateKey(DateTime.now());
+      final intakes = await db.getMedicationIntake(today);
+      for (final row in intakes) {
+        final rawId = row['medication_id'];
+        final id = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+        if (id == medicationId) return true;
+      }
+      return false;
+    } catch (_) {
+      // Bij een leesfout de reminder liever wél tonen dan stilzwijgend weglaten.
+      return false;
     }
   }
 
@@ -1001,7 +1032,12 @@ class NotificationHelper {
       hour,
       minute,
     );
-    if (scheduled.isBefore(now)) {
+    // Al vandaag ingevuld? Dan komt er vandaag geen herinnering meer —
+    // de volgende is die van morgen (de eerstvolgende keer dat dit wordt
+    // hergepland, wel weer met een check voor 'morgen').
+    final vandaag = await CheckinStatus.voor(CheckinStatus.dateKey(now));
+    final vandaagGedaan = ochtend ? vandaag.ochtend : vandaag.avond;
+    if (scheduled.isBefore(now) || vandaagGedaan) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
 
@@ -1107,8 +1143,11 @@ class NotificationHelper {
           debugPrint('Snoozing medication $medicationId for 15 minutes...');
           
           // Reschedule a one-time notification for 15 mins from now
+          // Snooze krijgt een EIGEN id — met het vaste medicatie-id zou de
+          // dagelijkse herhalende herinnering definitief vervangen worden
+          // door deze eenmalige snooze.
           await _notifications.zonedSchedule(
-            (medicationId % 90000) + 10000,
+            5000000 + (medicationId % 400000),
             NotifStrings.medicationReminderShort,
             NotifStrings.timeToTakeMedicationSnoozed(),
             tz.TZDateTime.now(tz.local).add(const Duration(minutes: 15)),
@@ -1124,6 +1163,16 @@ class NotificationHelper {
             uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
             payload: 'medication:$medicationId',
           );
+        }
+        // Wie zijn medicijn al heeft afgevinkt (of bewust heeft overgeslagen)
+        // hoeft vandaag geen herinnering meer. Alles herplannen zodat de
+        // rest van vandaag niet meer afgaat.
+        if (actionId == 'taken' || actionId == 'skip') {
+          try {
+            await rescheduleAllMedicationReminders();
+          } catch (e) {
+            AppLogger.error('Reschedule na medicatie-actie mislukt', error: e);
+          }
         }
       }
     }

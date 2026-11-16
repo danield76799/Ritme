@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../utils/checkin_colors.dart';
 import '../widgets/overzicht_rij.dart';
 import '../utils/logger.dart';
+import '../services/notification_helper.dart';
 
 /// Ochtend check-in: 6 korte stappen die bij het opstaan horen.
 ///
@@ -373,6 +374,12 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     if (!mounted) return;
     setState(() => _isSaving = false);
     if (opgeslagen) {
+      // Vandaag is de check-in ingevuld — de herinnering van vandaag hoeft niet meer.
+      try {
+        await NotificationHelper.instance.rescheduleCheckinReminders();
+      } catch (e) {
+        AppLogger.error('Herplannen check-in herinnering mislukt', error: e);
+      }
       setState(() => _step = 6);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

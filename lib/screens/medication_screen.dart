@@ -194,6 +194,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
         'aantal_ingenomen': newVal,
         'dosering': dosering,
       });
+      // Afgevinkt of weer verwijderd — medicatie-herinneringen van vandaag
+      // aanpassen (goed) zodat een ingevulde medicatie vandaag niet meer pingt.
+      try {
+        await NotificationHelper.instance.rescheduleAllMedicationReminders();
+      } catch (e) {
+        AppLogger.error('Herplannen medicatie-herinnering mislukt', error: e);
+      }
       _loadData();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to toggle medication intake', error: e, stackTrace: stackTrace);
