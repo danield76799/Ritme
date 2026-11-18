@@ -23,12 +23,16 @@ class WeekStrip extends StatelessWidget {
   /// (+1) week gaat.
   final ValueChanged<int> onShiftWeek;
 
+  /// Dagen waarop iets is ingevuld — die krijgen een klein stipje.
+  final Set<DateTime> filledDays;
+
   const WeekStrip({
     super.key,
     required this.weekStart,
     required this.selected,
     required this.onSelected,
     required this.onShiftWeek,
+    this.filledDays = const {},
   });
 
   /// De maandag van de week waarin de gegeven dag valt.
@@ -46,7 +50,7 @@ class WeekStrip extends StatelessWidget {
     final vandaag = DateTime.now();
 
     return SizedBox(
-      height: 68,
+      height: 78,
       child: Row(
         children: [
           _pijl(context, icon: Icons.chevron_left, onTap: () => onShiftWeek(-1)),
@@ -124,7 +128,7 @@ class WeekStrip extends StatelessWidget {
                 DateFormat('EEE', locale).format(dag).substring(0, 2),
                 style: TextStyle(
                   fontSize: 12,
-                  height: 1.1,
+                  height: 1.0,
                   fontWeight: FontWeight.w600,
                   color: geselecteerd
                       ? opAccent
@@ -136,9 +140,21 @@ class WeekStrip extends StatelessWidget {
                 '${dag.day}',
                 style: TextStyle(
                   fontSize: 16,
-                  height: 1.1,
+                  height: 1.0,
                   fontWeight: FontWeight.w700,
                   color: geselecteerd ? opAccent : AppTheme.primaryText(context),
+                ),
+              ),
+              const SizedBox(height: 2),
+              // Stipje: gevuld als er die dag iets is ingevuld.
+              Container(
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _isFilled(filledDays, dag)
+                      ? (geselecteerd ? opAccent : accent)
+                      : Colors.transparent,
                 ),
               ),
             ],
@@ -146,5 +162,10 @@ class WeekStrip extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _isFilled(Set<DateTime> days, DateTime dag) {
+    final d = DateTime(dag.year, dag.month, dag.day);
+    return days.contains(d);
   }
 }

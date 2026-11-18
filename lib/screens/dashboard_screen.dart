@@ -668,13 +668,38 @@ class _DashboardScreenState extends State<DashboardScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
-                  child: Text(
-                    dateStr,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.black
+                              : Colors.white)
+                          .withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.today,
+                            size: 14,
+                            color: AppTheme.primaryTextOn(Theme.of(context).brightness)),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            dateStr,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                if (_dagStreak > 0) const SizedBox(width: 8),
                 if (_dagStreak > 0) _buildStreakChip(),
               ],
             ),
@@ -774,8 +799,23 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  Set<DateTime> _filledDays() {
+    final days = <DateTime>{};
+    for (final log in _dailyLogs) {
+      final ds = log['date']?.toString();
+      if (ds == null || ds.isEmpty) continue;
+      final d = DateTime.tryParse(ds);
+      if (d == null) continue;
+      if (ochtendGedaan(log) || avondGedaan(_srmActivitiesList, ds)) {
+        days.add(DateTime(d.year, d.month, d.day));
+      }
+    }
+    return days;
+  }
+
   Widget _buildWeekStrip() {
     return WeekStrip(
+      filledDays: _filledDays(),
       weekStart: WeekStrip.mondayOf(_selectedDate),
       selected: _selectedDate,
       onSelected: (dag) {
@@ -802,7 +842,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       mainAxisSpacing: 12,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.3,
+      childAspectRatio: 1.12,
       children: [
         _StaggeredCard(
           animation: _cardAnimations[0],
@@ -854,18 +894,17 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildActionCard(BuildContext context, {required IconData icon, required TileAccent accent, required String title, required String route, bool isCompleted = false}) {
     final theme = Theme.of(context);
-    final accentKleur = accent.colorFor(theme.brightness);
+    final brightness = theme.brightness;
+    final accentKleur = accent.colorFor(brightness);
+    final isDark = brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
+    final success = AppTheme.successOn(brightness);
     return OpenContainer<bool>(
       transitionType: ContainerTransitionType.fadeThrough,
       transitionDuration: const Duration(milliseconds: 400),
       closedElevation: 0,
-      closedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isCompleted ? AppTheme.accentMint.withValues(alpha: 0.5) : AppTheme.cardBorderColor(context), width: isCompleted ? 1.5 : 1),
-      ),
-      // Een subtiele tint van het tegelaccent: de tegels zijn dan van
-      // elkaar te onderscheiden zonder dat de kleur opdringt.
-      closedColor: AppTheme.tileSurface(context, accentKleur),
+      closedColor: Colors.transparent,
+      closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       openColor: theme.scaffoldBackgroundColor,
       onClosed: (_) {
         _loadData();
@@ -877,35 +916,110 @@ class _DashboardScreenState extends State<DashboardScreen>
           openContainer();
         },
         borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                TileIconBadge(icon: icon, accent: accent, size: 56, iconSize: 24, isCompleted: isCompleted),
-                if (isCompleted)
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Icon(Icons.check_circle, color: AppTheme.accentMint, size: 20),
-                  ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color.alphaBlend(
+                  accentKleur.withValues(alpha: isDark ? 0.28 : 0.22),
+                  AppTheme.tileSurface(context, accentKleur),
+                ),
+                AppTheme.tileSurface(context, accentKleur),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: theme.brightness == Brightness.dark
-                    ? AppTheme.darkText
-                    : AppTheme.textCharcoal,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
+            border: Border.all(
+              color: isCompleted
+                  ? AppTheme.accentMint.withValues(alpha: 0.75)
+                  : accentKleur.withValues(alpha: 0.45),
+              width: 1.5,
             ),
-          ],
+            boxShadow: [
+              BoxShadow(
+                color: accentKleur.withValues(alpha: 0.20),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(10),
+          child: Stack(
+            children: [
+              // Zacht watermerk rechtsonder voor diepte.
+              Positioned(
+                right: -18,
+                bottom: -22,
+                child: Icon(
+                  icon,
+                  size: 104,
+                  color: accentKleur.withValues(alpha: isDark ? 0.16 : 0.13),
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TileIconBadge(
+                        icon: icon,
+                        accent: accent,
+                        size: 46,
+                        iconSize: 22,
+                      ),
+                      if (isCompleted)
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: success.withValues(alpha: 0.16),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.check, color: success, size: 18),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      letterSpacing: -0.1,
+                      color: isDark ? AppTheme.darkText : AppTheme.textCharcoal,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(
+                        isCompleted ? Icons.check_circle_outline : Icons.circle_outlined,
+                        size: 13,
+                        color: isCompleted ? success : AppTheme.secondaryText(context),
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          isCompleted ? l10n.tegelGedaan : l10n.tegelNogTeDoen,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isCompleted ? success : AppTheme.secondaryText(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       openBuilder: (context, closeContainer) => _routeBuilder(route, closeContainer: closeContainer),

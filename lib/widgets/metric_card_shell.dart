@@ -48,34 +48,54 @@ class MetricCardShell extends StatelessWidget {
     return Material(
       color: theme.cardColor,
       borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < stackBreakpoint) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    iconBox,
-                    const SizedBox(height: 12),
-                    content,
-                  ],
-                );
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  iconBox,
-                  const SizedBox(width: 16),
-                  Expanded(child: content),
-                ],
-              );
-            },
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          // Subtiele accentbalk links, in de kleur van het kaart-icoon.
+          Positioned(
+            left: 0,
+            top: 14,
+            bottom: 14,
+            width: 4,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.8),
+                borderRadius: const BorderRadius.horizontal(
+                  right: Radius.circular(4),
+                ),
+              ),
+            ),
           ),
-        ),
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(22, 16, 18, 16),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < stackBreakpoint) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        iconBox,
+                        const SizedBox(height: 12),
+                        content,
+                      ],
+                    );
+                  }
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      iconBox,
+                      const SizedBox(width: 16),
+                      Expanded(child: content),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
