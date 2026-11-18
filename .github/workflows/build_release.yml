@@ -37,7 +37,7 @@ jobs:
     - name: Compute version
       id: ver
       env:
-        BASE_RUN_14: '189'   # run 189 = 1.4.0, daarna oplopend
+        BASE_RUN_14: '191'   # run 191 = 1.4.0, daarna oplopend
       run: |
         CODE=$((1000 + ${{ github.run_number }}))
         PATCH=$(( ${{ github.run_number }} - BASE_RUN_14 ))
