@@ -364,9 +364,31 @@ class _MedicationScreenState extends State<MedicationScreen> {
         await NotificationHelper.instance.cancelMedicationReminder(configId);
         await db.deleteMedicationConfig(configId);
         _loadData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).medicatieVerwijderd),
+              backgroundColor: AppTheme.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
       }
     } catch (e) {
       AppLogger.error('Failed to delete medication', error: e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).verwijderenMislukt),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 

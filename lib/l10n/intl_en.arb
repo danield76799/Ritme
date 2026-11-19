@@ -95,7 +95,9 @@
   "medicatieSchema": "Medication Schedule",
   "meer": "More",
   "medicatieVerwijderen": "Delete medication?",
-  "medicatieWijzigen": "Edit medication",
+
+  "medicatieVerwijderd": "Medication deleted",
+  "verwijderenMislukt": "Could not delete. Please try again.",  "medicatieWijzigen": "Edit medication",
   "menu": "Menu",
   "naamBijvLithium": "Name (e.g. Lithium)",
   "neeAnnuleren": "No, cancel",

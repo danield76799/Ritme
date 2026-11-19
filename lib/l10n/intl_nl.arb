@@ -85,7 +85,9 @@
   "medicatieSchema": "Medicatie Schema",
   "meer": "Meer",
   "medicatieVerwijderen": "Medicatie verwijderen?",
-  "medicatieWijzigen": "Medicatie wijzigen",
+
+  "medicatieVerwijderd": "Medicijn verwijderd",
+  "verwijderenMislukt": "Verwijderen mislukt. Probeer het opnieuw.",  "medicatieWijzigen": "Medicatie wijzigen",
   "menu": "Menu",
   "naamBijvLithium": "Naam (bijv. Lithium)",
   "neeAnnuleren": "Nee, annuleren",
