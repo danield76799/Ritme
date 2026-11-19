@@ -1262,8 +1262,27 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<List<Map<String, dynamic>>> getMedicationConfigsAll() async {
-    // Hive backend: geen soft-delete filter, retourneer alles
-    return getMedicationConfigs();
+    // Teruggeven wat er werkelijk in de box staat, INCLUSIEF soft-deleted
+    // configs: rapport en backup gebruiken dit om de medicatiegeschiedenis
+    // compleet te houden. Eerder werd hier abusievelijk de gefilterde lijst
+    // teruggegeven, waardoor een verwijderd medicijn compleet uit het
+    // rapport verdween (inclusief zijn inname-historie).
+    try {
+      return _medicationConfig.toMap().entries.map((entry) {
+        final map = Map<String, dynamic>.from(entry.value);
+        if (!map.containsKey('id')) {
+          map['id'] = entry.key is int ? entry.key : int.tryParse(entry.key.toString());
+        }
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value;
+        });
+        return cleanMap;
+      }).toList();
+    } catch (e) {
+      AppLogger.error('Error loading all medication configs', error: e);
+      return [];
+    }
   }
 
   // ===================
