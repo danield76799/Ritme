@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 11,
+      version: 10,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -81,7 +81,6 @@ class DatabaseHelper implements DatabaseRepository {
         eenheid TEXT,
         reminder_enabled INTEGER DEFAULT 0,
         deleted INTEGER DEFAULT 0,
-        zo_nodig INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -191,7 +190,6 @@ class DatabaseHelper implements DatabaseRepository {
     await db.execute('ALTER TABLE medication_config ADD COLUMN bloedspiegel_bijhouden INTEGER DEFAULT 0');
     await db.execute('ALTER TABLE medication_config ADD COLUMN target_min REAL');
     await db.execute('ALTER TABLE medication_config ADD COLUMN target_max REAL');
-    await db.execute('ALTER TABLE medication_config ADD COLUMN zo_nodig INTEGER DEFAULT 0');
 
     // Voortekenen standaard items seeden
     await _seedProdromalChecklist(db);
@@ -328,15 +326,6 @@ class DatabaseHelper implements DatabaseRepository {
           'CREATE UNIQUE INDEX IF NOT EXISTS idx_intake_med_date ON medication_intake(medication_id, date)',
         );
       } catch (_) {}
-    }
-    if (oldVersion < 11) {
-      try {
-        await db.execute(
-          'ALTER TABLE medication_config ADD COLUMN zo_nodig INTEGER DEFAULT 0',
-        );
-      } catch (_) {
-        // kolom bestaat al (verse installatie)
-      }
     }
     if (oldVersion < 10) {
       try {
@@ -747,20 +736,18 @@ class DatabaseHelper implements DatabaseRepository {
   // ===================
   
   @override
-  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true, bool zoNodig = false}) async {
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
     final db = await database;
     return await db.insert('medication_config', {
       'naam': naam,
       'dosering': dosering,
       'eenheid': eenheid,
-      // Bij 'zo nodig' nooit herinneringen: het is geen verplichting.
-      'reminder_enabled': (!zoNodig && reminderEnabled) ? 1 : 0,
-      'zo_nodig': zoNodig ? 1 : 0,
+      'reminder_enabled': reminderEnabled ? 1 : 0,
     });
   }
 
   @override
-  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true, bool zoNodig = false}) async {
+  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
     // Zelfde contract als de Hive-variant: schrijf op de GEGEVEN id zodat een
     // backup-restore de originele ids herstelt en intake-rijen blijven kloppen.
     final db = await database;
@@ -771,8 +758,7 @@ class DatabaseHelper implements DatabaseRepository {
         'naam': naam,
         'dosering': dosering,
         'eenheid': eenheid,
-        'reminder_enabled': (!zoNodig && reminderEnabled) ? 1 : 0,
-        'zo_nodig': zoNodig ? 1 : 0,
+        'reminder_enabled': reminderEnabled ? 1 : 0,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -820,17 +806,6 @@ class DatabaseHelper implements DatabaseRepository {
     return await db.update(
       'medication_config',
       {'deleted': 1},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  @override
-  Future<int> reactivateMedicationConfig(int id) async {
-    final db = await database;
-    return await db.update(
-      'medication_config',
-      {'deleted': 0},
       where: 'id = ?',
       whereArgs: [id],
     );

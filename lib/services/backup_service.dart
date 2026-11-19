@@ -340,15 +340,13 @@ class BackupService {
           // Keuze A gingen alleen naar de ene helft.
           final rawId = map['id'];
           final id = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
-          final zoNodig = map['zo_nodig'] == 1 || map['zo_nodig'] == '1' || map['zo_nodig'] == true;
           if (id != null) {
             await _db.upsertMedicationConfigById(
               id,
               map['naam']?.toString() ?? '',
               map['dosering']?.toString(),
               map['eenheid']?.toString(),
-              reminderEnabled: map['reminder_enabled'] != 0 && map['reminder_enabled'] != '0',
-              zoNodig: zoNodig,
+              reminderEnabled: map['reminder_enabled'] != 0,
             );
           } else {
             // Geen bruikbare id in de backup: vallen terug op de oude weg.
@@ -356,8 +354,7 @@ class BackupService {
               map['naam']?.toString() ?? '',
               map['dosering']?.toString(),
               map['eenheid']?.toString(),
-              reminderEnabled: map['reminder_enabled'] != 0 && map['reminder_enabled'] != '0',
-              zoNodig: zoNodig,
+              reminderEnabled: map['reminder_enabled'] != 0,
             );
           }
         }

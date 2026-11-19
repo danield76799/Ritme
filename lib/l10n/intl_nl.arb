@@ -85,13 +85,6 @@
   "medicatieSchema": "Medicatie Schema",
   "meer": "Meer",
   "medicatieVerwijderen": "Medicatie verwijderen?",
-
-  "medicatieVerwijderd": "Medicijn verwijderd",
-  "sectieGestopt": "Gestopt",
-  "gestoptUitleg": "Gestopt — de historie blijft zichtbaar",
-  "verwijderenMislukt": "Verwijderen mislukt. Probeer het opnieuw.",  "heractiveer": "Heractiveer",
-  "medicatieHeractiveerd": "Medicijn weer actief",
-  "heractiveerMislukt": "Heractiveren mislukt. Probeer het opnieuw.",
   "medicatieWijzigen": "Medicatie wijzigen",
   "menu": "Menu",
   "naamBijvLithium": "Naam (bijv. Lithium)",
@@ -905,11 +898,5 @@
   "helpTipDagelijks": "Vul dagelijks in, liefst op vaste tijden — ook in het weekend",
   "helpTipMedicatie": "Neem medicatie op de afgesproken tijden",
   "helpTipStatistieken": "Bekijk je statistieken wekelijks om patronen te herkennen",
-  "helpTipLokaal": "Alle gegevens blijven lokaal op je toestel (PIN/biometrie mogelijk)",
-  "zoNodig": "Zo nodig",
-  "zoNodigUitleg": "Alleen innemen als je het nodig hebt — geen herinnering en geen verplichting",
-  "vasteMedicatie": "Vaste medicatie",
-  "sectieZoNodig": "Zo nodig",
-  "prnVandaagGenomen": "Vandaag {count}× genomen",
-  "@prnVandaagGenomen": {"placeholders": {"count": {}}}
+  "helpTipLokaal": "Alle gegevens blijven lokaal op je toestel (PIN/biometrie mogelijk)"
 }
