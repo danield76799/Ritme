@@ -911,5 +911,15 @@
   "vasteMedicatie": "Vaste medicatie",
   "sectieZoNodig": "Zo nodig",
   "prnVandaagGenomen": "Vandaag {count}× genomen",
-  "@prnVandaagGenomen": {"placeholders": {"count": {}}}
+  "@prnVandaagGenomen": {"placeholders": {"count": {}}},
+  "crisisplanLeegTip": "Tip: vul nog {count} leeg(e) sectie(n) in voor een completer crisisplan.",
+  "@crisisplanLeegTip": {"placeholders": {"count": {}}},
+  "medicatieLadenMislukt": "Kon medicatiegegevens niet laden. Probeer het opnieuw.",
+  "afspraakToevoegenMislukt": "Kon afspraak niet toevoegen.",
+  "pdfPageOf": "Pagina {page} van {total}",
+  "@pdfPageOf": {"placeholders": {"page": {}, "total": {}}},
+  "pdfReportGeneratedBy": "Dit rapport is gegenereerd door Ritme — een app voor bipolaire stoornissen.",
+  "backupTestNietGemaakt": "Test: geen backup gemaakt (interval nog niet verstreken)",
+  "backupTestFout": "Testfout: {error}",
+  "@backupTestFout": {"placeholders": {"error": {}}}
 }

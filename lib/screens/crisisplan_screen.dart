@@ -357,7 +357,7 @@ class _CrisisPlanScreenState extends State<CrisisPlanScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Tip: vul nog $emptyCount leeg(e) sectie(n) in voor een completer crisisplan.',
+                            AppLocalizations.of(context).crisisplanLeegTip(emptyCount),
                             style: TextStyle(
                                 color: theme.colorScheme.onTertiaryContainer),
                           ),

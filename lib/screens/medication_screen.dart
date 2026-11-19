@@ -119,7 +119,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load medication data', error: e, stackTrace: stackTrace);
       setState(() {
-        _errorMessage = 'Kon medicatiegegevens niet laden.\n\nFout: $e';
+        _errorMessage = AppLocalizations.of(context).medicatieLadenMislukt;
         _isLoading = false;
       });
     }

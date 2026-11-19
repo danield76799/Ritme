@@ -30,6 +30,21 @@ class RapportStrings {
   String correlationLowAdherence(double v) =>
       nl ? 'Bij lage trouw (<70%) is de gemiddelde stemming: ${v.toStringAsFixed(1)}' : 'With low adherence (<70%), avg mood: ${v.toStringAsFixed(1)}';
 
+  String get patientLabel => nl ? 'Patiënt' : 'Patient';
+  String get summaryTitle => nl ? '📈 Samenvatting' : '📈 Summary';
+  String get summaryMetric => nl ? 'Metriek' : 'Metric';
+  String get summaryValue => nl ? 'Waarde' : 'Value';
+  String get analysisSignalsTitle =>
+      nl ? 'Bipolaire analyse-signalen' : 'Bipolar analysis signals';
+  String get moodCheckNote => nl
+      ? '_Opmerking: dit is de 5-vragen stemmingcheck, een apart instrument van de dagelijkse stemming-tracking (weekoverzicht)._'
+      : '_Note: this is the 5-question mood check, a separate instrument from the daily mood tracking (weekly overview)._';
+  String get ongoing => nl ? 'loopt nog' : 'ongoing';
+  String pageOfTotal(int page, int total) =>
+      nl ? 'Pagina $page van $total' : 'Page $page of $total';
+  String get correlationAnalysisTitle =>
+      nl ? '🧬 Correlatie Analyse' : '🧬 Correlation Analysis';
+
   String get correlationNoData => nl
       ? 'Onvoldoende data voor correlatie-analyse.'
       : 'Insufficient data for correlation analysis.';

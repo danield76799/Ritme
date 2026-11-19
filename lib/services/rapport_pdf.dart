@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'rapport_strings.dart';
 
 /// Maakt rapporttekst PDF-veilig: speciale tekens vervangen, emoji weg.
 String sanitizeVoorPdf(String s) {
@@ -132,7 +133,7 @@ List<pw.Widget> markdownNaarPdf(String markdown) {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Text(
-                '🧬 Correlatie Analyse',
+                RapportStrings().correlationAnalysisTitle,
                 style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900),
               ),
               pw.SizedBox(height: 8),
@@ -268,7 +269,7 @@ Future<Uint8List> bouwRapportPdf({
           ),
           if (patientName != null)
             pw.Text(
-              'Patiënt: $patientName',
+              '${RapportStrings().patientLabel}: $patientName',
               style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
             ),
           pw.SizedBox(height: 10),
@@ -279,7 +280,7 @@ Future<Uint8List> bouwRapportPdf({
         alignment: pw.Alignment.centerRight,
         margin: const pw.EdgeInsets.only(top: 10),
         child: pw.Text(
-          'Page ${ctx.pageNumber} of ${ctx.pagesCount}',
+          RapportStrings().pageOfTotal(ctx.pageNumber, ctx.pagesCount),
           style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
         ),
       ),

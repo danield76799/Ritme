@@ -307,7 +307,7 @@ class _DagboekScreenState extends State<DagboekScreen> {
             alignment: pw.Alignment.centerRight,
             margin: const pw.EdgeInsets.only(top: 10),
             child: pw.Text(
-              'Page ${ctx.pageNumber} of ${ctx.pagesCount}',
+              AppLocalizations.of(context).pdfPageOf(ctx.pageNumber, ctx.pagesCount),
               style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
             ),
           ),

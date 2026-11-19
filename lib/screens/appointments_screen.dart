@@ -79,7 +79,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add appointment', error: e, stackTrace: stackTrace);
-      _showError('Kon afspraak niet toevoegen: $e');
+      if (mounted) _showError(AppLocalizations.of(context).afspraakToevoegenMislukt);
     }
   }
 

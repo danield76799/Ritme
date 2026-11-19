@@ -701,11 +701,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (made) {
                   _showSuccess(AppLocalizations.of(context).backupSuccesvolHersteld);
                 } else {
-                  _showError('Test: Geen backup gemaakt (Interval niet verstreken)');
+                  _showError(AppLocalizations.of(context).backupTestNietGemaakt);
                 }
               } catch (e) {
                 if (!mounted) return;
-                _showError('Test fout: $e');
+                _showError(AppLocalizations.of(context).backupTestFout(e));
               }
               if (mounted) _loadData();
             },

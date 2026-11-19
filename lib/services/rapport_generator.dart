@@ -191,7 +191,7 @@ class RapportGenerator {
     // Settings
     final settings = await db.getSettings();
     if (settings != null && settings['username'] != null) {
-      buf.writeln('**Patiënt:** ${settings['username']}');
+      buf.writeln('**${s.patientLabel}:** ${settings['username']}');
       buf.writeln();
     }
   }
@@ -283,7 +283,7 @@ class RapportGenerator {
       signalLines.add('- **$label**: ${entry.value}× ($pct%)');
     }
     if (signalLines.isNotEmpty) {
-      buf.writeln('**Bipolaire analyse-signalen:**');
+      buf.writeln('**${s.analysisSignalsTitle}:**');
       buf.writeln();
       buf.writeln(signalLines.join('\n'));
       buf.writeln();
@@ -292,8 +292,7 @@ class RapportGenerator {
     // instrument van de dagelijkse stemming die in het
     // weekoverzicht staat — de twee zijn niet rechtstreeks
     // vergelijkbaar.
-    buf.writeln(
-        '_Opmerking: dit is de 5-vragen stemmingcheck, een apart instrument van de dagelijkse stemming-tracking (weekoverzicht)._');
+    buf.writeln(s.moodCheckNote);
     buf.writeln();
     buf.writeln('---');
     buf.writeln();
@@ -541,9 +540,9 @@ class RapportGenerator {
     RapportStrings s,
     _WeeklyTotals totals,
   ) {
-    buf.writeln('## 📈 Samenvatting');
+    buf.writeln('## ${s.summaryTitle}');
     buf.writeln();
-    buf.writeln('| Metriek | Waarde |');
+    buf.writeln('| ${s.summaryMetric} | ${s.summaryValue} |');
     buf.writeln('|---------|--------|');
     buf.writeln('| **${s.daysWithData}** | ${totals.moodCount} |');
     if (totals.moodCount > 0) {
@@ -730,7 +729,7 @@ class RapportGenerator {
     for (var ep in periodsInReport) {
       final type = s.episodeLabel(ep['episode_type'] as String);
       final start = ep['start_date'];
-      final end = ep['end_date'] ?? 'loopt nog';
+      final end = ep['end_date'] ?? s.ongoing;
       buf.writeln('- **$type**: ${_formatDateStr(start)} — ${_formatDateStr(end)}');
     }
     buf.writeln();
