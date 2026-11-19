@@ -43,6 +43,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // Seed default prodromal checklist if empty
     final h = HiveDatabaseHelper.instance;
     await h._seedProdromalChecklistIfEmpty();
+    // Normaliseer medicatie-sleutels (string -> int), vóór de migraties
+    final hNorm = HiveDatabaseHelper.instance;
+    await hNorm.normaliseerMedicationConfigSleutels();
     // Migreer oude p_scores (eenmalig)
     final h2 = HiveDatabaseHelper.instance;
     await h2.migrateOldPScores();
@@ -88,6 +91,52 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (n > 0) return n;
     }
     return DateTime.now().millisecondsSinceEpoch % 1000000;
+  }
+
+  /// De werkelijke Hive-sleutel van een medicatie-config.
+  ///
+  /// Hive-sleutels kunnen int óf String zijn: de backup-restore schrijft de
+  /// box-entries letterlijk terug met `box.put(key.toString(), ...)`, dus een
+  /// herstelde entry staat onder een string-sleutel. Wie blind `get(id)` met
+  /// een int doet (of `put(id, ...)`) werkt dan OP DE VERKEERDE SLEUTEL: de
+  /// originele string-entry blijft onveranderd bestaan en er ontstaat een
+  /// tweede, nieuwe int-entry naast. Gevolg: na een restore toont de app
+  /// elke medicatie dubbel en werkt de verwijderknop niet meer (hij update
+  /// alleen de nieuwe int-entry; de zichtbare string-entry blijft staan).
+  dynamic _configKey(int id) {
+    if (_medicationConfig.containsKey(id)) return id;
+    final s = id.toString();
+    if (_medicationConfig.containsKey(s)) return s;
+    return id; // afwezige entry: int-sleutel (historisch gedrag)
+  }
+
+  /// Eenmalige normalisatie bij opstarten: verplaats alle string-sleutels
+  /// naar int-sleutels. Bestaan beide varianten van dezelfde id, dan wint de
+  /// int-entry (die is door de nieuwere codepaden geschreven en kan een
+  /// verwijder-markering bevatten); de string-variant wordt verwijderd.
+  /// Zonder dit blijven medicatie-rijen dubbel staan na een restore.
+  Future<void> normaliseerMedicationConfigSleutels() async {
+    try {
+      final box = _medicationConfig;
+      var verplaatst = 0;
+      for (final key in box.keys.toList()) {
+        if (key is! String) continue;
+        final n = int.tryParse(key);
+        if (n == null) continue;
+        final stringVal = box.get(key);
+        if (box.containsKey(n)) {
+          // Beide bestaan: int-entry wint, string weggooien.
+          await box.delete(key);
+        } else if (stringVal != null) {
+          await box.put(n, stringVal);
+          await box.delete(key);
+          verplaatst++;
+        }
+      }
+      AppLogger.debug('medicatie-config sleutels genormaliseerd: $verplaatst verplaatst');
+    } catch (e) {
+      AppLogger.error('Normaliseren medicatie-sleutels mislukt', error: e);
+    }
   }
   Box get _medicationIntake => Hive.box(_medicationIntakeBox);
   Box get _medicationSchedule => Hive.box(_medicationScheduleBox);
@@ -712,6 +761,18 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
       final behouden = rijen.first;
       final behoudenId = idVan(behouden);
+      // Let op: rijen met dezelfde id maar type-mismatchte sleutels
+      // (int vs string na een backup-restore) worden hier ook als 'dubbel'
+      // gezien. Innames/schedules migreren naar hetzelfde id is onzinnig en
+      // zou ze zelfs wissen; sla die stappen dan over.
+      final int dubbelId0 = idVan(rijen.first);
+      if (rijen.every((r) => idVan(r) == dubbelId0)) {
+        for (final dubbel in rijen.skip(1)) {
+          await _medicationConfig.delete(dubbel.key);
+          samengevoegd++;
+        }
+        continue;
+      }
 
       for (final dubbel in rijen.skip(1)) {
         final dubbelId = idVan(dubbel);
@@ -1111,7 +1172,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // hij niet, dan wordt hij aangemaakt. Backup-restore zet hiermee configs
     // terug op hun originele id, zodat intake-rijen (die op die id wijzen)
     // weer kloppen en er geen dubbele kaarten ontstaan.
-    final existing = _medicationConfig.get(id);
+    final key = _configKey(id);
+    final existing = _medicationConfig.get(key);
     final data = Map<String, dynamic>.from(existing ?? {});
     data['id'] = id;
     data['naam'] = naam.toString();
@@ -1122,7 +1184,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // soft-delete-markeer van een eerdere sessie ongedaan maken: de backup is
     // de waarheid.
     data.remove('deleted');
-    await _medicationConfig.put(id, data);
+    await _medicationConfig.put(key, data);
     return id;
   }
 
@@ -1143,14 +1205,14 @@ class HiveDatabaseHelper implements DatabaseRepository {
       await _medicationSchedule.delete(s.key);
     }
     // Innames blijven staan; alleen de config krijgt de markering.
-    final bestaand = _medicationConfig.get(id) ??
-        _medicationConfig.get(id.toString());
+    final key = _configKey(id);
+    final bestaand = _medicationConfig.get(key);
     final gemarkeerd = <String, dynamic>{
       ...?bestaand?.cast<String, dynamic>(),
       'id': id,
       'deleted': '1',
     };
-    await _medicationConfig.put(id, gemarkeerd);
+    await _medicationConfig.put(key, gemarkeerd);
     return 1;
   }
 
@@ -1161,7 +1223,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       cleanData[key] = value?.toString() ?? value;
     });
     cleanData['id'] = id;
-    await _medicationConfig.put(id, cleanData);
+    await _medicationConfig.put(_configKey(id), cleanData);
     return 1;
   }
 
