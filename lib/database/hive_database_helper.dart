@@ -43,6 +43,9 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // Seed default prodromal checklist if empty
     final h = HiveDatabaseHelper.instance;
     await h._seedProdromalChecklistIfEmpty();
+    // Normaliseer medicatie-sleutels (string -> int), vóór de migraties
+    final hNorm = HiveDatabaseHelper.instance;
+    await hNorm.normaliseerMedicationConfigSleutels();
     // Migreer oude p_scores (eenmalig)
     final h2 = HiveDatabaseHelper.instance;
     await h2.migrateOldPScores();
@@ -88,6 +91,64 @@ class HiveDatabaseHelper implements DatabaseRepository {
       if (n > 0) return n;
     }
     return DateTime.now().millisecondsSinceEpoch % 1000000;
+  }
+
+  /// De werkelijke Hive-sleutel van een medicatie-config.
+  ///
+  /// Hive-sleutels kunnen int óf String zijn: de backup-restore schrijft de
+  /// box-entries letterlijk terug met `box.put(key.toString(), ...)`, dus een
+  /// herstelde entry staat onder een string-sleutel. Wie blind `get(id)` met
+  /// een int doet (of `put(id, ...)`) werkt dan OP DE VERKEERDE SLEUTEL: de
+  /// originele string-entry blijft onveranderd bestaan en er ontstaat een
+  /// tweede, nieuwe int-entry naast. Gevolg: na een restore toont de app
+  /// elke medicatie dubbel en werkt de verwijderknop niet meer (hij update
+  /// alleen de nieuwe int-entry; de zichtbare string-entry blijft staan).
+  dynamic _configKey(int id) {
+    if (_medicationConfig.containsKey(id)) return id;
+    final s = id.toString();
+    if (_medicationConfig.containsKey(s)) return s;
+    return id; // afwezige entry: int-sleutel (historisch gedrag)
+  }
+
+  /// Eenmalige normalisatie bij opstarten: verplaats alle string-sleutels
+  /// naar int-sleutels. Bestaan beide varianten van dezelfde id, dan wint de
+  /// int-entry (die is door de nieuwere codepaden geschreven en kan een
+  /// verwijder-markering bevatten); de string-variant wordt verwijderd.
+  /// Zonder dit blijven medicatie-rijen dubbel staan na een restore.
+  Future<void> normaliseerMedicationConfigSleutels() async {
+    try {
+      final box = _medicationConfig;
+      var verplaatst = 0;
+      for (final key in box.keys.toList()) {
+        if (key is! String) continue;
+        final n = int.tryParse(key);
+        if (n == null) continue;
+        final stringVal = box.get(key);
+        if (box.containsKey(n)) {
+          // Beide varianten bestaan: SAMENVOEGEN i.p.v. iets weggooien.
+          // De int-entry is de nieuwere (door de app geschreven) variant;
+          // de string-entry komt uit de backup-restore. We behouden alle
+          // velden uit beide, en een 'deleted'-markering in één van beide
+          // wint altijd (een verwijdering mag nooit stilletjes ongedaan
+          // gemaakt worden).
+          final intEntry = Map<String, dynamic>.from(box.get(n) as Map);
+          final stringEntry = Map<String, dynamic>.from(stringVal as Map);
+          final merged = <String, dynamic>{...stringEntry, ...intEntry};
+          final deleted = intEntry['deleted'] ?? stringEntry['deleted'];
+          if (deleted != null) merged['deleted'] = deleted;
+          await box.put(n, merged);
+          await box.delete(key);
+          verplaatst++;
+        } else if (stringVal != null) {
+          await box.put(n, Map<String, dynamic>.from(stringVal as Map));
+          await box.delete(key);
+          verplaatst++;
+        }
+      }
+      AppLogger.debug('medicatie-config sleutels genormaliseerd: $verplaatst verplaatst');
+    } catch (e) {
+      AppLogger.error('Normaliseren medicatie-sleutels mislukt', error: e);
+    }
   }
   Box get _medicationIntake => Hive.box(_medicationIntakeBox);
   Box get _medicationSchedule => Hive.box(_medicationScheduleBox);
@@ -678,96 +739,19 @@ class HiveDatabaseHelper implements DatabaseRepository {
   /// er kan geen historie verloren gaan omdat beide rijen dezelfde inname-
   /// rijen deelden (per (medication_id, date) bestaat er maar één rij).
   Future<void> migrateDubbeleMedicatieConfigs() async {
-    const marker = 'migratie_dubbele_medicatie_configs_v1';
+    const marker = 'migratie_dubbele_medicatie_configs_v2';
     if (_settings.get(marker) == true) return;
 
-    // Groepeer actieve configs per genormaliseerde naam.
-    String normaliseer(String? naam) =>
-        (naam ?? '').trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
-
-    final perNaam = <String, List<MapEntry<dynamic, Map<String, dynamic>>>>{};
-    for (final k in _medicationConfig.keys) {
-      final v = _medicationConfig.get(k);
-      if (v == null) continue;
-      final map = Map<String, dynamic>.from(v);
-      final del = map['deleted'];
-      if (del != null && del != 0 && del != '0' && del != false) continue;
-      final naam = normaliseer(map['naam']?.toString());
-      if (naam.isEmpty) continue;
-      perNaam.putIfAbsent(naam, () => []).add(MapEntry(k, map));
-    }
-
-    int samengevoegd = 0;
-    int intakesVerplaatst = 0;
-    for (final entry in perNaam.entries) {
-      final rijen = entry.value;
-      if (rijen.length < 2) continue;
-
-      // Sorteer op numerieke id (laagste eerst = oorspronkelijke rij).
-      int idVan(MapEntry<dynamic, Map<String, dynamic>> e) {
-        final raw = e.value['id'] ?? e.key;
-        return raw is int ? raw : int.tryParse(raw.toString()) ?? 0;
-      }
-      rijen.sort((a, b) => idVan(a).compareTo(idVan(b)));
-
-      final behouden = rijen.first;
-      final behoudenId = idVan(behouden);
-
-      for (final dubbel in rijen.skip(1)) {
-        final dubbelId = idVan(dubbel);
-
-        // Intake-rijen die naar de dubbel wijzen verplaatsen we naar de
-        // behouden rij. Rijen die er al zijn (zelfde date + medication_id)
-        // worden NIET overschreven — de behouden rij is de waarheid.
-        for (final intakeKey in _medicationIntake.keys.toList()) {
-          final intake = _medicationIntake.get(intakeKey);
-          if (intake == null) continue;
-          final imap = Map<String, dynamic>.from(intake);
-          final rawMid = imap['medication_id'];
-          final mid = rawMid is int ? rawMid : int.tryParse(rawMid?.toString() ?? '') ?? 0;
-          if (mid != dubbelId) continue;
-
-          final bestaande = _medicationIntake.toMap().entries.where((e) {
-            final raw = e.value['medication_id'];
-            final eid = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
-            return eid == behoudenId && e.value['date'] == imap['date'];
-          }).toList();
-
-          if (bestaande.isNotEmpty) {
-            // Bestaat al onder de behouden id: dubbele intake weggooien.
-            await _medicationIntake.delete(intakeKey);
-          } else {
-            imap['medication_id'] = behoudenId;
-            imap['id'] = intakeKey;
-            await _medicationIntake.put(intakeKey, imap);
-          }
-          intakesVerplaatst++;
-        }
-
-        // Schedule(s) die naar de dubbel wijzen verplaatsen we ook, zodat de
-        // herinnering blijft werken. Meerdere schedules per medicijn kunnen
-        // bestaan; we zetten ze op de behouden id.
-        for (final schedKey in _medicationSchedule.keys.toList()) {
-          final sched = _medicationSchedule.get(schedKey);
-          if (sched == null) continue;
-          final smap = Map<String, dynamic>.from(sched);
-          final rawMid = smap['medication_id'];
-          final mid = rawMid is int ? rawMid : int.tryParse(rawMid?.toString() ?? '') ?? 0;
-          if (mid != dubbelId) continue;
-          smap['medication_id'] = behoudenId;
-          await _medicationSchedule.put(schedKey, smap);
-        }
-
-        await _medicationConfig.delete(dubbel.key);
-        samengevoegd++;
-      }
-    }
-
+    // LET OP: deze migratie verwijderde voorheen 'dubbele' medicijn-kaarten
+    // op naam. Daarmee werden ook bewust bestaande, verschillende kaarten
+    // met dezelfde naam (bijv. vast + zo-nodig) verwijderd, met verlies van
+    // inname-historie tot gevolg. Dat gedrag is verwijderd. Dubbele kaarten
+    // zijn met de huidige app niet meer mogelijk via herstel/restore, dus er
+    // is niets meer om op te ruimen. We zetten hier alleen de marker zodat
+    // deze functie nooit meer iets doet.
     await _settings.put(marker, true);
-    if (samengevoegd > 0 || intakesVerplaatst > 0) {
-      AppLogger.debug('Medicatie-migratie: $samengevoegd dubbele configs '
-          'samengevoegd, $intakesVerplaatst intake-rijen bijgewerkt');
-    }
+    return;
+
   }
 
   // ===================
@@ -1084,7 +1068,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   @override
-  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true, bool zoNodig = false}) async {
     try {
       // Use a smaller ID to avoid 32-bit integer overflow
       final id = _nieuweSleutel(_medicationConfig); // Max 999,999
@@ -1093,7 +1077,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'naam': naam.toString(),
         'dosering': dosering?.toString() ?? '',
         'eenheid': eenheid?.toString() ?? '',
-        'reminder_enabled': reminderEnabled ? '1' : '0', // Store as string for consistency
+        'reminder_enabled': (!zoNodig && reminderEnabled) ? '1' : '0', // Store as string for consistency
+        'zo_nodig': zoNodig ? '1' : '0',
       };
       await _medicationConfig.put(id, data);
       return id;
@@ -1104,23 +1089,25 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
+  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true, bool zoNodig = false}) async {
     // Schrijft de config op de GEGEVEN hive-sleutel. Bestaat hij al, dan
     // worden de velden bijgewerkt (overige sleutels blijven staan); bestaat
     // hij niet, dan wordt hij aangemaakt. Backup-restore zet hiermee configs
     // terug op hun originele id, zodat intake-rijen (die op die id wijzen)
     // weer kloppen en er geen dubbele kaarten ontstaan.
-    final existing = _medicationConfig.get(id);
+    final key = _configKey(id);
+    final existing = _medicationConfig.get(key);
     final data = Map<String, dynamic>.from(existing ?? {});
     data['id'] = id;
     data['naam'] = naam.toString();
     data['dosering'] = dosering?.toString() ?? '';
     data['eenheid'] = eenheid?.toString() ?? '';
-    data['reminder_enabled'] = reminderEnabled ? '1' : '0';
+    data['reminder_enabled'] = (!zoNodig && reminderEnabled) ? '1' : '0';
+    data['zo_nodig'] = zoNodig ? '1' : '0';
     // soft-delete-markeer van een eerdere sessie ongedaan maken: de backup is
     // de waarheid.
     data.remove('deleted');
-    await _medicationConfig.put(id, data);
+    await _medicationConfig.put(key, data);
     return id;
   }
 
@@ -1141,14 +1128,25 @@ class HiveDatabaseHelper implements DatabaseRepository {
       await _medicationSchedule.delete(s.key);
     }
     // Innames blijven staan; alleen de config krijgt de markering.
-    final bestaand = _medicationConfig.get(id) ??
-        _medicationConfig.get(id.toString());
+    final key = _configKey(id);
+    final bestaand = _medicationConfig.get(key);
     final gemarkeerd = <String, dynamic>{
       ...?bestaand?.cast<String, dynamic>(),
       'id': id,
       'deleted': '1',
     };
-    await _medicationConfig.put(id, gemarkeerd);
+    await _medicationConfig.put(key, gemarkeerd);
+    return 1;
+  }
+
+  @override
+  Future<int> reactivateMedicationConfig(int id) async {
+    final key = _configKey(id);
+    final bestaand = _medicationConfig.get(key);
+    if (bestaand == null) return 0;
+    final map = Map<String, dynamic>.from(bestaand as Map);
+    map.remove('deleted'); // verwijderde-markering opheffen; historie blijft behouden
+    await _medicationConfig.put(key, map);
     return 1;
   }
 
@@ -1159,7 +1157,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       cleanData[key] = value?.toString() ?? value;
     });
     cleanData['id'] = id;
-    await _medicationConfig.put(id, cleanData);
+    await _medicationConfig.put(_configKey(id), cleanData);
     return 1;
   }
 
@@ -1198,8 +1196,27 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   Future<List<Map<String, dynamic>>> getMedicationConfigsAll() async {
-    // Hive backend: geen soft-delete filter, retourneer alles
-    return getMedicationConfigs();
+    // Teruggeven wat er werkelijk in de box staat, INCLUSIEF soft-deleted
+    // configs: rapport en backup gebruiken dit om de medicatiegeschiedenis
+    // compleet te houden. Eerder werd hier abusievelijk de gefilterde lijst
+    // teruggegeven, waardoor een verwijderd medicijn compleet uit het
+    // rapport verdween (inclusief zijn inname-historie).
+    try {
+      return _medicationConfig.toMap().entries.map((entry) {
+        final map = Map<String, dynamic>.from(entry.value);
+        if (!map.containsKey('id')) {
+          map['id'] = entry.key is int ? entry.key : int.tryParse(entry.key.toString());
+        }
+        final cleanMap = <String, dynamic>{};
+        map.forEach((key, value) {
+          cleanMap[key] = value;
+        });
+        return cleanMap;
+      }).toList();
+    } catch (e) {
+      AppLogger.error('Error loading all medication configs', error: e);
+      return [];
+    }
   }
 
   // ===================
@@ -1363,7 +1380,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
       return 1;
     }
     // Nog geen rij voor deze dag: nieuwe aanmaken.
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // (Milliseconden-epoch als Hive-sleutel crasht: sleutels moeten < 2^32 zijn.)
+    final id = _nieuweSleutel(_medicationIntake);
     await _medicationIntake.put(id, {
       'id': id,
       'date': date.toString(),

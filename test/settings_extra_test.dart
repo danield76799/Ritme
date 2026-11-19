@@ -18,12 +18,12 @@ String _code(String pad) {
 
 void main() {
   group('settings_extra: vrije sleutels zonder SQLITE_ERROR', () {
-    // De DB is inmiddels op versie 10; de settings_extra-tabel is er sinds
+    // De DB is inmiddels op versie 11; de settings_extra-tabel is er sinds
     // versie 6 en blijft in create én upgrade aanwezig. De test verankert de
     // aanwezigheid, niet het exacte versienummer.
     test('extra-tabel in create én upgrade aanwezig', () {
       final code = _code('lib/database/database_helper.dart');
-      expect(code.contains('version: 10'), isTrue);
+      expect(code.contains('version: 11'), isTrue);
       expect(code.contains('CREATE TABLE IF NOT EXISTS settings_extra'),
           isTrue);
       expect(code.contains('if (oldVersion < 6)'), isTrue,
