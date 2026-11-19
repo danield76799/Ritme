@@ -132894,7 +132894,7 @@ var $async$q2=A.w(function(b9,c0){if(b9===1)return A.r(c0,r)
 for(;;)switch(s){case 0:b6=$.bE()
 b7=t.z
 b8=t.C
-if(J.d(b8.a(b6.aJ("settings",!1,b7)).eO(0,"migratie_dubbele_medicatie_configs_v1"),!0)){s=1
+if(J.d(b8.a(b6.aJ("settings",!1,b7)).eO(0,"migratie_dubbele_medicatie_configs_v2"),!0)){s=1
 break}p=new A.ax5()
 o=t.N
 n=A.A(o,t.Wt)
@@ -133016,7 +133016,7 @@ case 11:s=3
 break
 case 4:b6=b8.a($.bE().aJ("settings",!1,b7))
 s=25
-return A.h(b6.e5(A.a3(["migratie_dubbele_medicatie_configs_v1",!0],b7,b6.$ti.c)),$async$q2)
+return A.h(b6.e5(A.a3(["migratie_dubbele_medicatie_configs_v2",!0],b7,b6.$ti.c)),$async$q2)
 case 25:if(e>0||d>0)A.jH("Medicatie-migratie: "+e+" dubbele configs samengevoegd, "+d+" intake-rijen bijgewerkt")
 case 1:return A.t(q,r)}})
 return A.u($async$q2,r)},
