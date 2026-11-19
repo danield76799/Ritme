@@ -908,5 +908,11 @@
   "helpTipDagelijks": "Fill in daily, preferably at fixed times — weekends included",
   "helpTipMedicatie": "Take medication at the agreed times",
   "helpTipStatistieken": "Review your statistics weekly to recognize patterns",
-  "helpTipLokaal": "All data stays locally on your device (PIN/biometrics available)"
+  "helpTipLokaal": "All data stays locally on your device (PIN/biometrics available)",
+  "zoNodig": "As needed",
+  "zoNodigUitleg": "Only take when needed — no reminder, not an obligation",
+  "vasteMedicatie": "Regular medication",
+  "sectieZoNodig": "As needed",
+  "prnVandaagGenomen": "Taken {count}× today",
+  "@prnVandaagGenomen": {"placeholders": {"count": {}}}
 }

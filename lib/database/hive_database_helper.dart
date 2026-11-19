@@ -1084,7 +1084,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
 
   @override
   @override
-  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
+  Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true, bool zoNodig = false}) async {
     try {
       // Use a smaller ID to avoid 32-bit integer overflow
       final id = _nieuweSleutel(_medicationConfig); // Max 999,999
@@ -1093,7 +1093,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'naam': naam.toString(),
         'dosering': dosering?.toString() ?? '',
         'eenheid': eenheid?.toString() ?? '',
-        'reminder_enabled': reminderEnabled ? '1' : '0', // Store as string for consistency
+        'reminder_enabled': (!zoNodig && reminderEnabled) ? '1' : '0', // Store as string for consistency
+        'zo_nodig': zoNodig ? '1' : '0',
       };
       await _medicationConfig.put(id, data);
       return id;
@@ -1104,7 +1105,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true}) async {
+  Future<int> upsertMedicationConfigById(int id, String naam, String? dosering, String? eenheid, {bool reminderEnabled = true, bool zoNodig = false}) async {
     // Schrijft de config op de GEGEVEN hive-sleutel. Bestaat hij al, dan
     // worden de velden bijgewerkt (overige sleutels blijven staan); bestaat
     // hij niet, dan wordt hij aangemaakt. Backup-restore zet hiermee configs
@@ -1116,7 +1117,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
     data['naam'] = naam.toString();
     data['dosering'] = dosering?.toString() ?? '';
     data['eenheid'] = eenheid?.toString() ?? '';
-    data['reminder_enabled'] = reminderEnabled ? '1' : '0';
+    data['reminder_enabled'] = (!zoNodig && reminderEnabled) ? '1' : '0';
+    data['zo_nodig'] = zoNodig ? '1' : '0';
     // soft-delete-markeer van een eerdere sessie ongedaan maken: de backup is
     // de waarheid.
     data.remove('deleted');

@@ -119,10 +119,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
     _loadData();
   }
 
-  Future<void> _addMedication(String name, double dosage, String unit, {bool reminderEnabled = true, TimeOfDay? reminderTime}) async {
+  Future<void> _addMedication(String name, double dosage, String unit, {bool reminderEnabled = true, TimeOfDay? reminderTime, bool zoNodig = false}) async {
     try {
-      final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled);
-      if (reminderTime != null && reminderEnabled) {
+      // 'Zo nodig'-medicatie krijgt nooit een herinnering: het is geen verplichting.
+      final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled && !zoNodig, zoNodig: zoNodig);
+      if (!zoNodig && reminderTime != null && reminderEnabled) {
         final timeStr = '${reminderTime.hour.toString().padLeft(2, '0')}:${reminderTime.minute.toString().padLeft(2, '0')}';
         await db.insertMedicationSchedule(id, timeStr, '1,2,3,4,5,6,7');
         try {
@@ -157,6 +158,50 @@ class _MedicationScreenState extends State<MedicationScreen> {
       });
     } catch (e, stackTrace) {
       AppLogger.error('Failed to add medication', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  bool _isZoNodig(Map<String, dynamic> config) {
+    final v = config['zo_nodig'];
+    return v == 1 || v == '1' || v == true;
+  }
+
+  Future<void> _setPrnCount(int configId, int newCount) async {
+    final clamped = newCount.clamp(0, 99);
+    try {
+      // Bewaar een bestaande per-dag-dosering als die er is; anders de config.
+      final existingIntakes = await db.getMedicationIntake(_formattedDate);
+      final existing = existingIntakes.firstWhere(
+        (i) {
+          final rawId = i['medication_id'];
+          if (rawId is int) return rawId == configId;
+          if (rawId is String) return int.tryParse(rawId) == configId;
+          return false;
+        },
+        orElse: () => {},
+      );
+      String dosering = existing['dosering']?.toString() ?? '';
+      if (dosering.isEmpty) {
+        final config = _configs.firstWhere(
+          (c) {
+            final rawId = c['id'];
+            if (rawId is int) return rawId == configId;
+            if (rawId is String) return int.tryParse(rawId) == configId;
+            return false;
+          },
+          orElse: () => {},
+        );
+        dosering = config['dosering']?.toString() ?? '';
+      }
+      await db.insertMedicationIntakeMap({
+        'medication_id': configId,
+        'date': _formattedDate,
+        'aantal_ingenomen': clamped,
+        'dosering': dosering,
+      });
+      _loadData();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to set intake count', error: e, stackTrace: stackTrace);
     }
   }
 
@@ -330,6 +375,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
     double dosage = double.tryParse(config['dosering']?.toString() ?? '0') ?? 0;
     String unit = config['eenheid']?.toString() ?? 'mg';
     bool reminderEnabled = (config['reminder_enabled']?.toString() ?? '1') == '1';
+    bool zoNodig = _isZoNodig(config);
+    final wasZoNodig = zoNodig;
 
     await showDialog(
       context: context,
@@ -357,6 +404,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
                       ),
                       onChanged: (v) => name = v,
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(AppLocalizations.of(context).zoNodig, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+                      subtitle: Text(AppLocalizations.of(context).zoNodigUitleg, style: TextStyle(color: labelColor, fontSize: 12)),
+                      value: zoNodig,
+                      onChanged: (value) => setDialogState(() => zoNodig = value),
+                      activeThumbColor: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -415,8 +470,27 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         'naam': name,
                         'dosering': dosage.toString(),
                         'eenheid': unit,
-                        'reminder_enabled': reminderEnabled ? 1 : 0,
+                        'zo_nodig': zoNodig ? 1 : 0,
+                        'reminder_enabled': (zoNodig || !reminderEnabled) ? 0 : 1,
                       });
+                      if (zoNodig && !wasZoNodig) {
+                        // Schakel de herinnering helemaal uit: planningen wissen
+                        // en de geplande notificaties annuleren.
+                        try {
+                          final schedules = await db.getMedicationSchedules();
+                          for (final s in schedules) {
+                            dynamic rawMedId = s['medication_id'];
+                            int? schedMedId = rawMedId is int ? rawMedId : int.tryParse(rawMedId?.toString() ?? '');
+                            final scheduleId = s['id'] is int ? s['id'] as int : int.tryParse(s['id']?.toString() ?? '');
+                            if (schedMedId == configId && scheduleId != null) {
+                              await db.deleteMedicationSchedule(scheduleId);
+                            }
+                          }
+                          await NotificationHelper.instance.cancelMedicationReminder(configId);
+                        } catch (e) {
+                          AppLogger.error('Zo-nodig: herinneringen wissen mislukt', error: e);
+                        }
+                      }
                       if (!mounted) return;
                       _loadData();
                     }
@@ -529,6 +603,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     String unit = 'mg';
     TimeOfDay? reminderTime;
     bool reminderEnabled = true;
+    bool zoNodig = false;
     showDialog(
       context: context,
       builder: (context) {
@@ -604,7 +679,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       ],
                     ),
                     const SizedBox(height: 6),
+                    // Zo nodig: geen vaste verplichting/herinnering
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(AppLocalizations.of(context).zoNodig, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+                      subtitle: Text(AppLocalizations.of(context).zoNodigUitleg, style: TextStyle(color: labelColor, fontSize: 12)),
+                      value: zoNodig,
+                      onChanged: (value) => setDialogState(() => zoNodig = value),
+                      activeThumbColor: Theme.of(context).colorScheme.primary,
+                    ),
                     // Herinnering-switch als eigen rij, netjes uitgelijnd
+                    if (!zoNodig) ...[
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(AppLocalizations.of(context).herinnering, style: TextStyle(color: textColor)),
@@ -640,6 +725,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           ),
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -649,7 +735,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   style: ElevatedButton.styleFrom(backgroundColor: cs.primary, foregroundColor: cs.onPrimary),
                   onPressed: () {
                     if (name.isNotEmpty) {
-                      _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime);
+                      _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime, zoNodig: zoNodig);
                     }
                     Navigator.pop(context);
                   },
@@ -782,11 +868,126 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Widget _buildMedList() {
-    return ListView.separated(
+    final vast = _configs.where((c) => !_isZoNodig(c)).toList();
+    final nodig = _configs.where((c) => _isZoNodig(c)).toList();
+    final showHeaders = vast.isNotEmpty && nodig.isNotEmpty;
+    final items = <Widget>[
+      if (showHeaders && vast.isNotEmpty)
+        _sectionHeader(AppLocalizations.of(context).vasteMedicatie),
+      for (final c in vast) _buildCompactMedCard(c),
+      if (showHeaders && nodig.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        _sectionHeader(AppLocalizations.of(context).sectieZoNodig,
+            subtitle: AppLocalizations.of(context).zoNodigUitleg),
+      ] else if (nodig.isNotEmpty) ...[
+        _sectionHeader(AppLocalizations.of(context).sectieZoNodig,
+            subtitle: AppLocalizations.of(context).zoNodigUitleg),
+      ],
+      for (final c in nodig) _buildCompactMedCard(c),
+    ];
+    return ListView(
       padding: const EdgeInsets.all(12),
-      itemCount: _configs.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, i) => _buildCompactMedCard(_configs[i]),
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const SizedBox(height: 8),
+          items[i],
+        ],
+      ],
+    );
+  }
+
+  Widget _sectionHeader(String title, {String? subtitle}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          if (subtitle != null)
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Stepper voor zo-nodig-medicatie: − [aantal] +
+  Widget _buildPrnStepper(int configId, int count) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _stepButton(Icons.remove_rounded, count > 0 ? () => _setPrnCount(configId, count - 1) : null, cs),
+            SizedBox(
+              width: 44,
+              child: Column(
+                children: [
+                  Text(
+                    '$count',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: count > 0 ? cs.primary : cs.outline,
+                      height: 1.0,
+                    ),
+                  ),
+                  Text(
+                    '×',
+                    style: TextStyle(fontSize: 12, color: cs.outline, height: 1.0),
+                  ),
+                ],
+              ),
+            ),
+            _stepButton(Icons.add_rounded, () => _setPrnCount(configId, count + 1), cs),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          count == 0
+              ? AppLocalizations.of(context).zoNodig
+              : AppLocalizations.of(context).prnVandaagGenomen(count),
+          style: TextStyle(fontSize: 12, color: cs.outline),
+        ),
+      ],
+    );
+  }
+
+  Widget _stepButton(IconData icon, VoidCallback? onPressed, ColorScheme cs) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Opacity(
+          opacity: onPressed == null ? 0.35 : 1,
+          child: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 18, color: cs.primary),
+          ),
+        ),
+      ),
     );
   }
 
@@ -798,6 +999,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     } else if (rawId is String) configId = int.tryParse(rawId);
     if (configId == null) return SizedBox.shrink();
     int count = _intakesForDay[configId] ?? 0;
+    final zoNodig = _isZoNodig(config);
     String name = config['naam']?.toString() ?? AppLocalizations.of(context).onbekend;
     // Per-dag dosering uit intake; anders huidige config (voor nieuwe dagen)
     String dagDosering = _intakeDoseringForDay[configId] ?? config['dosering']?.toString() ?? '';
@@ -872,7 +1074,24 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           ),
                         ],
                         const SizedBox(width: 8),
-                        if (reminderTime != null && reminderEnabled)
+                        if (zoNodig)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context).zoNodig,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: Theme.of(context).colorScheme.onTertiaryContainer,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          )
+                        else if (reminderTime != null && reminderEnabled)
                           Icon(Icons.notifications_active_rounded, size: 14, color: Theme.of(context).colorScheme.primary)
                         else
                           Icon(Icons.notifications_off_rounded, size: 14, color: Theme.of(context).colorScheme.outline),
@@ -882,6 +1101,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ),
               ),
             ),
+            if (zoNodig) ...[
+              _buildPrnStepper(configId, count),
+            ] else ...[
             Column(
               children: [
                 // Grote tikbare intake-knop
@@ -951,6 +1173,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ),
               ],
             ),
+            ],
             const SizedBox(width: 4),
             _buildEditBtn(onPressed: () => _editMedication(config, configId!)),
             _buildDeleteBtn(onPressed: () => _deleteMedication(configId!)),
