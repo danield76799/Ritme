@@ -727,7 +727,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   /// er kan geen historie verloren gaan omdat beide rijen dezelfde inname-
   /// rijen deelden (per (medication_id, date) bestaat er maar één rij).
   Future<void> migrateDubbeleMedicatieConfigs() async {
-    const marker = 'migratie_dubbele_medicatie_configs_v1';
+    const marker = 'migratie_dubbele_medicatie_configs_v2';
     if (_settings.get(marker) == true) return;
 
     // Groepeer actieve configs per genormaliseerde naam.
