@@ -97,6 +97,8 @@
   "medicatieVerwijderen": "Delete medication?",
 
   "medicatieVerwijderd": "Medication deleted",
+  "sectieGestopt": "Stopped",
+  "gestoptUitleg": "Stopped — history remains visible",
   "verwijderenMislukt": "Could not delete. Please try again.",  "medicatieWijzigen": "Edit medication",
   "menu": "Menu",
   "naamBijvLithium": "Name (e.g. Lithium)",

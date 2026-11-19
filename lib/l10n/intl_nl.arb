@@ -87,6 +87,8 @@
   "medicatieVerwijderen": "Medicatie verwijderen?",
 
   "medicatieVerwijderd": "Medicijn verwijderd",
+  "sectieGestopt": "Gestopt",
+  "gestoptUitleg": "Gestopt — de historie blijft zichtbaar",
   "verwijderenMislukt": "Verwijderen mislukt. Probeer het opnieuw.",  "medicatieWijzigen": "Medicatie wijzigen",
   "menu": "Menu",
   "naamBijvLithium": "Naam (bijv. Lithium)",

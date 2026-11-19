@@ -18,6 +18,9 @@ class MedicationScreen extends StatefulWidget {
 class _MedicationScreenState extends State<MedicationScreen> {
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _configs = [];
+  // Zacht-verwijderde medicatie: blijft zichtbaar (alleen-lezen) zodat de
+  // inname-historie in eerdere dagen zichtbaar blijft.
+  List<Map<String, dynamic>> _stoppedConfigs = [];
   Map<int, int> _intakesForDay = {};
   Map<int, String> _intakeDoseringForDay = {}; // per-dag dosering snapshot
   bool _isLoading = true;
@@ -40,6 +43,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
     });
     try {
       final configs = await db.getMedicationConfigs();
+      final allConfigs = await db.getMedicationConfigsAll();
+      final stopped = <Map<String, dynamic>>[];
+      for (final c in allConfigs) {
+        final del = c['deleted'];
+        final isDeleted = del == 1 || del == '1' || del == true;
+        if (isDeleted) stopped.add(c);
+      }
       final schedules = await db.getMedicationSchedules();
       final intakes = await db.getMedicationIntake(_formattedDate);
       Map<int, int> intakeMap = {};
@@ -101,6 +111,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
       setState(() {
         _configs = mergedConfigs;
+        _stoppedConfigs = stopped;
         _intakesForDay = intakeMap;
         _intakeDoseringForDay = doseringMap;
         _isLoading = false;
@@ -826,7 +837,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
                 : _errorMessage != null
                     ? _buildErrorState()
-                    : _configs.isEmpty
+                    : (_configs.isEmpty && _stoppedConfigs.isEmpty)
                         ? _buildEmptyState()
                         : _buildMedList(),
           ),
@@ -906,6 +917,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
             subtitle: AppLocalizations.of(context).zoNodigUitleg),
       ],
       for (final c in nodig) _buildCompactMedCard(c),
+      if (_stoppedConfigs.isNotEmpty) ...[
+        const SizedBox(height: 12),
+        _sectionHeader(AppLocalizations.of(context).sectieGestopt,
+            subtitle: AppLocalizations.of(context).gestoptUitleg),
+        for (final c in _stoppedConfigs) _buildStoppedMedCard(c),
+      ],
     ];
     return ListView(
       padding: const EdgeInsets.all(12),
@@ -942,6 +959,94 @@ class _MedicationScreenState extends State<MedicationScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// Alleen-lezen kaart voor gestopte (verwijderde) medicatie: naam +
+  /// dosering + 'gestopt'-label en de inname-status voor de getoonde dag.
+  /// Zo blijft de historie van de medicatie zichtbaar in eerdere dagen.
+  Widget _buildStoppedMedCard(Map<String, dynamic> config) {
+    dynamic rawId = config['id'];
+    int? configId = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+    final cs = Theme.of(context).colorScheme;
+    final naam = config['naam']?.toString() ?? '';
+    final dosering = '${config['dosering'] ?? ''} ${config['eenheid'] ?? ''}'.trim();
+    final count = configId == null ? 0 : (_intakesForDay[configId] ?? 0);
+    final taken = count > 0;
+
+    return Opacity(
+      opacity: 0.75,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Theme.of(context).dividerColor),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46, height: 46,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: cs.surfaceContainerHighest,
+              ),
+              child: Icon(Icons.medication_rounded, size: 24, color: cs.outline),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    naam,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.lineThrough,
+                      decorationColor: cs.outline,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      if (dosering.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: cs.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(dosering, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurfaceVariant)),
+                        ),
+                      const SizedBox(width: 6),
+                      Text(
+                        AppLocalizations.of(context).sectieGestopt,
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.outline, letterSpacing: 0.3),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              children: [
+                Icon(taken ? Icons.check_circle_rounded : Icons.circle_outlined,
+                    size: 26, color: taken ? cs.primary : cs.outline),
+                const SizedBox(height: 2),
+                Text(
+                  taken
+                      ? AppLocalizations.of(context).medicatieGenomen
+                      : AppLocalizations.of(context).medicatieNietGenomen,
+                  style: TextStyle(fontSize: 12, color: cs.outline),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

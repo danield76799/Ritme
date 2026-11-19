@@ -1446,7 +1446,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
       return 1;
     }
     // Nog geen rij voor deze dag: nieuwe aanmaken.
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // (Milliseconden-epoch als Hive-sleutel crasht: sleutels moeten < 2^32 zijn.)
+    final id = _nieuweSleutel(_medicationIntake);
     await _medicationIntake.put(id, {
       'id': id,
       'date': date.toString(),

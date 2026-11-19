@@ -68,12 +68,15 @@ void main() {
     // SnackBar bevestigt de verwijdering.
     expect(find.text('Medicijn verwijderd'), findsOneWidget);
 
-    // Weg uit de lijst.
-    expect(find.text('Testpil'), findsNothing);
+    // Verdwijnt niet spoorloos: de kaart verhuist naar de sectie 'Gestopt'
+    // (alleen-lezen), zodat de historie zichtbaar blijft.
+    expect(find.text('Gestopt'), findsWidgets);
+    expect(find.text('Testpil'), findsOneWidget);
 
-    // En uit de database.
+    // En gemarkeerd als verwijderd in de database (soft-delete, historie bewaard).
     final configs = await tester.runAsync(
-        () => HiveDatabaseHelper.instance.getMedicationConfigs());
-    expect(configs, isEmpty, reason: 'soft-delete niet doorgekomen in de DB');
+        () => HiveDatabaseHelper.instance.getMedicationConfigsAll());
+    expect(configs!.length, 1);
+    expect(configs.single['deleted'], anyOf(equals('1'), equals(1)));
   });
 }
