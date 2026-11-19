@@ -125,10 +125,22 @@ class HiveDatabaseHelper implements DatabaseRepository {
         if (n == null) continue;
         final stringVal = box.get(key);
         if (box.containsKey(n)) {
-          // Beide bestaan: int-entry wint, string weggooien.
+          // Beide varianten bestaan: SAMENVOEGEN i.p.v. iets weggooien.
+          // De int-entry is de nieuwere (door de app geschreven) variant;
+          // de string-entry komt uit de backup-restore. We behouden alle
+          // velden uit beide, en een 'deleted'-markering in één van beide
+          // wint altijd (een verwijdering mag nooit stilletjes ongedaan
+          // gemaakt worden).
+          final intEntry = Map<String, dynamic>.from(box.get(n) as Map);
+          final stringEntry = Map<String, dynamic>.from(stringVal as Map);
+          final merged = <String, dynamic>{...stringEntry, ...intEntry};
+          final deleted = intEntry['deleted'] ?? stringEntry['deleted'];
+          if (deleted != null) merged['deleted'] = deleted;
+          await box.put(n, merged);
           await box.delete(key);
+          verplaatst++;
         } else if (stringVal != null) {
-          await box.put(n, stringVal);
+          await box.put(n, Map<String, dynamic>.from(stringVal as Map));
           await box.delete(key);
           verplaatst++;
         }
@@ -730,105 +742,16 @@ class HiveDatabaseHelper implements DatabaseRepository {
     const marker = 'migratie_dubbele_medicatie_configs_v2';
     if (_settings.get(marker) == true) return;
 
-    // Groepeer actieve configs per genormaliseerde naam.
-    String normaliseer(String? naam) =>
-        (naam ?? '').trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
-
-    final perNaam = <String, List<MapEntry<dynamic, Map<String, dynamic>>>>{};
-    for (final k in _medicationConfig.keys) {
-      final v = _medicationConfig.get(k);
-      if (v == null) continue;
-      final map = Map<String, dynamic>.from(v);
-      final del = map['deleted'];
-      if (del != null && del != 0 && del != '0' && del != false) continue;
-      final naam = normaliseer(map['naam']?.toString());
-      if (naam.isEmpty) continue;
-      perNaam.putIfAbsent(naam, () => []).add(MapEntry(k, map));
-    }
-
-    int samengevoegd = 0;
-    int intakesVerplaatst = 0;
-    for (final entry in perNaam.entries) {
-      final rijen = entry.value;
-      if (rijen.length < 2) continue;
-
-      // Sorteer op numerieke id (laagste eerst = oorspronkelijke rij).
-      int idVan(MapEntry<dynamic, Map<String, dynamic>> e) {
-        final raw = e.value['id'] ?? e.key;
-        return raw is int ? raw : int.tryParse(raw.toString()) ?? 0;
-      }
-      rijen.sort((a, b) => idVan(a).compareTo(idVan(b)));
-
-      final behouden = rijen.first;
-      final behoudenId = idVan(behouden);
-      // Let op: rijen met dezelfde id maar type-mismatchte sleutels
-      // (int vs string na een backup-restore) worden hier ook als 'dubbel'
-      // gezien. Innames/schedules migreren naar hetzelfde id is onzinnig en
-      // zou ze zelfs wissen; sla die stappen dan over.
-      final int dubbelId0 = idVan(rijen.first);
-      if (rijen.every((r) => idVan(r) == dubbelId0)) {
-        for (final dubbel in rijen.skip(1)) {
-          await _medicationConfig.delete(dubbel.key);
-          samengevoegd++;
-        }
-        continue;
-      }
-
-      for (final dubbel in rijen.skip(1)) {
-        final dubbelId = idVan(dubbel);
-
-        // Intake-rijen die naar de dubbel wijzen verplaatsen we naar de
-        // behouden rij. Rijen die er al zijn (zelfde date + medication_id)
-        // worden NIET overschreven — de behouden rij is de waarheid.
-        for (final intakeKey in _medicationIntake.keys.toList()) {
-          final intake = _medicationIntake.get(intakeKey);
-          if (intake == null) continue;
-          final imap = Map<String, dynamic>.from(intake);
-          final rawMid = imap['medication_id'];
-          final mid = rawMid is int ? rawMid : int.tryParse(rawMid?.toString() ?? '') ?? 0;
-          if (mid != dubbelId) continue;
-
-          final bestaande = _medicationIntake.toMap().entries.where((e) {
-            final raw = e.value['medication_id'];
-            final eid = raw is int ? raw : int.tryParse(raw?.toString() ?? '') ?? 0;
-            return eid == behoudenId && e.value['date'] == imap['date'];
-          }).toList();
-
-          if (bestaande.isNotEmpty) {
-            // Bestaat al onder de behouden id: dubbele intake weggooien.
-            await _medicationIntake.delete(intakeKey);
-          } else {
-            imap['medication_id'] = behoudenId;
-            imap['id'] = intakeKey;
-            await _medicationIntake.put(intakeKey, imap);
-          }
-          intakesVerplaatst++;
-        }
-
-        // Schedule(s) die naar de dubbel wijzen verplaatsen we ook, zodat de
-        // herinnering blijft werken. Meerdere schedules per medicijn kunnen
-        // bestaan; we zetten ze op de behouden id.
-        for (final schedKey in _medicationSchedule.keys.toList()) {
-          final sched = _medicationSchedule.get(schedKey);
-          if (sched == null) continue;
-          final smap = Map<String, dynamic>.from(sched);
-          final rawMid = smap['medication_id'];
-          final mid = rawMid is int ? rawMid : int.tryParse(rawMid?.toString() ?? '') ?? 0;
-          if (mid != dubbelId) continue;
-          smap['medication_id'] = behoudenId;
-          await _medicationSchedule.put(schedKey, smap);
-        }
-
-        await _medicationConfig.delete(dubbel.key);
-        samengevoegd++;
-      }
-    }
-
+    // LET OP: deze migratie verwijderde voorheen 'dubbele' medicijn-kaarten
+    // op naam. Daarmee werden ook bewust bestaande, verschillende kaarten
+    // met dezelfde naam (bijv. vast + zo-nodig) verwijderd, met verlies van
+    // inname-historie tot gevolg. Dat gedrag is verwijderd. Dubbele kaarten
+    // zijn met de huidige app niet meer mogelijk via herstel/restore, dus er
+    // is niets meer om op te ruimen. We zetten hier alleen de marker zodat
+    // deze functie nooit meer iets doet.
     await _settings.put(marker, true);
-    if (samengevoegd > 0 || intakesVerplaatst > 0) {
-      AppLogger.debug('Medicatie-migratie: $samengevoegd dubbele configs '
-          'samengevoegd, $intakesVerplaatst intake-rijen bijgewerkt');
-    }
+    return;
+
   }
 
   // ===================
@@ -1213,6 +1136,17 @@ class HiveDatabaseHelper implements DatabaseRepository {
       'deleted': '1',
     };
     await _medicationConfig.put(key, gemarkeerd);
+    return 1;
+  }
+
+  @override
+  Future<int> reactivateMedicationConfig(int id) async {
+    final key = _configKey(id);
+    final bestaand = _medicationConfig.get(key);
+    if (bestaand == null) return 0;
+    final map = Map<String, dynamic>.from(bestaand as Map);
+    map.remove('deleted'); // verwijderde-markering opheffen; historie blijft behouden
+    await _medicationConfig.put(key, map);
     return 1;
   }
 

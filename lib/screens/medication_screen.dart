@@ -968,87 +968,126 @@ class _MedicationScreenState extends State<MedicationScreen> {
   /// Zo blijft de historie van de medicatie zichtbaar in eerdere dagen.
   Widget _buildStoppedMedCard(Map<String, dynamic> config) {
     dynamic rawId = config['id'];
-    int? configId = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+    final int? configId = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
     final cs = Theme.of(context).colorScheme;
     final naam = config['naam']?.toString() ?? '';
     final dosering = '${config['dosering'] ?? ''} ${config['eenheid'] ?? ''}'.trim();
     final count = configId == null ? 0 : (_intakesForDay[configId] ?? 0);
     final taken = count > 0;
 
-    return Opacity(
-      opacity: 0.75,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Theme.of(context).dividerColor),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 46, height: 46,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.surfaceContainerHighest,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 46, height: 46,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: cs.surfaceContainerHighest,
+                ),
+                child: Icon(Icons.medication_rounded, size: 24, color: cs.outline),
               ),
-              child: Icon(Icons.medication_rounded, size: 24, color: cs.outline),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    naam,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      decoration: TextDecoration.lineThrough,
-                      decorationColor: cs.outline,
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      if (dosering.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: cs.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(dosering, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurfaceVariant)),
-                        ),
-                      const SizedBox(width: 6),
-                      Text(
-                        AppLocalizations.of(context).sectieGestopt,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.outline, letterSpacing: 0.3),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      naam,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurfaceVariant,
                       ),
-                    ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        if (dosering.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: cs.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(dosering, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurfaceVariant)),
+                          ),
+                        const SizedBox(width: 6),
+                        Text(
+                          AppLocalizations.of(context).sectieGestopt,
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.outline, letterSpacing: 0.3),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  Icon(taken ? Icons.check_circle_rounded : Icons.circle_outlined,
+                      size: 26, color: taken ? cs.primary : cs.outline),
+                  const SizedBox(height: 2),
+                  Text(
+                    taken
+                        ? AppLocalizations.of(context).medicatieGenomen
+                        : AppLocalizations.of(context).medicatieNietGenomen,
+                    style: TextStyle(fontSize: 12, color: cs.outline),
                   ),
                 ],
               ),
-            ),
-            Column(
-              children: [
-                Icon(taken ? Icons.check_circle_rounded : Icons.circle_outlined,
-                    size: 26, color: taken ? cs.primary : cs.outline),
-                const SizedBox(height: 2),
-                Text(
-                  taken
-                      ? AppLocalizations.of(context).medicatieGenomen
-                      : AppLocalizations.of(context).medicatieNietGenomen,
-                  style: TextStyle(fontSize: 12, color: cs.outline),
-                ),
-              ],
-            ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: configId == null ? null : () => _reactivateMedication(configId),
+                icon: const Icon(Icons.restore_rounded, size: 18),
+                label: Text(AppLocalizations.of(context).heractiveer),
+              ),
+            ],
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _reactivateMedication(int id) async {
+    try {
+      await db.reactivateMedicationConfig(id);
+      if (!mounted) return;
+      await _loadData();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).medicatieHeractiveerd),
+          backgroundColor: AppTheme.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Failed to reactivate medication', error: e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).heractiveerMislukt),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+          ),
+        );
+      }
+    }
   }
 
   /// Stepper voor zo-nodig-medicatie: − [aantal] +

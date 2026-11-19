@@ -59,4 +59,36 @@ void main() {
     expect(find.text('Gestopt'), findsWidgets);
     expect(find.text('Genomen'), findsOneWidget);
   });
+
+  testWidgets('heractiveren zet een gestopte medicatie terug als actief', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('nl'),
+      theme: AppTheme.lightTheme,
+      home: const MedicationScreen(),
+    ));
+    await tester.pumpAndSettle();
+
+    // Staat in de Gestopt-sectie
+    expect(find.text('Oudepil'), findsOneWidget);
+    expect(find.text('Gestopt'), findsWidgets);
+
+    // Tik op Heractiveer
+    await tester.tap(find.widgetWithText(TextButton, 'Heractiveer'));
+    await tester.pump(); // start de DB-operatie
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pumpAndSettle();
+
+    // Terug in de actieve lijst (niet meer in Gestopt)
+    expect(find.text('Gestopt'), findsNothing);
+    expect(find.text('Oudepil'), findsOneWidget);
+
+    // Database: niet meer soft-deleted
+    final configs = await tester.runAsync(
+        () => HiveDatabaseHelper.instance.getMedicationConfigs());
+    expect(configs!.any((c) => c['naam'] == 'Oudepil'), isTrue);
+  });
 }

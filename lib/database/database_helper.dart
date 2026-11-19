@@ -826,6 +826,17 @@ class DatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<int> reactivateMedicationConfig(int id) async {
+    final db = await database;
+    return await db.update(
+      'medication_config',
+      {'deleted': 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  @override
   Future<int> updateMedicationConfig(int id, Map<String, dynamic> data) async {
     final db = await database;
     return await db.update('medication_config', data, where: 'id = ?', whereArgs: [id]);

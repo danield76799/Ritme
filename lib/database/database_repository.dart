@@ -33,6 +33,7 @@ abstract class DatabaseRepository {
   Future<void> clearAllData();
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true, bool zoNodig = false});
   Future<int> deleteMedicationConfig(int id);
+  Future<int> reactivateMedicationConfig(int id);
   Future<int> updateMedicationConfig(int id, Map<String, dynamic> data);
   /// Upsert: schrijft de config op DE GEGEVEN id (of maakt hem aan), in
   /// tegenstelling tot [insertMedicationConfig] dat altijd een nieuwe id
