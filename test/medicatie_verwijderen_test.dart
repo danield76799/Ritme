@@ -1,5 +1,5 @@
-// Regressietest: de verwijderknop op het medicatiescherm moet een
-// medicatie echt verwijderen (en eerst een bevestigingsdialoog tonen).
+// Regressietest: de stopknop op het medicatiescherm stopt een medicijn
+// (soft-stop), zonder de inname-historie te wissen.
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -43,7 +43,7 @@ void main() {
       'Testpil', '100', 'mg', reminderEnabled: false);
   });
 
-  testWidgets('medicatie verwijderen via het scherm', (tester) async {
+  testWidgets('medicatie stoppen via het scherm', (tester) async {
     await tester.pumpWidget(MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -54,29 +54,30 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Testpil'), findsOneWidget);
 
-    // Tik op de prullenbak.
-    await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+    // Tik op de stopknop (stop-icoon).
+    await tester.tap(find.byIcon(Icons.stop_circle_outlined));
     await tester.pumpAndSettle();
 
-    // Bevestigingsdialoog met de naam van de medicatie.
-    expect(find.text('Medicatie verwijderen?'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Verwijderen'));
+    // Bevestigingsdialoog.
+    expect(find.text('Medicatie stoppen?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Stoppen'));
     await tester.runAsync(() async {
       await Future<void>.delayed(const Duration(milliseconds: 300));
     });
     await tester.pumpAndSettle();
-    // SnackBar bevestigt de verwijdering.
-    expect(find.text('Medicijn verwijderd'), findsOneWidget);
 
-    // Verdwijnt niet spoorloos: de kaart verhuist naar de sectie 'Gestopt'
-    // (alleen-lezen), zodat de historie zichtbaar blijft.
-    expect(find.text('Gestopt'), findsWidgets);
+    // SnackBar bevestigt het stoppen.
+    expect(find.textContaining('is gestopt'), findsOneWidget);
+
+    // De kaart verhuist naar de sectie 'Gestopt' (alleen-lezen).
+    expect(find.textContaining('Gestopt'), findsWidgets);
     expect(find.text('Testpil'), findsOneWidget);
 
-    // En gemarkeerd als verwijderd in de database (soft-delete, historie bewaard).
+    // En is gemarkeerd als gestopt (deleted + stopped_at), NIET hard verwijderd.
     final configs = await tester.runAsync(
         () => HiveDatabaseHelper.instance.getMedicationConfigsAll());
     expect(configs!.length, 1);
     expect(configs.single['deleted'], anyOf(equals('1'), equals(1)));
+    expect(configs.single['stopped_at'], isNotNull);
   });
 }

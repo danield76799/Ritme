@@ -27,7 +27,7 @@ class DatabaseHelper implements DatabaseRepository {
     
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -82,6 +82,7 @@ class DatabaseHelper implements DatabaseRepository {
         reminder_enabled INTEGER DEFAULT 0,
         deleted INTEGER DEFAULT 0,
         zo_nodig INTEGER DEFAULT 0,
+        stopped_at TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
@@ -327,6 +328,11 @@ class DatabaseHelper implements DatabaseRepository {
         await db.execute(
           'CREATE UNIQUE INDEX IF NOT EXISTS idx_intake_med_date ON medication_intake(medication_id, date)',
         );
+      } catch (_) {}
+    }
+    if (oldVersion < 12) {
+      try {
+        await db.execute('ALTER TABLE medication_config ADD COLUMN stopped_at TEXT');
       } catch (_) {}
     }
     if (oldVersion < 11) {
@@ -819,7 +825,7 @@ class DatabaseHelper implements DatabaseRepository {
     await db.delete('medication_schedule', where: 'medication_id = ?', whereArgs: [id]);
     return await db.update(
       'medication_config',
-      {'deleted': 1},
+      {'deleted': 1, 'stopped_at': DateTime.now().toIso8601String().substring(0, 10)},
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -830,7 +836,7 @@ class DatabaseHelper implements DatabaseRepository {
     final db = await database;
     return await db.update(
       'medication_config',
-      {'deleted': 0},
+      {'deleted': 0, 'stopped_at': null},
       where: 'id = ?',
       whereArgs: [id],
     );

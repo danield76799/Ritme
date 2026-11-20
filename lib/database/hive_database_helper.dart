@@ -1134,6 +1134,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       ...?bestaand?.cast<String, dynamic>(),
       'id': id,
       'deleted': '1',
+      'stopped_at': DateTime.now().toIso8601String().substring(0, 10),
     };
     await _medicationConfig.put(key, gemarkeerd);
     return 1;
@@ -1146,6 +1147,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
     if (bestaand == null) return 0;
     final map = Map<String, dynamic>.from(bestaand as Map);
     map.remove('deleted'); // verwijderde-markering opheffen; historie blijft behouden
+    map.remove('stopped_at');
     await _medicationConfig.put(key, map);
     return 1;
   }

@@ -131,6 +131,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _addMedication(String name, double dosage, String unit, {bool reminderEnabled = true, TimeOfDay? reminderTime, bool zoNodig = false}) async {
+    name = name.trim();
+    if (name.isEmpty) return;
     try {
       // 'Zo nodig'-medicatie krijgt nooit een herinnering: het is geen verplichting.
       final id = await db.insertMedicationConfig(name, dosage.toString(), unit, reminderEnabled: reminderEnabled && !zoNodig, zoNodig: zoNodig);
@@ -353,20 +355,22 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
-  Future<void> _deleteMedication(int configId) async {
+  String _configName(Map<String, dynamic> config) =>
+      config['naam']?.toString() ?? AppLocalizations.of(context).onbekend;
+
+  Future<void> _stopMedication(int configId, String name) async {
     try {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(AppLocalizations.of(context).medicatieVerwijderen),
-          content: Text(AppLocalizations.of(context).dezeActieOngedaan),
+          title: Text(AppLocalizations.of(context).medicatieStoppenTitel),
+          content: Text(AppLocalizations.of(context).medicatieStoppenBody(name)),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context).annuleren)),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
-              // Colors.red gaf witte tekst 3.68:1; AppTheme.error 4.98:1.
               style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-              child: Text(AppLocalizations.of(context).verwijderen, style: const TextStyle(color: Colors.white)),
+              child: Text(AppLocalizations.of(context).stoppen, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -378,7 +382,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).medicatieVerwijderd),
+              content: Text(AppLocalizations.of(context).medicatieGestoptSnack(name)),
               backgroundColor: AppTheme.success,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
@@ -388,7 +392,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         }
       }
     } catch (e) {
-      AppLogger.error('Failed to delete medication', error: e);
+      AppLogger.error('Failed to stop medication', error: e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -422,7 +426,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
             return AlertDialog.adaptive(
               title: Text(AppLocalizations.of(context).medicatieWijzigen),
               content: SingleChildScrollView(
-                child: Column(
+                child: SizedBox(
+                  width: 340,
+                  child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
@@ -493,6 +499,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   ],
                 ),
               ),
+                ),
               actions: [
                 TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context).annuleer, style: TextStyle(color: cs.primary))),
                 ElevatedButton(
@@ -630,6 +637,54 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
+  String _normalizeMedName(String s) =>
+      s.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+
+  /// Zoekt een bestaande kaart met dezelfde naam (actief heeft voorrang).
+  Map<String, dynamic>? _findDuplicateMedication(String name) {
+    final n = _normalizeMedName(name);
+    if (n.isEmpty) return null;
+    for (final c in _configs) {
+      if (_normalizeMedName(c['naam']?.toString() ?? '') == n) return c;
+    }
+    for (final c in _stoppedConfigs) {
+      if (_normalizeMedName(c['naam']?.toString() ?? '') == n) return c;
+    }
+    return null;
+  }
+
+  /// Vraag wat te doen bij een dubbele naam. Geeft 'add', 'edit', 'restart' of null.
+  Future<String?> _askDuplicateChoice(Map<String, dynamic> match) {
+    final cs = Theme.of(context).colorScheme;
+    final bestaatActief = _configs.any((c) => identical(c, match) || c['id'] == match['id']);
+    final naam = match['naam']?.toString() ?? '';
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(bestaatActief
+            ? AppLocalizations.of(context).medicatieBestaat(naam)
+            : AppLocalizations.of(context).medicatieBestaatGestopt(naam),
+            style: TextStyle(color: cs.onSurface)),
+        content: Text(AppLocalizations.of(context).medicatieBestaatUitleg,
+            style: TextStyle(color: cs.onSurfaceVariant)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'add'),
+            child: Text(AppLocalizations.of(context).tochApartToevoegen,
+                style: TextStyle(color: cs.primary)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, bestaatActief ? 'edit' : 'restart'),
+            style: ElevatedButton.styleFrom(backgroundColor: cs.primary, foregroundColor: cs.onPrimary),
+            child: Text(bestaatActief
+                ? AppLocalizations.of(context).bestaandeBewerken
+                : AppLocalizations.of(context).opnieuwStarten),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showAddMedicationDialog() {
     String name = '';
     double dosage = 0;
@@ -650,7 +705,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
               surfaceTintColor: Colors.transparent,
               title: Text(AppLocalizations.of(context).nieuweMedicatie, style: TextStyle(color: textColor)),
               content: SingleChildScrollView(
-                child: Column(
+                child: SizedBox(
+                  width: 340,
+                  child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -668,49 +725,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       onChanged: (v) => name = v,
                     ),
                     const SizedBox(height: 12),
-                    // Dosering + eenheid op één rij
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            style: TextStyle(color: textColor),
-                            decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context).dosering,
-                              labelStyle: TextStyle(color: labelColor),
-                              filled: true,
-                              fillColor: cs.surfaceContainerHighest,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
-                            ),
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            onChanged: (v) => dosage = double.tryParse(v.replaceAll(',', '.')) ?? 0,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        SizedBox(
-                          width: 96,
-                          child: DropdownButtonFormField<String>(
-                            style: TextStyle(color: textColor),
-                            dropdownColor: cs.surface,
-                            initialValue: unit,
-                            decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context).eenheidMgMlStuks,
-                              labelStyle: TextStyle(color: labelColor),
-                              filled: true,
-                              fillColor: cs.surfaceContainerHighest,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.smallRadius), borderSide: BorderSide(color: cs.outline)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-                            ),
-                            items: ['mg', 'ml', 'stuks', 'µg', 'IE']
-                                .map((u) => DropdownMenuItem(value: u, child: Text(u, style: TextStyle(color: textColor, fontSize: 16))))
-                                .toList(),
-                            onChanged: (v) => setDialogState(() => unit = v ?? 'mg'),
-                          ),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 6),
                     // Zo nodig: geen vaste verplichting/herinnering
                     SwitchListTile(
@@ -761,16 +775,38 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     ],
                   ],
                 ),
+                ),
               ),
               actions: [
                 TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context).annuleer, style: TextStyle(color: cs.primary))),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: cs.primary, foregroundColor: cs.onPrimary),
-                  onPressed: () {
-                    if (name.isNotEmpty) {
-                      _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime, zoNodig: zoNodig);
+                  onPressed: () async {
+                    if (name.isEmpty) {
+                      Navigator.pop(context);
+                      return;
+                    }
+                    final dup = _findDuplicateMedication(name);
+                    if (dup != null) {
+                      final choice = await _askDuplicateChoice(dup);
+                      if (!context.mounted) return;
+                      if (choice == 'add') {
+                        Navigator.pop(context);
+                        await _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime, zoNodig: zoNodig);
+                      } else if (choice == 'edit') {
+                        Navigator.pop(context);
+                        final id = dup['id'] is int ? dup['id'] as int : int.tryParse(dup['id']?.toString() ?? '');
+                        if (id != null) _editMedication(dup, id);
+                      } else if (choice == 'restart') {
+                        Navigator.pop(context);
+                        final id = dup['id'] is int ? dup['id'] as int : int.tryParse(dup['id']?.toString() ?? '');
+                        if (id != null) await _reactivateMedication(id);
+                      }
+                      // 'cancel' (null): niets doen, dialoog blijft staan
+                      return;
                     }
                     Navigator.pop(context);
+                    await _addMedication(name, dosage, unit, reminderEnabled: reminderEnabled, reminderTime: reminderTime, zoNodig: zoNodig);
                   },
                   child: Text(AppLocalizations.of(context).opslaan),
                 ),
@@ -974,6 +1010,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
     final dosering = '${config['dosering'] ?? ''} ${config['eenheid'] ?? ''}'.trim();
     final count = configId == null ? 0 : (_intakesForDay[configId] ?? 0);
     final taken = count > 0;
+    final gestoptOp = config['stopped_at']?.toString();
+    String? gestoptLabel;
+    if (gestoptOp != null && gestoptOp.isNotEmpty) {
+      final d = DateTime.tryParse(gestoptOp);
+      if (d != null) {
+        gestoptLabel = AppLocalizations.of(context).gestoptOp(DateFormat('d MMM y', 'nl').format(d));
+      }
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1022,7 +1066,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           ),
                         const SizedBox(width: 6),
                         Text(
-                          AppLocalizations.of(context).sectieGestopt,
+                          gestoptLabel ?? AppLocalizations.of(context).sectieGestopt,
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.outline, letterSpacing: 0.3),
                         ),
                       ],
@@ -1342,7 +1386,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             ],
             const SizedBox(width: 4),
             _buildEditBtn(onPressed: () => _editMedication(config, configId!)),
-            _buildDeleteBtn(onPressed: () => _deleteMedication(configId!)),
+            _buildDeleteBtn(onPressed: () => _stopMedication(configId!, _configName(config))),
           ],
         ),
       ),
@@ -1380,7 +1424,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             shape: BoxShape.circle,
             color: AppTheme.danger(context).withValues(alpha: 0.10),
           ),
-          child: Icon(Icons.delete_outline_rounded, size: 18,
+          child: Icon(Icons.stop_circle_outlined, size: 18,
               color: AppTheme.danger(context)),
         ),
       ),

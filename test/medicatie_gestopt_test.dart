@@ -56,7 +56,7 @@ void main() {
 
     // De gestopte medicatie staat er nog, als grijze kaart met status.
     expect(find.text('Oudepil'), findsOneWidget);
-    expect(find.text('Gestopt'), findsWidgets);
+    expect(find.textContaining('Gestopt'), findsWidgets);
     expect(find.text('Genomen'), findsOneWidget);
   });
 
@@ -72,7 +72,7 @@ void main() {
 
     // Staat in de Gestopt-sectie
     expect(find.text('Oudepil'), findsOneWidget);
-    expect(find.text('Gestopt'), findsWidgets);
+    expect(find.textContaining('Gestopt'), findsWidgets);
 
     // Tik op Heractiveer
     await tester.tap(find.widgetWithText(TextButton, 'Heractiveer'));
@@ -83,7 +83,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Terug in de actieve lijst (niet meer in Gestopt)
-    expect(find.text('Gestopt'), findsNothing);
+    expect(find.text('Heractiveer'), findsNothing);
     expect(find.text('Oudepil'), findsOneWidget);
 
     // Database: niet meer soft-deleted

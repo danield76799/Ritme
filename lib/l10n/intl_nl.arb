@@ -921,5 +921,21 @@
   "pdfReportGeneratedBy": "Dit rapport is gegenereerd door Ritme — een app voor bipolaire stoornissen.",
   "backupTestNietGemaakt": "Test: geen backup gemaakt (interval nog niet verstreken)",
   "backupTestFout": "Testfout: {error}",
-  "@backupTestFout": {"placeholders": {"error": {}}}
+  "@backupTestFout": {"placeholders": {"error": {}}},
+  "stoppen": "Stoppen",
+  "medicatieStoppenTitel": "Medicatie stoppen?",
+  "medicatieStoppenBody": "{name} komt bij Gestopt te staan. Je inname-historie blijft bewaard en blijft zichtbaar in eerdere dagen en in het rapport. De herinnering wordt uitgeschakeld. Je kunt hem later weer toevoegen.",
+  "@medicatieStoppenBody": {"placeholders": {"name": {}}},
+  "gestoptOp": "Gestopt op {date}",
+  "@gestoptOp": {"placeholders": {"date": {}}},
+  "medicatieGestoptSnack": "{name} is gestopt — de historie blijft bewaard.",
+  "@medicatieGestoptSnack": {"placeholders": {"name": {}}},
+  "medicatieBestaat": "{name} staat al in je lijst",
+  "@medicatieBestaat": {"placeholders": {"name": {}}},
+  "medicatieBestaatGestopt": "{name} staat bij Gestopt",
+  "@medicatieBestaatGestopt": {"placeholders": {"name": {}}},
+  "medicatieBestaatUitleg": "Wil je de bestaande kaart gebruiken in plaats van een dubbele toe te voegen?",
+  "bestaandeBewerken": "Bestaande bewerken",
+  "tochApartToevoegen": "Toch apart toevoegen",
+  "opnieuwStarten": "Opnieuw starten"
 }
