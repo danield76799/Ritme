@@ -951,5 +951,9 @@
   "optioneelLabel": "Optional",
   "veldVerplicht": "Required",
   "vulVerplichteVeldenIn": "Fill in the required questions",
-  "wissen": "Clear"
+  "wissen": "Clear",
+  "adherentieDagen": "Last {days} days: {pct}%",
+  "@adherentieDagen": {"placeholders": {"days": {}, "pct": {}}},
+  "backupDeelsMislukt": "Backup restored, but failed: {items}",
+  "@backupDeelsMislukt": {"placeholders": {"items": {}}}
 }

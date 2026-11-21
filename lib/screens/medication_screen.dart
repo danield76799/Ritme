@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
+import '../utils/adherentie.dart';
 import '../widgets/datum_navigator.dart';
 import '../utils/logger.dart';
 import '../services/notification_helper.dart';
@@ -23,6 +24,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
   List<Map<String, dynamic>> _stoppedConfigs = [];
   Map<int, int> _intakesForDay = {};
   Map<int, String> _intakeDoseringForDay = {}; // per-dag dosering snapshot
+  Map<int, Adherentie> _adherentie = {};
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -53,6 +55,22 @@ class _MedicationScreenState extends State<MedicationScreen> {
       final schedules = await db.getMedicationSchedules();
       final intakes = await db.getMedicationIntake(_formattedDate);
       Map<int, int> intakeMap = {};
+      // Adherentie per medicatie over de laatste 30 dagen (of sinds aanmaak).
+      // Alleen voor vaste (niet-zo-nodig) medicatie.
+      Map<int, Adherentie> adherentie = {};
+      try {
+        final nu = DateTime.now();
+        final start = DateTime(nu.year, nu.month, nu.day).subtract(const Duration(days: 29));
+        final fmt = DateFormat('yyyy-MM-dd');
+        final range = await db.getMedicationIntakeRange(fmt.format(start), fmt.format(nu));
+        adherentie = berekenAdherentie(
+          intakes: range,
+          configs: configs,
+          vandaag: nu,
+        );
+      } catch (e) {
+        AppLogger.error('Adherentie berekenen mislukt', error: e);
+      }
       Map<int, String> doseringMap = {};
       for (var intake in intakes) {
         dynamic rawMedId = intake['medication_id'];
@@ -114,6 +132,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         _stoppedConfigs = stopped;
         _intakesForDay = intakeMap;
         _intakeDoseringForDay = doseringMap;
+        _adherentie = adherentie;
         _isLoading = false;
       });
     } catch (e, stackTrace) {
@@ -1201,6 +1220,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
   }
 
+  Color _adherentieKleur(int pct) {
+    if (pct >= 75) return AppTheme.success;
+    if (pct >= 40) return AppTheme.warning;
+    return AppTheme.danger(context);
+  }
+
   Widget _buildCompactMedCard(Map<String, dynamic> config) {
     dynamic rawId = config['id'];
     int? configId;
@@ -1307,6 +1332,34 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           Icon(Icons.notifications_off_rounded, size: 14, color: Theme.of(context).colorScheme.outline),
                       ],
                     ),
+                    if (!zoNodig && _adherentie[configId] != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 72,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: LinearProgressIndicator(
+                                value: _adherentie[configId]!.percentage / 100,
+                                minHeight: 4,
+                                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                valueColor: AlwaysStoppedAnimation<Color>(_adherentieKleur(_adherentie[configId]!.percentage)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              AppLocalizations.of(context).adherentieDagen(_adherentie[configId]!.dagen, _adherentie[configId]!.percentage),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
