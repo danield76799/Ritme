@@ -11,10 +11,10 @@ import 'backup_map_service.dart';
 import '../utils/logger.dart';
 
 class BackupService {
-  // Via de locator, NIET direct DatabaseHelper.instance: op Android is Hive
-  // leidend en SQLite een tweede, onzichtbare database (09-2026: alles wat
-  // de backup wegschreef was onzichtbaar voor de UI). Getter i.p.v. static
-  // final: db bestaat pas na initDatabase().
+  // Via de locator, nooit rechtstreeks naar een losse database-implementatie:
+  // op Android is Hive leidend (09-2026: SQLite-schrijfacties waren onzichtbaar
+  // voor de UI; de SQLite-tak is daarom inmiddels verwijderd). Getter i.p.v.
+  // static final: db bestaat pas na initDatabase().
   static DatabaseRepository get _db => db;
 
   /// Export all data - SQLite AND Hive
@@ -35,26 +35,6 @@ class BackupService {
       }
     } catch (e) {
       debugPrint('BackupService: error exporting SQLite daily_logs - $e');
-    }
-
-    // Export appointments from Hive (not SQLite)
-    try {
-      if (Hive.isBoxOpen('medical_appointments')) {
-        final box = Hive.box('medical_appointments');
-        final appointments = <Map<String, dynamic>>[];
-        for (final key in box.keys) {
-          final value = box.get(key);
-          if (value != null) {
-            appointments.add(Map<String, dynamic>.from(value));
-          }
-        }
-        if (appointments.isNotEmpty) {
-          export['data']['medical_appointments'] = appointments;
-          debugPrint('BackupService: exported ${appointments.length} appointments from Hive');
-        }
-      }
-    } catch (e) {
-      debugPrint('BackupService: error exporting Hive appointments - $e');
     }
 
     try {
@@ -265,10 +245,17 @@ class BackupService {
     );
   }
 
-  /// Restore data from JSON map
-  static Future<void> restoreFromData(Map<String, dynamic> data) async {
-    final boxesData = data['data'] as Map<String, dynamic>?;
-    if (boxesData == null) throw Exception('Invalid backup format');
+  /// Restore data from JSON map.
+  ///
+  /// Geeft de lijst terug van secties die NIET konden worden hersteld
+  /// (bv. 'medication_intake'). Een lege lijst betekent: alles gelukt.
+  /// Er wordt zoveel mogelijk geprobeerd, maar een sectie die stuk is, zegt
+  /// dat ook — in plaats van hem stil over te slaan.
+  static Future<List<String>> restoreFromData(Map<String, dynamic> data) async {
+    final failures = <String>[];
+    final raw = data['data'];
+    if (raw is! Map) throw Exception('Invalid backup format');
+    final boxesData = Map<String, dynamic>.from(raw);
 
     // Restore SQLite settings first (username, sleep times, etc.)
     if (boxesData.containsKey('sqlite_settings')) {
@@ -278,6 +265,7 @@ class BackupService {
         debugPrint('BackupService: restored SQLite settings: $settingsData');
       } catch (e) {
         debugPrint('BackupService: error restoring SQLite settings - $e');
+        failures.add('settings');
       }
     }
 
@@ -291,23 +279,7 @@ class BackupService {
         debugPrint('BackupService: restored ${logs.length} daily logs');
       } catch (e) {
         debugPrint('BackupService: error restoring daily logs - $e');
-      }
-    }
-
-    // Restore appointments from Hive
-    if (boxesData.containsKey('medical_appointments')) {
-      try {
-        if (Hive.isBoxOpen('medical_appointments')) {
-          final box = Hive.box('medical_appointments');
-          final appointments = boxesData['medical_appointments'] as List<dynamic>;
-          await box.clear();
-          for (final appt in appointments) {
-            await box.put(appt['id'], appt);
-          }
-          debugPrint('BackupService: restored ${appointments.length} appointments to Hive');
-        }
-      } catch (e) {
-        debugPrint('BackupService: error restoring appointments - $e');
+        failures.add('daily_logs');
       }
     }
 
@@ -320,6 +292,7 @@ class BackupService {
         debugPrint('BackupService: restored ${activities.length} SRM activities');
       } catch (e) {
         debugPrint('BackupService: error restoring SRM activities - $e');
+        failures.add('srm_activities');
       }
     }
 
@@ -364,6 +337,7 @@ class BackupService {
         debugPrint('BackupService: restored ${configs.length} medication configs');
       } catch (e) {
         debugPrint('BackupService: error restoring medication configs - $e');
+        failures.add('medication_config');
       }
     }
     if (boxesData.containsKey('sqlite_medication_schedule')) {
@@ -371,8 +345,11 @@ class BackupService {
         final schedules = boxesData['sqlite_medication_schedule'] as List<dynamic>;
         for (final sched in schedules) {
           final map = sched as Map<String, dynamic>;
+          final rawId = map['medication_id'];
+          final medId = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+          if (medId == null) continue;
           await _db.insertMedicationSchedule(
-            map['medication_id'] as int,
+            medId,
             map['reminder_time']?.toString() ?? '',
             map['days_of_week']?.toString() ?? '',
           );
@@ -380,6 +357,7 @@ class BackupService {
         debugPrint('BackupService: restored ${schedules.length} medication schedules');
       } catch (e) {
         debugPrint('BackupService: error restoring medication schedules - $e');
+        failures.add('medication_schedule');
       }
     }
     if (boxesData.containsKey('sqlite_medication_intake')) {
@@ -392,6 +370,7 @@ class BackupService {
         debugPrint('BackupService: restored ${intakes.length} medication intakes');
       } catch (e) {
         debugPrint('BackupService: error restoring medication intakes - $e');
+        failures.add('medication_intake');
       }
     }
 
@@ -407,24 +386,36 @@ class BackupService {
         // Check if box is open, skip if not
         if (!Hive.isBoxOpen(boxName)) {
           debugPrint('BackupService: box $boxName not open, skipping');
+          failures.add(boxName);
           continue;
+        }
+        // Eerst álle entries valideren vóórdat er ook maar iets gewist wordt.
+        // Bij een ongeldige entry blijft de oude data volledig intact.
+        final staged = <dynamic, dynamic>{};
+        for (final item in boxData.entries) {
+          final value = item.value;
+          if (value is! Map) {
+            throw FormatException('rij geen map in $boxName: ${value.runtimeType}');
+          }
+          staged[item.key] = Map<String, dynamic>.from(value);
         }
         final box = Hive.box(boxName);
         await box.clear();
-        for (final item in boxData.entries) {
-          await box.put(item.key, item.value);
-        }
+        await box.putAll(staged);
         debugPrint('BackupService: restored box $boxName');
       } catch (e) {
         debugPrint('BackupService: error restoring box $boxName - $e');
+        failures.add(boxName);
       }
     }
+
+    return failures;
   }
 
   /// Restore from local file
-  static Future<void> restoreFromFile(String filePath) async {
+  static Future<List<String>> restoreFromFile(String filePath) async {
     final data = await _readBackupJson(filePath);
-    await restoreFromData(data);
+    return restoreFromData(data);
   }
 
   /// Leest een backupbestand, decomprimeert indien nodig en valideert de

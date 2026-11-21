@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-// import 'package:sqflite/sqflite.dart';
 // import 'package:path/path.dart' as p;
-// import 'package:path_provider/path_provider.dart';
 import '../theme/app_theme.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
@@ -523,9 +521,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (bevestig != true || !mounted) return;
 
     try {
-      await BackupService.restoreFromFile(filePath);
+      final failures = await BackupService.restoreFromFile(filePath);
       if (mounted) {
-        _showSuccess(AppLocalizations.of(context).backupSuccesvolHersteld);
+        if (failures.isEmpty) {
+          _showSuccess(AppLocalizations.of(context).backupSuccesvolHersteld);
+        } else {
+          _showError(AppLocalizations.of(context).backupDeelsMislukt(failures.join(', ')));
+        }
         _loadData();
       }
     } catch (e) {
