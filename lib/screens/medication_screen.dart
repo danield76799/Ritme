@@ -1261,7 +1261,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
           children: [
             // Pill-icoon in zachte cirkel; check-vinkje wanneer ingenomen
             Container(
@@ -1332,34 +1335,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           Icon(Icons.notifications_off_rounded, size: 14, color: Theme.of(context).colorScheme.outline),
                       ],
                     ),
-                    if (!zoNodig && _adherentie[configId] != null) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 72,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(2),
-                              child: LinearProgressIndicator(
-                                value: _adherentie[configId]!.percentage / 100,
-                                minHeight: 4,
-                                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                valueColor: AlwaysStoppedAnimation<Color>(_adherentieKleur(_adherentie[configId]!.percentage)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              AppLocalizations.of(context).adherentieDagen(_adherentie[configId]!.dagen, _adherentie[configId]!.percentage),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -1440,6 +1415,33 @@ class _MedicationScreenState extends State<MedicationScreen> {
             const SizedBox(width: 4),
             _buildEditBtn(onPressed: () => _editMedication(config, configId!)),
             _buildDeleteBtn(onPressed: () => _stopMedication(configId!, _configName(config))),
+          ],
+            ),
+            if (!zoNodig && _adherentie[configId] != null) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.show_chart, size: 14, color: _adherentieKleur(_adherentie[configId]!.percentage)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: LinearProgressIndicator(
+                        value: _adherentie[configId]!.percentage / 100,
+                        minHeight: 4,
+                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(_adherentieKleur(_adherentie[configId]!.percentage)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.of(context).adherentieDagen(_adherentie[configId]!.dagen, _adherentie[configId]!.percentage),
+                    style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
