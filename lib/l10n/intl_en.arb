@@ -947,5 +947,9 @@
   "medicatieBestaatUitleg": "Do you want to use the existing card instead of adding a duplicate?",
   "bestaandeBewerken": "Edit existing",
   "tochApartToevoegen": "Add anyway",
-  "opnieuwStarten": "Restart"
+  "opnieuwStarten": "Restart",
+  "optioneelLabel": "Optional",
+  "veldVerplicht": "Required",
+  "vulVerplichteVeldenIn": "Fill in the required questions",
+  "wissen": "Clear"
 }

@@ -7,14 +7,14 @@ import '../widgets/overzicht_rij.dart';
 import '../utils/logger.dart';
 import '../services/notification_helper.dart';
 
-/// Ochtend check-in: 6 korte stappen die bij het opstaan horen.
+/// Ochtend check-in: alles op één scrollbare pagina.
 ///
 ///  1. Hoe laat stond je op?        (tijd — vult slaap + SRM "Opstaan" + P-score)
 ///  2. Wakker gelegen (minuten)     (samen met gisteravonds bedtijd → slaapduur)
 ///  3. Hoe heb je geslapen?         (kwaliteit 1..5, puur log — geen klinische score)
 ///  4. Slaapbehoefte                (q4 uit de stemmingscheck, -4..+4)
-///  5. Eerste contact vandaag?      (tijd, optioneel — was avond-stap)
-///  6. Werk/hobby begonnen?         (tijd, optioneel — was avond-stap)
+///  5. Eerste contact vandaag?      (tijd, optioneel)
+///  6. Werk/hobby begonnen?         (tijd, optioneel)
 ///
 /// Opslag:
 ///  - sleep log (bedtijd = gisteravond uit daily_log, wake = nu gekozen)
@@ -41,6 +41,10 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
   double? _q4; // slaapbehoefte -4..+4
   String? _bedTimeYesterday; // uit gisterens slaap-log
   bool _isSaving = false;
+  bool _toonFouten = false;
+  final GlobalKey _wakeKey = GlobalKey();
+  final GlobalKey _kwaliteitKey = GlobalKey();
+  final GlobalKey _q4Key = GlobalKey();
   bool _bekijkModus = false; // true = overzicht van opgeslagen waarden (read-only)
   TimeOfDay? _opgeslagenWakeTime;
   int _opgeslagenAwakeMinutes = 0;
@@ -240,51 +244,6 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     if (picked != null && mounted) onPick(picked);
   }
 
-  /// Na een tijdkeuze (OK in de kiezer) meteen een stap verder, behalve op de
-  /// laatste stap. Zo hoeft een tijdstip niet twee keer bevestigd te worden
-  /// (OK én Volgende).
-  void _gaVerder() {
-    if (!mounted || _step >= 5) return;
-    setState(() => _step += 1);
-  }
-
-  /// Eén tijdstip-stap: grote klokknop, geen eigen Volgende (zie _gaVerder).
-  Widget _tijdStap(
-    BuildContext context, {
-    required IconData icon,
-    required String titel,
-    required TimeOfDay? tijd,
-    required ValueChanged<TimeOfDay> onPick,
-  }) {
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 16),
-        Text(
-          titel,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 24),
-        Center(
-          child: OutlinedButton.icon(
-            onPressed: () => _pickTijd(tijd, onPick),
-            icon: const Icon(Icons.access_time),
-            label: Text(
-              tijd != null ? _formatTimeOfDay(tijd) : l10n.tikOmTijdInTeStellen,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   /// P-score van een SRM-tijd tegen de doeltijd (zelfde staffel als overal).
   int _pScoreVoor(TimeOfDay tijd, String? targetStr) {
     if (targetStr == null || targetStr.isEmpty || targetStr == '--:--') return 1;
@@ -422,14 +381,6 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            if (!_bekijkModus && _step < 6)
-              Text(
-                l10n.ochtendStapVan(_step + 1, 6),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.secondaryText(context),
-                ),
-              ),
           ],
         ),
       ),
@@ -438,7 +389,7 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
             ? _buildOverzicht(context)
             : _step >= 6
                 ? _buildKlaar(context)
-                : _buildVraag(context),
+                : _buildForm(context),
       ),
     );
   }
@@ -575,27 +526,263 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
     }
   }
 
-  Widget _buildVraag(BuildContext context) {
+  /// Gedeelde sectie-kaart: icoon + titel (+ optioneel subtitel/
+  /// verplicht-markering) met de inhoud eronder.
+  Widget _sectie({
+    Key? key,
+    required IconData icon,
+    Color? iconKleur,
+    required String titel,
+    String? subtitel,
+    bool optioneel = false,
+    bool fout = false,
+    required Widget child,
+  }) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final accent = iconKleur ?? CheckinAccent.teal;
+    return Container(
+      key: key,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.largeRadius - 8),
+        border: Border.all(
+          color: fout ? AppTheme.danger(context) : AppTheme.cardBorderColor(context),
+          width: fout ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+                ),
+                child: Icon(icon, size: 18, color: accent),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  titel,
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              if (optioneel)
+                Text(l10n.optioneelLabel,
+                    style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)))
+              else if (fout)
+                Text(l10n.veldVerplicht,
+                    style: TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.danger(context))),
+            ],
+          ),
+          if (subtitel != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              subtitel,
+              style: TextStyle(fontSize: 12, height: 1.35, color: AppTheme.secondaryText(context)),
+            ),
+          ],
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+
+  /// Tijd-invoer voor de optionele vragen: tik = kies; met wis-knop als er
+  /// al een tijd gekozen is.
+  Widget _tijdVeld({
+    required TimeOfDay? tijd,
+    required Future<void> Function() onPick,
+    required VoidCallback onClear,
+  }) {
+    final l10n = AppLocalizations.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: onPick,
+            icon: const Icon(Icons.access_time),
+            label: Text(
+              tijd != null ? _formatTimeOfDay(tijd) : l10n.tikOmTijdInTeStellen,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        ),
+        if (tijd != null) ...[
+          const SizedBox(width: 4),
+          IconButton(
+            icon: const Icon(Icons.close_rounded),
+            tooltip: l10n.wissen,
+            onPressed: onClear,
+          ),
+        ],
+      ],
+    );
+  }
+
+  void _scrollNaarFout(GlobalKey key) {
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(ctx,
+          duration: const Duration(milliseconds: 350), alignment: 0.05);
+    }
+  }
+
+  /// Controleert de verplichte vragen en scrolt naar de eerste fout.
+  Future<void> _pogingAfronden() async {
+    final l10n = AppLocalizations.of(context);
+    setState(() => _toonFouten = true);
+    final foutmelding = l10n.vulVerplichteVeldenIn;
+    if (_wakeTime == null) {
+      _scrollNaarFout(_wakeKey);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(foutmelding)));
+      return;
+    }
+    if (_kwaliteit == null) {
+      _scrollNaarFout(_kwaliteitKey);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(foutmelding)));
+      return;
+    }
+    if (_q4 == null) {
+      _scrollNaarFout(_q4Key);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(foutmelding)));
+      return;
+    }
+    await _finish();
+  }
+
+  /// Alle vragen op één scrollbare pagina met één afrond-knop onderaan.
+  Widget _buildForm(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     return Column(
       children: [
-        LinearProgressIndicator(
-          value: (_step + 1) / 6,
-          backgroundColor: theme.colorScheme.surfaceContainerHighest,
-          valueColor: const AlwaysStoppedAnimation<Color>(CheckinAccent.teal),
-        ),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
-                AppTheme.screenPadding, 20, AppTheme.screenPadding, 20),
-            child: _stepContent(context),
+                AppTheme.screenPadding, 16, AppTheme.screenPadding, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _sectie(
+                  key: _wakeKey,
+                  icon: Icons.wb_sunny,
+                  titel: l10n.ochtendHoeLaatOpgestaan,
+                  subtitel: _bedTimeYesterday != null
+                      ? l10n.ochtendBedtijdGisteren(_bedTimeYesterday!)
+                      : null,
+                  fout: _toonFouten && _wakeTime == null,
+                  child: Center(
+                    child: OutlinedButton.icon(
+                      onPressed: _pickWakeTime,
+                      icon: const Icon(Icons.access_time),
+                      label: Text(
+                        _wakeTime != null
+                            ? _formatTimeOfDay(_wakeTime!)
+                            : l10n.tikOmTijdInTeStellen,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _sectie(
+                  icon: Icons.bedtime,
+                  titel: l10n.wakkerGelegen,
+                  optioneel: false,
+                  child: Column(
+                    children: [
+                      Text(
+                        '$_awakeMinutes',
+                        style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w700),
+                      ),
+                      Text(l10n.minuten,
+                          style: const TextStyle(fontSize: 13, color: null)),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [0, 5, 10, 15, 30, 45, 60, 90, 120, 180, 240]
+                            .map((m) => ChoiceChip(
+                                  label: Text('${m}m'),
+                                  selected: _awakeMinutes == m,
+                                  onSelected: (_) => setState(() => _awakeMinutes = m),
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _sectie(
+                  key: _kwaliteitKey,
+                  icon: Icons.star_rounded,
+                  iconKleur: const Color(0xFFFFB300),
+                  titel: l10n.ochtendHoeGeslapen,
+                  fout: _toonFouten && _kwaliteit == null,
+                  child: _KwaliteitOpties(
+                    selected: _kwaliteit,
+                    onChanged: (v) => setState(() => _kwaliteit = v),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _sectie(
+                  key: _q4Key,
+                  icon: Icons.nightlight_round,
+                  titel: l10n.stemmingsCheckVraag4Titel,
+                  subtitel: l10n.stemmingsCheckVraag4Ondertitel,
+                  fout: _toonFouten && _q4 == null,
+                  child: _SlaapbehoefteOpties(
+                    selected: _q4,
+                    onChanged: (v) => setState(() => _q4 = v),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _sectie(
+                  icon: Icons.person_outline,
+                  titel: l10n.avondEersteContact,
+                  optioneel: true,
+                  child: _tijdVeld(
+                    tijd: _eersteContact,
+                    onPick: () async =>
+                        _pickTijd(_eersteContact, (t) => setState(() => _eersteContact = t)),
+                    onClear: () => setState(() => _eersteContact = null),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _sectie(
+                  icon: Icons.work_outline,
+                  titel: l10n.avondWerkHobby,
+                  optioneel: true,
+                  child: _tijdVeld(
+                    tijd: _werkHobby,
+                    onPick: () async =>
+                        _pickTijd(_werkHobby, (t) => setState(() => _werkHobby = t)),
+                    onClear: () => setState(() => _werkHobby = null),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
         ),
-        // Vaste onderbalk: knoppen blijven altijd binnen bereik.
         Container(
           padding: const EdgeInsets.fromLTRB(
-              AppTheme.screenPadding, 12, AppTheme.screenPadding, 12),
+              AppTheme.screenPadding, 10, AppTheme.screenPadding, 10),
           decoration: BoxDecoration(
             color: theme.scaffoldBackgroundColor,
             border: Border(
@@ -604,265 +791,30 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
           ),
           child: SafeArea(
             top: false,
-            child: Row(
-              children: [
-                if (_step > 0) ...[
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => setState(() => _step -= 1),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.onSurface,
-                        side: BorderSide(
-                            color: CheckinAccent.unselectedBorder(theme.brightness)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text(l10n.stemmingsCheckVorige),
+            child: ElevatedButton(
+              onPressed: _isSaving ? null : _pogingAfronden,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                backgroundColor: CheckinAccent.teal,
+                foregroundColor: CheckinAccent.onAccent,
+                disabledBackgroundColor: CheckinAccent.teal.withValues(alpha: 0.30),
+                disabledForegroundColor: CheckinAccent.onAccent.withValues(alpha: 0.60),
+              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: CheckinAccent.onAccent),
+                    )
+                  : Text(
+                      l10n.stemmingsCheckAfronden,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-                Expanded(
-                  flex: _step > 0 ? 1 : 1,
-                  child: ElevatedButton(
-                    onPressed: _canProceed() && !_isSaving
-                        ? () {
-                            if (_step == 5) {
-                              _finish();
-                            } else {
-                              setState(() => _step += 1);
-                            }
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: CheckinAccent.teal,
-                      // Donkere tekst op het accent: wit haalt maar 1.79:1.
-                      foregroundColor: CheckinAccent.onAccent,
-                      disabledBackgroundColor:
-                          CheckinAccent.teal.withValues(alpha: 0.30),
-                      disabledForegroundColor:
-                          CheckinAccent.onAccent.withValues(alpha: 0.60),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: Text(
-                      _step == 5 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
         ),
       ],
     );
-  }
-
-  bool _canProceed() {
-    switch (_step) {
-      case 0:
-        return _wakeTime != null;
-      case 1:
-        return true; // wakker-gelegen heeft default 0
-      case 2:
-        return _kwaliteit != null;
-      case 3:
-        return _q4 != null;
-      case 4:
-        return true; // eerste contact optioneel
-      case 5:
-        return true; // werk/hobby optioneel
-      default:
-        return false;
-    }
-  }
-
-  Widget _stepContent(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (_step) {
-      case 0:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.wb_sunny, size: 56, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(
-              l10n.ochtendHoeLaatOpgestaan,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            if (_bedTimeYesterday != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                l10n.ochtendBedtijdGisteren(_bedTimeYesterday!),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-              ),
-            ],
-            const SizedBox(height: 24),
-            Center(
-              child: OutlinedButton.icon(
-                onPressed: _pickWakeTime,
-                icon: const Icon(Icons.access_time),
-                label: Text(
-                  _wakeTime != null ? _formatTimeOfDay(_wakeTime!) : l10n.tikOmTijdInTeStellen,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                ),
-              ),
-            ),
-          ],
-        );
-      case 1:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.bedtime, size: 56, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(
-              l10n.wakkerGelegen,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 24),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    '$_awakeMinutes',
-                    style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w700),
-                  ),
-                  Text(l10n.minuten, style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 24),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.center,
-                    children: [0, 5, 10, 15, 30, 45, 60, 90, 120, 180, 240]
-                        .map((m) => ChoiceChip(
-                              label: Text('${m}m'),
-                              selected: _awakeMinutes == m,
-                              onSelected: (_) => setState(() => _awakeMinutes = m),
-                            ))
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      case 2:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFB300).withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-                  ),
-                  child: const Icon(Icons.star_rounded,
-                      size: 18, color: Color(0xFFFFB300)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l10n.ochtendHoeGeslapen,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _KwaliteitOpties(
-              selected: _kwaliteit,
-              onChanged: (v) => setState(() => _kwaliteit = v),
-            ),
-          ],
-        );
-      case 3:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Compacte kop: maan-icoon naast de vraag i.p.v. een groot icoon
-            // dat de kaarten naar beneden duwt.
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: CheckinAccent.teal.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-                  ),
-                  child: const Icon(Icons.nightlight_round,
-                      size: 18, color: CheckinAccent.teal),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.stemmingsCheckVraag4Titel,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        l10n.stemmingsCheckVraag4Ondertitel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.3,
-                          color: AppTheme.secondaryText(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _SlaapbehoefteOpties(
-              selected: _q4,
-              onChanged: (v) => setState(() => _q4 = v),
-            ),
-          ],
-        );
-      case 4:
-        return _tijdStap(
-          context,
-          icon: Icons.person_outline,
-          titel: l10n.avondEersteContact,
-          tijd: _eersteContact,
-          // Na OK meteen door: anders moet elk tijdstip twee keer
-          // bevestigd worden (OK én Volgende).
-          onPick: (t) {
-            setState(() => _eersteContact = t);
-            _gaVerder();
-          },
-        );
-      case 5:
-        return _tijdStap(
-          context,
-          icon: Icons.work_outline,
-          titel: l10n.avondWerkHobby,
-          tijd: _werkHobby,
-          onPick: (t) => setState(() => _werkHobby = t),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
   }
 
   Widget _buildKlaar(BuildContext context) {

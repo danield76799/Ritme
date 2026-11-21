@@ -120,11 +120,13 @@ void main() {
   });
 
   group('Flow is 6 stappen met kwaliteit + SRM (structuur)', () {
-    test('stapteller en klaar-stap rekenen met 6', () {
+    test('ochtend-check-in is één pagina, geen stap-wizard', () {
       final code = _code('lib/screens/morning_checkin_screen.dart');
-      expect(code.contains('ochtendStapVan(_step + 1, 6)'), isTrue);
-      expect(code.contains('_step = 6'), isTrue);
-      expect(code.contains('(_step + 1) / 6'), isTrue);
+      expect(code.contains('_buildForm('), isTrue);
+      expect(code.contains('ochtendStapVan(_step + 1, 6)'), isFalse,
+          reason: 'stapteller is weg in de single-page flow');
+      expect(code.contains('_step = 6'), isTrue,
+          reason: 'na opslaan gaat de UI naar de klaar-staat');
     });
 
     test('kwaliteit wordt gevraagd, bewaard en getoond', () {
@@ -174,11 +176,14 @@ void main() {
       expect(code.contains('_opgeslagenWerkHobby'), isTrue);
     });
 
-    test('na OK meteen door, geen dubbele bevestiging', () {
+    test('geen vervolgstappen meer (alles op één pagina)', () {
       final ochtend = _code('lib/screens/morning_checkin_screen.dart');
       final avond = _code('lib/screens/evening_checkin_screen.dart');
-      expect(ochtend.contains('_gaVerder()'), isTrue);
-      expect(avond.contains('_gaVerder()'), isTrue);
+      expect(ochtend.contains('_gaVerder('), isFalse,
+          reason: 'tijdstippen vereisen geen tussenstappen meer');
+      expect(avond.contains('_gaVerder('), isFalse);
+      expect(ochtend.contains('_canProceed'), isFalse);
+      expect(avond.contains('_canProceed'), isFalse);
     });
   });
 }

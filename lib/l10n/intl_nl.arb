@@ -937,5 +937,9 @@
   "medicatieBestaatUitleg": "Wil je de bestaande kaart gebruiken in plaats van een dubbele toe te voegen?",
   "bestaandeBewerken": "Bestaande bewerken",
   "tochApartToevoegen": "Toch apart toevoegen",
-  "opnieuwStarten": "Opnieuw starten"
+  "opnieuwStarten": "Opnieuw starten",
+  "optioneelLabel": "Optioneel",
+  "veldVerplicht": "Verplicht",
+  "vulVerplichteVeldenIn": "Vul de verplichte vragen in",
+  "wissen": "Wissen"
 }

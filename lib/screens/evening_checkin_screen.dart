@@ -9,14 +9,13 @@ import '../utils/checkin_colors.dart';
 import '../widgets/overzicht_rij.dart';
 import '../services/notification_helper.dart';
 
-/// Avond check-in: de terugblik op de dag, vlak voordat je gaat slapen.
+/// Avond check-in: alles op één scrollbare pagina.
 ///
 ///  1. Stemming vandaag                    (q1, -4..+4)
 ///  2. Energie slider                      (q2, 0..100)
 ///  3. Energie-niveau                      (q3, -3..+3)
 ///  4. Belangrijke gebeurtenis + invloed   (q5, -4..+4)
-///  5. Je dag: Eerste contact / Werk-Hobby / Avondeten (SRM-tijden)
-///  6. Naar bed                            (tijd → slaap start, SRM "Naar bed")
+///  5. Avondeten + bedtijd                 (SRM-tijden, optioneel)
 ///
 /// Opslag: mood_assessment (q1/q2/q3/q5 merge), daily_log (stemming + bedtijd),
 /// srm_activities (3 tijden + Naar bed met P-score), sleep-log (bedtijd).
@@ -44,6 +43,10 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
   TimeOfDay? _bedTime;
 
   bool _isSaving = false;
+  bool _toonFouten = false;
+  final GlobalKey _q1Key = GlobalKey();
+  final GlobalKey _q3Key = GlobalKey();
+  final GlobalKey _q5Key = GlobalKey();
   bool _bekijkModus = false; // true = overzicht van opgeslagen waarden (read-only)
   bool _opslagGelukt = false; // uitslag van _opslaan; _sluiten meldt dit terug
 
@@ -287,33 +290,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
     }
   }
 
-  /// Na een tijdkeuze (OK in de kiezer) meteen een stap verder, behalve op de
-  /// laatste stap. Zo hoeft een tijdstip niet twee keer bevestigd te worden
-  /// (OK én Volgende).
-  void _gaVerder() {
-    if (!mounted || _step >= _totaalStappen - 1) return;
-    setState(() => _step += 1);
-  }
-
-  bool _canProceed() {
-    switch (_step) {
-      case 0:
-        return _q1 != null;
-      case 1:
-        return true;
-      case 2:
-        return _q3 != null;
-      case 3:
-        return _q5 != null;
-      case 4:
-        return true; // avondeten optioneel
-      case 5:
-        return true; // bedtijd optioneel (kan later via ochtendcheck-in)
-      default:
-        return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -328,7 +304,7 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
             ? _buildOverzicht(context)
             : _step >= _totaalStappen
                 ? _buildKlaar(context)
-                : _buildVraag(context),
+                : _buildForm(context),
       ),
     );
   }
@@ -475,182 +451,303 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
     }
   }
 
-  Widget _buildVraag(BuildContext context) {
+  /// Sectie-kaart: icoon + titel (+ optionele subtitel) met de inhoud eronder.
+  Widget _sectie({
+    Key? key,
+    required IconData icon,
+    required String titel,
+    String? subtitel,
+    bool optioneel = false,
+    bool fout = false,
+    required Widget child,
+  }) {
+    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    return Column(
-      children: [
-        LinearProgressIndicator(
-          value: (_step + 1) / _totaalStappen,
-          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+    final accent = theme.colorScheme.primary;
+    return Container(
+      key: key,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.largeRadius - 8),
+        border: Border.all(
+          color: fout ? AppTheme.danger(context) : AppTheme.cardBorderColor(context),
+          width: fout ? 1.5 : 1,
         ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+                ),
+                child: Icon(icon, size: 18, color: accent),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  titel,
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              if (optioneel)
+                Text(l10n.optioneelLabel,
+                    style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)))
+              else if (fout)
+                Text(l10n.veldVerplicht,
+                    style: TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.danger(context))),
+            ],
+          ),
+          if (subtitel != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              subtitel,
+              style: TextStyle(fontSize: 12, height: 1.35, color: AppTheme.secondaryText(context)),
+            ),
+          ],
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+
+  /// Tijd-invoer voor de optionele SRM-vragen, met wis-knop.
+  Widget _tijdVeld({
+    required TimeOfDay? tijd,
+    required Future<void> Function() onPick,
+    required VoidCallback onClear,
+  }) {
+    final l10n = AppLocalizations.of(context);
+    return Row(
+      children: [
         Expanded(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: _stepContent(context),
+          child: OutlinedButton.icon(
+            onPressed: onPick,
+            icon: const Icon(Icons.access_time),
+            label: Text(
+              tijd != null ? _formatTimeOfDay(tijd) : l10n.tikOmTijdInTeStellen,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              if (_step > 0)
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => setState(() => _step -= 1),
-                    child: Text(l10n.stemmingsCheckVorige),
+        if (tijd != null) ...[
+          const SizedBox(width: 4),
+          IconButton(
+            icon: const Icon(Icons.close_rounded),
+            tooltip: l10n.wissen,
+            onPressed: onClear,
+          ),
+        ],
+      ],
+    );
+  }
+
+  void _scrollNaarFout(GlobalKey key) {
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(ctx,
+          duration: const Duration(milliseconds: 350), alignment: 0.05);
+    }
+  }
+
+  void _toonFoutSnack() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context).vulVerplichteVeldenIn)),
+    );
+  }
+
+  /// Controleert de verplichte vragen en scrolt naar de eerste fout.
+  Future<void> _pogingAfronden() async {
+    setState(() => _toonFouten = true);
+    if (_q1 == null) {
+      _scrollNaarFout(_q1Key);
+      _toonFoutSnack();
+      return;
+    }
+    if (_q3 == null) {
+      _scrollNaarFout(_q3Key);
+      _toonFoutSnack();
+      return;
+    }
+    if (_q5 == null) {
+      _scrollNaarFout(_q5Key);
+      _toonFoutSnack();
+      return;
+    }
+    await _finish();
+  }
+
+  /// Eén doorlopende check-in-pagina met alle vragen onder elkaar.
+  Widget _buildForm(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+                AppTheme.screenPadding, 16, AppTheme.screenPadding, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _sectie(
+                  key: _q1Key,
+                  icon: Icons.sentiment_satisfied_alt,
+                  titel: l10n.stemmingsCheckVraag1Titel,
+                  fout: _toonFouten && _q1 == null,
+                  child: _optieLijst(
+                    options: _stemmingOpties(),
+                    selected: _q1,
+                    onChanged: (v) => setState(() => _q1 = v),
                   ),
                 ),
-              if (_step > 0) const SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _canProceed()
-                      ? () {
-                          if (_step == 5) {
-                            _finish();
-                          } else {
-                            setState(() => _step += 1);
-                          }
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  child: Text(
-                    _step == 5 ? l10n.stemmingsCheckAfronden : l10n.stemmingsCheckVolgende,
+                const SizedBox(height: 14),
+                _sectie(
+                  icon: Icons.bolt,
+                  titel: l10n.stemmingsCheckVraag2Titel,
+                  subtitel: l10n.stemmingsCheckVraag2Ondertitel,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(l10n.stemmingsCheckVraag2Links,
+                              style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text(l10n.stemmingsCheckVraag2Rechts,
+                              style: const TextStyle(fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      Slider(
+                        value: _q2Slider,
+                        min: 0,
+                        max: 100,
+                        divisions: 10,
+                        label: _q2Slider.round().toString(),
+                        onChanged: (v) => setState(() => _q2Slider = v),
+                      ),
+                      Center(
+                        child: Text(
+                          _q2Slider.round().toString(),
+                          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 14),
+                _sectie(
+                  key: _q3Key,
+                  icon: Icons.bolt_outlined,
+                  titel: l10n.stemmingsCheckVraag3Titel,
+                  fout: _toonFouten && _q3 == null,
+                  child: _optieLijst(
+                    options: _energieOpties(),
+                    selected: _q3,
+                    onChanged: (v) => setState(() => _q3 = v),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _sectie(
+                  key: _q5Key,
+                  icon: Icons.event,
+                  titel: l10n.stemmingsCheckVraag5Titel,
+                  subtitel: l10n.stemmingsCheckVraag5Ondertitel,
+                  fout: _toonFouten && _q5 == null,
+                  child: _optieLijst(
+                    options: _gebeurtenisOpties(),
+                    selected: _q5,
+                    onChanged: (v) => setState(() => _q5 = v),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _sectie(
+                  icon: Icons.restaurant_outlined,
+                  titel: l10n.avondAvondeten,
+                  optioneel: true,
+                  child: _tijdVeld(
+                    tijd: _avondeten,
+                    onPick: () async {
+                      final picked = await _pickTime(_avondeten);
+                      if (picked != null && mounted) setState(() => _avondeten = picked);
+                    },
+                    onClear: () => setState(() => _avondeten = null),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _sectie(
+                  icon: Icons.bedtime,
+                  titel: l10n.avondNaarBed,
+                  optioneel: true,
+                  child: _tijdVeld(
+                    tijd: _bedTime,
+                    onPick: () async {
+                      final picked = await _pickTime(_bedTime);
+                      if (picked != null && mounted) setState(() => _bedTime = picked);
+                    },
+                    onClear: () => setState(() => _bedTime = null),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(
+              AppTheme.screenPadding, 10, AppTheme.screenPadding, 10),
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            border: Border(
+              top: BorderSide(color: AppTheme.cardBorderColor(context)),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: ElevatedButton(
+              onPressed: _isSaving ? null : _pogingAfronden,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
               ),
-            ],
+              child: _isSaving
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: theme.colorScheme.onPrimary),
+                    )
+                  : Text(
+                      l10n.stemmingsCheckAfronden,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                    ),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _stepContent(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (_step) {
-      case 0:
-        return _keuzeVraag(
-          icon: Icons.sentiment_satisfied_alt,
-          titel: l10n.stemmingsCheckVraag1Titel,
-          options: _stemmingOpties(),
-          selected: _q1,
-          onChanged: (v) => setState(() => _q1 = v),
-        );
-      case 1:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.bolt, size: 56, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(l10n.stemmingsCheckVraag2Titel,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-            Text(
-              l10n.stemmingsCheckVraag2Ondertitel,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(l10n.stemmingsCheckVraag2Links, style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text(l10n.stemmingsCheckVraag2Rechts, style: const TextStyle(fontWeight: FontWeight.w600)),
-              ],
-            ),
-            Slider(
-              value: _q2Slider,
-              min: 0,
-              max: 100,
-              divisions: 10,
-              label: _q2Slider.round().toString(),
-              onChanged: (v) => setState(() => _q2Slider = v),
-            ),
-            Center(
-              child: Text(
-                _q2Slider.round().toString(),
-                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        );
-      case 2:
-        return _keuzeVraag(
-          icon: Icons.bolt_outlined,
-          titel: l10n.stemmingsCheckVraag3Titel,
-          options: _energieOpties(),
-          selected: _q3,
-          onChanged: (v) => setState(() => _q3 = v),
-        );
-      case 3:
-        return _keuzeVraag(
-          icon: Icons.event,
-          titel: l10n.stemmingsCheckVraag5Titel,
-          ondertitel: l10n.stemmingsCheckVraag5Ondertitel,
-          options: _gebeurtenisOpties(),
-          selected: _q5,
-          onChanged: (v) => setState(() => _q5 = v),
-        );
-      case 4:
-        return _srmTijdVraag(
-          icon: Icons.restaurant_outlined,
-          titel: l10n.avondAvondeten,
-          tijd: _avondeten,
-          // Na OK meteen door: anders moet de gebruiker per tijdstip twee
-          // keer bevestigen (OK én Volgende).
-          onPick: (t) {
-            setState(() => _avondeten = t);
-            _gaVerder();
-          },
-        );
-      case 5:
-        return _srmTijdVraag(
-          icon: Icons.bedtime,
-          titel: l10n.avondNaarBed,
-          tijd: _bedTime,
-          onPick: (t) => setState(() => _bedTime = t),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-
-  Widget _keuzeVraag({
-    required IconData icon,
-    required String titel,
-    String? ondertitel,
+  Widget _optieLijst({
     required List<({String label, double value, Color color})> options,
     required double? selected,
     required ValueChanged<double> onChanged,
   }) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 16),
-        Text(
-          titel,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        if (ondertitel != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            ondertitel,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-          ),
-        ],
-        const SizedBox(height: 16),
-        ...options.map(
-          (o) => Padding(
+        for (final o in options)
+          Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _OptieTile(
               label: o.label,
@@ -660,44 +757,6 @@ class _EveningCheckInScreenState extends State<EveningCheckInScreen> {
               onTap: () => onChanged(o.value),
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _srmTijdVraag({
-    required IconData icon,
-    required String titel,
-    required TimeOfDay? tijd,
-    required ValueChanged<TimeOfDay> onPick,
-  }) {
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 16),
-        Text(
-          titel,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 24),
-        Center(
-          child: OutlinedButton.icon(
-            onPressed: () async {
-              final picked = await _pickTime(tijd);
-              if (picked != null) onPick(picked);
-            },
-            icon: const Icon(Icons.access_time),
-            label: Text(
-              tijd != null ? _formatTimeOfDay(tijd) : l10n.tikOmTijdInTeStellen,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
-          ),
-        ),
       ],
     );
   }
