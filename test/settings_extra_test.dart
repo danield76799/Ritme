@@ -1,86 +1,58 @@
-// Borgt settings_extra (09-2026): vrije instellingssleutels (backupmap,
-// backupfrequentie) braken op SQLite met SQLITE_ERROR omdat de
-// settings-tabel vaste kolommen heeft. Alles buiten de vaste kolommen gaat
-// nu naar settings_extra — nooit meer een migratie per sleutel.
+// Borgt het settings-contract: vrije instellingssleutels (backupmap,
+// backupfrequentie, ...) moeten foutloos heen en weer gaan. Voorheen (SQLite)
+// had de settings-tabel vaste kolommen en faalden vrije sleutels met
+// SQLITE_ERROR; Hive slaat willekeurige sleutels native op. Sinds de
+// iOS/SQLite-tak verwijderd is (11-2026), leunt dit bestand op de Hive-implementatie.
 
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-String _code(String pad) {
-  final c = File(pad).readAsStringSync();
-  final zonderBlok = c.replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '');
-  return zonderBlok
-      .split('\n')
-      .map((r) => r.replaceAll(RegExp(r'//.*$'), ''))
-      .join('\n');
-}
+import 'package:ritme/database/hive_database_helper.dart';
+import 'package:ritme/service_locator.dart';
 
 void main() {
-  group('settings_extra: vrije sleutels zonder SQLITE_ERROR', () {
-    // De DB is inmiddels op versie 12 (v12 = stopped_at-kolom op
-    // medication_config); de settings_extra-tabel is er sinds versie 6 en
-    // blijft in create én upgrade aanwezig. De test verankert de
-    // aanwezigheid, niet het exacte versienummer.
-    test('extra-tabel in create én upgrade aanwezig', () {
-      final code = _code('lib/database/database_helper.dart');
-      expect(code.contains('version: 12'), isTrue);
-      expect(code.contains('CREATE TABLE IF NOT EXISTS settings_extra'),
-          isTrue);
-      expect(code.contains('if (oldVersion < 6)'), isTrue,
-          reason: 'bestaande installaties migreren mee');
-    });
+  setUpAll(() async {
+    final dir = await Directory.systemTemp.createTemp('ritme_settings_test');
+    Hive.init(dir.path);
+    for (final naam in ['settings']) {
+      if (!Hive.isBoxOpen(naam)) await Hive.openBox(naam);
+    }
+    setDbForTesting(HiveDatabaseHelper.instance);
+  });
 
-    test('updateSettingsMap splitst bekend en extra', () {
-      final code = _code('lib/database/database_helper.dart');
-      expect(code.contains('_settingsKolommen'), isTrue);
-      expect(code.contains("'biometric_enabled'"), isTrue,
-          reason: 'eerder per kolom toegevoegd — blijft werken');
-      expect(code.contains('settings_extra'), isTrue);
-      expect(code.contains('ConflictAlgorithm.replace'), isTrue,
-          reason: 'zelfde sleutel overschrijven (upsert)');
-      // Binnen updateSettingsMap geen ruwe map meer naar db (dat gooide
-      // SQLITE_ERROR bij onbekende sleutels). NB: de ongebruikte
-      // updateSettings(username, ...) laat ik met rust (interface, dood).
-      final start = code.indexOf('Future<int> updateSettingsMap(');
-      expect(start, greaterThan(-1));
-      final stop = code.indexOf('@override', start + 10);
-      final blok = code.substring(start, stop > start ? stop : start + 2000);
-      expect(blok.contains("db.update('settings', settings,"), isFalse,
-          reason: 'ruwe map gooide SQLITE_ERROR bij onbekende sleutels');
-      expect(blok.contains("db.insert('settings', settings)"), isFalse);
-    });
+  setUp(() async {
+    await Hive.box('settings').clear();
+  });
 
-    test('getSettings plakt extras erbij', () {
-      final code = _code('lib/database/database_helper.dart');
-      final start = code.indexOf('Future<Map<String, dynamic>?> getSettings()');
-      expect(start, greaterThan(-1));
-      final stop = code.indexOf('insertSettings', start);
-      final blok = code.substring(start, stop > start ? stop : start + 800);
-      expect(blok.contains('settings_extra'), isTrue);
-    });
+  test('vrije sleutels gaan verliesvrij heen en weer (Hive)', () async {
+    final db = HiveDatabaseHelper.instance;
+    await db.updateSettingsMap({'backup_map_uri': 'content://example', 'backup_map_naam': 'Backups'});
+    final s = await db.getSettings();
+    expect(s, isNotNull);
+    expect(s!['backup_map_uri'], 'content://example');
+    expect(s['backup_map_naam'], 'Backups');
+  });
 
-    test('wisBackupMap werkt met lege strings (geen delete nodig)', () {
-      final code = _code('lib/services/backup_map_service.dart');
-      expect(code.contains("merged[mapUriKey] = '';"), isTrue);
-      expect(code.contains('.remove(mapUriKey)'), isFalse,
-          reason: 'remove haalt niets uit settings_extra');
-    });
+  test('twee keer schrijven naar dezelfde sleutel overschrijft netjes', () async {
+    final db = HiveDatabaseHelper.instance;
+    await db.updateSettingsMap({'backup_freq': 'week'});
+    await db.updateSettingsMap({'backup_freq': 'maand'});
+    final s = await db.getSettings();
+    expect(s!['backup_freq'], 'maand');
+  });
 
-    test('backup-services gaan via de locator, niet direct SQLite', () {
-      // 09-2026: op Android is Hive leidend; BackupService en
-      // BackupMapService schreven direct naar SQLite — een tweede,
-      // onzichtbare database. UI zag nooit map, frequentie of datum.
-      for (final pad in [
-        'lib/services/backup_service.dart',
-        'lib/services/backup_map_service.dart',
-      ]) {
-        final code = _code(pad);
-        expect(code.contains('DatabaseHelper.instance'), isFalse,
-            reason: '$pad omzeilt de locator');
-        expect(code.contains('service_locator'), isTrue,
-            reason: '$pad gebruikt de locator');
-      }
-    });
+  test('backup-services gaan via de locator, niet direct naar een losse database', () {
+    for (final pad in [
+      'lib/services/backup_service.dart',
+      'lib/services/backup_map_service.dart',
+    ]) {
+      final code = File(pad).readAsStringSync();
+      expect(code.contains('DatabaseHelper.instance'), isFalse,
+          reason: 'omzeilt de locator');
+      expect(code.contains('service_locator'), isTrue,
+          reason: 'gebruikt de locator');
+    }
   });
 }

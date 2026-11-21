@@ -38,8 +38,6 @@ dependencies:
   local_auth_android: ^2.3.0
   flutter_secure_storage: ^10.3.0
 
-  # SQLite database (mobiel)
-  sqflite: ^2.3.0
   path: ^1.8.3
 
   # Hive database (web)
