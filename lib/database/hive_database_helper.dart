@@ -586,7 +586,11 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'srt_point': srtPoint,
         'target_time': targetTime?.toString(),
       });
-      return key;
+      // Na een backup-restore staan SRM-rijen onder string-sleutels
+      // (box.put(key.toString(), …)). Een String teruggeven uit deze
+      // Future<int> gooit "type 'String' is not a subtype of
+      // 'FutureOr<int>'" — zet hem daarom expliciet om.
+      return key is int ? key : (int.tryParse(key.toString()) ?? 0);
     } else {
       // Insert new record with smaller ID
       final id = _nieuweSleutel(_srmActivities);
@@ -1396,7 +1400,10 @@ class HiveDatabaseHelper implements DatabaseRepository {
   @override
   Future<int> insertMedicationIntakeMap(Map<String, dynamic> data) async {
     final date = data['date'] as String;
-    final medicationId = data['medication_id'] as int;
+    final medicationIdRaw = data['medication_id'];
+    final medicationId = medicationIdRaw is int
+        ? medicationIdRaw
+        : (int.tryParse(medicationIdRaw?.toString() ?? '') ?? 0);
 
     // Zelfde type-tolerantie als insertMedicationIntake: na de migratie staat
     // medication_id als string in de box. Een strikte `==` ziet de bestaande
@@ -1417,7 +1424,8 @@ class HiveDatabaseHelper implements DatabaseRepository {
         'medication_id': data['medication_id'] ?? medicationId,
         'aantal_ingenomen': data['aantal_ingenomen'] ?? 0,
       });
-      return key;
+      // Idem: string-sleutel na restore omzetten naar int.
+      return key is int ? key : (int.tryParse(key.toString()) ?? 0);
     }
     // Nog geen rij: nieuwe aanmaken met kleinere ID tegen 32-bit overflow.
     final id = _nieuweSleutel(_medicationIntake);
