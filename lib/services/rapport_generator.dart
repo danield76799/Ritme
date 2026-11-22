@@ -54,6 +54,48 @@ class _PeriodData {
     return 0;
   }
 
+  /// Is dit middel actief (niet gestopt/verwijderd)?
+  /// Uitgeschakelde middelen (deleted-vlag of een stopped_at in het verleden)
+  /// horen niet thuis in het rapport als "actief schema" of in de
+  /// therapietrouw-berekening: hun doses waren immers gestopt.
+  static bool isActiveMedication(Map<String, dynamic> med) {
+    final del = med['deleted'];
+    if (del == 1 || del == '1' || del == true) return false;
+    final stopped = med['stopped_at']?.toString();
+    if (stopped != null && stopped.isNotEmpty) {
+      final d = DateTime.tryParse(stopped);
+      if (d != null && !d.isAfter(DateTime.now())) return false;
+    }
+    return true;
+  }
+
+  /// Sleutel voor ontdubbeling: naam + dosis + eenheid + vast/PRN + tijden.
+  /// Twee precies dezelfde invoeren (bijv. na een verwijder-/herinvoer-cyclus)
+  /// leveren zo één regel op in het rapport.
+  String dedupKey(Map<String, dynamic> med) {
+    final id = _asInt(med['id']);
+    final name = (med['naam'] ?? '').toString().trim().toLowerCase();
+    final dosis = (med['dosering'] ?? '').toString().trim().toLowerCase();
+    final eenheid = (med['eenheid'] ?? '').toString().trim().toLowerCase();
+    final times = schedulesFor(id)
+        .map((s) => (s['reminder_time'] ?? '').toString())
+        .toList()
+      ..sort();
+    final soort = times.isEmpty ? 'prn' : 'vast';
+    return '$name|$dosis|$eenheid|$soort|${times.join(',')}';
+  }
+
+  /// Actieve medicatie, ontdubbeld op [dedupKey].
+  List<Map<String, dynamic>> get activeMedications {
+    final seen = <String>{};
+    final result = <Map<String, dynamic>>[];
+    for (final med in medicationConfigs) {
+      if (!isActiveMedication(med)) continue;
+      if (seen.add(dedupKey(med))) result.add(med);
+    }
+    return result;
+  }
+
   /// De dagelijkse stemming van [day], of null als die niet is vastgelegd.
   double? moodOn(DateTime day) {
     final log = dailyLogs
@@ -407,7 +449,7 @@ class RapportGenerator {
         }
 
         // Medicatie: per gepland schema één verwachte dosis.
-        for (final med in period.medicationConfigs) {
+        for (final med in period.activeMedications) {
           final id = _asInt(med['id']);
           final scheds = period.schedulesFor(id);
           if (scheds.isEmpty) continue;
@@ -468,7 +510,7 @@ class RapportGenerator {
 
       // Adherence for this day
       int dTaken = 0, dExpected = 0;
-      for (final med in period.medicationConfigs) {
+      for (final med in period.activeMedications) {
         final id = _asInt(med['id']);
         for (final sched in period.schedulesFor(id)) {
           if (!period.isScheduledOn(sched, d)) continue;
@@ -562,7 +604,7 @@ class RapportGenerator {
   /// niet is afgevinkt.
   bool _dayIsStillOpen(_PeriodData period, DateTime day, DateTime now) {
     final dateStr = _dateStr(day);
-    for (final med in period.medicationConfigs) {
+    for (final med in period.activeMedications) {
       final id = _asInt(med['id']);
       for (final sched in period.schedulesFor(id)) {
         if (!period.isScheduledOn(sched, day)) continue;
@@ -636,12 +678,13 @@ class RapportGenerator {
     buf.writeln('## ${s.dagboekTitle}');
     buf.writeln();
     if (scoreCount > 0) {
-      final distribution =
-          scoreCounts.entries.map((e) => '${e.key}×${e.value}').join(', ');
+      final breakdown = (scoreCounts.keys.toList()..sort((a, b) => b.compareTo(a)))
+          .map((score) => '${scoreCounts[score]}×$score')
+          .join(', ');
       buf.writeln('| ${s.dagboekScore} | ${s.dagboekEntries} |');
       buf.writeln('|---------|--------|');
       buf.writeln(
-          '| **${(totalScore / scoreCount).toStringAsFixed(1)}** ($distribution) | ${dagboekEntries.length} |');
+          '| **${(totalScore / scoreCount).toStringAsFixed(1)}** ($breakdown) | ${dagboekEntries.length} |');
       buf.writeln();
     }
     for (final entry in dagboekEntries.reversed) {
@@ -663,12 +706,12 @@ class RapportGenerator {
     RapportStrings s,
     _PeriodData period,
   ) async {
-    if (period.medicationConfigs.isEmpty) return;
+    if (period.activeMedications.isEmpty) return;
 
     buf.writeln('## ${s.medTakenDays}');
     buf.writeln();
 
-    for (final med in period.medicationConfigs) {
+    for (final med in period.activeMedications) {
       final id = _asInt(med['id']);
       final name = formatMedName(med['naam']?.toString() ?? '');
       if (name.isEmpty) continue;
@@ -786,11 +829,11 @@ class RapportGenerator {
     RapportStrings s,
     _PeriodData period,
   ) async {
-    if (period.medicationConfigs.isEmpty) return;
+    if (period.activeMedications.isEmpty) return;
 
     buf.writeln('## ${s.medSchema}');
     buf.writeln();
-    for (final med in period.medicationConfigs) {
+    for (final med in period.activeMedications) {
       final id = _asInt(med['id']);
       final name = formatMedName(med['naam']?.toString() ?? '');
       if (name.isEmpty) continue;
