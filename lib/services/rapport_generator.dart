@@ -96,6 +96,49 @@ class _PeriodData {
     return result;
   }
 
+  /// Groepssleutel voor hetzelfde middel over config-varianten heen
+  /// (naam + dosis + eenheid, genormaliseerd). Eén middel kan meerdere
+  /// configs hebben — bijv. een gestopte en later opnieuw aangemaakte —
+  /// en de inname-historie kan over beide verdeeld zijn.
+  static String medGroupKey(Map<String, dynamic> med) {
+    final name = (med['naam'] ?? '').toString().trim().toLowerCase();
+    final dosis =
+        (med['dosering'] ?? '').toString().trim().toLowerCase().replaceAll(',', '.');
+    final eenheid = (med['eenheid'] ?? '').toString().trim().toLowerCase();
+    return '$name|$dosis|$eenheid';
+  }
+
+  Map<String, List<int>>? _groupIdsCache;
+
+  /// Alle config-ids van hetzelfde middel (incl. gestopte varianten).
+  List<int> mergedIds(int id) {
+    _groupIdsCache ??= () {
+      final map = <String, List<int>>{};
+      for (final med in medicationConfigs) {
+        map.putIfAbsent(medGroupKey(med), () => []).add(_asInt(med['id']));
+      }
+      return map;
+    }();
+    for (final entry in _groupIdsCache!.entries) {
+      if (entry.value.contains(id)) return entry.value;
+    }
+    return [id];
+  }
+
+  /// Innames op [dateStr], onafhankelijk van aan welke config-variant ze
+  /// hangen. Telt als 'ingenomen' zodra minimaal één variant een inname meldt.
+  int takenOnMerged(int medId, String dateStr) {
+    final rows = intakesByDate[dateStr] ?? const [];
+    final ids = mergedIds(medId).toSet();
+    for (final r in rows) {
+      if (!ids.contains(_asInt(r['medication_id']))) continue;
+      final v = r['aantal_ingenomen'];
+      final n = v is int ? v : int.tryParse('$v') ?? 0;
+      if (n > 0) return n;
+    }
+    return 0;
+  }
+
   /// De dagelijkse stemming van [day], of null als die niet is vastgelegd.
   double? moodOn(DateTime day) {
     final log = dailyLogs
@@ -439,7 +482,7 @@ class RapportGenerator {
         for (final sched in scheds) {
           if (!period.isScheduledOn(sched, d)) continue;
           totals.intakeCount++;
-          if (period.takenOn(id, dateStr) > 0) totals.takenCount++;
+          if (period.takenOnMerged(id, dateStr) > 0) totals.takenCount++;
         }
       }
     }
@@ -521,7 +564,7 @@ class RapportGenerator {
           for (final sched in scheds) {
             if (!period.isScheduledOn(sched, d)) continue;
             wIntake++;
-            if (period.takenOn(id, dateStr) > 0) wTaken++;
+            if (period.takenOnMerged(id, dateStr) > 0) wTaken++;
           }
         }
       }
@@ -599,7 +642,7 @@ class RapportGenerator {
         for (final sched in period.schedulesFor(id)) {
           if (!period.isScheduledOn(sched, d)) continue;
           dExpected++;
-          if (period.takenOn(id, dateStr) > 0) dTaken++;
+          if (period.takenOnMerged(id, dateStr) > 0) dTaken++;
         }
       }
       if (dExpected == 0) continue;
@@ -694,7 +737,7 @@ class RapportGenerator {
       final id = _asInt(med['id']);
       for (final sched in period.schedulesFor(id)) {
         if (!period.isScheduledOn(sched, day)) continue;
-        if (period.takenOn(id, dateStr) > 0) continue;
+        if (period.takenOnMerged(id, dateStr) > 0) continue;
         final time = _parseTime(sched['reminder_time']?.toString());
         if (time == null) continue;
         final planned =
@@ -794,31 +837,73 @@ class RapportGenerator {
     RapportStrings s,
     _PeriodData period,
   ) async {
-    final meds = period.activeMedications;
-    if (meds.isEmpty) return;
+    if (period.medicationConfigs.isEmpty) return;
+
+    // Groepeer over ALLE configs (ook gestopte) op naam+dosis+eenheid:
+    // inname-historie van een gestopte variant telt mee voor het middel.
+    final groups = <String, List<Map<String, dynamic>>>{};
+    for (final med in period.medicationConfigs) {
+      groups.putIfAbsent(_PeriodData.medGroupKey(med), () => []).add(med);
+    }
 
     buf.writeln('## ${s.medOverviewTitle}');
     buf.writeln();
 
-    for (final med in meds) {
-      final id = _asInt(med['id']);
-      final name = formatMedName(med['naam']?.toString() ?? '');
-      if (name.isEmpty) continue;
-      final dosis = (med['dosering']?.toString() ?? '').trim();
-      final eenheid = (med['eenheid']?.toString() ?? '').trim();
-      final dosisLabel = [dosis, eenheid].where((x) => x.isNotEmpty).join(' ');
-      final scheds = period.schedulesFor(id);
+    final startStr = _dateStr(period.startDate);
+    final endStr = _dateStr(period.endDate);
 
-      final intakes = (await db.getMedicationIntakeForMedication(id))
-          .where((r) {
-            final d = r['date']?.toString() ?? '';
-            return d.compareTo(_dateStr(period.startDate)) >= 0 &&
-                d.compareTo(_dateStr(period.endDate)) <= 0;
-          })
-          .toList();
+    for (final group in groups.values) {
+      final actives = group.where(_PeriodData.isActiveMedication).toList();
+      final ids = group.map((m) => _asInt(m['id'])).toList();
+
+      // Innames van alle varianten samenvoegen per datum.
       final byDate = <String, Map<String, dynamic>>{};
-      for (final r in intakes) {
-        byDate[r['date']?.toString() ?? ''] = r;
+      for (final id in ids) {
+        final rows = await db.getMedicationIntakeForMedication(id);
+        for (final r in rows) {
+          final d = r['date']?.toString() ?? '';
+          if (d.isEmpty) continue;
+          if (d.compareTo(startStr) < 0 || d.compareTo(endStr) > 0) continue;
+          final current = byDate[d];
+          // Bij dubbele rijen wint de variant met de hoogste inname.
+          if (current == null) {
+            byDate[d] = r;
+            continue;
+          }
+          final cur = _isTaken(current) ? 1 : 0;
+          final neu = _isTaken(r) ? 1 : 0;
+          if (neu > cur) byDate[d] = r;
+        }
+      }
+
+      final dosis = (group.first['dosering']?.toString() ?? '').trim();
+      final eenheid = (group.first['eenheid']?.toString() ?? '').trim();
+      final dosisLabel = [dosis, eenheid].where((x) => x.isNotEmpty).join(' ');
+      final takenCount = byDate.values.where(_isTaken).length;
+
+      // Geen enkele inname in de periode én alleen gestopte varianten:
+      // dan heeft het middel voor deze periode niets te melden.
+      if (actives.isEmpty) {
+        if (takenCount == 0) continue;
+        final name = formatMedName(group.first['naam']?.toString() ?? '');
+        final takenDays = byDate.entries
+            .where((e) => _isTaken(e.value))
+            .map((e) => e.key)
+            .toList()
+          ..sort();
+        buf.writeln(
+            '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.map(_shortDateStr).join(', ')}');
+        continue;
+      }
+
+      // Actieve variant: gebruik de eerste als weergave-anker; het schema is
+      // de unie van de schema's van alle actieve varianten.
+      final active = actives.first;
+      final name = formatMedName(active['naam']?.toString() ?? '');
+      if (name.isEmpty) continue;
+      final scheds = <Map<String, dynamic>>[];
+      for (final a in actives) {
+        scheds.addAll(period.schedulesFor(_asInt(a['id'])));
       }
 
       // --- PRN (zo nodig): geen schema, dus geen verwachtingen ----------

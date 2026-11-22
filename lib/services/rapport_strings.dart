@@ -116,6 +116,7 @@ class RapportStrings {
   String get prnZeroTaken => nl ? '0× ingenomen in deze periode' : '0× taken in this period';
   String prnTakenOn(int n) => nl ? '$n× ingenomen op:' : '$n× taken on:';
   String get dateRangeJoiner => nl ? 't/m' : '–';
+  String get stoppedTag => nl ? 'gestopt' : 'stopped';
   String medDayCount(int n) => nl
       ? (n == 1 ? 'dag' : 'dagen')
       : (n == 1 ? 'day' : 'days');
