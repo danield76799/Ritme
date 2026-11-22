@@ -158,6 +158,7 @@ class BackupService {
       if (auto) {
         await BackupMapService.ruimOp(behoud: autoBackupBehoudVoor(gekozenFreq));
       }
+      await markeerBackupGemaakt();
       // Pad voor in de melding: mapnaam + bestand (geen raw path bij SAF).
       final mapnaam = await BackupMapService.mapNaam();
       return '${mapnaam ?? 'backupmap'}:$bestandsnaam';
@@ -195,6 +196,7 @@ class BackupService {
       throw Exception('Backup schrijven mislukt (ook terugval): $laatsteFout');
     }
     final file = gelukt;
+    await markeerBackupGemaakt();
 
     // Alleen bij auto: maximaal [behoud] automatische weekbestanden bewaren.
     // Handmatige backups blijven altijd staan. Opruimen gebeurt in BEIDE
@@ -212,6 +214,7 @@ class BackupService {
   /// Share backup via email or other apps
   static Future<void> shareBackup() async {
     final data = await exportAllData();
+    await markeerBackupGemaakt();
     final jsonString = jsonEncode(data);
     final zipped = Uint8List.fromList(GZipCodec().encode(utf8.encode(jsonString)));
     debugPrint('BackupService: share zip bytes ${zipped.length}');
@@ -493,6 +496,22 @@ class BackupService {
   /// Instelling-sleutels (vrije settings-map, zie HiveDatabaseHelper).
   static const autoBackupFreqKey = 'auto_backup_freq';
   static const lastAutoBackupKey = 'last_auto_backup';
+
+  /// Tijdstip van de laatst voltooide backup (handmatig of automatisch).
+  /// Wordt gebruikt voor de backup-herinnering.
+  static const lastBackupAtKey = 'last_backup_at';
+
+  /// Markeer dat er zojuist een backup gemaakt is (voor de backup-herinnering).
+  static Future<void> markeerBackupGemaakt() async {
+    try {
+      final settings = await _db.getSettings() ?? <String, dynamic>{};
+      final merged = Map<String, dynamic>.from(settings);
+      merged[lastBackupAtKey] = DateTime.now().toIso8601String();
+      await _db.updateSettingsMap(merged);
+    } catch (e, stackTrace) {
+      AppLogger.error('Backup-tijd markeren mislukt', error: e, stackTrace: stackTrace);
+    }
+  }
 
   /// Toegestane frequenties. Standaard wekelijks: bij een verse installatie
   /// wordt er dan in ieder geval een backup gemaakt.

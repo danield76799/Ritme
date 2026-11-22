@@ -40,6 +40,13 @@ import 'utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppLogger.init();
+
+  // Async fouten buiten de Flutter-error-zone ook in het logboek.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    AppLogger.error('Uncaught async error', error: error, stackTrace: stack);
+    return true;
+  };
 
   FlutterError.onError = (FlutterErrorDetails details) {
     AppLogger.error(
@@ -64,7 +71,10 @@ void main() async {
       // Automatische backup als het gekozen interval verstreken is.
       // Fire-and-forget: een mislukte backup mag de opstart nooit breken.
       BackupService.maybeAutoBackup().then((gemaakt) {
-        if (gemaakt) AppLogger.info('Startup: automatische backup gemaakt');
+        if (gemaakt) {
+          AppLogger.info('Startup: automatische backup gemaakt');
+          NotificationHelper.instance.rescheduleBackupReminder();
+        }
       });
       final recovered = await BootService.rescheduleIfEmpty();
       if (recovered > 0) AppLogger.info('Recovered $recovered reminders after empty pending queue');

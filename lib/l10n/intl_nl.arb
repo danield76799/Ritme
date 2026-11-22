@@ -954,5 +954,9 @@
   "weekDigestTitel": "Weekoverzicht",
   "weekDigestSubtitel": "Elke zondag om 20:00 een samenvatting van je week",
   "weekDigestIngepland": "Weekoverzicht staat ingepland voor zondag 20:00",
-  "weekDigestUitgezet": "Weekoverzicht uitgeschakeld"
+  "weekDigestUitgezet": "Weekoverzicht uitgeschakeld",
+  "backupHerinneringTitel": "Backup-herinnering",
+  "backupHerinneringSubtitel": "Elke 2 weken een seintje zolang je nog geen nieuwe backup hebt gemaakt",
+  "logboekDelen": "Logboek delen",
+  "logboekDelenSubtitel": "Stuur recente technische meldingen mee, handig bij een probleemrapport"
 }

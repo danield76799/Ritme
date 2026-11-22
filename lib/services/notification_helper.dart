@@ -9,6 +9,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../utils/logger.dart';
+import 'backup_service.dart';
 
 class NotificationHelper {
   static final NotificationHelper instance = NotificationHelper._();
@@ -20,6 +21,16 @@ class NotificationHelper {
 
   /// Hetzelfde voor het weekoverzicht: de zondagavond-melding opent het rapport.
   bool _pendingWeekDigest = false;
+
+  /// Hetzelfde voor de backup-herinnering: de melding opent de instellingen.
+  bool _pendingBackupReminder = false;
+
+  /// Al aangevinkt: een backup-herinnering werd getikt.
+  bool consumePendingBackupReminder() {
+    final v = _pendingBackupReminder;
+    _pendingBackupReminder = false;
+    return v;
+  }
 
   /// Al aangevinkt: een weekoverzicht-melding werd getikt.
   bool consumePendingWeekDigest() {
@@ -329,6 +340,12 @@ class NotificationHelper {
         await rescheduleWeekDigest();
       } catch (e, stackTrace) {
         AppLogger.error('Weekoverzicht plannen mislukt', error: e, stackTrace: stackTrace);
+      }
+      try {
+        await rescheduleBackupReminder();
+      } catch (e, stackTrace) {
+        AppLogger.error('Backup-herinnering plannen mislukt',
+            error: e, stackTrace: stackTrace);
       }
       // Afspraken idem: cancelAllReminders() hierboven wiste ook die, en
       // niets plande ze terug. Elke app-start veegde zo alle
@@ -895,6 +912,8 @@ class NotificationHelper {
   static const int _ochtendNotifId = 900001;
   static const int _avondNotifId = 900002;
   static const int _weekDigestNotifId = 900300;
+  static const int _backupReminderNotifId = 900400;
+  static const String backupReminderAanKey = 'backup_herinnering_aan';
   static const String weekDigestAanKey = 'notif_weekdigest_aan';
   static const String weekDigestTijdKey = 'notif_weekdigest_tijd';
   static const String defaultWeekDigestTijd = '20:00';
@@ -1023,6 +1042,67 @@ class NotificationHelper {
     if (s == '1' || s == 'true') return true;
     if (s == '0' || s == 'false') return false;
     return fallback;
+  }
+
+  /// Volgende moment waarop de backup-herinnering mag komen: 14 dagen na de
+  /// laatste backup, om 10:00. Staat de laatste backup al langer dan 14 dagen
+  /// geleden, dan schuift de datum telkens 14 dagen op tot hij in de toekomst
+  /// ligt. Zonder eerdere backup: 14 dagen vanaf nu.
+  static DateTime volgendeBackupHerinnering(DateTime nu, DateTime? laatsteBackup) {
+    final basis = laatsteBackup ?? nu;
+    var next = DateTime(basis.year, basis.month, basis.day + 14, 10);
+    while (!next.isAfter(nu)) {
+      next = DateTime(next.year, next.month, next.day + 14, 10);
+    }
+    return next;
+  }
+
+  /// Plant (of annuleert) de herinnering om een nieuwe backup te maken.
+  /// Eenmalige notificatie; wordt bij elke app-start en na elke geslaagde
+  /// backup opnieuw ingepland via [rescheduleBackupReminder].
+  Future<void> rescheduleBackupReminder() async {
+    if (kIsWeb) return;
+    try {
+      await _ensureTimeZoneInitialized();
+      final settings = await db.getSettings() ?? <String, dynamic>{};
+      final aan = _asBool(settings[backupReminderAanKey], true);
+      await _notifications.cancel(_backupReminderNotifId);
+      if (!aan) return;
+
+      final lastRaw = settings[BackupService.lastBackupAtKey]?.toString();
+      final laatste = lastRaw == null ? null : DateTime.tryParse(lastRaw);
+      final next = volgendeBackupHerinnering(DateTime.now(), laatste);
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: false,
+        presentSound: true,
+      );
+      final androidDetails = AndroidNotificationDetails(
+        'backup_reminder',
+        NotifStrings.backupReminder,
+        channelDescription: NotifStrings.backupReminderDesc,
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        showWhen: true,
+      );
+      final scheduled = tz.TZDateTime.from(next, tz.local);
+      await _notifications.zonedSchedule(
+        _backupReminderNotifId,
+        NotifStrings.backupReminderTitle,
+        NotifStrings.backupReminderBody,
+        scheduled,
+        NotificationDetails(android: androidDetails, iOS: iosDetails),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'backup:herinnering',
+      );
+      AppLogger.info('Backup-herinnering gepland op $scheduled');
+    } catch (e, stackTrace) {
+      AppLogger.error('Backup-herinnering plannen mislukt',
+          error: e, stackTrace: stackTrace);
+    }
   }
 
   /// Plant een wekelijkse notificatie (zondag 20:00) die het rapport opent.
@@ -1181,6 +1261,12 @@ class NotificationHelper {
     if (payload == 'digest:week') {
       _pendingWeekDigest = true;
       AppLogger.debug('Weekoverzicht-notificatie geopend');
+      return;
+    }
+
+    if (payload == 'backup:herinnering') {
+      _pendingBackupReminder = true;
+      AppLogger.debug('Backup-herinnering geopend');
       return;
     }
 

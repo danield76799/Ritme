@@ -163,6 +163,12 @@ class _DashboardScreenState extends State<DashboardScreen>
       });
       return;
     }
+    if (NotificationHelper.instance.consumePendingBackupReminder() && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.pushNamed(context, '/settings');
+      });
+      return;
+    }
     final route = NotificationHelper.instance.consumePendingCheckinRoute();
     if (route == null || !mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {

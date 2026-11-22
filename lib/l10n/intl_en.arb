@@ -964,5 +964,9 @@
   "weekDigestTitel": "Weekly summary",
   "weekDigestSubtitel": "Every Sunday at 20:00 a summary of your week",
   "weekDigestIngepland": "Weekly summary scheduled for Sunday 20:00",
-  "weekDigestUitgezet": "Weekly summary turned off"
+  "weekDigestUitgezet": "Weekly summary turned off",
+  "backupHerinneringTitel": "Backup reminder",
+  "backupHerinneringSubtitel": "A nudge every 2 weeks until you make a fresh backup",
+  "logboekDelen": "Share log",
+  "logboekDelenSubtitel": "Attach recent technical messages, useful for bug reports"
 }

@@ -57,10 +57,18 @@ class HiveDatabaseHelper implements DatabaseRepository {
   /// gebruiker kan waarschuwen en een backup-restore kan aanbieden.
   /// Alleen als openen helemaal mislukt, wordt de box geleegd — liever een
   /// lege box dan een app die niet meer start.
+  static bool _compactionStrategy(int entries, int deletedEntries) =>
+      deletedEntries > 20 && deletedEntries > entries * 0.1;
+
   static Future<void> _openBoxVeilig(String name) async {
     final before = await boxFileSize(name, debugHiveDir);
+    // Hive compacteert standaard pas bij >15% dode ruimte én >60 records.
+    // Wij verwijderen relatief veel (soft-delete van medicatie/kaarten),
+    // dus compacteren we eerder (10% en >20 records) om de box klein te
+    // en starts snel te houden.
+    const compaction = _compactionStrategy;
     try {
-      await Hive.openBox(name);
+      await Hive.openBox(name, compactionStrategy: compaction);
     } catch (e, stack) {
       AppLogger.error('Hive-box "$name" onherstelbaar beschadigd — wordt geleegd',
           error: e, stackTrace: stack);
@@ -68,7 +76,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       try {
         await Hive.deleteBoxFromDisk(name);
       } catch (_) {}
-      await Hive.openBox(name);
+      await Hive.openBox(name, compactionStrategy: compaction);
       return;
     }
     final after = await boxFileSize(name, debugHiveDir);

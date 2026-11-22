@@ -35,6 +35,16 @@ class NotifStrings {
       _nl ? 'Afspraak herinneringen' : 'Appointment Reminders';
   static String get appointmentRemindersDesc =>
       _nl ? 'Herinneringen voor medische afspraken' : 'Reminders for medical appointments';
+  static String get backupReminder => _nl ? 'Backup-herinnering' : 'Backup reminder';
+  static String get backupReminderDesc =>
+      _nl ? 'Herinnering om je backup te vernieuwen' : 'Reminder to refresh your backup';
+  static String get backupReminderTitle =>
+      _nl ? '\u{1F4BE} Tijd voor een backup' : '\u{1F4BE} Time for a backup';
+  static String get backupReminderBody =>
+      _nl
+          ? 'Het is twee weken geleden. Maak een verse backup zodat je gegevens veilig zijn.'
+          : 'It has been two weeks. Make a fresh backup to keep your data safe.';
+
   static String get weekDigest => _nl ? 'Weekoverzicht' : 'Weekly summary';
   static String get weekDigestDesc =>
       _nl ? 'Elke zondagavond een samenvatting van je week'

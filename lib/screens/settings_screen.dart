@@ -8,6 +8,8 @@ import '../services/backup_service.dart';
 import '../services/backup_map_service.dart';
 import '../services/notification_helper.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../main.dart';
 import '../generated/l10n/app_localizations.dart';
 
@@ -459,6 +461,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           () async {
             try {
               final backupPath = await BackupService.saveLocalBackup();
+              // Backup is nu vers: schuif de herinnering op.
+              // ignore: unawaited_futures
+              NotificationHelper.instance.rescheduleBackupReminder();
               
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -491,8 +496,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     AppLocalizations.of(context).backupHerstellen,
           _herstellenBackup,
         ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+          child: SwitchListTile(
+            value: _settingBool(NotificationHelper.backupReminderAanKey),
+            onChanged: (v) => _setBackupHerinnering(v),
+            secondary: Icon(Icons.backup_outlined,
+                color: Theme.of(context).colorScheme.primary),
+            title: Text(AppLocalizations.of(context).backupHerinneringTitel,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            subtitle: Text(AppLocalizations.of(context).backupHerinneringSubtitel,
+                style: const TextStyle(fontSize: 12)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildActionButton(
+          AppLocalizations.of(context).logboekDelen,
+          _deelLogboek,
+        ),
       ],
     );
+  }
+
+  /// Schakelt de tweewekelijkse backup-herinnering aan/uit.
+  Future<void> _setBackupHerinnering(bool aan) async {
+    try {
+      final existing = await db.getSettings();
+      final merged = Map<String, dynamic>.from(existing ?? {});
+      merged[NotificationHelper.backupReminderAanKey] = aan ? '1' : '0';
+      await db.updateSettingsMap(merged);
+      if (mounted) setState(() => _settings = merged);
+      await NotificationHelper.instance.rescheduleBackupReminder();
+    } catch (e, stackTrace) {
+      AppLogger.error('Backup-herinnering instelling opslaan mislukt',
+          error: e, stackTrace: stackTrace);
+      if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
+    }
+  }
+
+  /// Deelt het technische logboek (laatste regels) via het deelvenster.
+  Future<void> _deelLogboek() async {
+    try {
+      String versie = 'Ritme';
+      try {
+        final info = await PackageInfo.fromPlatform();
+        versie = 'Ritme ${info.version}+${info.buildNumber}';
+      } catch (_) {}
+      final log = await AppLogger.leesLog();
+      await SharePlus.instance.share(
+        ShareParams(text: '$versie — logboek\n\n$log', subject: 'Ritme logboek'),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Logboek delen mislukt', error: e, stackTrace: stackTrace);
+      if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
+    }
   }
 
   /// Kiest een backupbestand, valideert het en toont eerst een preview vóór
