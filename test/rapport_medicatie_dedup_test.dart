@@ -6,9 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ritme/service_locator.dart';
 import 'package:ritme/services/rapport_generator.dart';
 
-String _dateStr(DateTime d) =>
-    '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
 class DedupTestDb implements DatabaseRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) =>

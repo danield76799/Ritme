@@ -249,7 +249,7 @@ void main() {
         final lurasidon = report
             .split('\n')
             .firstWhere((l) => l.contains('**Lurasidon**'));
-        expect(lurasidon, contains('13/14 (93%)'));
+        expect(lurasidon, contains('13/14 dagen (93%)'));
         // Weekoverzicht: 12/14 (de laatste week) en 14/14 (de eerste week).
         expect(report, contains('| 12/14 |'));
         expect(report, contains('| 14/14 |'));
@@ -261,32 +261,32 @@ void main() {
         final olanzapine = report
             .split('\n')
             .firstWhere((l) => l.contains('**Olanzapine**'));
-        expect(olanzapine, contains('3x ingenomen in deze periode (zo nodig)'));
+        expect(olanzapine, contains('3× ingenomen op:'));
         expect(olanzapine, isNot(contains('%')));
         expect(olanzapine, isNot(contains('/3')));
       });
 
       test('de datums van de PRN-inname staan erbij', () {
-        final regels = report.split('\n');
-        final index =
-            regels.indexWhere((l) => l.contains('3x ingenomen in deze periode'));
-        expect(index, greaterThan(-1));
-        expect(regels[index + 1], contains('✅'));
-        expect(regels[index + 2], contains('✅'));
-        expect(regels[index + 3], contains('✅'));
+        final regel = report
+            .split('\n')
+            .firstWhere((l) => l.contains('3× ingenomen op:'));
+        // Drie datums in d-M-formaat op dezelfde regel.
+        final datums = RegExp(r'\d{1,2}-\d{1,2}').allMatches(regel).length;
+        expect(datums, 3);
       });
 
-      test('dagen zonder inname staan als niet ingenomen in de lijst', () {
+      test('dagen zonder inname staan als Gemist vermeld', () {
         final regels = report.split('\n');
         final index = regels.indexWhere((l) => l.contains('**Lurasidon**'));
-        expect(regels[index + 14], contains('❌'));
+        final blok = regels.sublist(index, index + 4).join('\n');
+        expect(blok, contains('Gemist op:'));
       });
     });
 
     test('een vast middel zonder inname blijft zichtbaar (0/14)', () async {
       final rapport =
           await _rapport(_toekomstigeTijd(), metExtraVastMiddel: true);
-      expect(rapport, contains('- **Sertraline** 50 mg: 0/14 (0%)'));
+      expect(rapport, contains('- **Sertraline** — 0/14 dagen (0%)'));
     });
 
     test('medicatienamen zijn opgeschoond', () {
@@ -299,9 +299,8 @@ void main() {
 
     test('er is geen dubbele medicatiesectie', () {
       expect(report, contains('## 📋 Actief Medicatieschema'));
-      expect(report, isNot(contains('## 💊 Medicatie\n')));
       expect(
-        '## 💊 Medicatie — ingenomen dagen'.allMatches(report).length,
+        '## 💊 Medicatie — Overzicht & Verloop'.allMatches(report).length,
         1,
       );
     });
@@ -312,21 +311,21 @@ void main() {
     });
 
     test('de correlatie sluit de nog open dag uit', () async {
-      final sectie = report.split('## 🧬 Correlatie')[1].split('##')[0];
+      final sectie = report.split('## 🧬 Correlaties')[1].split('###')[1];
       expect(sectie, contains('Bij hoge trouw'));
       expect(
         sectie,
-        isNot(contains('Bij lage trouw')),
+        contains('Bij lage trouw (<70%): geen data in deze periode'),
         reason: 'de nog open dag zou ten onrechte als lage trouw meetellen',
       );
     });
 
     test('is de dag afgelopen, dan telt hij wél mee', () async {
       final rapport = await _rapport(_verledenTijd());
-      final sectie = rapport.split('## 🧬 Correlatie')[1].split('##')[0];
+      final sectie = rapport.split('## 🧬 Correlaties')[1].split('###')[1];
       expect(
         sectie,
-        contains('Bij lage trouw'),
+        contains('Bij lage trouw (<70%): gemiddelde stemming'),
         reason: 'vandaag is inmiddels afgelopen, dus de gemiste dosis telt '
             'echt mee in de correlatie',
       );

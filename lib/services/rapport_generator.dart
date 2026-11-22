@@ -117,6 +117,15 @@ class _PeriodData {
 }
 
 /// Totals uit het weekoverzicht, hergebruikt in de samenvatting.
+/// Eén gecomprimeerd blok van aaneengesloten dagen met dezelfde dosis.
+class _DoseBlock {
+  _DoseBlock(this.start, this.end, this.days, this.dose);
+  DateTime start;
+  DateTime end;
+  int days;
+  final String dose;
+}
+
 class _WeeklyTotals {
   double totalMood = 0;
   int moodCount = 0;
@@ -192,17 +201,24 @@ class RapportGenerator {
 
     final buf = StringBuffer();
     await _buildHeader(buf, s, startDate, endDate, now);
-    await _buildMoodCheck(buf, s, startStr, endStr);
 
     final period = await _loadPeriodData(startDate, endDate);
-    final totals = await _buildWeeklyOverview(buf, s, period);
-    _buildCorrelation(buf, s, period, now);
-    _buildSleepMoodCorrelation(buf, s, period);
-    _buildSummary(buf, s, totals);
-    await _buildDagboek(buf, s, startStr, endStr);
-    await _buildMedicationSection(buf, s, period);
+    final srmRange = await db.getSrmActivitiesRange(startStr, endStr);
+    final srmByDate = <String, List<Map<String, dynamic>>>{};
+    for (final a in srmRange) {
+      final d = a['date']?.toString() ?? '';
+      srmByDate.putIfAbsent(d, () => []).add(a);
+    }
+    final totals = _computeTotals(period, _dailyPScores(srmByDate));
+    _buildSummary(buf, s, totals);                     // 2. Samenvatting
+    await _buildWeeklyOverview(buf, s, period, srmByDate); // 3. Weekoverzicht
+    await _buildMedicationSection(buf, s, period);     // 4. Medicatie
+    await _buildMedicationSchema(buf, s, period);      // 5. Mediciatieschema
+    await _buildDagboek(buf, s, startStr, endStr);     // 6. Dagboek
+    _buildCorrelation(buf, s, period, now);            // 7. Correlatie: medicatie-trouw
+    _buildSleepMoodCorrelation(buf, s, period);        // 7. Correlatie: slaap vs stemming
+    await _buildMoodCheck(buf, s, startStr, endStr);   // 8. Stemmingscheck (alleen bij data)
     await _buildEpisodes(buf, s, period);
-    await _buildMedicationSchema(buf, s, period);
     await _buildProdromalWarnings(buf, s, days);
     await _buildCrisisPlan(buf, s);
 
@@ -251,13 +267,12 @@ class RapportGenerator {
     if (assessments.isEmpty) return;
 
     // Gemiddelden per vraag
-    double sumQ1 = 0, sumQ2 = 0, sumQ3 = 0, sumQ4 = 0, sumQ5 = 0;
+    double sumQ1 = 0, sumQ3 = 0, sumQ4 = 0, sumQ5 = 0;
     double sumRaw = 0;
-    int nQ1 = 0, nQ2 = 0, nQ3 = 0, nQ4 = 0, nQ5 = 0, nRaw = 0;
+    int nQ1 = 0, nQ3 = 0, nQ4 = 0, nQ5 = 0, nRaw = 0;
     final flagCounts = <String, int>{};
     for (final a in assessments) {
       final v1 = _extractDouble(a['q1_stemming']);
-      final v2 = _extractDouble(a['q2_energie_slider']);
       final v3 = _extractDouble(a['q3_energie_detail']);
       final v4 = _extractDouble(a['q4_slaapbehoefte']);
       final v5 = _extractDouble(a['q5_gebeurtenis']);
@@ -266,10 +281,6 @@ class RapportGenerator {
       if (v1 != null) {
         sumQ1 += v1;
         nQ1++;
-      }
-      if (v2 != null) {
-        sumQ2 += v2;
-        nQ2++;
       }
       if (v3 != null) {
         sumQ3 += v3;
@@ -296,12 +307,11 @@ class RapportGenerator {
       }
     }
 
-    buf.writeln('## ${s.moodCheckTitle} — $nQ1 ${s.intakeMoments}');
+    buf.writeln('## ${s.moodCheckTitle} — $nQ1 ${s.intakeMoments(nQ1)}');
     buf.writeln();
     buf.writeln('| ${s.metric} | ${s.average} |');
     buf.writeln('|---------|-----------|');
     if (nQ1 > 0) buf.writeln('| **${s.mood}** (−4..+4) | ${_fmt(sumQ1 / nQ1)} |');
-    if (nQ2 > 0) buf.writeln('| **${s.energy}** (0..100) | ${_fmt(sumQ2 / nQ2)} |');
     if (nQ3 > 0) {
       buf.writeln('| **${s.energyLevel}** (−3..+3) | ${_fmt(sumQ3 / nQ3)} |');
     }
@@ -336,8 +346,6 @@ class RapportGenerator {
     // weekoverzicht staat — de twee zijn niet rechtstreeks
     // vergelijkbaar.
     buf.writeln(s.moodCheckNote);
-    buf.writeln();
-    buf.writeln('---');
     buf.writeln();
   }
 
@@ -381,31 +389,88 @@ class RapportGenerator {
     );
   }
 
+  /// P-scores per dag (gemiddelde van de P-scores van die dag).
+  /// Muteert niets; bedoeld voor aggregatie.
+  Map<String, double> _dailyPScores(Map<String, List<Map<String, dynamic>>> srmByDate) {
+    final result = <String, double>{};
+    srmByDate.forEach((date, acts) {
+      double sum = 0;
+      int n = 0;
+      for (final a in acts) {
+        final ps = a['p_score'];
+        if (ps == null) continue;
+        sum += ps is int ? ps.toDouble() : double.tryParse('$ps') ?? 0;
+        n++;
+      }
+      if (n > 0) result[date] = sum / n;
+    });
+    return result;
+  }
+
+  /// Aggregeert de totaalcijfers voor de samenvattingstabel. Aparte pass
+  /// zodat de samenvatting bovenaan het rapport kan staan.
+  _WeeklyTotals _computeTotals(
+    _PeriodData period,
+    Map<String, double> pScores,
+  ) {
+    final totals = _WeeklyTotals();
+    for (final d in period.allDays) {
+      final dateStr = _dateStr(d);
+
+      final mood = period.moodOn(d);
+      if (mood != null) {
+        totals.totalMood += mood;
+        totals.moodCount++;
+      }
+      final sleep = period.sleepOn(d);
+      if (sleep != null) {
+        totals.totalSleep += sleep;
+        totals.sleepCount++;
+      }
+      final pScore = pScores[dateStr];
+      if (pScore != null) {
+        totals.totalPScore += pScore;
+        totals.pScoreDays++;
+      }
+      for (final med in period.activeMedications) {
+        final id = _asInt(med['id']);
+        final scheds = period.schedulesFor(id);
+        if (scheds.isEmpty) continue;
+        for (final sched in scheds) {
+          if (!period.isScheduledOn(sched, d)) continue;
+          totals.intakeCount++;
+          if (period.takenOn(id, dateStr) > 0) totals.takenCount++;
+        }
+      }
+    }
+    return totals;
+  }
+
   // === 2. WEEKOVERZICHT ===
 
-  Future<_WeeklyTotals> _buildWeeklyOverview(
+  Future<void> _buildWeeklyOverview(
     StringBuffer buf,
     RapportStrings s,
     _PeriodData period,
+    Map<String, List<Map<String, dynamic>>> srmByDate,
   ) async {
-    final totals = _WeeklyTotals();
-
-    // SRM activiteiten in bulk ophalen om N+1 queries te voorkomen
-    final srmRange = await db.getSrmActivitiesRange(
+    // Dagboek-entries per dag, voor de "Notities / Ankers"-kolom
+    final dagboek = await db.getDagboekRange(
       _dateStr(period.startDate),
       _dateStr(period.endDate),
     );
-    final srmByDate = <String, List<Map<String, dynamic>>>{};
-    for (final a in srmRange) {
-      final d = a['date']?.toString() ?? '';
-      srmByDate.putIfAbsent(d, () => []).add(a);
+    final dagboekByDate = <String, List<Map<String, dynamic>>>{};
+    for (final e in dagboek) {
+      final d = e['date']?.toString() ?? '';
+      if (d.isEmpty) continue;
+      dagboekByDate.putIfAbsent(d, () => []).add(e);
     }
 
     buf.writeln('## ${s.weeklyOverview}');
     buf.writeln();
     buf.writeln(
-        '| ${s.week} | ${s.avgMood} | ${s.avgSleep} | ${s.avgPScore} | ${s.medication} |');
-    buf.writeln('|------|--------------|-----------|-------------|-----------|');
+        '| ${s.week} | ${s.avgMood} | ${s.avgSleep} | ${s.avgPScore} | ${s.medication} | ${s.weekAnchors} |');
+    buf.writeln('|------|--------------|-----------|-------------|-----------|---------------|');
 
     // Loop per week (nieuwste week eerst). De weken bestrijken exact de
     // rapportperiode: dezelfde grenzen als de header en de samenvatting.
@@ -461,9 +526,6 @@ class RapportGenerator {
         }
       }
 
-      totals.takenCount += wTaken;
-      totals.intakeCount += wIntake;
-
       final weekStart = week.first;
       final weekEnd = week.last;
       final weekLabel =
@@ -472,22 +534,44 @@ class RapportGenerator {
       final sleepStr = wSleepN > 0 ? s.formatHours(wSleep / wSleepN) : '-';
       final pStr = wPN > 0 ? (wP / wPN).toStringAsFixed(1) : '-';
       final medStr = wIntake > 0 ? '$wTaken/$wIntake' : '-';
-      buf.writeln('| $weekLabel | $moodStr | $sleepStr | $pStr | $medStr |');
 
-      // Totaal-accumulatie voor de Samenvatting-sectie
-      totals.totalMood += wMood;
-      totals.moodCount += wMoodN;
-      totals.totalSleep += wSleep;
-      totals.sleepCount += wSleepN;
-      totals.totalPScore += wP;
-      totals.pScoreDays += wPN;
+      // Notities/ankers: aantal entries, gemiddelde score, en de dagen
+      // met een lage score (<= 2) als expliciete ankerpunten.
+      final anchorEntries = <Map<String, dynamic>>[];
+      for (final d in week) {
+        anchorEntries.addAll(dagboekByDate[_dateStr(d)] ?? const []);
+      }
+      String anchorStr = '–';
+      if (anchorEntries.isNotEmpty) {
+        double scoreSum = 0;
+        int scoreN = 0;
+        final lageDagen = <String>{};
+        for (final e in anchorEntries) {
+          final sc = _extractDouble(e['score']);
+          if (sc != null) {
+            scoreSum += sc;
+            scoreN++;
+            if (sc <= 2) {
+              final dStr = e['date']?.toString() ?? '';
+              if (dStr.length >= 10) {
+                lageDagen.add('${int.tryParse(dStr.substring(8, 10)) ?? ''}/${int.tryParse(dStr.substring(5, 7)) ?? ''}');
+              }
+            }
+          }
+        }
+        anchorStr = scoreN > 0
+            ? '${anchorEntries.length}× (gem ${(scoreSum / scoreN).toStringAsFixed(1)})'
+            : '${anchorEntries.length}×';
+        if (lageDagen.isNotEmpty) {
+          anchorStr += ' · ⚠ ${lageDagen.join(', ')}';
+        }
+      }
+      buf.writeln('| $weekLabel | $moodStr | $sleepStr | $pStr | $medStr | $anchorStr |');
     }
 
     buf.writeln();
     buf.writeln('---');
     buf.writeln();
-
-    return totals;
   }
 
   // === CORRELATIE ANALYSE (Medication vs Mood) ===
@@ -535,23 +619,25 @@ class RapportGenerator {
       }
     }
 
-    buf.writeln('## ${s.correlationTitle}');
+    buf.writeln('## ${s.correlationsTitle}');
     buf.writeln();
-    if (highAdhCount > 0 || lowAdhCount > 0) {
-      if (highAdhCount > 0) {
-        buf.writeln(s.correlationHighAdherence(highAdhMood / highAdhCount));
-      }
-      if (lowAdhCount > 0) {
-        buf.writeln(s.correlationLowAdherence(lowAdhMood / lowAdhCount));
-      }
-      if (highAdhCount > 0 && lowAdhCount > 0) {
-        final diff =
-            (highAdhMood / highAdhCount) - (lowAdhMood / lowAdhCount);
-        buf.writeln();
-        buf.writeln(s.correlationDiff(diff));
-      }
+    buf.writeln('### ${s.correlationTitle}');
+    buf.writeln();
+    if (highAdhCount > 0) {
+      buf.writeln(s.correlationHighAdherence(highAdhMood / highAdhCount, highAdhCount));
     } else {
-      buf.writeln(s.correlationNoData);
+      buf.writeln(s.correlationNoHighData);
+    }
+    if (lowAdhCount > 0) {
+      buf.writeln(s.correlationLowAdherence(lowAdhMood / lowAdhCount, lowAdhCount));
+    } else {
+      buf.writeln(s.correlationNoLowData);
+    }
+    if (highAdhCount > 0 && lowAdhCount > 0) {
+      final diff =
+          (highAdhMood / highAdhCount) - (lowAdhMood / lowAdhCount);
+      buf.writeln();
+      buf.writeln(s.correlationDiff(diff));
     }
     buf.writeln();
   }
@@ -580,21 +666,21 @@ class RapportGenerator {
       }
     }
 
-    buf.writeln('## ${s.sleepMoodTitle}');
+    buf.writeln('### ${s.sleepMoodTitle}');
     buf.writeln();
-    if (shortCount + longCount < 3) {
-      buf.writeln(s.sleepMoodNoData);
+    if (shortCount > 0) {
+      buf.writeln(s.sleepMoodShortSleep(shortSum / shortCount, shortCount));
     } else {
-      if (shortCount > 0) {
-        buf.writeln(s.sleepMoodShortSleep(shortSum / shortCount));
-      }
-      if (longCount > 0) {
-        buf.writeln(s.sleepMoodLongSleep(longSum / longCount));
-      }
-      if (shortCount > 0 && longCount > 0) {
-        buf.writeln();
-        buf.writeln(s.correlationDiff((longSum / longCount) - (shortSum / shortCount)));
-      }
+      buf.writeln(s.sleepMoodShortNoData);
+    }
+    if (longCount > 0) {
+      buf.writeln(s.sleepMoodLongSleep(longSum / longCount, longCount));
+    } else {
+      buf.writeln(s.sleepMoodLongNoData);
+    }
+    if (shortCount > 0 && longCount > 0) {
+      buf.writeln();
+      buf.writeln(s.correlationDiff((longSum / longCount) - (shortSum / shortCount)));
     }
     buf.writeln();
   }
@@ -633,16 +719,16 @@ class RapportGenerator {
     buf.writeln('| **${s.daysWithData}** | ${totals.moodCount} |');
     if (totals.moodCount > 0) {
       buf.writeln(
-          '| **${s.avgMoodLong}** | ${(totals.totalMood / totals.moodCount).toStringAsFixed(1)} (-5 ${s.to} +5) |');
+          '| **${s.avgMoodLong}** | ${(totals.totalMood / totals.moodCount).toStringAsFixed(1)} (-5 ${s.to} +5, n=${totals.moodCount}) |');
     }
     if (totals.sleepCount > 0) {
       buf.writeln(
-          '| **${s.avgSleepDuration}** | ${s.formatHours(totals.totalSleep / totals.sleepCount)} |');
+          '| **${s.avgSleepDuration}** | ${s.formatHours(totals.totalSleep / totals.sleepCount)} (n=${totals.sleepCount}) |');
     }
     if (totals.pScoreDays > 0) {
       final avgP = totals.totalPScore / totals.pScoreDays;
       buf.writeln(
-          '| **${s.avgPScore}** | ${avgP.toStringAsFixed(1)} / 5 (SRT: ${(avgP / 5 * 100).round()}%) |');
+          '| **${s.avgPScore}** | ${avgP.toStringAsFixed(1)} / 5 (SRT: ${(avgP / 5 * 100).round()}%, n=${totals.pScoreDays}) |');
     }
     if (totals.intakeCount > 0) {
       final pct = (totals.takenCount * 100 / totals.intakeCount).round();
@@ -650,6 +736,8 @@ class RapportGenerator {
           '| **${s.medicationAdherence}** | ${totals.takenCount}/${totals.intakeCount} ${s.taken} ($pct%) |');
     }
 
+    buf.writeln();
+    buf.writeln(s.legendaLine);
     buf.writeln();
   }
 
@@ -699,24 +787,27 @@ class RapportGenerator {
     buf.writeln();
   }
 
-  // === 5. MEDICATIE — ingenomen dagen ===
+  // === 4. MEDICATIE — OVERZICHT & VERLOOP ===
 
   Future<void> _buildMedicationSection(
     StringBuffer buf,
     RapportStrings s,
     _PeriodData period,
   ) async {
-    if (period.activeMedications.isEmpty) return;
+    final meds = period.activeMedications;
+    if (meds.isEmpty) return;
 
-    buf.writeln('## ${s.medTakenDays}');
+    buf.writeln('## ${s.medOverviewTitle}');
     buf.writeln();
 
-    for (final med in period.activeMedications) {
+    for (final med in meds) {
       final id = _asInt(med['id']);
       final name = formatMedName(med['naam']?.toString() ?? '');
       if (name.isEmpty) continue;
-      final dosis = med['dosering']?.toString() ?? '?';
-      final eenheid = med['eenheid']?.toString() ?? '';
+      final dosis = (med['dosering']?.toString() ?? '').trim();
+      final eenheid = (med['eenheid']?.toString() ?? '').trim();
+      final dosisLabel = [dosis, eenheid].where((x) => x.isNotEmpty).join(' ');
+      final scheds = period.schedulesFor(id);
 
       final intakes = (await db.getMedicationIntakeForMedication(id))
           .where((r) {
@@ -725,63 +816,89 @@ class RapportGenerator {
                 d.compareTo(_dateStr(period.endDate)) <= 0;
           })
           .toList();
-
-      final scheds = period.schedulesFor(id);
-
-      if (scheds.isEmpty) {
-        // Geen dagelijks schema: 'zo nodig'-medicatie. Er is geen
-        // verwachte dosis, dus een percentage zou misleidend zijn.
-        final takenDates = intakes.where((r) => _isTaken(r)).toList()
-          ..sort((a, b) =>
-              (a['date'] as String).compareTo(b['date'] as String));
-        if (takenDates.isEmpty) continue;
-        buf.writeln(
-            '- **$name** $dosis $eenheid: ${s.takenAsNeededInPeriod(takenDates.length)}');
-        buf.writeln(takenDates.map((r) {
-          final dateStr = r['date']?.toString() ?? '?';
-          final doseringLabel = _dailyDoseringLabel(r, eenheid);
-          return '  ✅ $dateStr$doseringLabel';
-        }).join('\n'));
-        continue;
-      }
-
-      // Vaste medicatie: de noemer is het aantal dagen in de rapportperiode
-      // waarop een dosis verwacht wordt — hetzelfde als in het
-      // weekoverzicht en de samenvatting. Een dag telt één keer, ook als
-      // er meerdere schema's op die dag staan.
-      final expectedDays = <DateTime>[];
-      for (final d in period.allDays) {
-        final heeftSchema = scheds.any((sched) => period.isScheduledOn(sched, d));
-        if (heeftSchema) expectedDays.add(d);
-      }
-      if (expectedDays.isEmpty) continue;
-
-      final takenDays =
-          expectedDays.where((d) => period.takenOn(id, _dateStr(d)) > 0).length;
-      final pct = (takenDays * 100 / expectedDays.length).round();
-      buf.writeln(
-          '- **$name** $dosis $eenheid: $takenDays/${expectedDays.length} ($pct%)');
-
       final byDate = <String, Map<String, dynamic>>{};
       for (final r in intakes) {
         byDate[r['date']?.toString() ?? ''] = r;
       }
-      buf.writeln(expectedDays.map((d) {
-        final dateStr = _dateStr(d);
-        final row = byDate[dateStr];
-        final ingenomen = row != null && _isTaken(row);
-        final doseringLabel =
-            row == null ? '' : _dailyDoseringLabel(row, eenheid);
-        return '  ${ingenomen ? '✅' : '❌'} $dateStr$doseringLabel';
-      }).join('\n'));
+
+      // --- PRN (zo nodig): geen schema, dus geen verwachtingen ----------
+      if (scheds.isEmpty) {
+        final takenDates = byDate.entries
+            .where((e) => _isTaken(e.value))
+            .map((e) => e.key)
+            .toList()
+          ..sort();
+        final suffix = dosisLabel.isEmpty ? '' : ', $dosisLabel';
+        if (takenDates.isEmpty) {
+          buf.writeln('- **$name** (PRN$suffix) — ${s.prnZeroTaken}');
+        } else {
+          final data = takenDates.map(_shortDateStr).join(', ');
+          buf.writeln(
+              '- **$name** (PRN$suffix) — ${s.prnTakenOn(takenDates.length)} $data');
+        }
+        continue;
+      }
+
+      // --- Vast schema: samenvattingsregel + gecomprimeerde blokken ------
+      final expectedDays = <DateTime>[
+        for (final d in period.allDays)
+          if (scheds.any((sc) => period.isScheduledOn(sc, d))) d,
+      ];
+      if (expectedDays.isEmpty) continue;
+
+      final takenByDate = <DateTime, String>{};
+      final missed = <DateTime>[];
+      for (final d in expectedDays) {
+        final row = byDate[_dateStr(d)];
+        if (row != null && _isTaken(row)) {
+          final raw = row['dosering']?.toString().trim() ?? '';
+          takenByDate[d] = raw.isNotEmpty ? raw : (dosis.isNotEmpty ? dosis : '?');
+        } else {
+          missed.add(d);
+        }
+      }
+      final pct = (takenByDate.length * 100 / expectedDays.length).round();
+      buf.writeln(
+          '- **$name** — ${takenByDate.length}/${expectedDays.length} ${s.medDayCount(expectedDays.length)} ($pct%)');
+
+      // Aaneengesloten dagen met dezelfde ingenomen dosering: één blok.
+      final blocks = <_DoseBlock>[];
+      for (final d in expectedDays) {
+        final dose = takenByDate[d];
+        if (dose == null) continue; // gemiste dagen worden hieronder vermeld
+        if (blocks.isNotEmpty) {
+          final last = blocks.last;
+          if (d.difference(last.end).inDays == 1 && last.dose == dose) {
+            last.end = d;
+            last.days++;
+            continue;
+          }
+        }
+        blocks.add(_DoseBlock(d, d, 1, dose));
+      }
+      for (final b in blocks) {
+        final range = b.days == 1
+            ? _shortDate(b.start)
+            : '${_shortDate(b.start)} ${s.dateRangeJoiner} ${_shortDate(b.end)}';
+        final unit = eenheid.isNotEmpty ? ' $eenheid' : '';
+        buf.writeln('  - $range: ${b.dose}$unit (${b.days}/${b.days} ${s.takenWord})');
+      }
+      if (missed.isNotEmpty) {
+        buf.writeln('  - ${s.missedOnLabel} ${missed.map(_shortDate).join(', ')}');
+      }
     }
     buf.writeln();
   }
 
-  String _dailyDoseringLabel(Map<String, dynamic> row, String eenheid) {
-    final dagDosering = row['dosering']?.toString() ?? '';
-    if (dagDosering.isEmpty) return '';
-    return ' — $dagDosering$eenheid';
+  String _shortDate(DateTime d) => '${d.day}-${d.month}';
+
+  String _shortDateStr(String iso) {
+    final p = iso.split('-');
+    if (p.length != 3) return iso;
+    final day = int.tryParse(p[2]);
+    final month = int.tryParse(p[1]);
+    if (day == null || month == null) return iso;
+    return '$day-$month';
   }
 
   bool _isTaken(Map<String, dynamic> row) {
