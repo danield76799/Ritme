@@ -958,5 +958,13 @@
   "backupHerinneringTitel": "Backup-herinnering",
   "backupHerinneringSubtitel": "Elke 2 weken een seintje zolang je nog geen nieuwe backup hebt gemaakt",
   "logboekDelen": "Logboek delen",
-  "logboekDelenSubtitel": "Stuur recente technische meldingen mee, handig bij een probleemrapport"
+  "logboekDelenSubtitel": "Stuur recente technische meldingen mee, handig bij een probleemrapport",
+  "duplicatenSamenvoegen": "Duplicaten samenvoegen ({count})",
+  "@duplicatenSamenvoegen": {"placeholders": {"count": {}}},
+  "dubbelsSamenvoegenTitel": "Dubbele medicatie samenvoegen",
+  "dubbelsSamenvoegenBody": "{count} dubbele registraties worden samengevoegd. De innamegeschiedenis blijft volledig bewaard.",
+  "@dubbelsSamenvoegenBody": {"placeholders": {"count": {}}},
+  "dubbelsSamenvoegenKnop": "Samenvoegen",
+  "dubbelsSamengevoegd": "{count} dubbele registraties samengevoegd",
+  "@dubbelsSamengevoegd": {"placeholders": {"count": {}}}
 }

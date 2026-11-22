@@ -1319,6 +1319,42 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<int> reassignMedicationIntakes(int fromId, int toId) async {
+    var count = 0;
+    for (final entry in _medicationIntake.toMap().entries) {
+      final raw = Map<String, dynamic>.from(entry.value as Map);
+      final v = raw['medication_id'];
+      final id = v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
+      if (id == fromId) {
+        raw['medication_id'] = toId;
+        await _medicationIntake.put(entry.key, raw);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  @override
+  Future<int> deleteMedicationSchedulesForMedication(int medicationId) async {
+    var count = 0;
+    for (final entry in _medicationSchedule.toMap().entries) {
+      final v = entry.value['medication_id'];
+      final id = v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
+      if (id == medicationId) {
+        await _medicationSchedule.delete(entry.key);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  @override
+  Future<int> hardDeleteMedicationConfig(int id) async {
+    await _medicationConfig.delete(_configKey(id));
+    return 1;
+  }
+
+  @override
   Future<void> cleanupMedicationSchedulesAndCancelNotifications() async {
     final configs = await getMedicationConfigs();
     final configIds = configs.map((c) => c['id']).toSet();

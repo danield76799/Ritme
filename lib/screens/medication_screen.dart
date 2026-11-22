@@ -7,6 +7,7 @@ import '../utils/adherentie.dart';
 import '../widgets/datum_navigator.dart';
 import '../utils/logger.dart';
 import '../services/notification_helper.dart';
+import '../services/med_duplicaten.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class MedicationScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
   // Zacht-verwijderde medicatie: blijft zichtbaar (alleen-lezen) zodat de
   // inname-historie in eerdere dagen zichtbaar blijft.
   List<Map<String, dynamic>> _stoppedConfigs = [];
+  List<MedDuplicateGroup> _duplicateGroups = [];
   Map<int, int> _intakesForDay = {};
   Map<int, String> _intakeDoseringForDay = {}; // per-dag dosering snapshot
   Map<int, Adherentie> _adherentie = {};
@@ -46,6 +48,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     try {
       final configs = await db.getMedicationConfigs();
       final allConfigs = await db.getMedicationConfigsAll();
+      final duplicateGroups = vindDubbeleMeds(allConfigs);
       final stopped = <Map<String, dynamic>>[];
       for (final c in allConfigs) {
         final del = c['deleted'];
@@ -130,6 +133,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       setState(() {
         _configs = mergedConfigs;
         _stoppedConfigs = stopped;
+        _duplicateGroups = duplicateGroups;
         _intakesForDay = intakeMap;
         _intakeDoseringForDay = doseringMap;
         _adherentie = adherentie;
@@ -974,8 +978,26 @@ class _MedicationScreenState extends State<MedicationScreen> {
       for (final c in nodig) _buildCompactMedCard(c),
       if (_stoppedConfigs.isNotEmpty) ...[
         const SizedBox(height: 12),
-        _sectionHeader(AppLocalizations.of(context).sectieGestopt,
-            subtitle: AppLocalizations.of(context).gestoptUitleg),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _sectionHeader(AppLocalizations.of(context).sectieGestopt,
+                  subtitle: AppLocalizations.of(context).gestoptUitleg),
+            ),
+            if (_duplicateGroups.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: TextButton.icon(
+                  onPressed: _mergeDuplicates,
+                  icon: const Icon(Icons.merge_type, size: 18),
+                  label: Text(AppLocalizations.of(context)
+                      .duplicatenSamenvoegen(_duplicateGroups.fold<int>(
+                          0, (sum, g) => sum + g.verwijderen.length))),
+                ),
+              ),
+          ],
+        ),
         for (final c in _stoppedConfigs) _buildStoppedMedCard(c),
       ],
     ];
@@ -1122,6 +1144,64 @@ class _MedicationScreenState extends State<MedicationScreen> {
         ],
       ),
     );
+  }
+
+  /// Laat een samenvatting zien van de dubbele registraties en
+  /// voegt ze samen na bevestiging. Inname-historie blijft bewaard.
+  Future<void> _mergeDuplicates() async {
+    final groups = [..._duplicateGroups];
+    if (groups.isEmpty) return;
+    final totaal = groups.fold<int>(0, (sum, g) => sum + g.verwijderen.length);
+    final overzicht = groups
+        .map((g) => '${g.naam} ${g.dosering} ${g.eenheid}'.trim())
+        .join('\n');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context).dubbelsSamenvoegenTitel),
+        content: Text(
+          '${AppLocalizations.of(context).dubbelsSamenvoegenBody(totaal)}\n\n$overzicht',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocalizations.of(context).annuleren),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(AppLocalizations.of(context).dubbelsSamenvoegenKnop),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final n = await mergeDubbeleMeds(groups);
+      await _loadData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).dubbelsSamengevoegd(n)),
+            backgroundColor: AppTheme.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Duplicaten samenvoegen mislukt', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).konInstellingenNietOpslaan),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _reactivateMedication(int id) async {

@@ -968,5 +968,13 @@
   "backupHerinneringTitel": "Backup reminder",
   "backupHerinneringSubtitel": "A nudge every 2 weeks until you make a fresh backup",
   "logboekDelen": "Share log",
-  "logboekDelenSubtitel": "Attach recent technical messages, useful for bug reports"
+  "logboekDelenSubtitel": "Attach recent technical messages, useful for bug reports",
+  "duplicatenSamenvoegen": "Merge duplicates ({count})",
+  "@duplicatenSamenvoegen": {"placeholders": {"count": {}}},
+  "dubbelsSamenvoegenTitel": "Merge duplicate medication",
+  "dubbelsSamenvoegenBody": "{count} duplicate entries will be merged. Your intake history is fully preserved.",
+  "@dubbelsSamenvoegenBody": {"placeholders": {"count": {}}},
+  "dubbelsSamenvoegenKnop": "Merge",
+  "dubbelsSamengevoegd": "{count} duplicate entries merged",
+  "@dubbelsSamengevoegd": {"placeholders": {"count": {}}}
 }
