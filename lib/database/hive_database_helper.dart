@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:hive/hive.dart';
 import '../utils/logger.dart';
+import '../utils/hive_repair.dart';
 import 'database_repository.dart';
 
 class HiveDatabaseHelper implements DatabaseRepository {
@@ -23,23 +24,65 @@ class HiveDatabaseHelper implements DatabaseRepository {
   static const String _dagboekBoxName = 'daily_dagboek';
   HiveDatabaseHelper._init();
 
+  /// Namen van boxes die na een corrupt bestand opnieuw zijn aangemaakt.
+  /// De UI gebruikt dit om de gebruiker te waarschuwen en een restore aan te
+  /// bieden. Wordt geleegd bij elke init().
+  static final List<String> recoveredBoxes = [];
+
+  static const List<String> _alleBoxes = [
+    _settingsBox,
+    _dailyLogsBox,
+    _srmActivitiesBox,
+    _medicationConfigBox,
+    _medicationIntakeBox,
+    _medicationScheduleBox,
+    _lifeEventsBox,
+    _weightLogsBox,
+    _medicalAppointmentsBox,
+    _crisisPlanBox,
+    _prodromalChecklistBox,
+    _prodromalLogsBox,
+    _episodeLogsBox,
+    _dagboekBoxName,
+    _moodAssessmentBox,
+  ];
+
+  /// Alleen voor tests: overschrijf de map waarin naar box-bestanden wordt
+  /// gekeken (standaard: app-documentmap via path_provider).
+  static String? debugHiveDir;
+
+  /// Opent een box veilig. Hive kapt bij corruptie zelf de kapotte staart af
+  /// (crashRecovery); wij detecteren dat achteraf via een kleinere
+  /// bestandsgrootte en melden het in [recoveredBoxes] zodat de UI de
+  /// gebruiker kan waarschuwen en een backup-restore kan aanbieden.
+  /// Alleen als openen helemaal mislukt, wordt de box geleegd — liever een
+  /// lege box dan een app die niet meer start.
+  static Future<void> _openBoxVeilig(String name) async {
+    final before = await boxFileSize(name, debugHiveDir);
+    try {
+      await Hive.openBox(name);
+    } catch (e, stack) {
+      AppLogger.error('Hive-box "$name" onherstelbaar beschadigd — wordt geleegd',
+          error: e, stackTrace: stack);
+      recoveredBoxes.add(name);
+      try {
+        await Hive.deleteBoxFromDisk(name);
+      } catch (_) {}
+      await Hive.openBox(name);
+      return;
+    }
+    final after = await boxFileSize(name, debugHiveDir);
+    if (before != null && after != null && after < before) {
+      recoveredBoxes.add(name); // Hive heeft een corrupte staart afgekapt
+    }
+  }
+
   static Future<void> init() async {
     if (Hive.isBoxOpen(_settingsBox)) return; // Already initialized
-    await Hive.openBox(_settingsBox);
-    await Hive.openBox(_dailyLogsBox);
-    await Hive.openBox(_srmActivitiesBox);
-    await Hive.openBox(_medicationConfigBox);
-    await Hive.openBox(_medicationIntakeBox);
-    await Hive.openBox(_medicationScheduleBox);
-    await Hive.openBox(_lifeEventsBox);
-    await Hive.openBox(_weightLogsBox);
-    await Hive.openBox(_medicalAppointmentsBox);
-    await Hive.openBox(_crisisPlanBox);
-    await Hive.openBox(_prodromalChecklistBox);
-    await Hive.openBox(_prodromalLogsBox);
-    await Hive.openBox(_episodeLogsBox);
-    if (!Hive.isBoxOpen(_dagboekBoxName)) await Hive.openBox(_dagboekBoxName);
-    if (!Hive.isBoxOpen(_moodAssessmentBox)) await Hive.openBox(_moodAssessmentBox);
+    recoveredBoxes.clear();
+    for (final box in _alleBoxes) {
+      await _openBoxVeilig(box);
+    }
     // Seed default prodromal checklist if empty
     final h = HiveDatabaseHelper.instance;
     await h._seedProdromalChecklistIfEmpty();

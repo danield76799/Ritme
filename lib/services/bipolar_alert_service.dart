@@ -135,9 +135,9 @@ class BipolarAlertService {
     try {
       final now = DateTime.now();
       double totalScore = 0;
-      int activityCount = 0;
+      int daysWithData = 0;
       double last7Days = 0;
-      int last7Count = 0;
+      int last7DaysWithData = 0;
 
       for (int i = 0; i < 14; i++) {
         final checkDate = now.subtract(Duration(days: i));
@@ -159,17 +159,18 @@ class BipolarAlertService {
           final ps = dayScore / dayCount;
           if (i < 7) {
             last7Days += ps;
-            last7Count += dayCount;
+            last7DaysWithData++;
           }
           totalScore += ps;
-          activityCount += dayCount;
+          daysWithData++;
         }
       }
 
-      if (last7Count < 10) return null;
+      // Minimaal 3 waarneemdagen in de laatste 7 dagen, anders is het signaal te dun.
+      if (last7DaysWithData < 3 || daysWithData < 5) return null;
 
-      final recentAvg = last7Days / (activityCount > 0 ? last7Count / activityCount : 1);
-      final baselineAvg = totalScore / 14;
+      final recentAvg = last7Days / last7DaysWithData;
+      final baselineAvg = totalScore / daysWithData;
 
       if (baselineAvg > 0 && recentAvg < baselineAvg * 0.7) {
         return SRTAlert(

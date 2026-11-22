@@ -35,6 +35,16 @@ class NotifStrings {
       _nl ? 'Afspraak herinneringen' : 'Appointment Reminders';
   static String get appointmentRemindersDesc =>
       _nl ? 'Herinneringen voor medische afspraken' : 'Reminders for medical appointments';
+  static String get weekDigest => _nl ? 'Weekoverzicht' : 'Weekly summary';
+  static String get weekDigestDesc =>
+      _nl ? 'Elke zondagavond een samenvatting van je week'
+          : 'A summary of your week every Sunday evening';
+  static String get weekDigestTitle =>
+      _nl ? '\u{1F4CA} Je week in een oogopslag' : '\u{1F4CA} Your week at a glance';
+  static String get weekDigestBody =>
+      _nl
+          ? 'Bekijk hoe je week was: stemming, slaap en medicatie. Tik om het rapport te openen.'
+          : 'See how your week went: mood, sleep and medication. Tap to open the report.';
   static String get appointmentReminder =>
       _nl ? '📅 Afspraak herinnering' : '📅 Appointment reminder';
 

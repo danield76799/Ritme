@@ -945,5 +945,14 @@
   "adherentieDagen": "Laatste {days} dgn: {pct}%",
   "@adherentieDagen": {"placeholders": {"days": {}, "pct": {}}},
   "backupDeelsMislukt": "Backup deels hersteld — mislukt: {items}",
-  "@backupDeelsMislukt": {"placeholders": {"items": {}}}
+  "@backupDeelsMislukt": {"placeholders": {"items": {}}},
+  "dbBeschadigdTitel": "Database was beschadigd",
+  "dbBeschadigdTekst": "Ritme kon een deel van je gegevens niet lezen ({boxes}). Dat deel is verloren gegaan. Met de laatste back-up kun je alles herstellen.",
+  "@dbBeschadigdTekst": {"placeholders": {"boxes": {}}},
+  "dbNuHerstellen": "Backup herstellen",
+  "dbLater": "Later",
+  "weekDigestTitel": "Weekoverzicht",
+  "weekDigestSubtitel": "Elke zondag om 20:00 een samenvatting van je week",
+  "weekDigestIngepland": "Weekoverzicht staat ingepland voor zondag 20:00",
+  "weekDigestUitgezet": "Weekoverzicht uitgeschakeld"
 }

@@ -789,6 +789,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Schakelt het wekelijkse weekoverzicht (zondag 20:00) aan of uit.
+  Future<void> _setWeekDigestSetting(bool aan) async {
+    try {
+      final existing = await db.getSettings();
+      final merged = Map<String, dynamic>.from(existing ?? {});
+      merged[NotificationHelper.weekDigestAanKey] = aan ? '1' : '0';
+      await db.updateSettingsMap(merged);
+      if (mounted) setState(() => _settings = merged);
+      await NotificationHelper.instance.rescheduleWeekDigest();
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        _showSuccess(aan ? l10n.weekDigestIngepland : l10n.weekDigestUitgezet);
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Weekoverzicht instelling opslaan mislukt',
+          error: e, stackTrace: stackTrace);
+      if (mounted) _showError(AppLocalizations.of(context).konInstellingenNietOpslaan);
+    }
+  }
+
   /// Twee rijen: aan/uit + tijd per check-in.
   Widget _buildCheckinReminders() {
     return Column(
@@ -819,7 +839,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
           tijdKey: 'notif_avond_tijd',
           defaultTijd: NotificationHelper.defaultAvondTijd,
         ),
+        const SizedBox(height: 8),
+        _buildWeekDigestRow(),
       ],
+    );
+  }
+
+  /// Eén regel: schakel het wekelijkse weekoverzicht (zondag 20:00) aan/uit.
+  Widget _buildWeekDigestRow() {
+    final aan = _settingBool(NotificationHelper.weekDigestAanKey);
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.smallRadius),
+        border: Border.all(
+          color: aan
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
+              : Theme.of(context).dividerColor,
+        ),
+      ),
+      child: SwitchListTile(
+        value: aan,
+        onChanged: (v) => _setWeekDigestSetting(v),
+        secondary: Icon(Icons.calendar_view_week_outlined,
+            color: aan
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline),
+        title: Text(AppLocalizations.of(context).weekDigestTitel,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        subtitle: Text(AppLocalizations.of(context).weekDigestSubtitel,
+            style: const TextStyle(fontSize: 12)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      ),
     );
   }
 

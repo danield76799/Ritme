@@ -18,6 +18,16 @@ class NotificationHelper {
   /// vooraan staat; daarna wordt het gewist.
   String? _pendingCheckinRoute;
 
+  /// Hetzelfde voor het weekoverzicht: de zondagavond-melding opent het rapport.
+  bool _pendingWeekDigest = false;
+
+  /// Al aangevinkt: een weekoverzicht-melding werd getikt.
+  bool consumePendingWeekDigest() {
+    final v = _pendingWeekDigest;
+    _pendingWeekDigest = false;
+    return v;
+  }
+
   /// Is [initialize] al gedraaid in deze isolate?
   ///
   /// WAAROM DIT NODIG IS
@@ -314,6 +324,11 @@ class NotificationHelper {
       } catch (e, stackTrace) {
         AppLogger.error('Check-in herinneringen plannen mislukt (medicatie is wel gepland)',
             error: e, stackTrace: stackTrace);
+      }
+      try {
+        await rescheduleWeekDigest();
+      } catch (e, stackTrace) {
+        AppLogger.error('Weekoverzicht plannen mislukt', error: e, stackTrace: stackTrace);
       }
       // Afspraken idem: cancelAllReminders() hierboven wiste ook die, en
       // niets plande ze terug. Elke app-start veegde zo alle
@@ -879,6 +894,10 @@ class NotificationHelper {
   /// (id*100 % 100000, dus <100000) gebruiken, zodat er geen collisie is.
   static const int _ochtendNotifId = 900001;
   static const int _avondNotifId = 900002;
+  static const int _weekDigestNotifId = 900300;
+  static const String weekDigestAanKey = 'notif_weekdigest_aan';
+  static const String weekDigestTijdKey = 'notif_weekdigest_tijd';
+  static const String defaultWeekDigestTijd = '20:00';
 
   static const String _ochtendKey = 'notif_ochtend_tijd';
   static const String _avondKey = 'notif_avond_tijd';
@@ -1006,6 +1025,63 @@ class NotificationHelper {
     return fallback;
   }
 
+  /// Plant een wekelijkse notificatie (zondag 20:00) die het rapport opent.
+  /// Staat de instelling uit, dan wordt de melding geannuleerd.
+  Future<void> rescheduleWeekDigest() async {
+    if (kIsWeb) return;
+    try {
+      await _ensureTimeZoneInitialized();
+      final settings = await db.getSettings() ?? <String, dynamic>{};
+      final aan = _asBool(settings[weekDigestAanKey], true);
+      if (!aan) {
+        await _notifications.cancel(_weekDigestNotifId);
+        return;
+      }
+      final tijd = settings[weekDigestTijdKey]?.toString() ?? defaultWeekDigestTijd;
+      final parts = tijd.split(':');
+      final hour = int.tryParse(parts.isNotEmpty ? parts[0] : '') ?? 20;
+      final minute = int.tryParse(parts.length > 1 ? parts[1] : '') ?? 0;
+
+      final now = tz.TZDateTime.now(tz.local);
+      var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+      // Eerstvolgende zondag 20:00 (of vandaag, als het zondag is en nog niet 20:00).
+      while (scheduled.weekday != DateTime.sunday || !scheduled.isAfter(now)) {
+        scheduled = scheduled.add(const Duration(days: 1));
+      }
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: false,
+        presentSound: true,
+      );
+      final androidDetails = AndroidNotificationDetails(
+        'weekly_digest',
+        NotifStrings.weekDigest,
+        channelDescription: NotifStrings.weekDigestDesc,
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        showWhen: true,
+      );
+
+      await _notifications.cancel(_weekDigestNotifId);
+      await _notifications.zonedSchedule(
+        _weekDigestNotifId,
+        NotifStrings.weekDigestTitle,
+        NotifStrings.weekDigestBody,
+        scheduled,
+        NotificationDetails(android: androidDetails, iOS: iosDetails),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        payload: 'digest:week',
+      );
+      AppLogger.info('Weekoverzicht gepland op $scheduled');
+    } catch (e, stackTrace) {
+      AppLogger.error('Weekoverzicht plannen mislukt', error: e, stackTrace: stackTrace);
+    }
+  }
+
   Future<void> _scheduleCheckin({
     required int id,
     required String tijd,
@@ -1102,6 +1178,12 @@ class NotificationHelper {
 
     // Check-in herinnering: stuur de app naar het juiste scherm. De payload
     // wordt door de navigator opgepikt zodra de app weer vooraan staat.
+    if (payload == 'digest:week') {
+      _pendingWeekDigest = true;
+      AppLogger.debug('Weekoverzicht-notificatie geopend');
+      return;
+    }
+
     if (payload != null && payload.startsWith('checkin:')) {
       // Expliciete mapping in plaats van de routenaam uit de payload bouwen:
       // de payload zegt 'ochtend'/'avond' (NL, want dat is de stabiele

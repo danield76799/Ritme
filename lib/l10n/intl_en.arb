@@ -955,5 +955,14 @@
   "adherentieDagen": "Last {days} days: {pct}%",
   "@adherentieDagen": {"placeholders": {"days": {}, "pct": {}}},
   "backupDeelsMislukt": "Backup restored, but failed: {items}",
-  "@backupDeelsMislukt": {"placeholders": {"items": {}}}
+  "@backupDeelsMislukt": {"placeholders": {"items": {}}},
+  "dbBeschadigdTitel": "Database was damaged",
+  "dbBeschadigdTekst": "Ritme could not read part of your data ({boxes}). It has been lost. Restoring your latest backup will bring everything back.",
+  "@dbBeschadigdTekst": {"placeholders": {"boxes": {}}},
+  "dbNuHerstellen": "Restore backup",
+  "dbLater": "Later",
+  "weekDigestTitel": "Weekly summary",
+  "weekDigestSubtitel": "Every Sunday at 20:00 a summary of your week",
+  "weekDigestIngepland": "Weekly summary scheduled for Sunday 20:00",
+  "weekDigestUitgezet": "Weekly summary turned off"
 }
