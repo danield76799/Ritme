@@ -155,6 +155,7 @@ class RapportGenerator {
     final period = await _loadPeriodData(startDate, endDate);
     final totals = await _buildWeeklyOverview(buf, s, period);
     _buildCorrelation(buf, s, period, now);
+    _buildSleepMoodCorrelation(buf, s, period);
     _buildSummary(buf, s, totals);
     await _buildDagboek(buf, s, startStr, endStr);
     await _buildMedicationSection(buf, s, period);
@@ -509,6 +510,49 @@ class RapportGenerator {
       }
     } else {
       buf.writeln(s.correlationNoData);
+    }
+    buf.writeln();
+  }
+
+  /// Slaap vs stemming: vergelijkt de gemiddelde stemming op dagen met
+  /// korte slaap (<6 uur) met dagen met voldoende slaap (>=6 uur).
+  void _buildSleepMoodCorrelation(
+    StringBuffer buf,
+    RapportStrings s,
+    _PeriodData period,
+  ) {
+    double shortSum = 0, longSum = 0;
+    int shortCount = 0, longCount = 0;
+
+    for (final d in period.allDays) {
+      final mood = period.moodOn(d);
+      if (mood == null) continue;
+      final sleep = period.sleepOn(d);
+      if (sleep == null) continue;
+      if (sleep < 6.0) {
+        shortSum += mood;
+        shortCount++;
+      } else {
+        longSum += mood;
+        longCount++;
+      }
+    }
+
+    buf.writeln('## ${s.sleepMoodTitle}');
+    buf.writeln();
+    if (shortCount + longCount < 3) {
+      buf.writeln(s.sleepMoodNoData);
+    } else {
+      if (shortCount > 0) {
+        buf.writeln(s.sleepMoodShortSleep(shortSum / shortCount));
+      }
+      if (longCount > 0) {
+        buf.writeln(s.sleepMoodLongSleep(longSum / longCount));
+      }
+      if (shortCount > 0 && longCount > 0) {
+        buf.writeln();
+        buf.writeln(s.correlationDiff((longSum / longCount) - (shortSum / shortCount)));
+      }
     }
     buf.writeln();
   }

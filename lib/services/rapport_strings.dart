@@ -52,6 +52,18 @@ class RapportStrings {
   String correlationDiff(double v) =>
       nl ? 'Verschil in stemming: ${v.toStringAsFixed(1)}' : 'Mood difference: ${v.toStringAsFixed(1)}';
 
+  String get sleepMoodTitle =>
+      nl ? '😴 Slaap vs Stemming' : '😴 Sleep vs Mood';
+  String sleepMoodShortSleep(double v) => nl
+      ? 'Bij korte slaap (<6 uur): gemiddelde stemming ${v.toStringAsFixed(1)}'
+      : 'Short sleep (<6h): average mood ${v.toStringAsFixed(1)}';
+  String sleepMoodLongSleep(double v) => nl
+      ? 'Bij voldoende slaap (6+ uur): gemiddelde stemming ${v.toStringAsFixed(1)}'
+      : 'Enough sleep (6h+): average mood ${v.toStringAsFixed(1)}';
+  String get sleepMoodNoData => nl
+      ? 'Onvoldoende slaap- en stemmingsdata voor deze analyse (minimaal 3 gekoppelde dagen nodig).'
+      : 'Insufficient linked sleep and mood data for this analysis (at least 3 paired days needed).';
+
   String get intakeMoments => nl ? 'invulmomenten' : 'entries';
 
   String get metric => nl ? 'Metriek' : 'Metric';
