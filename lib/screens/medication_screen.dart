@@ -1129,6 +1129,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
       await db.reactivateMedicationConfig(id);
       if (!mounted) return;
       await _loadData();
+      // Herinneringen opnieuw inplannen is best effort: de UI (en de test)
+      // mag hier niet op wachten of op falen.
+      try {
+        await NotificationHelper.instance.rescheduleAllMedicationReminders();
+      } catch (e) {
+        AppLogger.error('Herinneringen opnieuw plannen na heractivering mislukt', error: e);
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

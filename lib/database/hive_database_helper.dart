@@ -1174,15 +1174,10 @@ class HiveDatabaseHelper implements DatabaseRepository {
     // het verwijderen van één dag met terugwerkende kracht je hele historie
     // leegmaakte — je zag daarna nergens meer dat je het ooit genomen had.
     //
-    // Schedules mogen wél weg: er hoeft geen herinnering meer af te gaan.
-    final schedules = _medicationSchedule.toMap().entries.where((e) {
-      final medId = e.value['medication_id'];
-      return medId == id || medId == id.toString();
-    });
-    for (final s in schedules) {
-      await _medicationSchedule.delete(s.key);
-    }
-    // Innames blijven staan; alleen de config krijgt de markering.
+    // Schedules BLIJVEN staan: ze worden bij heractiveren weer gebruikt
+    // (herinneringen gaan anders voorgoed verloren). De reminderplanner
+    // slaat schema's van gestopte middelen gewoon over, dus er gaat niets
+    // per ongeluk af. Innames blijven ook staan.
     final key = _configKey(id);
     final bestaand = _medicationConfig.get(key);
     final gemarkeerd = <String, dynamic>{

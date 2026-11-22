@@ -267,6 +267,29 @@ class NotificationHelper {
 
   /// Reschedule all medication reminders from the database. Useful after
   /// reboot or app restart. **Important:** Cancels ALL existing medication
+  /// Alleen schema's van ACTIEVE medicijnen verdienen een herinnering.
+  /// Gestopte middelen (config met deleted-vlag) houden hun schema-rij
+  /// zodat heractiveren weer werkt; zij mogen hier niet langskomen.
+  static List<Map<String, dynamic>> remindableSchedules(
+    List<Map<String, dynamic>> configs,
+    List<Map<String, dynamic>> schedules,
+  ) {
+    final actieveIds = <int>{};
+    for (final c in configs) {
+      final id = c['id'];
+      final v = id is int ? id : int.tryParse(id?.toString() ?? '');
+      if (v != null) actieveIds.add(v);
+    }
+    return schedules.where((s) {
+      final enabledStr = s['enabled']?.toString() ?? '0';
+      final enabled = enabledStr == '1' || enabledStr.toLowerCase() == 'true';
+      if (!enabled) return false;
+      final midRaw = s['medication_id'];
+      final mid = midRaw is int ? midRaw : int.tryParse(midRaw?.toString() ?? '');
+      return mid != null && actieveIds.contains(mid);
+    }).toList();
+  }
+
   /// reminders first to prevent duplicates from multiple app launches.
   Future<int> rescheduleAllMedicationReminders() async {
     if (kIsWeb) return 0;
@@ -284,7 +307,7 @@ class NotificationHelper {
       await cancelAllReminders();
       
       final configs = await db.getMedicationConfigs();
-      final schedules = await db.getMedicationSchedules();
+      final schedules = remindableSchedules(configs, await db.getMedicationSchedules());
 
       int rescheduled = 0;
       for (final schedule in schedules) {
@@ -301,13 +324,14 @@ class NotificationHelper {
         final medicationId = medicationIdRaw is int ? medicationIdRaw : int.tryParse(medicationIdRaw.toString());
         if (id == null || medicationId == null || reminderTime == null) continue;
 
+        // remindableSchedules() heeft dit al gegarandeerd; deze lookup kan niet meer missen.
         final config = configs.firstWhere(
           (c) {
             final cid = c['id'];
             final cvalue = cid is int ? cid : int.tryParse(cid.toString());
             return cvalue == medicationId;
           },
-          orElse: () => {'naam': NotifStrings.medication},
+          orElse: () => <String, dynamic>{},
         );
         final name = config['naam']?.toString() ?? NotifStrings.medication;
         final days = daysOfWeekRaw?.split(',').map((s) => int.tryParse(s.trim())).whereType<int>().toList() ??
