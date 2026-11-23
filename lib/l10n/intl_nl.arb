@@ -966,5 +966,6 @@
   "@dubbelsSamenvoegenBody": {"placeholders": {"count": {}}},
   "dubbelsSamenvoegenKnop": "Samenvoegen",
   "dubbelsSamengevoegd": "{count} dubbele registraties samengevoegd",
-  "@dubbelsSamengevoegd": {"placeholders": {"count": {}}}
+  "@dubbelsSamengevoegd": {"placeholders": {"count": {}}},
+  "stopDatumKiezen": "Per welke datum stoppen?"
 }

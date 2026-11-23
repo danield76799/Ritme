@@ -123,6 +123,8 @@ class RapportStrings {
     return (r == 0 ? 0.0 : r).toStringAsFixed(1);
   }
   String get stoppedTag => nl ? 'gestopt' : 'stopped';
+  String stoppedOn(String datum) =>
+      nl ? 'gestopt op $datum' : 'stopped on $datum';
   String medDoseCount(int n) => nl
       ? (n == 1 ? 'dosis' : 'doses')
       : (n == 1 ? 'dose' : 'doses');

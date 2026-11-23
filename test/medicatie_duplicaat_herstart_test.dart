@@ -68,6 +68,11 @@ void main() {
     await tester.tap(find.byIcon(Icons.stop_circle_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(ElevatedButton, 'Stoppen'));
+    await tester.pumpAndSettle();
+    if (find.text('OK').evaluate().isNotEmpty) {
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+    }
     await tester.runAsync(() async => Future<void>.delayed(const Duration(milliseconds: 300)));
     await tester.pumpAndSettle();
     expect(find.textContaining('Gestopt'), findsWidgets);

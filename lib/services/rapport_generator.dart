@@ -139,6 +139,45 @@ class _PeriodData {
     return 0;
   }
 
+  /// Alle config-groepen (zelfde middel), inclusief gestopte varianten.
+  List<List<Map<String, dynamic>>> get medicationGroups {
+    final groups = <String, List<Map<String, dynamic>>>{};
+    for (final med in medicationConfigs) {
+      groups.putIfAbsent(medGroupKey(med), () => []).add(med);
+    }
+    return groups.values.toList();
+  }
+
+  /// Eerste dag zonder inname (stopdatum), of null als het middel loopt.
+  DateTime? stopDateOf(Map<String, dynamic> med) {
+    final raw = med['stopped_at']?.toString();
+    if (raw == null || raw.isEmpty) return null;
+    return DateTime.tryParse(raw);
+  }
+
+  bool _isDeleted(Map<String, dynamic> med) {
+    final del = med['deleted'];
+    return del == 1 || del == '1' || del == true;
+  }
+
+  /// Dosis-tijdstippen die op [day] voor deze groep gelden. Een gestopte
+  /// config telt t/m de dag vóór de stopdatum; oudere stops zonder datum
+  /// (legacy) tellen niet mee.
+  List<String> doseTimesOn(List<Map<String, dynamic>> group, DateTime day) {
+    final times = <String>{};
+    for (final med in group) {
+      final stop = stopDateOf(med);
+      if (stop != null && !day.isBefore(stop)) continue;
+      if (stop == null && _isDeleted(med)) continue;
+      for (final sched in schedulesFor(_asInt(med['id']))) {
+        if (!isScheduledOn(sched, day)) continue;
+        final t = (sched['reminder_time'] ?? '').toString();
+        if (t.isNotEmpty) times.add(t);
+      }
+    }
+    return times.toList()..sort();
+  }
+
   /// De dagelijkse stemming van [day], of null als die niet is vastgelegd.
   double? moodOn(DateTime day) {
     final log = dailyLogs
@@ -413,25 +452,21 @@ class RapportGenerator {
     return now.isAfter(due);
   }
 
-  ({int expected, int taken}) _countDueDoses(
+  ({int expected, int taken}) _countGroupDoses(
     _PeriodData period,
     DateTime day,
-    int medId,
-    List<Map<String, dynamic>> scheds,
+    List<Map<String, dynamic>> group,
     DateTime now,
   ) {
-    final dateStr = _dateStr(day);
-    final takenToday = period.takenOnMerged(medId, dateStr) > 0;
+    final anyId = _asInt(group.first['id']);
+    final takenToday = period.takenOnMerged(anyId, _dateStr(day)) > 0;
+    final times = period.doseTimesOn(group, day);
     var expected = 0, taken = 0;
-    for (final sched in scheds) {
-      if (!period.isScheduledOn(sched, day)) continue;
+    for (final t in times) {
       if (takenToday) {
         expected++;
         taken++;
-      } else if (isDoseDue(
-          date: day,
-          scheduledTime: sched['reminder_time']?.toString(),
-          now: now)) {
+      } else if (isDoseDue(date: day, scheduledTime: t, now: now)) {
         expected++;
       }
     }
@@ -522,11 +557,8 @@ class RapportGenerator {
         totals.totalPScore += pScore;
         totals.pScoreDays++;
       }
-      for (final med in period.activeMedications) {
-        final id = _asInt(med['id']);
-        final scheds = period.schedulesFor(id);
-        if (scheds.isEmpty) continue;
-        final dose = _countDueDoses(period, d, id, scheds, now);
+      for (final group in period.medicationGroups) {
+        final dose = _countGroupDoses(period, d, group, now);
         totals.intakeCount += dose.expected;
         totals.takenCount += dose.taken;
       }
@@ -603,11 +635,8 @@ class RapportGenerator {
         }
 
         // Medicatie: verwachte doses (alleen verstreken óf al ingenomen).
-        for (final med in period.activeMedications) {
-          final id = _asInt(med['id']);
-          final scheds = period.schedulesFor(id);
-          if (scheds.isEmpty) continue;
-          final dose = _countDueDoses(period, d, id, scheds, now);
+        for (final group in period.medicationGroups) {
+          final dose = _countGroupDoses(period, d, group, now);
           wIntake += dose.expected;
           wTaken += dose.taken;
         }
@@ -673,28 +702,18 @@ class RapportGenerator {
     int highAdhCount = 0, lowAdhCount = 0;
 
     for (final d in period.allDays.reversed) {
-      final dateStr = _dateStr(d);
-
       // Mood for this day
       final mood = period.moodOn(d);
       if (mood == null) continue;
 
-      // Adherence for this day
+      // Adherence for this day (due-aware; lege dagen tellen niet mee).
       int dTaken = 0, dExpected = 0;
-      for (final med in period.activeMedications) {
-        final id = _asInt(med['id']);
-        for (final sched in period.schedulesFor(id)) {
-          if (!period.isScheduledOn(sched, d)) continue;
-          dExpected++;
-          if (period.takenOnMerged(id, dateStr) > 0) dTaken++;
-        }
+      for (final group in period.medicationGroups) {
+        final dose = _countGroupDoses(period, d, group, now);
+        dTaken += dose.taken;
+        dExpected += dose.expected;
       }
       if (dExpected == 0) continue;
-
-      // De huidige dag telt niet mee als de dag nog open staat: het
-      // avondmedicijn is dan nog niet afgevinkt, dus de dag zou anders
-      // ten onrechte als lage trouw (<70%) in de correlatie landen.
-      if (_isSameDay(d, now) && _dayIsStillOpen(period, d, now)) continue;
 
       final pct = dTaken * 100 / dExpected;
       if (pct >= 90) {
@@ -770,26 +789,6 @@ class RapportGenerator {
       buf.writeln(s.correlationDiff((longSum / longCount) - (shortSum / shortCount)));
     }
     buf.writeln();
-  }
-
-  /// Staat de dag [day] nog open? Dat is zo als er voor vandaag een dosis
-  /// gepland staat waarvan het tijdstip nog niet verstreken is en die nog
-  /// niet is afgevinkt.
-  bool _dayIsStillOpen(_PeriodData period, DateTime day, DateTime now) {
-    final dateStr = _dateStr(day);
-    for (final med in period.activeMedications) {
-      final id = _asInt(med['id']);
-      for (final sched in period.schedulesFor(id)) {
-        if (!period.isScheduledOn(sched, day)) continue;
-        if (period.takenOnMerged(id, dateStr) > 0) continue;
-        final time = _parseTime(sched['reminder_time']?.toString());
-        if (time == null) continue;
-        final planned =
-            DateTime(day.year, day.month, day.day, time.hour, time.minute);
-        if (planned.isAfter(now)) return true;
-      }
-    }
-    return false;
   }
 
   // === 3. SAMENVATTING ===
@@ -926,52 +925,54 @@ class RapportGenerator {
       final dosisLabel = [dosis, eenheid].where((x) => x.isNotEmpty).join(' ');
       final takenCount = byDate.values.where(_isTaken).length;
 
-      // Geen enkele inname in de periode én alleen gestopte varianten:
-      // dan heeft het middel voor deze periode niets te melden.
-      if (actives.isEmpty) {
-        if (takenCount == 0) continue;
-        final name = formatMedName(group.first['naam']?.toString() ?? '');
-        final takenDays = byDate.entries
-            .where((e) => _isTaken(e.value))
-            .map((e) => e.key)
-            .toList()
-          ..sort();
-        buf.writeln(
-            '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.map(_shortDateStr).join(', ')}');
-        continue;
-      }
-
-      // Actieve variant: gebruik de eerste als weergave-anker; het schema is
-      // de unie van de schema's van alle actieve varianten.
-      final active = actives.first;
-      final name = formatMedName(active['naam']?.toString() ?? '');
+      final name = formatMedName(
+          (actives.isNotEmpty ? actives.first : group.first)['naam']?.toString() ?? '');
       if (name.isEmpty) continue;
+
+      // Schema's van álle varianten (gestopt of niet).
       final scheds = <Map<String, dynamic>>[];
-      for (final a in actives) {
-        scheds.addAll(period.schedulesFor(_asInt(a['id'])));
+      for (final m in group) {
+        scheds.addAll(period.schedulesFor(_asInt(m['id'])));
       }
 
       // --- PRN (zo nodig): geen schema, dus geen verwachtingen ----------
       if (scheds.isEmpty) {
-        final takenDates = byDate.entries
-            .where((e) => _isTaken(e.value))
-            .map((e) => e.key)
-            .toList()
-          ..sort();
         final suffix = dosisLabel.isEmpty ? '' : ', $dosisLabel';
-        if (takenDates.isEmpty) {
-          buf.writeln('- **$name** (PRN$suffix) — ${s.prnZeroTaken}');
-        } else {
-          final data = takenDates.map(_shortDateStr).join(', ');
+        if (actives.isNotEmpty) {
+          final takenDates = byDate.entries
+              .where((e) => _isTaken(e.value))
+              .map((e) => e.key)
+              .toList()
+            ..sort();
+          if (takenDates.isEmpty) {
+            buf.writeln('- **$name** (PRN$suffix) — ${s.prnZeroTaken}');
+          } else {
+            final data = takenDates.map(_shortDateStr).join(', ');
+            buf.writeln(
+                '- **$name** (PRN$suffix) — ${s.prnTakenOn(takenDates.length)} $data');
+          }
+        } else if (takenCount > 0) {
+          final takenDays = byDate.entries
+              .where((e) => _isTaken(e.value))
+              .map((e) => e.key)
+              .toList()
+            ..sort();
           buf.writeln(
-              '- **$name** (PRN$suffix) — ${s.prnTakenOn(takenDates.length)} $data');
+              '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.map(_shortDateStr).join(', ')}');
         }
         continue;
       }
 
-      // --- Vast schema: samenvattingsregel + gecomprimeerde blokken ------
-      // Alleen doses die verstreken zijn óf al ingenomen tellen mee;
-      // openstaande doses van vandaag vóór hun tijdstip tellen niet.
+      // --- Stopdatum: laatste dag vóór de stop telt nog mee --------------
+      DateTime? stopDate;
+      if (actives.isEmpty) {
+        for (final m in group) {
+          final d = period.stopDateOf(m);
+          if (d != null && (stopDate == null || d.isAfter(stopDate))) stopDate = d;
+        }
+      }
+
+      // --- Vast schema: telling per dosis, alleen verstreken/ingenomen ----
       final takenByDate = <DateTime, String>{};
       final missed = <DateTime>[];
       var expectedDoses = 0, takenDoses = 0;
@@ -982,27 +983,37 @@ class RapportGenerator {
           final raw = row['dosering']?.toString().trim() ?? '';
           takenByDate[d] = raw.isNotEmpty ? raw : (dosis.isNotEmpty ? dosis : '?');
         }
-        for (final sched in scheds) {
-          if (!period.isScheduledOn(sched, d)) continue;
+        for (final t in period.doseTimesOn(group, d)) {
           if (takenToday) {
             expectedDoses++;
             takenDoses++;
             continue;
           }
-          if (isDoseDue(
-              date: d,
-              scheduledTime: sched['reminder_time']?.toString(),
-              now: now)) {
+          if (isDoseDue(date: d, scheduledTime: t, now: now)) {
             expectedDoses++;
             if (!missed.contains(d)) missed.add(d);
           }
         }
       }
-      if (expectedDoses == 0) continue;
+
+      if (expectedDoses == 0) {
+        // (Vrijwel) geen verwachte doses in de periode: alleen innames tonen.
+        if (takenCount == 0) continue;
+        final takenDays = byDate.entries
+            .where((e) => _isTaken(e.value))
+            .map((e) => e.key)
+            .toList()
+          ..sort();
+        buf.writeln(
+            '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.map(_shortDateStr).join(', ')}');
+        continue;
+      }
 
       final pct = (takenDoses * 100 / expectedDoses).round();
+      final stopSuffix =
+          stopDate == null ? '' : ' · ${s.stoppedOn(_shortDate(stopDate))}';
       buf.writeln(
-          '- **$name** — $takenDoses/$expectedDoses ${s.medDoseCount(expectedDoses)} ($pct%)');
+          '- **$name** — $takenDoses/$expectedDoses ${s.medDoseCount(expectedDoses)} ($pct%)$stopSuffix');
 
       // Aaneengesloten dagen met dezelfde ingenomen dosering: één blok.
       final blocks = <_DoseBlock>[];
@@ -1263,8 +1274,6 @@ class RapportGenerator {
     }
   }
 
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 String _dateStr(DateTime d) =>
@@ -1285,14 +1294,3 @@ double? _extractDouble(dynamic val) {
 
 String _fmt(double v) => RapportStrings.fmt1(v);
 
-/// Ontleedt "HH:MM" uit een herinneringstijd.
-({int hour, int minute})? _parseTime(String? raw) {
-  if (raw == null || raw.isEmpty) return null;
-  final parts = raw.split(':');
-  if (parts.length < 2) return null;
-  final hour = int.tryParse(parts[0].trim());
-  final minute = int.tryParse(parts[1].trim());
-  if (hour == null || minute == null) return null;
-  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
-  return (hour: hour, minute: minute);
-}

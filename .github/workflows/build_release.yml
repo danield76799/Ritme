@@ -95,3 +95,28 @@ jobs:
           Versie: **${{ steps.ver.outputs.name }}** (code ${{ steps.ver.outputs.code }})
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Automatische upload naar de Play Store (internal track). De productie-
+    # track blijft bewust handmatig: die vereist meestal een expliciete
+    # 'Send for review'-actie van de developer.
+    #
+    # Eenmalige setup: zet de service-account JSON als repository-secret:
+    #   gh secret set PLAY_SERVICE_ACCOUNT_JSON < play-service-account.json
+    # Zonder secret wordt deze stap overgeslagen (geen fout).
+    - name: Upload naar Play (internal)
+      if: github.ref == 'refs/heads/main'
+      # Een Play-storing mag de build/release niet laten falen.
+      continue-on-error: true
+      env:
+        PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+      run: |
+        if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+          echo "Geen PLAY_SERVICE_ACCOUNT_JSON-secret; Play-upload overgeslagen."
+          exit 0
+        fi
+        python3 -m pip install --quiet google-api-python-client google-auth
+        python3 scripts/play_upload.py \
+          --aab build/app/outputs/bundle/release/app-release.aab \
+          --package com.ritme.ritme.v2 \
+          --track internal \
+          --name "Ritme ${{ steps.ver.outputs.name }}"

@@ -32,7 +32,9 @@ abstract class DatabaseRepository {
   Future<void> importDatabaseFromJson(String jsonString);
   Future<void> clearAllData();
   Future<int> insertMedicationConfig(String naam, String? dosering, String? eenheid, {bool reminderEnabled = true, bool zoNodig = false});
-  Future<int> deleteMedicationConfig(int id);
+  /// Stopt een medicijn (soft-delete). [stoppedAt] is de eerste dag zonder
+  /// inname (ISO 'yyyy-MM-dd'); standaard vandaag.
+  Future<int> deleteMedicationConfig(int id, {String? stoppedAt});
   Future<int> reactivateMedicationConfig(int id);
 
   /// Verplaatst alle inname-rijen van [fromId] naar [toId] (bij samenvoegen).

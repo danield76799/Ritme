@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 import 'generated/l10n/app_localizations.dart';
 
@@ -58,7 +59,12 @@ void main() async {
   };
 
   try {
-    await initializeDateFormatting('nl_NL', null);
+    // Alle locales laden (de app volgt de systeemtaal) en Intl dezelfde
+    // taal laten gebruiken, anders tonen DateFormat-aanroepen zonder
+    // expliciete locale Engelse maandnamen in een Nederlandse app.
+    await initializeDateFormatting();
+    final systeemLocale = WidgetsBinding.instance.platformDispatcher.locale;
+    Intl.defaultLocale = systeemLocale.toLanguageTag();
     await initDatabase();
 
     if (!kIsWeb) {

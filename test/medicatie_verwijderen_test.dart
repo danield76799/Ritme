@@ -61,6 +61,12 @@ void main() {
     // Bevestigingsdialoog.
     expect(find.text('Medicatie stoppen?'), findsOneWidget);
     await tester.tap(find.widgetWithText(ElevatedButton, 'Stoppen'));
+    await tester.pumpAndSettle();
+    // Nieuwe flow: kies de stopdatum (standaard vandaag) en bevestig.
+    if (find.text('OK').evaluate().isNotEmpty) {
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+    }
     await tester.runAsync(() async {
       await Future<void>.delayed(const Duration(milliseconds: 300));
     });

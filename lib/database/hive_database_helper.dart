@@ -1167,7 +1167,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
-  Future<int> deleteMedicationConfig(int id) async {
+  Future<int> deleteMedicationConfig(int id, {String? stoppedAt}) async {
     // Soft-delete, zelfde als de SQLite-kant (database_helper.dart): het
     // medicijn verdwijnt uit de lijst maar de INNAME-HISTORIE BLIJFT. Eerder
     // wiste deze methode alle intakes van dat medicijn mee (cascade), waardoor
@@ -1184,7 +1184,7 @@ class HiveDatabaseHelper implements DatabaseRepository {
       ...?bestaand?.cast<String, dynamic>(),
       'id': id,
       'deleted': '1',
-      'stopped_at': DateTime.now().toIso8601String().substring(0, 10),
+      'stopped_at': (stoppedAt ?? DateTime.now().toIso8601String().substring(0, 10)),
     };
     await _medicationConfig.put(key, gemarkeerd);
     return 1;

@@ -976,5 +976,6 @@
   "@dubbelsSamenvoegenBody": {"placeholders": {"count": {}}},
   "dubbelsSamenvoegenKnop": "Merge",
   "dubbelsSamengevoegd": "{count} duplicate entries merged",
-  "@dubbelsSamengevoegd": {"placeholders": {"count": {}}}
+  "@dubbelsSamengevoegd": {"placeholders": {"count": {}}},
+  "stopDatumKiezen": "Stop as of which date?"
 }

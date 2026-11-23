@@ -399,8 +399,21 @@ class _MedicationScreenState extends State<MedicationScreen> {
         ),
       );
       if (confirmed == true) {
+        if (!mounted) return;
+        final helpTekst = AppLocalizations.of(context).stopDatumKiezen;
+        final nu = DateTime.now();
+        final stopDag = await showDatePicker(
+          context: context,
+          initialDate: nu,
+          firstDate: DateTime(nu.year - 2),
+          lastDate: nu,
+          helpText: helpTekst,
+        );
+        if (stopDag == null) return; // gebruiker annuleert de datumkeuze
+        final stopStr =
+            '${stopDag.year}-${stopDag.month.toString().padLeft(2, '0')}-${stopDag.day.toString().padLeft(2, '0')}';
         await NotificationHelper.instance.cancelMedicationReminder(configId);
-        await db.deleteMedicationConfig(configId);
+        await db.deleteMedicationConfig(configId, stoppedAt: stopStr);
         _loadData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1056,7 +1069,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     if (gestoptOp != null && gestoptOp.isNotEmpty) {
       final d = DateTime.tryParse(gestoptOp);
       if (d != null) {
-        gestoptLabel = AppLocalizations.of(context).gestoptOp(DateFormat('d MMM y', 'nl').format(d));
+        gestoptLabel = AppLocalizations.of(context).gestoptOp(DateFormat('d MMM y', Localizations.localeOf(context).toString()).format(d));
       }
     }
 
