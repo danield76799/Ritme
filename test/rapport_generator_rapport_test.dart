@@ -25,10 +25,12 @@ String _dateStr(DateTime d) =>
 /// rapportdag nog 'open' staat (tijd in de toekomst) of al afgelopen is.
 class RapportTestDb implements DatabaseRepository {
   RapportTestDb(this.today,
-      {required this.avondTijd, this.metExtraVastMiddel = false});
+      {required this.avondTijd, this.metExtraVastMiddel = false,
+       this.lurasidonTijd = '23:59'});
 
   final DateTime today;
   final String avondTijd;
+  final String lurasidonTijd;
 
   /// Voegt een vast middel toe dat in de periode helemaal niet is
   /// ingenomen (0/14 moet zichtbaar zijn in het rapport).
@@ -91,7 +93,7 @@ class RapportTestDb implements DatabaseRepository {
         {
           'id': 10,
           'medication_id': 1,
-          'reminder_time': '08:00',
+          'reminder_time': lurasidonTijd,
           'days_of_week': '1,2,3,4,5,6,7',
         },
         {
@@ -104,7 +106,7 @@ class RapportTestDb implements DatabaseRepository {
           {
             'id': 12,
             'medication_id': 4,
-            'reminder_time': '12:00',
+            'reminder_time': '00:01',
             'days_of_week': '1,2,3,4,5,6,7',
           },
       ];
@@ -183,13 +185,15 @@ class RapportTestDb implements DatabaseRepository {
 }
 
 /// Bouwt het rapport voor de gegeven [avondTijd].
-Future<String> _rapport(String avondTijd, {bool metExtraVastMiddel = false}) async {
+Future<String> _rapport(String avondTijd,
+    {bool metExtraVastMiddel = false, String lurasidonTijd = '23:59'}) async {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   setDbForTesting(RapportTestDb(
     today,
     avondTijd: avondTijd,
     metExtraVastMiddel: metExtraVastMiddel,
+    lurasidonTijd: lurasidonTijd,
   ));
   return RapportGenerator.instance
       .generateLCMReport(days: 14, localeCode: 'nl');
@@ -202,10 +206,7 @@ String _toekomstigeTijd() {
 }
 
 /// Een tijd die altijd in het verleden ligt (drie uur terug).
-String _verledenTijd() {
-  final t = DateTime.now().subtract(const Duration(hours: 3));
-  return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
-}
+String _verledenTijd() => '00:00'; // altijd ruim verstreken
 
 void main() {
   group('rapport', () {
@@ -245,16 +246,16 @@ void main() {
 
     group('medicatie-noemer', () {
       test('vaste medicatie gebruikt overal hetzelfde aantal dagen', () {
-        // Detailweergave: Lurasidon 13/14 (93%).
+        // Vandaag (nog) niet aan de beurt → 13 van de 13 verschenen doses.
         final lurasidon = report
             .split('\n')
             .firstWhere((l) => l.contains('**Lurasidon**'));
-        expect(lurasidon, contains('13/14 dagen (93%)'));
-        // Weekoverzicht: 12/14 (de laatste week) en 14/14 (de eerste week).
-        expect(report, contains('| 12/14 |'));
+        expect(lurasidon, contains('13/13 doses (100%)'));
+        // Weekoverzicht: 12/12 (de lopende week) en 14/14 (de eerste week).
+        expect(report, contains('| 12/12 |'));
         expect(report, contains('| 14/14 |'));
-        // Samenvatting: 26/28 — 13+13 ingenomen, 14+14 verwacht.
-        expect(report, contains('| **Verwachte doses** | 26/28 ingenomen (93%) |'));
+        // Samenvatting: 26/26 ingenomen.
+        expect(report, contains('| **Verwachte doses** | 26/26 ingenomen (100%) |'));
       });
 
       test('PRN-medicatie krijgt geen percentage', () {
@@ -275,8 +276,9 @@ void main() {
         expect(datums, 3);
       });
 
-      test('dagen zonder inname staan als Gemist vermeld', () {
-        final regels = report.split('\n');
+      test('dagen zonder inname staan als Gemist vermeld', () async {
+        final rapport = await _rapport(_verledenTijd(), lurasidonTijd: '00:00');
+        final regels = rapport.split('\n');
         final index = regels.indexWhere((l) => l.contains('**Lurasidon**'));
         final blok = regels.sublist(index, index + 4).join('\n');
         expect(blok, contains('Gemist op:'));
@@ -286,7 +288,7 @@ void main() {
     test('een vast middel zonder inname blijft zichtbaar (0/14)', () async {
       final rapport =
           await _rapport(_toekomstigeTijd(), metExtraVastMiddel: true);
-      expect(rapport, contains('- **Sertraline** — 0/14 dagen (0%)'));
+      expect(rapport, contains('- **Sertraline** — 0/14 doses (0%)'));
     });
 
     test('medicatienamen zijn opgeschoond', () {
@@ -321,7 +323,7 @@ void main() {
     });
 
     test('is de dag afgelopen, dan telt hij wél mee', () async {
-      final rapport = await _rapport(_verledenTijd());
+      final rapport = await _rapport(_verledenTijd(), lurasidonTijd: '00:00');
       final sectie = rapport.split('## 🧬 Correlaties')[1].split('###')[1];
       expect(
         sectie,

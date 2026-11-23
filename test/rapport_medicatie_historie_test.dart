@@ -110,7 +110,7 @@ void main() {
 
     // Olanzapine: 5 innames verspreid over beide configs (id 10 + id 9)
     expect(md, contains('**Olanzapine**'));
-    expect(RegExp(r'\*\*Olanzapine\*\* — 5/14 dagen').hasMatch(md), isTrue,
+    expect(RegExp(r'\*\*Olanzapine\*\* — 5/14 doses').hasMatch(md), isTrue,
         reason: 'innames van beide configs moeten samengeteld worden');
 
     // Tramadol: alleen gestopt, met 1 inname in de periode → zichtbaar als (gestopt)

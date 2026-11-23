@@ -26,16 +26,16 @@ class RapportStrings {
       : 'Medication Adherence vs Mood';
 
   String correlationHighAdherence(double v, int n) =>
-      nl ? 'Bij hoge trouw (>90%): gemiddelde stemming ${v.toStringAsFixed(1)} (n=$n ${_dagen(n)})'
-         : 'With high adherence (>90%): average mood ${v.toStringAsFixed(1)} (n=$n ${_dagen(n)})';
+      nl ? 'Bij hoge trouw (>90%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
+         : 'With high adherence (>90%): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
 
   String get correlationNoHighData => nl
       ? 'Bij hoge trouw (>90%): geen data in deze periode'
       : 'With high adherence (>90%): no data in this period';
 
   String correlationLowAdherence(double v, int n) =>
-      nl ? 'Bij lage trouw (<70%): gemiddelde stemming ${v.toStringAsFixed(1)} (n=$n ${_dagen(n)})'
-         : 'With low adherence (<70%): average mood ${v.toStringAsFixed(1)} (n=$n ${_dagen(n)})';
+      nl ? 'Bij lage trouw (<70%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
+         : 'With low adherence (<70%): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
 
   String get correlationNoLowData => nl
       ? 'Bij lage trouw (<70%): geen data in deze periode'
@@ -58,19 +58,19 @@ class RapportStrings {
 
 
   String correlationDiff(double v) =>
-      nl ? 'Verschil in stemming: ${v.toStringAsFixed(1)}' : 'Mood difference: ${v.toStringAsFixed(1)}';
+      nl ? 'Verschil in stemming: ${fmt1(v)}' : 'Mood difference: ${fmt1(v)}';
 
   String get sleepMoodTitle =>
       nl ? 'Slaap vs Stemming' : 'Sleep vs Mood';
   String sleepMoodShortSleep(double v, int n) => nl
-      ? 'Bij korte slaap (<6 uur): gemiddelde stemming ${v.toStringAsFixed(1)} (n=$n ${_dagen(n)})'
-      : 'Short sleep (<6h): average mood ${v.toStringAsFixed(1)} (n=$n ${_dagen(n)})';
+      ? 'Bij korte slaap (<6 uur): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
+      : 'Short sleep (<6h): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
   String get sleepMoodShortNoData => nl
       ? 'Bij korte slaap (<6 uur): geen data in deze periode'
       : 'Short sleep (<6h): no data in this period';
   String sleepMoodLongSleep(double v, int n) => nl
-      ? 'Bij voldoende slaap (6+ uur): gemiddelde stemming ${v.toStringAsFixed(1)} (n=$n ${_dagen(n)})'
-      : 'Enough sleep (6h+): average mood ${v.toStringAsFixed(1)} (n=$n ${_dagen(n)})';
+      ? 'Bij voldoende slaap (6+ uur): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
+      : 'Enough sleep (6h+): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
   String get sleepMoodLongNoData => nl
       ? 'Bij voldoende slaap (6+ uur): geen data in deze periode'
       : 'Enough sleep (6h+): no data in this period';
@@ -116,10 +116,16 @@ class RapportStrings {
   String get prnZeroTaken => nl ? '0× ingenomen in deze periode' : '0× taken in this period';
   String prnTakenOn(int n) => nl ? '$n× ingenomen op:' : '$n× taken on:';
   String get dateRangeJoiner => nl ? 't/m' : '–';
+
+  /// Getal met één decimaal, zonder negatieve nul ('-0.0' → '0.0').
+  static String fmt1(double v) {
+    final r = (v * 10).round() / 10;
+    return (r == 0 ? 0.0 : r).toStringAsFixed(1);
+  }
   String get stoppedTag => nl ? 'gestopt' : 'stopped';
-  String medDayCount(int n) => nl
-      ? (n == 1 ? 'dag' : 'dagen')
-      : (n == 1 ? 'day' : 'days');
+  String medDoseCount(int n) => nl
+      ? (n == 1 ? 'dosis' : 'doses')
+      : (n == 1 ? 'dose' : 'doses');
   String get missedOnLabel => nl ? '⚠️ Gemist op:' : '⚠️ Missed on:';
   String get takenWord => nl ? 'ingenomen' : 'taken';
   String get med => nl ? '💊 Medicatie' : '💊 Medication';
