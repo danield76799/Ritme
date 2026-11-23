@@ -127,4 +127,26 @@ void main() {
     HiveDatabaseHelper.debugHiveDir = null;
     await Hive.close();
   });
+
+  test('stopdatum kan achteraf gecorrigeerd worden', () async {
+    final dir = await Directory.systemTemp.createTemp('ritme_stopdatum2');
+    Hive.init(dir.path);
+    HiveDatabaseHelper.debugHiveDir = dir.path;
+    HiveDatabaseHelper.recoveredBoxes.clear();
+    await HiveDatabaseHelper.init();
+    setDbForTesting(HiveDatabaseHelper.instance);
+
+    final db = HiveDatabaseHelper.instance;
+    final id = await db.insertMedicationConfig('Testmed', '5', 'mg');
+    await db.deleteMedicationConfig(id, stoppedAt: '2026-11-22');
+    await db.updateMedicationStopDate(id, '2026-11-05');
+
+    final all = await db.getMedicationConfigsAll();
+    expect(all.single['stopped_at'], '2026-11-05');
+    // Nog steeds gestopt: niet terug in de actieve lijst.
+    expect(await db.getMedicationConfigs(), isEmpty);
+
+    HiveDatabaseHelper.debugHiveDir = null;
+    await Hive.close();
+  });
 }

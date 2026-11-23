@@ -37,6 +37,9 @@ abstract class DatabaseRepository {
   Future<int> deleteMedicationConfig(int id, {String? stoppedAt});
   Future<int> reactivateMedicationConfig(int id);
 
+  /// Corrigeert de stopdatum (ISO 'yyyy-MM-dd') van een gestopt medicijn.
+  Future<int> updateMedicationStopDate(int id, String stoppedAt);
+
   /// Verplaatst alle inname-rijen van [fromId] naar [toId] (bij samenvoegen).
   Future<int> reassignMedicationIntakes(int fromId, int toId);
 

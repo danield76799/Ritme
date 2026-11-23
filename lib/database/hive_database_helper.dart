@@ -1203,6 +1203,18 @@ class HiveDatabaseHelper implements DatabaseRepository {
   }
 
   @override
+  Future<int> updateMedicationStopDate(int id, String stoppedAt) async {
+    final key = _configKey(id);
+    final bestaand = _medicationConfig.get(key);
+    if (bestaand == null) return 0;
+    final map = Map<String, dynamic>.from(bestaand as Map);
+    map['deleted'] = '1';
+    map['stopped_at'] = stoppedAt;
+    await _medicationConfig.put(key, map);
+    return 1;
+  }
+
+  @override
   Future<int> updateMedicationConfig(int id, Map<String, dynamic> data) async {
     final cleanData = <String, dynamic>{};
     data.forEach((key, value) {

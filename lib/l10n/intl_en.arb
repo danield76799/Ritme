@@ -977,5 +977,7 @@
   "dubbelsSamenvoegenKnop": "Merge",
   "dubbelsSamengevoegd": "{count} duplicate entries merged",
   "@dubbelsSamengevoegd": {"placeholders": {"count": {}}},
-  "stopDatumKiezen": "Stop as of which date?"
+  "stopDatumKiezen": "Stop as of which date?",
+  "stopDatumWijzigen": "Change stop date",
+  "stopDatumBijgewerkt": "Stop date updated"
 }

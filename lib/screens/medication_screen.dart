@@ -1123,6 +1123,18 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           gestoptLabel ?? AppLocalizations.of(context).sectieGestopt,
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.outline, letterSpacing: 0.3),
                         ),
+                        if (configId != null) ...[
+                          const SizedBox(width: 4),
+                          InkWell(
+                            onTap: () => _wijzigStopDatum(configId, gestoptOp),
+                            borderRadius: BorderRadius.circular(6),
+                            child: Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Icon(Icons.edit_calendar_outlined,
+                                  size: 16, color: cs.primary),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -1205,6 +1217,51 @@ class _MedicationScreenState extends State<MedicationScreen> {
       }
     } catch (e, stackTrace) {
       AppLogger.error('Duplicaten samenvoegen mislukt', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).konInstellingenNietOpslaan),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Corrigeert de stopdatum van een gestopt medicijn.
+  Future<void> _wijzigStopDatum(int id, String? huidige) async {
+    if (!mounted) return;
+    final helpTekst = AppLocalizations.of(context).stopDatumWijzigen;
+    final nu = DateTime.now();
+    final huidigeDatum = DateTime.tryParse(huidige ?? '') ?? nu;
+    final gekozen = await showDatePicker(
+      context: context,
+      initialDate: huidigeDatum.isAfter(nu) ? nu : huidigeDatum,
+      firstDate: DateTime(nu.year - 2),
+      lastDate: nu,
+      helpText: helpTekst,
+    );
+    if (gekozen == null) return;
+    final stopStr =
+        '${gekozen.year}-${gekozen.month.toString().padLeft(2, '0')}-${gekozen.day.toString().padLeft(2, '0')}';
+    try {
+      await db.updateMedicationStopDate(id, stopStr);
+      await _loadData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).stopDatumBijgewerkt),
+            backgroundColor: AppTheme.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.smallRadius)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Stopdatum wijzigen mislukt', error: e, stackTrace: stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
