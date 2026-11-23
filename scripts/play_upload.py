@@ -19,6 +19,7 @@ import sys
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 SCOPES = ["https://www.googleapis.com/auth/androidpublisher"]
 
@@ -43,18 +44,13 @@ def upload(aab, package, track, status, name):
     edit_id = (
         service.edits().insert(body={}, packageName=package).execute()["id"]
     )
-    with open(aab, "rb") as f:
-        bundle = (
-            service.edits()
-            .bundles()
-            .upload(
-                packageName=package,
-                editId=edit_id,
-                media_body=f,
-                media_mime_type="application/octet-stream",
-            )
-            .execute()
-        )
+    media = MediaFileUpload(aab, mimetype="application/octet-stream", resumable=True)
+    bundle = (
+        service.edits()
+        .bundles()
+        .upload(packageName=package, editId=edit_id, media_body=media)
+        .execute()
+    )
     version_code = bundle["versionCode"]
 
     service.edits().tracks().update(
