@@ -4,7 +4,10 @@ import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../service_locator.dart';
 import '../utils/adherentie.dart';
+import '../utils/adherentie_dagen.dart';
 import '../widgets/datum_navigator.dart';
+import '../widgets/adherentie_heatmap.dart';
+import '../widgets/prn_week_bars.dart';
 import '../utils/logger.dart';
 import '../services/notification_helper.dart';
 import '../services/med_duplicaten.dart';
@@ -27,6 +30,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
   Map<int, int> _intakesForDay = {};
   Map<int, String> _intakeDoseringForDay = {}; // per-dag dosering snapshot
   Map<int, Adherentie> _adherentie = {};
+
+  // Voor de heatmap (30 dagen) en PRN-staafjes (8 weken).
+  List<Map<String, dynamic>> _intakeRange = [];
+  List<Map<String, dynamic>> _schedules = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -63,11 +70,20 @@ class _MedicationScreenState extends State<MedicationScreen> {
       Map<int, Adherentie> adherentie = {};
       try {
         final nu = DateTime.now();
-        final start = DateTime(nu.year, nu.month, nu.day).subtract(const Duration(days: 29));
+        final start = DateTime(nu.year, nu.month, nu.day).subtract(const Duration(days: 62));
         final fmt = DateFormat('yyyy-MM-dd');
         final range = await db.getMedicationIntakeRange(fmt.format(start), fmt.format(nu));
+        _intakeRange = range;
+        _schedules = schedules;
+        // Adherentie zelf blijft over 30 dagen; de extra weken zijn voor de
+        // PRN-staafgrafiek.
+        final start30 = DateTime(nu.year, nu.month, nu.day).subtract(const Duration(days: 29));
+        final grens30 = fmt.format(start30);
+        final range30 = range
+            .where((r) => (r['date']?.toString() ?? '').compareTo(grens30) >= 0)
+            .toList();
         adherentie = berekenAdherentie(
-          intakes: range,
+          intakes: range30,
           configs: configs,
           vandaag: nu,
         );
@@ -1595,6 +1611,43 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   Text(
                     AppLocalizations.of(context).adherentieDagen(_adherentie[configId]!.dagen, _adherentie[configId]!.percentage),
                     style: TextStyle(fontSize: 12, color: AppTheme.secondaryText(context)),
+                  ),
+                ],
+              ),
+            ],
+            if (!zoNodig) ...[
+              const SizedBox(height: 8),
+              AdherentieHeatmap(
+                dagen: berekenAdherentieDagen(
+                  intakes: _intakeRange,
+                  medicatieId: configId,
+                  schedules: _schedules.where((s) {
+                    final raw = s['medication_id'];
+                    final id = raw is int ? raw : int.tryParse(raw?.toString() ?? '');
+                    return id == configId;
+                  }).toList(),
+                  vandaag: DateTime.now(),
+                ),
+              ),
+            ],
+            if (zoNodig) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  PrnWeekBars(
+                    waarden: prnPerWeek(
+                      intakes: _intakeRange,
+                      medicatieId: configId,
+                      vandaag: DateTime.now(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '8 wkn',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.secondaryText(context),
+                    ),
                   ),
                 ],
               ),

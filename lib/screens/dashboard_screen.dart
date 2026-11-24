@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../widgets/sparkline.dart';
+import '../services/rapport_strings.dart';
+import '../widgets/vandaag_strip.dart';
 import '../service_locator.dart';
 import '../services/notification_helper.dart';
 import '../services/bipolar_alert_service.dart';
@@ -99,6 +101,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   DateTime? _lastUpdated;
   List<Map<String, dynamic>> _weeklyLogs = [];
   List<Map<String, dynamic>> _dailyLogs = [];
+
+  // Kerncijfers van vandaag voor de Vandaag-strook.
+  double? _moodVandaag;
+  double? _moodDelta;
+  double? _slaapVandaag;
+  double? _slaapDelta;
+  int _medTaken = 0;
+  int _medExpected = 0;
   Set<String> _checkinTypes = {};
   List<Map<String, dynamic>> _srmActivitiesList = [];
   List<Alert> _alerts = [];
@@ -192,11 +202,15 @@ class _DashboardScreenState extends State<DashboardScreen>
         db.getSettings(),
         db.getDailyLogsRange(startDateStr, endDateStr),
         db.getSrmActivitiesRange(startDateStr, endDateStr),
+        db.getMedicationConfigs(),
+        db.getMedicationSchedules(),
       ]);
 
       final settings = results[0] as Map<String, dynamic>?;
       final dailyLogs = results[1] as List<Map<String, dynamic>>;
       final weeklyActivities = results[2] as List<Map<String, dynamic>>;
+      final medConfigs = results[3] as List<Map<String, dynamic>>;
+      final medSchedules = results[4] as List<Map<String, dynamic>>;
 
       final todayStr = endDateStr;
       final todayLog = dailyLogs.where((l) => l['date'] == todayStr).firstOrNull;
@@ -255,6 +269,73 @@ class _DashboardScreenState extends State<DashboardScreen>
         } else {
           break;
         }
+      }
+
+      double? moodVan(Map<String, dynamic>? log) {
+        final raw = log?['stemming_hoog'];
+        final v = raw is num ? raw.toDouble() : double.tryParse(raw?.toString() ?? '');
+        if (v == null || v < -5 || v > 5) return null;
+        return v;
+      }
+
+      double? slaapVan(Map<String, dynamic>? log) {
+        final raw = log?['sleep_hours'] ?? log?['uren_slaap'];
+        final v = raw is num ? raw.toDouble() : double.tryParse(raw?.toString() ?? '');
+        if (v == null || v <= 0) return null;
+        return v;
+      }
+
+      double? gemiddelde(int vanDagen, int totDagen, double? Function(Map<String, dynamic>?) pick) {
+        final waarden = <double>[];
+        for (int i = vanDagen; i <= totDagen; i++) {
+          final d = DateTime(now.year, now.month, now.day - i);
+          final ds =
+              '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+          final v = pick(dailyLogs.where((l) => l['date'] == ds).firstOrNull);
+          if (v != null) waarden.add(v);
+        }
+        if (waarden.length < 3) return null;
+        return waarden.reduce((a, b) => a + b) / waarden.length;
+      }
+
+      final moodVandaag = moodVan(todayLog);
+      final moodNu = gemiddelde(1, 7, moodVan);
+      final moodVorige = gemiddelde(8, 14, moodVan);
+      final slaapVandaag = slaapVan(todayLog);
+      final slaapNu = gemiddelde(1, 7, slaapVan);
+      final slaapVorige = gemiddelde(8, 14, slaapVan);
+
+      final vandaagWeekdag = now.weekday;
+      final verwachteMeds = <int>{};
+      final genomenMeds = <int>{};
+      final intakeVandaag = await db.getMedicationIntake(todayStr);
+      final genomenVandaag = <int>{};
+      for (final row in intakeVandaag) {
+        final rawId = row['medication_id'];
+        final id = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+        final rawAantal = row['aantal_ingenomen'];
+        final aantal = rawAantal is num
+            ? rawAantal.toInt()
+            : int.tryParse(rawAantal?.toString() ?? '') ?? 0;
+        if (id != null && aantal > 0) genomenVandaag.add(id);
+      }
+      for (final config in medConfigs) {
+        final rawId = config['id'];
+        final id = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+        if (id == null) continue;
+        final gepland = medSchedules.any((s) {
+          final rawMed = s['medication_id'];
+          final medId = rawMed is int ? rawMed : int.tryParse(rawMed?.toString() ?? '');
+          if (medId != id) return false;
+          final dagen = (s['days_of_week']?.toString() ?? '1,2,3,4,5,6,7')
+              .split(',')
+              .map((x) => int.tryParse(x.trim()))
+              .whereType<int>();
+          return dagen.contains(vandaagWeekdag);
+        });
+        if (!gepland) continue;
+        verwachteMeds.add(id);
+        if (genomenVandaag.contains(id)) genomenMeds.add(id);
       }
 
       double totalSleep = 0;
@@ -335,6 +416,12 @@ class _DashboardScreenState extends State<DashboardScreen>
           _rhythmStability = stability;
           _dailyLogs = dailyLogs;
           _srmActivitiesList = weeklyActivities;
+          _moodVandaag = moodVandaag;
+          _moodDelta = (moodNu != null && moodVorige != null) ? moodNu - moodVorige : null;
+          _slaapVandaag = slaapVandaag;
+          _slaapDelta = (slaapNu != null && slaapVorige != null) ? slaapNu - slaapVorige : null;
+          _medTaken = genomenMeds.length;
+          _medExpected = verwachteMeds.length;
           _weeklyLogs = dailyLogs;
           _checkinTypes = checkinTypesToday;
           _dagStreak = streak;
@@ -521,6 +608,40 @@ class _DashboardScreenState extends State<DashboardScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildGreetingCard(username, dateStr, isDark),
+                const SizedBox(height: 12),
+                VandaagStrip(items: [
+                  VandaagItem(
+                    icon: Icons.mood_rounded,
+                    label: AppLocalizations.of(context).stemming,
+                    value: _moodVandaag == null
+                        ? '–'
+                        : RapportStrings.fmt1(_moodVandaag!),
+                    delta: _moodDelta == null
+                        ? null
+                        : '${_moodDelta! >= 0 ? '+' : ''}${RapportStrings.fmt1(_moodDelta!)} ${AppLocalizations.of(context).tovVorigeWeek}',
+                    onTap: () => Navigator.pushNamed(context, '/statistics'),
+                  ),
+                  VandaagItem(
+                    icon: Icons.bedtime_rounded,
+                    label: AppLocalizations.of(context).slaap,
+                    value: _slaapVandaag == null
+                        ? '–'
+                        : _formatHours(_slaapVandaag!),
+                    delta: _slaapDelta == null
+                        ? null
+                        : '${_slaapDelta! >= 0 ? '+' : ''}${RapportStrings.fmt1(_slaapDelta!)}u ${AppLocalizations.of(context).tovVorigeWeek}',
+                    onTap: () => Navigator.pushNamed(context, '/sleep-detail'),
+                  ),
+                  VandaagItem(
+                    icon: Icons.medication_rounded,
+                    label: AppLocalizations.of(context).medicatie,
+                    value: _medExpected == 0 ? '–' : '$_medTaken/$_medExpected',
+                    delta: _medExpected == 0
+                        ? null
+                        : AppLocalizations.of(context).vandaag,
+                    onTap: () => Navigator.pushNamed(context, '/medication'),
+                  ),
+                ]),
                 const SizedBox(height: 24),
                 if (_alerts.isNotEmpty) ...[
                   ..._alerts.map((alert) => _buildAlertCard(alert, theme)),
