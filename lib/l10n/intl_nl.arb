@@ -1032,5 +1032,6 @@
   "stopDatumKiezen": "Per welke datum stoppen?",
   "stopDatumWijzigen": "Stopdatum wijzigen",
   "stopDatumBijgewerkt": "Stopdatum bijgewerkt",
-  "tovVorigeWeek": "t.o.v. vorige week"
+  "tovVorigeWeek": "t.o.v. vorige week",
+  "verschilVorigeWeek": "Verschillen t.o.v. vorige week"
 }

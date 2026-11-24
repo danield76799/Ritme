@@ -609,7 +609,11 @@ class _DashboardScreenState extends State<DashboardScreen>
               children: [
                 _buildGreetingCard(username, dateStr, isDark),
                 const SizedBox(height: 12),
-                VandaagStrip(items: [
+                VandaagStrip(
+                  voetnoot: (_moodDelta == null && _slaapDelta == null)
+                      ? null
+                      : AppLocalizations.of(context).verschilVorigeWeek,
+                  items: [
                   VandaagItem(
                     icon: Icons.mood_rounded,
                     label: AppLocalizations.of(context).stemming,
@@ -618,7 +622,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         : RapportStrings.fmt1(_moodVandaag!),
                     delta: _moodDelta == null
                         ? null
-                        : '${_moodDelta! >= 0 ? '+' : ''}${RapportStrings.fmt1(_moodDelta!)} ${AppLocalizations.of(context).tovVorigeWeek}',
+                        : '${_moodDelta! >= 0 ? '↑' : '↓'} ${RapportStrings.fmt1(_moodDelta!.abs())}',
                     onTap: () => Navigator.pushNamed(context, '/statistics'),
                   ),
                   VandaagItem(
@@ -629,16 +633,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                         : _formatHours(_slaapVandaag!),
                     delta: _slaapDelta == null
                         ? null
-                        : '${_slaapDelta! >= 0 ? '+' : ''}${RapportStrings.fmt1(_slaapDelta!)}u ${AppLocalizations.of(context).tovVorigeWeek}',
+                        : '${_slaapDelta! >= 0 ? '↑' : '↓'} ${RapportStrings.fmt1(_slaapDelta!.abs())}',
                     onTap: () => Navigator.pushNamed(context, '/sleep-detail'),
                   ),
                   VandaagItem(
                     icon: Icons.medication_rounded,
                     label: AppLocalizations.of(context).medicatie,
                     value: _medExpected == 0 ? '–' : '$_medTaken/$_medExpected',
-                    delta: _medExpected == 0
-                        ? null
-                        : AppLocalizations.of(context).vandaag,
+                    delta: null,
                     onTap: () => Navigator.pushNamed(context, '/medication'),
                   ),
                 ]),

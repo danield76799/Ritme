@@ -1042,5 +1042,6 @@
   "stopDatumKiezen": "Stop as of which date?",
   "stopDatumWijzigen": "Change stop date",
   "stopDatumBijgewerkt": "Stop date updated",
-  "tovVorigeWeek": "vs. last week"
+  "tovVorigeWeek": "vs. last week",
+  "verschilVorigeWeek": "Differences vs. last week"
 }
