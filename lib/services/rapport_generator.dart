@@ -194,14 +194,17 @@ class _PeriodData {
     return v;
   }
 
-  /// Slaapduur van [day], of null.
+  /// Slaapduur van [day], of null. Alleen positieve waarden gelden als
+  /// geldige slaap (0 of negatief = niet ingevuld), net als in de samenvatting.
   double? sleepOn(DateTime day) {
     final log = dailyLogs
         .where((l) => l['date'] == _dateStr(day))
         .firstOrNull;
     if (log == null) return null;
-    return _extractDouble(log['sleep_hours']) ??
+    final uren = _extractDouble(log['sleep_hours']) ??
         _extractDouble(log['uren_slaap']);
+    if (uren == null || uren <= 0) return null;
+    return uren;
   }
 }
 
@@ -298,9 +301,10 @@ class RapportGenerator {
       final d = a['date']?.toString() ?? '';
       srmByDate.putIfAbsent(d, () => []).add(a);
     }
-    final totals = _computeTotals(period, _dailyPScores(srmByDate), now);
+    final pScores = _dailyPScores(srmByDate);
+    final totals = _computeTotals(period, pScores, now);
     _buildSummary(buf, s, totals);                     // 2. Samenvatting
-    await _buildWeeklyOverview(buf, s, period, srmByDate, now); // 3. Weekoverzicht
+    await _buildWeeklyOverview(buf, s, period, pScores, now); // 3. Weekoverzicht
     await _buildMedicationSection(buf, s, period, now); // 4. Medicatie
     await _buildMedicationSchema(buf, s, period);      // 5. Mediciatieschema
     await _buildDagboek(buf, s, startStr, endStr);     // 6. Dagboek
@@ -522,6 +526,10 @@ class RapportGenerator {
 
   /// P-scores per dag (gemiddelde van de P-scores van die dag).
   /// Muteert niets; bedoeld voor aggregatie.
+  /// Alleen ankers die daadwerkelijk zijn vastgelegd tellen mee: een
+  /// P-score zonder `actual_time` is een gepland/leeg anker en vertegen-
+  /// woordigt geen waargenomen dag. De huidige dag telt dus alleen mee als
+  /// er vandaag al een anker is gelogd.
   Map<String, double> _dailyPScores(Map<String, List<Map<String, dynamic>>> srmByDate) {
     final result = <String, double>{};
     srmByDate.forEach((date, acts) {
@@ -530,6 +538,8 @@ class RapportGenerator {
       for (final a in acts) {
         final ps = a['p_score'];
         if (ps == null) continue;
+        final tijd = (a['actual_time'] ?? '').toString().trim();
+        if (tijd.isEmpty) continue; // niet gelogd anker
         sum += ps is int ? ps.toDouble() : double.tryParse('$ps') ?? 0;
         n++;
       }
@@ -579,7 +589,7 @@ class RapportGenerator {
     StringBuffer buf,
     RapportStrings s,
     _PeriodData period,
-    Map<String, List<Map<String, dynamic>>> srmByDate,
+    Map<String, double> pScores,
     DateTime now,
   ) async {
     // Dagboek-entries per dag, voor de "Notities / Ankers"-kolom
@@ -626,18 +636,10 @@ class RapportGenerator {
           wSleepN++;
         }
 
-        final srmActs = srmByDate[dateStr] ?? [];
-        double pSum = 0;
-        int pCount = 0;
-        for (var a in srmActs) {
-          final ps = a['p_score'];
-          if (ps != null) {
-            pSum += ps is int ? ps : int.tryParse('$ps') ?? 0;
-            pCount++;
-          }
-        }
-        if (pCount > 0) {
-          wP += pSum / pCount;
+        // Zelfde P-score-bron en -regels als de samenvatting.
+        final pScore = pScores[dateStr];
+        if (pScore != null) {
+          wP += pScore;
           wPN++;
         }
 
@@ -767,6 +769,9 @@ class RapportGenerator {
     double shortSum = 0, longSum = 0;
     int shortCount = 0, longCount = 0;
 
+    // Alleen dagen met zowel geldige stemming als geldige slaap (> 0) doen
+    // mee. Elke dag valt in precies één bucket (< 6 uur of >= 6 uur), dus
+    // shortCount + longCount == het aantal gepaarde dagen.
     for (final d in period.allDays) {
       final mood = period.moodOn(d);
       if (mood == null) continue;
@@ -780,6 +785,7 @@ class RapportGenerator {
         longCount++;
       }
     }
+    final pairedCount = shortCount + longCount;
 
     buf.writeln('### ${s.sleepMoodTitle}');
     buf.writeln();
@@ -796,6 +802,10 @@ class RapportGenerator {
     if (shortCount > 0 && longCount > 0) {
       buf.writeln();
       buf.writeln(s.correlationDiff((longSum / longCount) - (shortSum / shortCount)));
+    }
+    if (pairedCount > 0) {
+      buf.writeln();
+      buf.writeln(s.sleepMoodPaired(pairedCount));
     }
     buf.writeln();
   }
@@ -864,10 +874,8 @@ class RapportGenerator {
       final breakdown = (scoreCounts.keys.toList()..sort((a, b) => b.compareTo(a)))
           .map((score) => '${scoreCounts[score]}×$score')
           .join(', ');
-      buf.writeln('| ${s.dagboekScore} | ${s.dagboekEntries} |');
-      buf.writeln('|---------|--------|');
       buf.writeln(
-          '| **${RapportStrings.fmt1(totalScore / scoreCount)}** ($breakdown) | ${dagboekEntries.length} |');
+          '> **${s.dagboekGemiddeldeLabel}:** ${RapportStrings.fmt1(totalScore / scoreCount)} ($breakdown) · **${s.dagboekAantalLabel}:** ${dagboekEntries.length}');
       buf.writeln();
     }
     for (final entry in dagboekEntries.reversed) {

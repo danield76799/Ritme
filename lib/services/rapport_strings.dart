@@ -74,6 +74,9 @@ class RapportStrings {
   String get sleepMoodLongNoData => nl
       ? 'Bij voldoende slaap (6+ uur): geen data in deze periode'
       : 'Enough sleep (6h+): no data in this period';
+  String sleepMoodPaired(int n) => nl
+      ? 'Gebaseerd op n=$n ${_dagen(n)} met zowel slaap- als stemmingsdata.'
+      : 'Based on n=$n ${_dagen(n)} with both sleep and mood data.';
   String _dagen(int n) => nl ? (n == 1 ? 'dag' : 'dagen') : (n == 1 ? 'day' : 'days');
 
   String intakeMoments(int n) =>
@@ -144,6 +147,9 @@ class RapportStrings {
   String get dagboekTitle => nl ? '📓 Dagboek' : '📓 Journal';
   String get dagboekEntries => nl ? 'Dagboek-entries' : 'Journal entries';
   String get dagboekScore => nl ? 'Dagboekscore' : 'Journal score';
+  String get dagboekGemiddeldeLabel =>
+      nl ? 'Gemiddelde dagboekscore' : 'Average journal score';
+  String get dagboekAantalLabel => nl ? 'Aantal entries' : 'Number of entries';
   String get noDagboek => nl ? 'Geen dagboek-entries in deze periode.' : 'No journal entries in this period.';
   String dagboekEntryLabel(String date, double? score) {
     if (score != null) {
