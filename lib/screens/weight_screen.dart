@@ -271,6 +271,15 @@ class _WeightScreenState extends State<WeightScreen> {
     _loadWeightLogs();
   }
 
+  /// As-stap voor de gewichtsgrafiek: niet te fijn (anders overlappen de
+  /// labels), wel altijd een round getal in kg.
+  double _gewichtAsStap(double bereik) {
+    if (bereik <= 6) return 1;
+    if (bereik <= 12) return 2;
+    if (bereik <= 30) return 5;
+    return 10;
+  }
+
   List<FlSpot> _getChartData() {
     final spots = <FlSpot>[];
     for (int i = 0; i < _weightLogs.length; i++) {
@@ -323,7 +332,17 @@ class _WeightScreenState extends State<WeightScreen> {
 
                     // Grafiek
                     if (_weightLogs.length >= 2)
-                      Container(
+                      Builder(builder: (context) {
+                        final spots = _getChartData();
+                        final waarden = spots.map((s) => s.y).toList();
+                        final laagste = waarden.reduce((a, b) => a < b ? a : b);
+                        final hoogste = waarden.reduce((a, b) => a > b ? a : b);
+                        // Marge boven/onder zodat de buitenste labels niet
+                        // tegen de rand of op elkaar staan.
+                        final minY = (laagste - 1).floorToDouble();
+                        final maxY = (hoogste + 1).ceilToDouble();
+                        final stap = _gewichtAsStap(maxY - minY);
+                        return Container(
                         height: 250,
                         padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -340,10 +359,31 @@ class _WeightScreenState extends State<WeightScreen> {
                         ),
                         child: LineChart(
                           LineChartData(
-                            gridData: FlGridData(show: true, drawVerticalLine: false),
+                            minY: minY,
+                            maxY: maxY,
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                              horizontalInterval: stap,
+                            ),
                             titlesData: FlTitlesData(
                               leftTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 46,
+                                  interval: stap,
+                                  getTitlesWidget: (value, meta) => Padding(
+                                    padding: const EdgeInsets.only(right: 6),
+                                    child: Text(
+                                      value.toStringAsFixed(0),
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Theme.of(context).colorScheme.outline,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                               bottomTitles: AxisTitles(
                                 sideTitles: SideTitles(showTitles: false),
@@ -354,7 +394,7 @@ class _WeightScreenState extends State<WeightScreen> {
                             borderData: FlBorderData(show: false),
                             lineBarsData: [
                               LineChartBarData(
-                                spots: _getChartData(),
+                                spots: spots,
                                 isCurved: true,
                                 color: Theme.of(context).colorScheme.primary,
                                 barWidth: 3,
@@ -367,7 +407,8 @@ class _WeightScreenState extends State<WeightScreen> {
                             ],
                           ),
                         ),
-                      ),
+                      );
+                      }),
 
                     if (_weightLogs.length >= 2) const SizedBox(height: 24),
 
