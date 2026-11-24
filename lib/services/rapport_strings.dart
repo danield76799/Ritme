@@ -41,6 +41,13 @@ class RapportStrings {
       ? 'Bij lage trouw (<70%): geen data in deze periode'
       : 'With low adherence (<70%): no data in this period';
 
+  String correlationHighOnly(double v, int n) => nl
+      ? 'Bij hoge trouw (>90%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)}; geen dagen met lage trouw in deze periode).'
+      : 'With high adherence (>90%): average mood ${fmt1(v)} (n=$n ${_dagen(n)}; no low-adherence days in this period).';
+  String correlationLowOnly(double v, int n) => nl
+      ? 'Bij lage trouw (<70%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)}; geen dagen met hoge trouw in deze periode).'
+      : 'With low adherence (<70%): average mood ${fmt1(v)} (n=$n ${_dagen(n)}; no high-adherence days in this period).';
+
   String get patientLabel => nl ? 'Patiënt' : 'Patient';
   String get summaryTitle => nl ? '📈 Samenvatting' : '📈 Summary';
   String get summaryMetric => nl ? 'Metriek' : 'Metric';
@@ -75,8 +82,8 @@ class RapportStrings {
       ? 'Bij voldoende slaap (6+ uur): geen data in deze periode'
       : 'Enough sleep (6h+): no data in this period';
   String sleepMoodPaired(int n) => nl
-      ? 'Gebaseerd op n=$n ${_dagen(n)} met zowel slaap- als stemmingsdata.'
-      : 'Based on n=$n ${_dagen(n)} with both sleep and mood data.';
+      ? 'Gebaseerd op n=$n ${_dagen(n)} waarop zowel slaap als stemming is ingevuld.'
+      : 'Based on n=$n ${_dagen(n)} on which both sleep and mood were entered.';
   String _dagen(int n) => nl ? (n == 1 ? 'dag' : 'dagen') : (n == 1 ? 'day' : 'days');
 
   String intakeMoments(int n) =>
@@ -93,7 +100,10 @@ class RapportStrings {
   String get legendaLine => nl
       ? '_Legenda: Stemming (-5 t/m +5) · P-Score (1–5, stabiliteit dagritme) · SRT (Social Rhythm Therapy-doelpercentage) · Dagboekscore (1 = zwaar, 5 = goed)._'
       : '_Legend: Mood (-5 to +5) · P-score (1–5, day rhythm stability) · SRT (Social Rhythm Therapy goal percentage) · Journal score (1 = heavy, 5 = good)._';
-  String get weekAnchors => nl ? 'Notities / Ankers' : 'Notes / Anchors';
+  String get weekAnchors => nl ? 'Dagboek & Alerts' : 'Journal & Alerts';
+  String notitieCount(int n) => nl
+      ? '$n ${n == 1 ? 'notitie' : 'notities'}'
+      : '$n ${n == 1 ? 'note' : 'notes'}';
   String get weeklyOverview => nl ? '📊 Weekoverzicht' : '📊 Weekly overview';
   String get week => nl ? 'Week' : 'Week';
   String get avgMood => nl ? 'Gem. stemming' : 'Avg. mood';
@@ -102,6 +112,10 @@ class RapportStrings {
   String get medication => nl ? 'Medicatie' : 'Medication';
 
   String get daysWithData => nl ? 'Dagen met data' : 'Days with data';
+  String dagenVanKalender(int actief, int totaal) =>
+      nl ? '$actief / $totaal kalenderdagen' : '$actief / $totaal calendar days';
+  String get dosesUntilYesterday =>
+      nl ? 't/m gisteravond' : 'through yesterday evening';
   String get avgMoodLong => nl ? 'Gem. stemming' : 'Avg. mood';
   String get avgSleepDuration => nl ? 'Gem. slaapduur' : 'Avg. sleep duration';
   String get medicationAdherence => nl ? 'Verwachte doses' : 'Expected doses';
@@ -133,6 +147,7 @@ class RapportStrings {
       : (n == 1 ? 'dose' : 'doses');
   String get missedOnLabel => nl ? '⚠️ Gemist op:' : '⚠️ Missed on:';
   String get takenWord => nl ? 'ingenomen' : 'taken';
+  String get alternatingWord => nl ? 'afwisselend' : 'alternating';
   String get med => nl ? '💊 Medicatie' : '💊 Medication';
   /// Overzicht van wat er voorgeschreven staat (in plaats van de
   /// dubbele lijst met alleen namen en doseringen).

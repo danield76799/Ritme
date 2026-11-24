@@ -227,6 +227,13 @@ class _WeeklyTotals {
   int pScoreDays = 0;
   int takenCount = 0;
   int intakeCount = 0;
+
+  /// Dagen met enige gebruikersinvoer (stemming, slaap of gelogd anker).
+  int activeDays = 0;
+  int calendarDays = 0;
+
+  /// Staan er vandaag nog geplande doses open (tijdstip nog niet verstreken)?
+  bool todayHasOpenDoses = false;
 }
 
 /// Generates comprehensive reports for bipolar disorder management
@@ -556,6 +563,7 @@ class RapportGenerator {
     DateTime now,
   ) {
     final totals = _WeeklyTotals();
+    totals.calendarDays = period.allDays.length;
     for (final d in period.allDays) {
       final dateStr = _dateStr(d);
 
@@ -574,11 +582,28 @@ class RapportGenerator {
         totals.totalPScore += pScore;
         totals.pScoreDays++;
       }
+      // Actieve dag: enige invoer (stemming, slaap of gelogd anker). Een
+      // lege kalenderdag — inclusief een nog niet ingevulde vandaag —
+      // telt niet mee in de gemiddelden.
+      if (mood != null || sleep != null || pScore != null) {
+        totals.activeDays++;
+      }
       for (final group in period.medicationGroups) {
         final dose = _countGroupDoses(period, d, group, now);
         totals.intakeCount += dose.expected;
         totals.takenCount += dose.taken;
       }
+    }
+    // Zijn er vandaag nog doses waarvan de tijd nog niet verstreken is?
+    final vandaag = DateTime(now.year, now.month, now.day);
+    for (final group in period.medicationGroups) {
+      for (final t in period.doseTimesOn(group, vandaag)) {
+        if (!isDoseDue(date: vandaag, scheduledTime: t, now: now)) {
+          totals.todayHasOpenDoses = true;
+          break;
+        }
+      }
+      if (totals.todayHasOpenDoses) break;
     }
     return totals;
   }
@@ -685,8 +710,8 @@ class RapportGenerator {
           }
         }
         anchorStr = scoreN > 0
-            ? '${anchorEntries.length}× (gem ${RapportStrings.fmt1(scoreSum / scoreN)})'
-            : '${anchorEntries.length}×';
+            ? '${s.notitieCount(anchorEntries.length)} (gem ${RapportStrings.fmt1(scoreSum / scoreN)})'
+            : s.notitieCount(anchorEntries.length);
         if (lageDagen.isNotEmpty) {
           anchorStr += ' · ⚠ ${lageDagen.join(', ')}';
         }
@@ -740,21 +765,20 @@ class RapportGenerator {
     buf.writeln();
     buf.writeln('### ${s.correlationTitle}');
     buf.writeln();
-    if (highAdhCount > 0) {
-      buf.writeln(s.correlationHighAdherence(highAdhMood / highAdhCount, highAdhCount));
-    } else {
-      buf.writeln(s.correlationNoHighData);
-    }
-    if (lowAdhCount > 0) {
-      buf.writeln(s.correlationLowAdherence(lowAdhMood / lowAdhCount, lowAdhCount));
-    } else {
-      buf.writeln(s.correlationNoLowData);
-    }
     if (highAdhCount > 0 && lowAdhCount > 0) {
+      buf.writeln(s.correlationHighAdherence(highAdhMood / highAdhCount, highAdhCount));
+      buf.writeln(s.correlationLowAdherence(lowAdhMood / lowAdhCount, lowAdhCount));
       final diff =
           (highAdhMood / highAdhCount) - (lowAdhMood / lowAdhCount);
       buf.writeln();
       buf.writeln(s.correlationDiff(diff));
+    } else if (highAdhCount > 0) {
+      buf.writeln(s.correlationHighOnly(highAdhMood / highAdhCount, highAdhCount));
+    } else if (lowAdhCount > 0) {
+      buf.writeln(s.correlationLowOnly(lowAdhMood / lowAdhCount, lowAdhCount));
+    } else {
+      buf.writeln(s.correlationNoHighData);
+      buf.writeln(s.correlationNoLowData);
     }
     buf.writeln();
   }
@@ -821,7 +845,8 @@ class RapportGenerator {
     buf.writeln();
     buf.writeln('| ${s.summaryMetric} | ${s.summaryValue} |');
     buf.writeln('|---------|--------|');
-    buf.writeln('| **${s.daysWithData}** | ${totals.moodCount} |');
+    buf.writeln(
+        '| **${s.daysWithData}** | ${s.dagenVanKalender(totals.activeDays, totals.calendarDays)} |');
     if (totals.moodCount > 0) {
       buf.writeln(
           '| **${s.avgMoodLong}** | ${RapportStrings.fmt1(totals.totalMood / totals.moodCount)} (-5 ${s.to} +5, n=${totals.moodCount}) |');
@@ -837,8 +862,9 @@ class RapportGenerator {
     }
     if (totals.intakeCount > 0) {
       final pct = (totals.takenCount * 100 / totals.intakeCount).round();
+      final suffix = totals.todayHasOpenDoses ? ', ${s.dosesUntilYesterday}' : '';
       buf.writeln(
-          '| **${s.medicationAdherence}** | ${totals.takenCount}/${totals.intakeCount} ${s.taken} ($pct%) |');
+          '| **${s.medicationAdherence}** | ${totals.takenCount}/${totals.intakeCount} ${s.taken} ($pct%$suffix) |');
     }
 
     buf.writeln();
@@ -913,6 +939,8 @@ class RapportGenerator {
     final startStr = _dateStr(period.startDate);
     final endStr = _dateStr(period.endDate);
 
+    final uitvoer = <({DateTime? laatste, List<String> regels})>[];
+
     for (final group in groups.values) {
       final actives = group.where(_PeriodData.isActiveMedication).toList();
       final ids = group.map((m) => _asInt(m['id'])).toList();
@@ -952,6 +980,9 @@ class RapportGenerator {
         scheds.addAll(period.schedulesFor(_asInt(m['id'])));
       }
 
+      final regels = <String>[];
+      DateTime? laatste;
+
       // --- PRN (zo nodig): geen schema, dus geen verwachtingen ----------
       if (scheds.isEmpty) {
         final suffix = dosisLabel.isEmpty ? '' : ', $dosisLabel';
@@ -962,10 +993,11 @@ class RapportGenerator {
               .toList()
             ..sort();
           if (takenDates.isEmpty) {
-            buf.writeln('- **$name** (PRN$suffix) — ${s.prnZeroTaken}');
+            regels.add('- **$name** (PRN$suffix) — ${s.prnZeroTaken}');
           } else {
-            final data = takenDates.map(_shortDateStr).join(', ');
-            buf.writeln(
+            laatste = DateTime.tryParse(takenDates.last);
+            final data = takenDates.reversed.map(_shortDateStr).join(', ');
+            regels.add(
                 '- **$name** (PRN$suffix) — ${s.prnTakenOn(takenDates.length)} $data');
           }
         } else if (takenCount > 0) {
@@ -974,9 +1006,11 @@ class RapportGenerator {
               .map((e) => e.key)
               .toList()
             ..sort();
-          buf.writeln(
-              '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.map(_shortDateStr).join(', ')}');
+          laatste = DateTime.tryParse(takenDays.last);
+          regels.add(
+              '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.reversed.map(_shortDateStr).join(', ')}');
         }
+        if (regels.isNotEmpty) uitvoer.add((laatste: laatste, regels: regels));
         continue;
       }
 
@@ -1021,41 +1055,108 @@ class RapportGenerator {
             .map((e) => e.key)
             .toList()
           ..sort();
-        buf.writeln(
-            '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.map(_shortDateStr).join(', ')}');
+        laatste = DateTime.tryParse(takenDays.last);
+        regels.add(
+            '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.reversed.map(_shortDateStr).join(', ')}');
+        uitvoer.add((laatste: laatste, regels: regels));
         continue;
       }
 
       final pct = (takenDoses * 100 / expectedDoses).round();
       final stopSuffix =
           stopDate == null ? '' : ' · ${s.stoppedOn(_shortDate(stopDate))}';
-      buf.writeln(
+      regels.add(
           '- **$name** — $takenDoses/$expectedDoses ${s.medDoseCount(expectedDoses)} ($pct%)$stopSuffix');
 
       // Aaneengesloten dagen met dezelfde ingenomen dosering: één blok.
-      final blocks = <_DoseBlock>[];
+      final blokken = <_DoseBlock>[];
       for (final d in takenByDate.keys.toList()..sort()) {
         final dose = takenByDate[d];
         if (dose == null) continue; // gemiste dagen worden hieronder vermeld
-        if (blocks.isNotEmpty) {
-          final last = blocks.last;
-          if (d.difference(last.end).inDays == 1 && last.dose == dose) {
-            last.end = d;
-            last.days++;
+        if (blokken.isNotEmpty) {
+          final vorige = blokken.last;
+          if (d.difference(vorige.end).inDays == 1 && vorige.dose == dose) {
+            vorige.end = d;
+            vorige.days++;
             continue;
           }
         }
-        blocks.add(_DoseBlock(d, d, 1, dose));
+        blokken.add(_DoseBlock(d, d, 1, dose));
       }
-      for (final b in blocks) {
+
+      // Alternerende reeksen (min. 4 dagen, strikt twee doses om-en-om)
+      // samenvatten tot één regel.
+      final weergave = <_DoseBlock>[];
+      var i = 0;
+      while (i < blokken.length) {
+        final b = blokken[i];
+        if (b.days != 1) {
+          weergave.add(b);
+          i++;
+          continue;
+        }
+        final reeks = <_DoseBlock>[b];
+        var j = i + 1;
+        while (j < blokken.length) {
+          final vorige = reeks.last;
+          final volgende = blokken[j];
+          if (volgende.days != 1) break;
+          if (volgende.start.difference(vorige.end).inDays != 1) break;
+          if (volgende.dose == vorige.dose) break;
+          if (reeks.length >= 2 && volgende.dose != reeks[reeks.length - 2].dose) {
+            break;
+          }
+          reeks.add(volgende);
+          j++;
+        }
+        final uniekeDoses = reeks.map((x) => x.dose).toSet();
+        if (reeks.length >= 4 && uniekeDoses.length == 2) {
+          final twee = reeks.take(2).map((x) => x.dose).join(' / ');
+          weergave.add(
+              _DoseBlock(reeks.first.start, reeks.last.end, reeks.length, twee));
+          i = j;
+        } else {
+          weergave.add(b);
+          i++;
+        }
+      }
+
+      // Nieuwste eerst, zodat de huidige dosering bovenaan staat.
+      for (final b in weergave.reversed) {
+        final isAfwisselend = b.dose.contains(' / ');
         final range = b.days == 1
             ? _shortDate(b.start)
             : '${_shortDate(b.start)} ${s.dateRangeJoiner} ${_shortDate(b.end)}';
         final unit = eenheid.isNotEmpty ? ' $eenheid' : '';
-        buf.writeln('  - $range: ${b.dose}$unit (${b.days}/${b.days} ${s.takenWord})');
+        final label = isAfwisselend
+            ? '${b.dose}$unit ${s.alternatingWord}'
+            : '${b.dose}$unit';
+        regels.add('  - $range: $label (${b.days}/${b.days} ${s.takenWord})');
       }
       if (missed.isNotEmpty) {
-        buf.writeln('  - ${s.missedOnLabel} ${missed.map(_shortDate).join(', ')}');
+        final aflopend = (missed.toList()..sort()).reversed;
+        regels.add('  - ${s.missedOnLabel} ${aflopend.map(_shortDate).join(', ')}');
+      }
+
+      for (final k in byDate.keys) {
+        final d = DateTime.tryParse(k);
+        if (d != null && (laatste == null || d.isAfter(laatste))) laatste = d;
+      }
+      uitvoer.add((laatste: laatste, regels: regels));
+    }
+
+    // Middelen met de meest recente inname bovenaan.
+    uitvoer.sort((a, b) {
+      final da = a.laatste;
+      final db = b.laatste;
+      if (da == null && db == null) return 0;
+      if (da == null) return 1;
+      if (db == null) return -1;
+      return db.compareTo(da);
+    });
+    for (final e in uitvoer) {
+      for (final r in e.regels) {
+        buf.writeln(r);
       }
     }
     buf.writeln();

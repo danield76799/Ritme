@@ -236,12 +236,8 @@ void main() {
       );
     });
 
-    test('de samenvatting telt de dagen met data binnen de periode', () {
-      final regel = report
-          .split('\n')
-          .firstWhere((l) => l.contains('Dagen met data'));
-      final aantal = int.parse(regel.split('|')[2].trim());
-      expect(aantal, 14);
+    test('de samenvatting toont actieve en kalenderdagen binnen de periode', () {
+      expect(report, contains('| **Dagen met data** | 14 / 14 kalenderdagen |'));
     });
 
     group('medicatie-noemer', () {
@@ -255,7 +251,11 @@ void main() {
         expect(report, contains('| 12/12 |'));
         expect(report, contains('| 14/14 |'));
         // Samenvatting: 26/26 ingenomen.
-        expect(report, contains('| **Verwachte doses** | 26/26 ingenomen (100%) |'));
+        expect(
+          RegExp(r'\*\*Verwachte doses\*\* \| 26/26 ingenomen \(100%(, t/m gisteravond)?\)')
+              .hasMatch(report),
+          isTrue,
+        );
       });
 
       test('PRN-medicatie krijgt geen percentage', () {
@@ -317,7 +317,7 @@ void main() {
       expect(sectie, contains('Bij hoge trouw'));
       expect(
         sectie,
-        contains('Bij lage trouw (<70%): geen data in deze periode'),
+        contains('geen dagen met lage trouw in deze periode'),
         reason: 'de nog open dag zou ten onrechte als lage trouw meetellen',
       );
     });

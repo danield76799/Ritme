@@ -112,7 +112,7 @@ void main() {
     // tellen niet mee.
     expect(md, contains('Bij korte slaap (<6 uur): gemiddelde stemming 1.0 (n=6 dagen)'));
     expect(md, contains('Bij voldoende slaap (6+ uur): gemiddelde stemming -1.0 (n=6 dagen)'));
-    expect(md, contains('Gebaseerd op n=12 dagen met zowel slaap- als stemmingsdata.'));
+    expect(md, contains('Gebaseerd op n=12 dagen waarop zowel slaap als stemming is ingevuld.'));
   });
 
   test('P-Score telt alleen gelogde ankers en sluit een lege huidige dag uit', () async {
