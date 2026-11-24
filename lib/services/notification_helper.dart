@@ -172,7 +172,19 @@ class NotificationHelper {
       if (launchDetails?.didNotificationLaunchApp ?? false) {
         final payload = launchDetails?.notificationResponse?.payload;
         if (payload != null) {
-          _onNotificationResponse(launchDetails!.notificationResponse!);
+          // Check-in-payloads bij een koude start negeren. Android hergebruikt
+          // de launch-intent wanneer de taak (bijv. vanuit Recents) opnieuw
+          // wordt gestart; de plugin blijft dan `didNotificationLaunchApp`
+          // melden. Het gevolg was dat de app bij elke start opnieuw naar het
+          // ochtend-/avondcheck-in scherm sprong. Een echte tik op de melding
+          // loopt via onDidReceiveNotificationResponse en navigeert wél.
+          // Medicatie-acties (bijv. "Ingenomen") blijven hier wel verwerkt.
+          if (payload.startsWith('checkin:')) {
+            AppLogger.debug(
+                'Check-in launch-payload genegeerd bij koude start: $payload');
+          } else {
+            _onNotificationResponse(launchDetails!.notificationResponse!);
+          }
         }
       }
 
