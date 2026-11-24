@@ -290,9 +290,11 @@ class _MorningCheckInScreenState extends State<MorningCheckInScreen> {
       log['awake_minutes'] = _awakeMinutes;
       log['sleep_quality'] = _kwaliteit;
       log['q4_slaapbehoefte'] = _q4;
-      // stemming_hoog: P-score (1-5) geschaald naar 0-10,
-      // zodat de dagstatus-kaarten het groene vinkje tonen.
-      log['stemming_hoog'] = pScore * 2;
+      // De P-score hoort NIET in stemming_hoog: dat veld bevat de dagelijkse
+      // stemming (−4..+4) van de avond-check-in / stemmingscheck. De oude
+      // P-score*2 (2..10) mengde twee schalen en vertekende gemiddelden en
+      // correlaties. Bewaar de ochtend-P-score apart.
+      log['p_score_ochtend'] = pScore;
       await db.upsertDailyLog(log);
 
       // 3. SRM "Opstaan" met P-score tegen de doeltijd

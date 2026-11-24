@@ -179,12 +179,19 @@ class _PeriodData {
   }
 
   /// De dagelijkse stemming van [day], of null als die niet is vastgelegd.
+  ///
+  /// Dit is de ENIGE stemmingsbron voor alle rapport-secties (ook Slaap vs
+  /// Stemming): `daily_logs.stemming_hoog`, gekoppeld op `yyyy-MM-dd`.
+  /// Waarden buiten −5..+5 zijn geen stemming — oude ochtend-check-ins
+  /// schreven daar P-score×2 (2..10) in — en gelden als ontbrekend.
   double? moodOn(DateTime day) {
     final log = dailyLogs
         .where((l) => l['date'] == _dateStr(day))
         .firstOrNull;
     if (log == null) return null;
-    return _extractDouble(log['stemming_hoog']);
+    final v = _extractDouble(log['stemming_hoog']);
+    if (v == null || v < -5 || v > 5) return null;
+    return v;
   }
 
   /// Slaapduur van [day], of null.
@@ -702,7 +709,9 @@ class RapportGenerator {
     int highAdhCount = 0, lowAdhCount = 0;
 
     for (final d in period.allDays.reversed) {
-      // Mood for this day
+      // Zelfde bron en datum-sleutel als Slaap vs Stemming: moodOn() leest
+      // daily_logs.stemming_hoog op yyyy-MM-dd. Dagen zonder (geldige)
+      // stemming tellen niet mee in n.
       final mood = period.moodOn(d);
       if (mood == null) continue;
 

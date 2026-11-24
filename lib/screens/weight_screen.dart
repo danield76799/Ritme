@@ -378,7 +378,7 @@ class _WeightScreenState extends State<WeightScreen> {
                                       value.toStringAsFixed(0),
                                       textAlign: TextAlign.right,
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 12,
                                         color: Theme.of(context).colorScheme.outline,
                                       ),
                                     ),
