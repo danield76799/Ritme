@@ -15,13 +15,19 @@ vragen; dat wordt hieronder opgevangen).
 import argparse
 import json
 import os
+import socket
 import sys
+import time
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 SCOPES = ["https://www.googleapis.com/auth/androidpublisher"]
+
+# Grote AAB's (70+ MB) over een trage CI-verbinding mogen niet na 60s
+# afkappen; de standaard socket-timeout veroorzaakte TimeoutError's.
+socket.setdefaulttimeout(300)
 
 
 def build_service():
@@ -36,15 +42,16 @@ def build_service():
     return build("androidpublisher", "v3", credentials=creds, cache_discovery=False)
 
 
-def upload(aab, package, track, status, name):
-    service = build_service()
-    if service is None:
-        return 2
-
+def _upload_once(service, aab, package, track, status, name):
     edit_id = (
         service.edits().insert(body={}, packageName=package).execute()["id"]
     )
-    media = MediaFileUpload(aab, mimetype="application/octet-stream", resumable=True)
+    media = MediaFileUpload(
+        aab,
+        mimetype="application/octet-stream",
+        resumable=True,
+        chunksize=8 * 1024 * 1024,
+    )
     bundle = (
         service.edits()
         .bundles()
@@ -82,7 +89,28 @@ def upload(aab, package, track, status, name):
         ).execute()
 
     print(f"PUBLISHED versionCode={version_code} track={track} status={status}")
-    return 0
+    return version_code
+
+
+def upload(aab, package, track, status, name, pogingen=3):
+    service = build_service()
+    if service is None:
+        return 2
+
+    laatste = None
+    for poging in range(1, pogingen + 1):
+        try:
+            _upload_once(service, aab, package, track, status, name)
+            return 0
+        except (TimeoutError, OSError) as e:
+            # Netwerkstoringen (timeout, reset) zijn vaak tijdelijk; een
+            # nieuwe edit starten is veilig, want de vorige is nooit gecommit.
+            laatste = e
+            print(f"Uploadpoging {poging}/{pogingen} mislukt: {e}", file=sys.stderr)
+            if poging < pogingen:
+                time.sleep(5 * poging)
+    print(f"Upload definitief mislukt: {laatste}", file=sys.stderr)
+    return 1
 
 
 def main():
