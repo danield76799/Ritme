@@ -144548,7 +144548,7 @@ if(l!=null)J.ba(e,"uren_slaap",l)
 J.ba(e,"awake_minutes",n.f)
 J.ba(e,"sleep_quality",n.r)
 J.ba(e,"q4_slaapbehoefte",n.y)
-J.ba(e,"stemming_hoog",g*2)
+J.ba(e,"p_score_ochtend",g)
 a4=$.ag
 if(a4==null)A.A(A.N(u.O))
 s=13
@@ -148641,7 +148641,7 @@ A.bcb.prototype={
 $2(a,b){var s=null,r=B.o.aj(a,0),q=A.c(this.a).ax,p=q.ry
 if(p==null){p=q.p
 q=p==null?q.k3:p}else q=p
-return new A.at(B.aeB,A.m(r,s,s,s,A.R(s,s,q,s,s,s,s,s,s,s,s,11,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),B.hb,s,s),s)},
+return new A.at(B.aeB,A.m(r,s,s,s,A.R(s,s,q,s,s,s,s,s,s,s,s,12,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),B.hb,s,s),s)},
 $S:829}
 A.bcg.prototype={
 $2(a,a0){var s,r,q,p,o,n,m,l,k,j,i,h,g=null,f="notes",e=this.a,d=e.d,c=J.ad(d),b=c.i(d,c.gu(d)-1-a0)
@@ -149099,9 +149099,11 @@ f=J.Q(h==null?"":h)
 if(f.length!==0)e.H(0,f)}}s=A.Y(e,e.$ti.c)
 B.l.iH(s)
 return s},
-MO(a){var s=A.tB(J.i7(this.c,new A.b40(a)))
-if(s==null)return null
-return A.jG(J.x(s,"stemming_hoog"))},
+MO(a){var s,r=A.tB(J.i7(this.c,new A.b40(a)))
+if(r==null)return null
+s=A.jG(J.x(r,"stemming_hoog"))
+if(s==null||s<-5||s>5)return null
+return s},
 PK(a){var s,r,q=A.tB(J.i7(this.c,new A.b41(a)))
 if(q==null)return null
 s=J.ad(q)
