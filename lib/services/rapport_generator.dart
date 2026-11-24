@@ -21,7 +21,10 @@ class _PeriodData {
   });
 
   /// Aantal kalenderdagen in de periode (start- en einddag tellen mee).
-  int get days => endDate.difference(startDate).inDays + 1;
+  int get days => DateTime.utc(endDate.year, endDate.month, endDate.day)
+          .difference(DateTime.utc(startDate.year, startDate.month, startDate.day))
+          .inDays +
+      1;
 
   /// Alle dagen van de periode, oplopend. Ook hier via de DateTime-
   /// constructor, zodat de zomertijd-overgang de klok niet verzet.
@@ -234,6 +237,10 @@ class _WeeklyTotals {
 
   /// Staan er vandaag nog geplande doses open (tijdstip nog niet verstreken)?
   bool todayHasOpenDoses = false;
+
+  /// Zijn er in de periode überhaupt doses ingepland (ook zonder dat er al
+  /// een aan de beurt was)? Dan tonen we 0/0 i.p.v. de regel weg te laten.
+  bool hasScheduledDoses = false;
 }
 
 /// Generates comprehensive reports for bipolar disorder management
@@ -288,20 +295,37 @@ class RapportGenerator {
   }
 
   /// Generate a full Life Chart Method (LCM) report as markdown
-  Future<String> generateLCMReport({int days = 30, String? localeCode}) async {
+  /// Bouwt het LCM-rapport.
+  ///
+  /// [now], [startDate] en [endDate] zijn optioneel en alleen bedoeld voor
+  /// tests: standaard worden de werkelijke datum en een periode van [days]
+  /// dagen gebruikt.
+  Future<String> generateLCMReport({
+    int days = 30,
+    String? localeCode,
+    DateTime? now,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     final s = localeCode != null
         ? RapportStrings.withLocale(localeCode)
         : RapportStrings();
-    final now = DateTime.now();
-    final endDate = DateTime(now.year, now.month, now.day);
-    final startDate = periodStart(endDate, days);
-    final startStr = _dateStr(startDate);
-    final endStr = _dateStr(endDate);
+    final generatedAt = now ?? DateTime.now();
+    final eind = endDate ?? DateTime(generatedAt.year, generatedAt.month, generatedAt.day);
+    final start = startDate ?? periodStart(eind, days);
+    // Kalenderdagen via UTC-datums: over de zomertijdovergang heen is het
+    // verschil anders 23 uur en zou .inDays één dag tekort tellen.
+    final periodeDagen = DateTime.utc(eind.year, eind.month, eind.day)
+            .difference(DateTime.utc(start.year, start.month, start.day))
+            .inDays +
+        1;
+    final startStr = _dateStr(start);
+    final endStr = _dateStr(eind);
 
     final buf = StringBuffer();
-    await _buildHeader(buf, s, startDate, endDate, now);
+    await _buildHeader(buf, s, start, eind, generatedAt);
 
-    final period = await _loadPeriodData(startDate, endDate);
+    final period = await _loadPeriodData(start, eind);
     final srmRange = await db.getSrmActivitiesRange(startStr, endStr);
     final srmByDate = <String, List<Map<String, dynamic>>>{};
     for (final a in srmRange) {
@@ -309,17 +333,17 @@ class RapportGenerator {
       srmByDate.putIfAbsent(d, () => []).add(a);
     }
     final pScores = _dailyPScores(srmByDate);
-    final totals = _computeTotals(period, pScores, now);
+    final totals = _computeTotals(period, pScores, generatedAt, periodeDagen);
     _buildSummary(buf, s, totals);                     // 2. Samenvatting
-    await _buildWeeklyOverview(buf, s, period, pScores, now); // 3. Weekoverzicht
-    await _buildMedicationSection(buf, s, period, now); // 4. Medicatie
+    await _buildWeeklyOverview(buf, s, period, pScores, generatedAt); // 3. Weekoverzicht
+    await _buildMedicationSection(buf, s, period, generatedAt); // 4. Medicatie
     await _buildMedicationSchema(buf, s, period);      // 5. Mediciatieschema
     await _buildDagboek(buf, s, startStr, endStr);     // 6. Dagboek
-    _buildCorrelation(buf, s, period, now);            // 7. Correlatie: medicatie-trouw
+    _buildCorrelation(buf, s, period, generatedAt);    // 7. Correlatie: medicatie-trouw
     _buildSleepMoodCorrelation(buf, s, period);        // 7. Correlatie: slaap vs stemming
     await _buildMoodCheck(buf, s, startStr, endStr);   // 8. Stemmingscheck (alleen bij data)
     await _buildEpisodes(buf, s, period);
-    await _buildProdromalWarnings(buf, s, days);
+    await _buildProdromalWarnings(buf, s, periodeDagen);
     await _buildCrisisPlan(buf, s);
 
     buf.writeln('---');
@@ -561,9 +585,10 @@ class RapportGenerator {
     _PeriodData period,
     Map<String, double> pScores,
     DateTime now,
+    int periodeDagen,
   ) {
     final totals = _WeeklyTotals();
-    totals.calendarDays = period.allDays.length;
+    totals.calendarDays = periodeDagen;
     for (final d in period.allDays) {
       final dateStr = _dateStr(d);
 
@@ -589,6 +614,8 @@ class RapportGenerator {
         totals.activeDays++;
       }
       for (final group in period.medicationGroups) {
+        final tijden = period.doseTimesOn(group, d);
+        if (tijden.isNotEmpty) totals.hasScheduledDoses = true;
         final dose = _countGroupDoses(period, d, group, now);
         totals.intakeCount += dose.expected;
         totals.takenCount += dose.taken;
@@ -862,9 +889,16 @@ class RapportGenerator {
     }
     if (totals.intakeCount > 0) {
       final pct = (totals.takenCount * 100 / totals.intakeCount).round();
-      final suffix = totals.todayHasOpenDoses ? ', ${s.dosesUntilYesterday}' : '';
+      final suffix = (totals.todayHasOpenDoses && totals.calendarDays > 1)
+          ? ', ${s.dosesUntilYesterday}'
+          : '';
       buf.writeln(
           '| **${s.medicationAdherence}** | ${totals.takenCount}/${totals.intakeCount} ${s.taken} ($pct%$suffix) |');
+    } else if (totals.hasScheduledDoses) {
+      // Nog geen enkele dosis aan de beurt (bijv. rapport vóór de eerste
+      // innametijd): toon 0/0 zonder percentage (geen deling door nul).
+      buf.writeln(
+          '| **${s.medicationAdherence}** | 0/0 ${s.taken}${totals.todayHasOpenDoses ? ' (${s.dosesUntilYesterday})' : ''} |');
     }
 
     buf.writeln();

@@ -73,14 +73,14 @@ class RapportStrings {
       ? 'Bij korte slaap (<6 uur): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
       : 'Short sleep (<6h): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
   String get sleepMoodShortNoData => nl
-      ? 'Bij korte slaap (<6 uur): geen data in deze periode'
-      : 'Short sleep (<6h): no data in this period';
+      ? 'Bij korte slaap (<6 uur): geen data in deze periode (n=0 dagen).'
+      : 'Short sleep (<6h): no data in this period (n=0 days).';
   String sleepMoodLongSleep(double v, int n) => nl
       ? 'Bij voldoende slaap (6+ uur): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
       : 'Enough sleep (6h+): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
   String get sleepMoodLongNoData => nl
-      ? 'Bij voldoende slaap (6+ uur): geen data in deze periode'
-      : 'Enough sleep (6h+): no data in this period';
+      ? 'Bij voldoende slaap (6+ uur): geen data in deze periode (n=0 dagen).'
+      : 'Enough sleep (6h+): no data in this period (n=0 days).';
   String sleepMoodPaired(int n) => nl
       ? 'Gebaseerd op n=$n ${_dagen(n)} waarop zowel slaap als stemming is ingevuld.'
       : 'Based on n=$n ${_dagen(n)} on which both sleep and mood were entered.';
