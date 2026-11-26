@@ -149,7 +149,7 @@ void main() {
         schedules: _dailySchedule(),
       );
       expect(md, isNot(contains('NaN%')));
-      expect(md, contains('0/0'));
+      expect(md, contains('0 / 0'));
     });
 
     test('3. Vandaag telt pas mee nadat de avonddosis is ingenomen', () async {
@@ -246,7 +246,8 @@ void main() {
         now: DateTime(2026, 11, 8, 9),
         logs: logs,
       );
-      expect(md, contains('(n=0 dagen)'));
+      expect(md, contains('| Korte slaap (< 6 uur) | n=0 | – |'));
+      expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=7 | 1.0 |'));
       expect(md, isNot(contains('Verschil in stemming:')));
     });
 

@@ -265,14 +265,14 @@ void main() {
         // Vandaag (nog) niet aan de beurt → 13 van de 13 verschenen doses.
         final lurasidon = report
             .split('\n')
-            .firstWhere((l) => l.contains('**Lurasidon**'));
+            .firstWhere((l) => l.contains('**Lurasidon**') && l.contains('doses ('));
         expect(lurasidon, contains('13/13 doses (100%)'));
         // Weekoverzicht: 12/12 (de lopende week) en 14/14 (de eerste week).
         expect(report, contains('| 12/12 |'));
         expect(report, contains('| 14/14 |'));
         // Samenvatting: 26/26 ingenomen.
         expect(
-          RegExp(r'\*\*Verwachte doses\*\* \| 26/26 ingenomen \(100%(, t/m gisteravond)?\)')
+          RegExp(r'\*\*Verwachte doses\*\* \| 26 / 26 ingenomen \(100%\) \| Vaste medicatie t/m gisteravond')
               .hasMatch(report),
           isTrue,
         );
@@ -323,7 +323,7 @@ void main() {
     test('er is geen dubbele medicatiesectie', () {
       expect(report, contains('## 📋 Actief Medicatieschema'));
       expect(
-        '## 💊 Medicatie — Overzicht & Verloop'.allMatches(report).length,
+        '## 💊 Medicatie — Verloop in Periode'.allMatches(report).length,
         1,
       );
     });
@@ -334,7 +334,7 @@ void main() {
     });
 
     test('de correlatie sluit de nog open dag uit', () async {
-      final sectie = report.split('## 🧬 Correlaties')[1].split('###')[1];
+      final sectie = report.split('### Medicatie-trouw vs Stemming')[1];
       expect(sectie, contains('Bij hoge trouw'));
       expect(
         sectie,
@@ -346,7 +346,7 @@ void main() {
     test('is de dag afgelopen, dan telt hij wél mee', () async {
       final rapport = await _rapport(_verledenTijd(),
           lurasidonTijd: '00:00', todayTakenIds: const {1});
-      final sectie = rapport.split('## 🧬 Correlaties')[1].split('###')[1];
+      final sectie = rapport.split('### Medicatie-trouw vs Stemming')[1];
       expect(
         sectie,
         contains('Bij lage trouw (<70%): gemiddelde stemming'),
@@ -359,7 +359,7 @@ void main() {
       // Ook als de avondtijd al verstreken is: het label is 't/m gisteravond'
       // en dan tellen de doses van vandaag niet mee.
       final rapport = await _rapport(_verledenTijd(), lurasidonTijd: '00:00');
-      final sectie = rapport.split('## 🧬 Correlaties')[1].split('###')[1];
+      final sectie = rapport.split('### Medicatie-trouw vs Stemming')[1];
       expect(
         sectie,
         contains('geen dagen met lage trouw in deze periode'),

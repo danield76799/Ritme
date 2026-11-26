@@ -152,10 +152,11 @@ void main() {
         endDate: eind,
       );
 
-      expect(md, contains('9/9 ingenomen (100%, t/m gisteravond)'));
+      expect(md, contains('9 / 9 ingenomen (100%)'));
+      expect(md, contains('Vaste medicatie t/m gisteravond'));
       expect(md, contains('- **Lithium** — 9/9 doses (100%)'));
       // Detail en samenvatting tellen dezelfde doses.
-      expect(md, isNot(contains('10/10')));
+      expect(md, isNot(contains('10 / 10')));
     });
 
     test('met inname vandaag: label wordt t/m vandaag en de dosis telt mee',
@@ -173,7 +174,8 @@ void main() {
         endDate: eind,
       );
 
-      expect(md, contains('10/10 ingenomen (100%, t/m vandaag)'));
+      expect(md, contains('10 / 10 ingenomen (100%)'));
+      expect(md, contains('Vaste medicatie t/m vandaag'));
       expect(md, contains('- **Lithium** — 10/10 doses (100%)'));
       expect(md, isNot(contains('t/m gisteravond')));
     });
@@ -204,7 +206,8 @@ void main() {
         endDate: eind,
       );
 
-      expect(md, contains('9/9 ingenomen (100%, t/m gisteravond)'));
+      expect(md, contains('9 / 9 ingenomen (100%)'));
+      expect(md, contains('Vaste medicatie t/m gisteravond'));
       expect(md, contains('(PRN, 2.5 mg)'));
       expect(md, contains('1000 mg'));
       expect(md, isNot(contains('1000.0 mg')));

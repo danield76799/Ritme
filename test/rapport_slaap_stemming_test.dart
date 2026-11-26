@@ -90,10 +90,7 @@ void main() {
         .generateLCMReport(days: 14, localeCode: 'nl');
 
     expect(md, contains('Slaap vs Stemming'));
-    expect(md, contains('korte slaap'));
-    expect(md, contains('-2.0'));
-    expect(md, contains('2.0'));
-    // Verschil tussen de twee groepen (4.0).
-    expect(md, contains('4.0'));
+    expect(md, contains('| Korte slaap (< 6 uur) | n=7 | -2.0 |'));
+    expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=7 | 2.0 |'));
   });
 }

@@ -129,7 +129,7 @@ void main() {
     expect(md, contains('| **Gem. P-Score** | 4.0 / 5 (SRT: 80%, n=28) |'));
     // Vandaag (23:59) is nog niet aan de beurt: 28 verwachte doses.
     expect(
-      RegExp(r'\*\*Verwachte doses\*\* \| 29/29 ingenomen \(100%(, t/m gisteravond)?\)')
+      RegExp(r'\*\*Verwachte doses\*\* \| 29 / 29 ingenomen \(100%\) \| Vaste medicatie t/m gisteravond')
           .hasMatch(md),
       isTrue,
     );

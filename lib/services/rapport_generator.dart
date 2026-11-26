@@ -224,10 +224,16 @@ class _DoseBlock {
 class _WeeklyTotals {
   double totalMood = 0;
   int moodCount = 0;
+  double? moodMin;
+  double? moodMax;
   double totalSleep = 0;
   int sleepCount = 0;
+  double? sleepMin;
+  double? sleepMax;
   double totalPScore = 0;
   int pScoreDays = 0;
+  double? pMin;
+  double? pMax;
   int takenCount = 0;
   int intakeCount = 0;
 
@@ -375,8 +381,7 @@ class RapportGenerator {
     await _buildMedicationSection(buf, s, period, medNow); // 4. Medicatie
     await _buildMedicationSchema(buf, s, period);      // 5. Mediciatieschema
     await _buildDagboek(buf, s, startStr, endStr);     // 6. Dagboek
-    _buildCorrelation(buf, s, period, medNow);         // 7. Correlatie: medicatie-trouw
-    _buildSleepMoodCorrelation(buf, s, period);        // 7. Correlatie: slaap vs stemming
+    _buildCorrelation(buf, s, period, pScores, medNow); // 7. Correlaties
     await _buildMoodCheck(buf, s, startStr, endStr);   // 8. Stemmingscheck (alleen bij data)
     await _buildEpisodes(buf, s, period);
     await _buildProdromalWarnings(buf, s, periodeDagen);
@@ -402,17 +407,17 @@ class RapportGenerator {
     buf.writeln(s.disclaimer);
     buf.writeln();
     buf.writeln(
-        '${s.period} ${_formatNL(startDate)} ${s.to} ${_formatNL(endDate)}');
-    buf.writeln(
-        '${s.generated} ${_formatNL(now)} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}');
-    buf.writeln();
-
+        '${s.period} ${_formatNL(startDate)} ${s.to} ${_formatNL(endDate)}'
+        ' · ${s.generated} ${_formatNL(now)} '
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}');
     // Settings
     final settings = await db.getSettings();
     if (settings != null && settings['username'] != null) {
-      buf.writeln('**${s.patientLabel}:** ${settings['username']}');
-      buf.writeln();
+      buf.writeln('${s.patientLabel}: ${settings['username']}');
     }
+    buf.writeln();
+    buf.writeln('---');
+    buf.writeln();
   }
 
   // === 1. STEMMINGSCHECK (5 VAGEN) — COMPACTE SECTIE ===
@@ -636,16 +641,26 @@ class RapportGenerator {
       if (mood != null) {
         totals.totalMood += mood;
         totals.moodCount++;
+        if (totals.moodMin == null || mood < totals.moodMin!) totals.moodMin = mood;
+        if (totals.moodMax == null || mood > totals.moodMax!) totals.moodMax = mood;
       }
       final sleep = period.sleepOn(d);
       if (sleep != null) {
         totals.totalSleep += sleep;
         totals.sleepCount++;
+        if (totals.sleepMin == null || sleep < totals.sleepMin!) {
+          totals.sleepMin = sleep;
+        }
+        if (totals.sleepMax == null || sleep > totals.sleepMax!) {
+          totals.sleepMax = sleep;
+        }
       }
       final pScore = pScores[dateStr];
       if (pScore != null) {
         totals.totalPScore += pScore;
         totals.pScoreDays++;
+        if (totals.pMin == null || pScore < totals.pMin!) totals.pMin = pScore;
+        if (totals.pMax == null || pScore > totals.pMax!) totals.pMax = pScore;
       }
       // Actieve dag: enige invoer (stemming, slaap of gelogd anker). Een
       // lege kalenderdag — inclusief een nog niet ingevulde vandaag —
@@ -699,16 +714,24 @@ class RapportGenerator {
     buf.writeln('## ${s.weeklyOverview}');
     buf.writeln();
     buf.writeln(
-        '| ${s.week} | ${s.avgMood} | ${s.avgSleep} | ${s.avgPScore} | ${s.medication} | ${s.weekAnchors} |');
+        '| ${s.week} | ${s.avgMood} (min / max) | ${s.avgSleep} (min – max) | ${s.avgPScore} | ${s.medication} | ${s.contextColumn} |');
     buf.writeln('|------|--------------|-----------|-------------|-----------|---------------|');
+
+    // Gebeurtenissen in het medicatieverloop (dosiswijziging of stop) die
+    // als context in de weekrij horen.
+    final medEvents = _medicationEvents(period, s);
 
     // Loop per week (nieuwste week eerst). De weken bestrijken exact de
     // rapportperiode: dezelfde grenzen als de header en de samenvatting.
     for (final week in periodWeeks(period.startDate, period.endDate)) {
       double wMood = 0;
       int wMoodN = 0;
+      double? wMoodMin;
+      double? wMoodMax;
       double wSleep = 0;
       int wSleepN = 0;
+      double? wSleepMin;
+      double? wSleepMax;
       double wP = 0;
       int wPN = 0;
       int wTaken = 0;
@@ -721,11 +744,15 @@ class RapportGenerator {
         if (mood != null) {
           wMood += mood;
           wMoodN++;
+          if (wMoodMin == null || mood < wMoodMin) wMoodMin = mood;
+          if (wMoodMax == null || mood > wMoodMax) wMoodMax = mood;
         }
         final sleep = period.sleepOn(d);
         if (sleep != null) {
           wSleep += sleep;
           wSleepN++;
+          if (wSleepMin == null || sleep < wSleepMin) wSleepMin = sleep;
+          if (wSleepMax == null || sleep > wSleepMax) wSleepMax = sleep;
         }
 
         // Zelfde P-score-bron en -regels als de samenvatting.
@@ -747,8 +774,14 @@ class RapportGenerator {
       final weekEnd = week.last;
       final weekLabel =
           '${RapportStrings.fmtDatumKort(weekStart)} ${s.dateRangeJoiner} ${RapportStrings.fmtDatumKort(weekEnd)}';
-      final moodStr = wMoodN > 0 ? RapportStrings.fmt1(wMood / wMoodN) : '-';
-      final sleepStr = wSleepN > 0 ? s.formatHours(wSleep / wSleepN) : '-';
+      final moodStr = wMoodN > 0
+          ? '${RapportStrings.fmt1(wMood / wMoodN)} '
+              '(${RapportStrings.fmt1(wMoodMin!)} / ${RapportStrings.fmt1(wMoodMax!)})'
+          : '-';
+      final sleepStr = wSleepN > 0
+          ? '${s.formatHours(wSleep / wSleepN)} '
+              '(${s.formatHours(wSleepMin!)} – ${s.formatHours(wSleepMax!)})'
+          : '-';
       final pStr = wPN > 0 ? RapportStrings.fmt1(wP / wPN) : '-';
       final medStr = wIntake > 0 ? '$wTaken/$wIntake' : '-';
 
@@ -783,6 +816,14 @@ class RapportGenerator {
           anchorStr += ' · ⚠ ${lageDagen.join(', ')}';
         }
       }
+      final weekEvents = <String>[];
+      for (final d in week) {
+        weekEvents.addAll(medEvents[_dateStr(d)] ?? const <String>[]);
+      }
+      if (weekEvents.isNotEmpty) {
+        final events = weekEvents.map((e) => '*$e*').join(' · ');
+        anchorStr = anchorStr == '–' ? events : '$anchorStr · $events';
+      }
       buf.writeln('| $weekLabel | $moodStr | $sleepStr | $pStr | $medStr | $anchorStr |');
     }
 
@@ -791,25 +832,117 @@ class RapportGenerator {
     buf.writeln();
   }
 
-  // === CORRELATIE ANALYSE (Medication vs Mood) ===
+  /// Medicatiegebeurtenissen per dag: dosiswijzigingen (afgeleid uit de
+  /// dosering die bij de inname is vastgelegd) en stopmomenten.
+  Map<String, List<String>> _medicationEvents(
+    _PeriodData period,
+    RapportStrings s,
+  ) {
+    final events = <String, List<String>>{};
+    final start = _dateStr(period.startDate);
+    final eind = _dateStr(period.endDate);
+
+    void voegToe(String datum, String tekst) {
+      if (datum.compareTo(start) < 0 || datum.compareTo(eind) > 0) return;
+      events.putIfAbsent(datum, () => []).add(tekst);
+    }
+
+    for (final groep in period.medicationGroups) {
+      final naam = formatMedName(
+          (groep.firstWhere(_PeriodData.isActiveMedication,
+                  orElse: () => groep.first)['naam'] ??
+              '').toString());
+      if (naam.isEmpty) continue;
+      final eenheid =
+          (groep.first['eenheid']?.toString() ?? '').trim();
+
+      // Stopmoment.
+      for (final m in groep) {
+        final stop = period.stopDateOf(m);
+        if (stop != null) {
+          voegToe(_dateStr(stop), '${RapportStrings.fmtDatumKort(stop)}: ${s.stoppedEvent(naam)}');
+        }
+      }
+
+      // Dosiswijzigingen: per dag de vastgelegde dosering.
+      final perDag = <String, String>{};
+      for (final entry in period.intakesByDate.entries) {
+        for (final row in entry.value) {
+          final id = _asInt(row['medication_id']);
+          if (!groep.any((m) => _asInt(m['id']) == id)) continue;
+          final dosis = (row['dosering']?.toString() ?? '').trim();
+          if (dosis.isEmpty) continue;
+          perDag.putIfAbsent(entry.key, () => RapportStrings.fmtDose(dosis));
+        }
+      }
+      final datums = perDag.keys.toList()..sort();
+      String? vorige;
+      for (final d in datums) {
+        final dosis = perDag[d]!;
+        if (vorige != null && dosis != vorige) {
+          voegToe(
+              d,
+              '${RapportStrings.fmtDatumKortStr(d)}: '
+              '${s.doseChangeEvent(naam, dosis, eenheid)}');
+        }
+        vorige = dosis;
+      }
+    }
+    return events;
+  }
+
+  // === CORRELATIES ===
 
   void _buildCorrelation(
     StringBuffer buf,
     RapportStrings s,
     _PeriodData period,
+    Map<String, double> pScores,
     DateTime now,
   ) {
+    // Slaapduur in drie categorieën; alleen dagen met zowel stemming als
+    // slaap (> 0) tellen mee.
+    double kortSom = 0, normaalSom = 0, langSom = 0;
+    int kortN = 0, normaalN = 0, langN = 0;
+    for (final d in period.allDays) {
+      final mood = period.moodOn(d);
+      final sleep = period.sleepOn(d);
+      if (mood == null || sleep == null) continue;
+      if (sleep < 6) {
+        kortSom += mood;
+        kortN++;
+      } else if (sleep <= 9.5) {
+        normaalSom += mood;
+        normaalN++;
+      } else {
+        langSom += mood;
+        langN++;
+      }
+    }
+    final paired = kortN + normaalN + langN;
+
+    // Dagritme (P-Score) vs stemming, op dezelfde dagelijkse stemmingsbron.
+    double hoogPSom = 0, laagPSom = 0;
+    int hoogPN = 0, laagPN = 0;
+    for (final d in period.allDays) {
+      final mood = period.moodOn(d);
+      final p = pScores[_dateStr(d)];
+      if (mood == null || p == null) continue;
+      if (p >= 3.5) {
+        hoogPSom += mood;
+        hoogPN++;
+      } else {
+        laagPSom += mood;
+        laagPN++;
+      }
+    }
+
+    // Medicatietrouw vs stemming.
     double highAdhMood = 0, lowAdhMood = 0;
     int highAdhCount = 0, lowAdhCount = 0;
-
     for (final d in period.allDays.reversed) {
-      // Zelfde bron en datum-sleutel als Slaap vs Stemming: moodOn() leest
-      // daily_logs.stemming_hoog op yyyy-MM-dd. Dagen zonder (geldige)
-      // stemming tellen niet mee in n.
       final mood = period.moodOn(d);
       if (mood == null) continue;
-
-      // Adherence for this day (due-aware; lege dagen tellen niet mee).
       int dTaken = 0, dExpected = 0;
       for (final group in period.medicationGroups) {
         final dose = _countGroupDoses(period, d, group, now);
@@ -817,7 +950,6 @@ class RapportGenerator {
         dExpected += dose.expected;
       }
       if (dExpected == 0) continue;
-
       final pct = dTaken * 100 / dExpected;
       if (pct >= 90) {
         highAdhMood += mood;
@@ -828,15 +960,35 @@ class RapportGenerator {
       }
     }
 
-    buf.writeln('## ${s.correlationsTitle}');
+    String gem(double? som, int n) =>
+        n == 0 ? '–' : RapportStrings.fmt1(som! / n);
+
+    buf.writeln('## ${s.correlationHeader(paired)}');
     buf.writeln();
+
+    buf.writeln('### ${s.sleepMoodTitle}');
+    buf.writeln();
+    buf.writeln('| ${s.sleepCategory} | ${s.daysColumn} | ${s.avgMood} |');
+    buf.writeln('|----------------|-------|---------------|');
+    buf.writeln('| ${s.sleepShortLabel} | n=$kortN | ${gem(kortSom, kortN)} |');
+    buf.writeln('| ${s.sleepNormalLabel} | n=$normaalN | ${gem(normaalSom, normaalN)} |');
+    buf.writeln('| ${s.sleepLongLabel} | n=$langN | ${gem(langSom, langN)} |');
+    buf.writeln();
+
+    buf.writeln('### ${s.rhythmMoodTitle}');
+    buf.writeln();
+    buf.writeln('| ${s.rhythmStability} | ${s.daysColumn} | ${s.avgMood} |');
+    buf.writeln('|----------------|-------|---------------|');
+    buf.writeln('| ${s.rhythmHighLabel} | n=$hoogPN | ${gem(hoogPSom, hoogPN)} |');
+    buf.writeln('| ${s.rhythmLowLabel} | n=$laagPN | ${gem(laagPSom, laagPN)} |');
+    buf.writeln();
+
     buf.writeln('### ${s.correlationTitle}');
     buf.writeln();
     if (highAdhCount > 0 && lowAdhCount > 0) {
       buf.writeln(s.correlationHighAdherence(highAdhMood / highAdhCount, highAdhCount));
       buf.writeln(s.correlationLowAdherence(lowAdhMood / lowAdhCount, lowAdhCount));
-      final diff =
-          (highAdhMood / highAdhCount) - (lowAdhMood / lowAdhCount);
+      final diff = (highAdhMood / highAdhCount) - (lowAdhMood / lowAdhCount);
       buf.writeln();
       buf.writeln(s.correlationDiff(diff));
     } else if (highAdhCount > 0) {
@@ -850,59 +1002,6 @@ class RapportGenerator {
     buf.writeln();
   }
 
-  /// Slaap vs stemming: vergelijkt de gemiddelde stemming op dagen met
-  /// korte slaap (<6 uur) met dagen met voldoende slaap (>=6 uur).
-  void _buildSleepMoodCorrelation(
-    StringBuffer buf,
-    RapportStrings s,
-    _PeriodData period,
-  ) {
-    double shortSum = 0, longSum = 0;
-    int shortCount = 0, longCount = 0;
-    int activeDays = 0;
-
-    // Alleen dagen met zowel geldige stemming als geldige slaap (> 0) doen
-    // mee. Elke dag valt in precies één bucket (< 6 uur of >= 6 uur), dus
-    // shortCount + longCount == het aantal gepaarde dagen.
-    for (final d in period.allDays) {
-      final mood = period.moodOn(d);
-      final sleep = period.sleepOn(d);
-      if (mood != null || sleep != null) activeDays++;
-      if (mood == null) continue;
-      if (sleep == null) continue;
-      if (sleep < 6.0) {
-        shortSum += mood;
-        shortCount++;
-      } else {
-        longSum += mood;
-        longCount++;
-      }
-    }
-    final pairedCount = shortCount + longCount;
-
-    buf.writeln('### ${s.sleepMoodTitle}');
-    buf.writeln();
-    if (shortCount > 0) {
-      buf.writeln(s.sleepMoodShortSleep(shortSum / shortCount, shortCount));
-    } else {
-      buf.writeln(s.sleepMoodShortNoData);
-    }
-    if (longCount > 0) {
-      buf.writeln(s.sleepMoodLongSleep(longSum / longCount, longCount));
-    } else {
-      buf.writeln(s.sleepMoodLongNoData);
-    }
-    if (shortCount > 0 && longCount > 0) {
-      buf.writeln();
-      buf.writeln(s.correlationDiff((longSum / longCount) - (shortSum / shortCount)));
-    }
-    if (pairedCount > 0) {
-      buf.writeln();
-      buf.writeln(s.sleepMoodPaired(pairedCount, activeDays));
-    }
-    buf.writeln();
-  }
-
   // === 3. SAMENVATTING ===
 
   void _buildSummary(
@@ -912,38 +1011,49 @@ class RapportGenerator {
   ) {
     buf.writeln('## ${s.summaryTitle}');
     buf.writeln();
-    buf.writeln('| ${s.summaryMetric} | ${s.summaryValue} |');
-    buf.writeln('|---------|--------|');
+    buf.writeln('| ${s.summaryMetric} | ${s.summaryValue} | ${s.bandwidth} |');
+    buf.writeln('|---------|--------|-------------------------|');
+    final compleet = totals.calendarDays == 0
+        ? 0
+        : (totals.activeDays * 100 / totals.calendarDays).round();
     buf.writeln(
-        '| **${s.daysWithData}** | ${s.dagenVanKalender(totals.activeDays, totals.calendarDays)} |');
+        '| **${s.daysWithData}** | ${s.dagenVanKalender(totals.activeDays, totals.calendarDays)} | ${s.completePct(compleet)} |');
     if (totals.moodCount > 0) {
       buf.writeln(
-          '| **${s.avgMoodLong}** | ${RapportStrings.fmt1(totals.totalMood / totals.moodCount)} (-5 ${s.to} +5, n=${totals.moodCount}) |');
+          '| **${s.avgMoodLong}** | ${RapportStrings.fmt1(totals.totalMood / totals.moodCount)} (n=${totals.moodCount}) | '
+          '${RapportStrings.fmt1(totals.moodMin!)} ${s.to} ${RapportStrings.fmt1(totals.moodMax!)} '
+          '(-5 ${s.to} +5) |');
     }
     if (totals.sleepCount > 0) {
       buf.writeln(
-          '| **${s.avgSleepDuration}** | ${s.formatHours(totals.totalSleep / totals.sleepCount)} (n=${totals.sleepCount}) |');
+          '| **${s.avgSleepDuration}** | ${s.formatHours(totals.totalSleep / totals.sleepCount)} (n=${totals.sleepCount}) | '
+          '${s.formatHours(totals.sleepMin!)} – ${s.formatHours(totals.sleepMax!)} |');
     }
     if (totals.pScoreDays > 0) {
       final avgP = totals.totalPScore / totals.pScoreDays;
       buf.writeln(
-          '| **${s.avgPScore}** | ${RapportStrings.fmt1(avgP)} / 5 (SRT: ${(avgP / 5 * 100).round()}%, n=${totals.pScoreDays}) |');
+          '| **${s.avgPScore}** | ${RapportStrings.fmt1(avgP)} / 5 (SRT: ${(avgP / 5 * 100).round()}%, n=${totals.pScoreDays}) | '
+          '${RapportStrings.fmt1(totals.pMin!)} – ${RapportStrings.fmt1(totals.pMax!)} |');
     }
+    final medLabel = totals.medicationCutoffIsToday
+        ? s.dosesUntilToday
+        : s.dosesUntilYesterday;
     if (totals.intakeCount > 0) {
       final pct = (totals.takenCount * 100 / totals.intakeCount).round();
-      final suffix = (totals.periodIncludesToday && totals.calendarDays > 1)
-          ? ', ${totals.medicationCutoffIsToday ? s.dosesUntilToday : s.dosesUntilYesterday}'
-          : '';
+      final medRange = totals.periodIncludesToday
+          ? '${s.fixedMedicationLabel} $medLabel'
+          : s.fixedMedicationLabel;
       buf.writeln(
-          '| **${s.medicationAdherence}** | ${totals.takenCount}/${totals.intakeCount} ${s.taken} ($pct%$suffix) |');
+          '| **${s.medicationAdherence}** | ${totals.takenCount} / ${totals.intakeCount} ${s.taken} ($pct%) | '
+          '$medRange |');
     } else if (totals.hasScheduledDoses) {
       // Nog geen enkele dosis aan de beurt (bijv. rapport vóór de eerste
       // innametijd): toon 0/0 zonder percentage (geen deling door nul).
-      final suffix = (totals.periodIncludesToday && totals.calendarDays > 1)
-          ? ' (${totals.medicationCutoffIsToday ? s.dosesUntilToday : s.dosesUntilYesterday})'
-          : '';
+      final medRange = totals.periodIncludesToday
+          ? '${s.fixedMedicationLabel} $medLabel'
+          : s.fixedMedicationLabel;
       buf.writeln(
-          '| **${s.medicationAdherence}** | 0/0 ${s.taken}$suffix |');
+          '| **${s.medicationAdherence}** | 0 / 0 ${s.taken} | $medRange |');
     }
 
     buf.writeln();
@@ -973,7 +1083,7 @@ class RapportGenerator {
         scoreCounts[sc.toInt()] = (scoreCounts[sc.toInt()] ?? 0) + 1;
       }
     }
-    buf.writeln('## ${s.dagboekTitle}');
+    buf.writeln('## ${s.dagboekNewestFirst}');
     buf.writeln();
     if (scoreCount > 0) {
       final breakdown = (scoreCounts.keys.toList()..sort((a, b) => b.compareTo(a)))
@@ -988,7 +1098,8 @@ class RapportGenerator {
       final tekst = entry['tekst']?.toString() ?? '';
       final score = _extractDouble(entry['score']);
       if (tekst.isNotEmpty) {
-        buf.writeln('- **${s.dagboekEntryLabel(dateStr, score)}**');
+        final alert = (score != null && score <= 2) ? ' ⚠' : '';
+        buf.writeln('- **${s.dagboekEntryLabel(dateStr, score)}$alert**');
         buf.writeln('  > ${tekst.trim()}');
       }
     }
@@ -1012,7 +1123,7 @@ class RapportGenerator {
       groups.putIfAbsent(_PeriodData.medGroupKey(med), () => []).add(med);
     }
 
-    buf.writeln('## ${s.medOverviewTitle}');
+    buf.writeln('## ${s.medicationCourseTitle}');
     buf.writeln();
 
     final startStr = _dateStr(period.startDate);
@@ -1309,7 +1420,11 @@ class RapportGenerator {
           .join(', ');
       final soort = scheds.isEmpty ? s.medAsNeeded : s.medFixed;
       final tijden = times.isEmpty ? '' : ' — $times';
-      buf.writeln('- **$name**: $dosis $eenheid — $soort$tijden');
+      final created = med['created_at']?.toString();
+      final sinds = (created == null || created.isEmpty)
+          ? ''
+          : ' *(${s.since(RapportStrings.fmtDatumStr(created))})*';
+      buf.writeln('- **$name**: $dosis $eenheid — $soort$tijden$sinds');
       // Latest blood level
       final level = await db.getLatestMedicationLevel(id);
       if (level != null && level['bloedspiegel'] != null) {

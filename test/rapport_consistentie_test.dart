@@ -110,9 +110,10 @@ void main() {
 
     // 6 korte + 6 lange = 12 gepaarde dagen; slaap 0 en ontbrekende stemming
     // tellen niet mee.
-    expect(md, contains('Bij korte slaap (<6 uur): gemiddelde stemming 1.0 (n=6 dagen)'));
-    expect(md, contains('Bij voldoende slaap (6+ uur): gemiddelde stemming -1.0 (n=6 dagen)'));
-    expect(md, contains('Gebaseerd op 12 van de 14 dagen waarop zowel slaap als stemming is ingevuld.'));
+    expect(md, contains('## 🧬 Correlaties (n=12 complete dagen)'));
+    expect(md, contains('| Korte slaap (< 6 uur) | n=6 | 1.0 |'));
+    expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=6 | -1.0 |'));
+    expect(md, contains('| Lange slaap / sedatie (> 9,5 uur) | n=0 | – |'));
   });
 
   test('P-Score telt alleen gelogde ankers en sluit een lege huidige dag uit', () async {
