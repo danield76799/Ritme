@@ -55,7 +55,7 @@ class RapportStrings {
   String get analysisSignalsTitle =>
       nl ? 'Bipolaire analyse-signalen' : 'Bipolar analysis signals';
   String get moodCheckNote => nl
-      ? '_Opmerking: dit is de 5-vragen stemmingcheck, een apart instrument van de dagelijkse stemming-tracking (weekoverzicht)._'
+      ? '_Opmerking: dit is de 5-vragen stemmingscheck, een apart instrument van de dagelijkse stemming-tracking (weekoverzicht)._'
       : '_Note: this is the 5-question mood check, a separate instrument from the daily mood tracking (weekly overview)._';
   String get ongoing => nl ? 'loopt nog' : 'ongoing';
   String pageOfTotal(int page, int total) =>
@@ -81,9 +81,16 @@ class RapportStrings {
   String get sleepMoodLongNoData => nl
       ? 'Bij voldoende slaap (6+ uur): geen data in deze periode (n=0 dagen).'
       : 'Enough sleep (6h+): no data in this period (n=0 days).';
-  String sleepMoodPaired(int n) => nl
-      ? 'Gebaseerd op n=$n ${_dagen(n)} waarop zowel slaap als stemming is ingevuld.'
-      : 'Based on n=$n ${_dagen(n)} on which both sleep and mood were entered.';
+  String sleepMoodPaired(int paired, int totaal) {
+    if (paired < totaal) {
+      return nl
+          ? 'Gebaseerd op $paired van de $totaal dagen waarop zowel slaap als stemming is ingevuld.'
+          : 'Based on $paired of the $totaal days with both sleep and mood recorded.';
+    }
+    return nl
+        ? 'Gebaseerd op n=$paired ${_dagen(paired)} waarop zowel slaap als stemming is ingevuld.'
+        : 'Based on n=$paired ${_dagen(paired)} on which both sleep and mood were entered.';
+  }
   String _dagen(int n) => nl ? (n == 1 ? 'dag' : 'dagen') : (n == 1 ? 'day' : 'days');
 
   String intakeMoments(int n) =>
@@ -98,8 +105,8 @@ class RapportStrings {
   String get calculatedMood => nl ? 'Berekende stemming' : 'Calculated mood';
 
   String get legendaLine => nl
-      ? '_Legenda: Stemming (-5 t/m +5) · P-Score (1–5, stabiliteit dagritme) · SRT (Social Rhythm Therapy-doelpercentage) · Dagboekscore (1 = zwaar, 5 = goed)._'
-      : '_Legend: Mood (-5 to +5) · P-score (1–5, day rhythm stability) · SRT (Social Rhythm Therapy goal percentage) · Journal score (1 = heavy, 5 = good)._';
+      ? '_Legenda: Stemming (-5 t/m +5) · P-Score (1–5, stabiliteit dagritme) · SRT (Social Rhythm Therapy-doelpercentage) · Dagboekscore (1 = zwaar, 5 = goed) · ⚠ = dagboeknotitie met score ≤ 2._'
+      : '_Legend: Mood (-5 to +5) · P-score (1–5, day rhythm stability) · SRT (Social Rhythm Therapy goal percentage) · Journal score (1 = heavy, 5 = good) · ⚠ = journal note with score ≤ 2._';
   String get weekAnchors => nl ? 'Dagboek & Alerts' : 'Journal & Alerts';
   String notitieCount(int n) => nl
       ? '$n ${n == 1 ? 'notitie' : 'notities'}'
@@ -116,6 +123,7 @@ class RapportStrings {
       nl ? '$actief / $totaal kalenderdagen' : '$actief / $totaal calendar days';
   String get dosesUntilYesterday =>
       nl ? 't/m gisteravond' : 'through yesterday evening';
+  String get dosesUntilToday => nl ? 't/m vandaag' : 'through today';
   String get avgMoodLong => nl ? 'Gem. stemming' : 'Avg. mood';
   String get avgSleepDuration => nl ? 'Gem. slaapduur' : 'Avg. sleep duration';
   String get medicationAdherence => nl ? 'Verwachte doses' : 'Expected doses';
@@ -183,7 +191,38 @@ class RapportStrings {
     final m = min % 60;
     final u = nl ? 'u' : 'h';
     if (m == 0) return '$h$u';
-    return '$h$u ${m}m';
+    return '$h$u ${m.toString().padLeft(2, '0')}m';
+  }
+
+  /// Eén datumnotatie voor het hele rapport: 24-11-2026.
+  static String fmtDatum(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-${d.year}';
+
+  /// Korte datum voor periodes, medicatieverloop en alerts: 20-11.
+  static String fmtDatumKort(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}';
+
+  /// Volledige datum uit een opgeslagen yyyy-MM-dd.
+  static String fmtDatumStr(String iso) {
+    final d = DateTime.tryParse(iso);
+    return d == null ? iso : fmtDatum(d);
+  }
+
+  /// Zelfde korte notatie, maar uit een opgeslagen yyyy-MM-dd.
+  static String fmtDatumKortStr(String iso) {
+    final d = DateTime.tryParse(iso);
+    return d == null ? iso : fmtDatumKort(d);
+  }
+
+  /// Medicatiedosering zonder overbodige decimalen: 1000.0 -> 1000,
+  /// 37.5 blijft 37.5.
+  static String fmtDose(String raw) {
+    final genormaliseerd = raw.trim().replaceAll(',', '.');
+    final v = double.tryParse(genormaliseerd);
+    if (v == null) return raw.trim();
+    if (v % 1 == 0) return v.toInt().toString();
+    return v.toString();
   }
 
   String episodeLabel(String type) {

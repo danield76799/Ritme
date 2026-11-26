@@ -25,8 +25,11 @@ String _dateStr(DateTime d) =>
 /// rapportdag nog 'open' staat (tijd in de toekomst) of al afgelopen is.
 class RapportTestDb implements DatabaseRepository {
   RapportTestDb(this.today,
-      {required this.avondTijd, this.metExtraVastMiddel = false,
-       this.lurasidonTijd = '23:59'});
+      {required this.avondTijd,
+       this.metExtraVastMiddel = false,
+       this.lurasidonTijd = '23:59',
+       this.gemisteDagOffset,
+       this.todayTakenIds = const {}});
 
   final DateTime today;
   final String avondTijd;
@@ -35,6 +38,13 @@ class RapportTestDb implements DatabaseRepository {
   /// Voegt een vast middel toe dat in de periode helemaal niet is
   /// ingenomen (0/14 moet zichtbaar zijn in het rapport).
   final bool metExtraVastMiddel;
+
+  /// Laat één dag vóór vandaag bewust zonder inname (dagen terug).
+  final int? gemisteDagOffset;
+
+  /// Medicatie-ids die vandaag wél zijn ingenomen. Bepaalt of de
+  /// medicatietelling vandaag meeneemt ('t/m vandaag') of niet.
+  final Set<int> todayTakenIds;
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
@@ -116,21 +126,24 @@ class RapportTestDb implements DatabaseRepository {
       String startDate, String endDate) async {
     final rows = <Map<String, dynamic>>[];
     for (int i = 0; i < 13; i++) {
-      final d = DateTime(today.year, today.month, today.day - (13 - i));
+      final offset = 13 - i;
+      if (offset == gemisteDagOffset) continue;
+      final d = DateTime(today.year, today.month, today.day - offset);
       final date = _dateStr(d);
       rows.add({'medication_id': 1, 'date': date, 'aantal_ingenomen': 1});
       rows.add({'medication_id': 2, 'date': date, 'aantal_ingenomen': 1});
     }
-    // Vandaag is nog niet ingenomen.
+    // Vandaag: standaard nog niet ingenomen; tests kunnen dit per middel
+    // aanpassen om de 't/m vandaag'-tak te testen.
     rows.add({
       'medication_id': 1,
       'date': _dateStr(today),
-      'aantal_ingenomen': 0,
+      'aantal_ingenomen': todayTakenIds.contains(1) ? 1 : 0,
     });
     rows.add({
       'medication_id': 2,
       'date': _dateStr(today),
-      'aantal_ingenomen': 0,
+      'aantal_ingenomen': todayTakenIds.contains(2) ? 1 : 0,
     });
     // PRN: drie keer ingenomen in de periode.
     for (final offset in [12, 9, 4]) {
@@ -186,7 +199,10 @@ class RapportTestDb implements DatabaseRepository {
 
 /// Bouwt het rapport voor de gegeven [avondTijd].
 Future<String> _rapport(String avondTijd,
-    {bool metExtraVastMiddel = false, String lurasidonTijd = '23:59'}) async {
+    {bool metExtraVastMiddel = false,
+     String lurasidonTijd = '23:59',
+     int? gemisteDagOffset,
+     Set<int> todayTakenIds = const {}}) async {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   setDbForTesting(RapportTestDb(
@@ -194,6 +210,8 @@ Future<String> _rapport(String avondTijd,
     avondTijd: avondTijd,
     metExtraVastMiddel: metExtraVastMiddel,
     lurasidonTijd: lurasidonTijd,
+    gemisteDagOffset: gemisteDagOffset,
+    todayTakenIds: todayTakenIds,
   ));
   return RapportGenerator.instance
       .generateLCMReport(days: 14, localeCode: 'nl');
@@ -229,9 +247,11 @@ void main() {
     test('het weekoverzicht dekt dezelfde periode als de header', () {
       final today = DateTime.now();
       final oudsteWeekStart = DateTime(today.year, today.month, today.day - 13);
+      final dag = oudsteWeekStart.day.toString().padLeft(2, '0');
+      final maand = oudsteWeekStart.month.toString().padLeft(2, '0');
       expect(
         report,
-        contains('${oudsteWeekStart.day}/${oudsteWeekStart.month} – '),
+        contains('$dag-$maand t/m '),
         reason: 'de oudste week moet op de startdatum van de periode beginnen',
       );
     });
@@ -277,7 +297,8 @@ void main() {
       });
 
       test('dagen zonder inname staan als Gemist vermeld', () async {
-        final rapport = await _rapport(_verledenTijd(), lurasidonTijd: '00:00');
+        final rapport = await _rapport(_verledenTijd(),
+            lurasidonTijd: '00:00', gemisteDagOffset: 3);
         final regels = rapport.split('\n');
         final index = regels.indexWhere((l) => l.contains('**Lurasidon**'));
         final blok = regels.sublist(index, index + 4).join('\n');
@@ -288,7 +309,7 @@ void main() {
     test('een vast middel zonder inname blijft zichtbaar (0/14)', () async {
       final rapport =
           await _rapport(_toekomstigeTijd(), metExtraVastMiddel: true);
-      expect(rapport, contains('- **Sertraline** — 0/14 doses (0%)'));
+      expect(rapport, contains('- **Sertraline** — 0/13 doses (0%)'));
     });
 
     test('medicatienamen zijn opgeschoond', () {
@@ -323,13 +344,26 @@ void main() {
     });
 
     test('is de dag afgelopen, dan telt hij wél mee', () async {
-      final rapport = await _rapport(_verledenTijd(), lurasidonTijd: '00:00');
+      final rapport = await _rapport(_verledenTijd(),
+          lurasidonTijd: '00:00', todayTakenIds: const {1});
       final sectie = rapport.split('## 🧬 Correlaties')[1].split('###')[1];
       expect(
         sectie,
         contains('Bij lage trouw (<70%): gemiddelde stemming'),
-        reason: 'vandaag is inmiddels afgelopen, dus de gemiste dosis telt '
-            'echt mee in de correlatie',
+        reason: 'vandaag is deels ingenomen en de avonddosis is verstreken, '
+            'dus de dag telt mee en is een lage-trouwdag',
+      );
+    });
+
+    test('zonder inname vandaag blijft de dag buiten de telling', () async {
+      // Ook als de avondtijd al verstreken is: het label is 't/m gisteravond'
+      // en dan tellen de doses van vandaag niet mee.
+      final rapport = await _rapport(_verledenTijd(), lurasidonTijd: '00:00');
+      final sectie = rapport.split('## 🧬 Correlaties')[1].split('###')[1];
+      expect(
+        sectie,
+        contains('geen dagen met lage trouw in deze periode'),
+        reason: 'zonder inname vandaag is de dag nog niet afgesloten',
       );
     });
   });

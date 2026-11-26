@@ -199,7 +199,7 @@ void main() {
         configs: _dailyMeds(), schedules: _dailySchedule(tijd: '00:00'),
         intakes: intakes,
       );
-      expect(md, isNot(contains('10-11 t/m 14-11')));
+      expect(md, isNot(contains('- 10-11 t/m 14-11:')));
       expect(md, contains('10-11 t/m 11-11'));
       expect(md, contains('13-11 t/m 14-11'));
     });
@@ -231,8 +231,8 @@ void main() {
           {'date': '2026-11-20', 'score': 1, 'tekst': 'Tweede'},
         ],
       );
-      expect(md, contains('⚠ 20/11'));
-      expect(md, isNot(contains('20/11, 20/11')));
+      expect(md, contains('⚠ 20-11'));
+      expect(md, isNot(contains('20-11, 20-11')));
     });
 
     test('7. Slaap-correlatie zonder korte-slaapgroep toont n=0 en geen verschil', () async {

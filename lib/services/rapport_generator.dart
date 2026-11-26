@@ -241,6 +241,14 @@ class _WeeklyTotals {
   /// Zijn er in de periode überhaupt doses ingepland (ook zonder dat er al
   /// een aan de beurt was)? Dan tonen we 0/0 i.p.v. de regel weg te laten.
   bool hasScheduledDoses = false;
+
+  /// Telt de medicatietelling vandaag mee (er is vandaag een dosis
+  /// ingenomen) of alleen t/m gisteravond?
+  bool medicationCutoffIsToday = true;
+
+  /// Ligt de rapportperiode (deels) op of na vandaag? Alleen dan is een
+  /// 't/m vandaag'- of 't/m gisteravond'-label zinvol.
+  bool periodIncludesToday = true;
 }
 
 /// Generates comprehensive reports for bipolar disorder management
@@ -326,6 +334,27 @@ class RapportGenerator {
     await _buildHeader(buf, s, start, eind, generatedAt);
 
     final period = await _loadPeriodData(start, eind);
+
+    // Medicatie-cutoff. Vandaag telt alleen mee als er vandaag al een dosis
+    // is ingenomen; anders rekenen we — net als het label 't/m gisteravond'
+    // — tot en met gisteren. Zo tellen samenvatting, weekoverzicht en het
+    // medicatieverloop exact dezelfde doses.
+    final vandaag = DateTime(generatedAt.year, generatedAt.month, generatedAt.day);
+    final periodeBevatVandaag = !eind.isBefore(vandaag);
+    // Alleen vaste (geplande) middelen bepalen de cutoff: een PRN-inname
+    // vandaag mag de telling van de vaste doses niet naar 't/m vandaag'
+    // verschuiven.
+    final vandaagGenomen = period.medicationGroups.any((groep) {
+      final heeftSchema = groep.any((m) =>
+          period.schedulesFor(_asInt(m['id'])).isNotEmpty);
+      if (!heeftSchema) return false;
+      return period.takenOnMerged(_asInt(groep.first['id']), _dateStr(vandaag)) > 0;
+    });
+    final cutoffIsToday = !periodeBevatVandaag || vandaagGenomen;
+    final medNow = cutoffIsToday
+        ? generatedAt
+        : DateTime(generatedAt.year, generatedAt.month, generatedAt.day - 1, 23, 59);
+
     final srmRange = await db.getSrmActivitiesRange(startStr, endStr);
     final srmByDate = <String, List<Map<String, dynamic>>>{};
     for (final a in srmRange) {
@@ -333,13 +362,20 @@ class RapportGenerator {
       srmByDate.putIfAbsent(d, () => []).add(a);
     }
     final pScores = _dailyPScores(srmByDate);
-    final totals = _computeTotals(period, pScores, generatedAt, periodeDagen);
+    final totals = _computeTotals(
+      period,
+      pScores,
+      medNow,
+      periodeDagen,
+      cutoffIsToday: cutoffIsToday,
+      periodIncludesToday: periodeBevatVandaag,
+    );
     _buildSummary(buf, s, totals);                     // 2. Samenvatting
-    await _buildWeeklyOverview(buf, s, period, pScores, generatedAt); // 3. Weekoverzicht
-    await _buildMedicationSection(buf, s, period, generatedAt); // 4. Medicatie
+    await _buildWeeklyOverview(buf, s, period, pScores, medNow); // 3. Weekoverzicht
+    await _buildMedicationSection(buf, s, period, medNow); // 4. Medicatie
     await _buildMedicationSchema(buf, s, period);      // 5. Mediciatieschema
     await _buildDagboek(buf, s, startStr, endStr);     // 6. Dagboek
-    _buildCorrelation(buf, s, period, generatedAt);    // 7. Correlatie: medicatie-trouw
+    _buildCorrelation(buf, s, period, medNow);         // 7. Correlatie: medicatie-trouw
     _buildSleepMoodCorrelation(buf, s, period);        // 7. Correlatie: slaap vs stemming
     await _buildMoodCheck(buf, s, startStr, endStr);   // 8. Stemmingscheck (alleen bij data)
     await _buildEpisodes(buf, s, period);
@@ -368,7 +404,7 @@ class RapportGenerator {
     buf.writeln(
         '${s.period} ${_formatNL(startDate)} ${s.to} ${_formatNL(endDate)}');
     buf.writeln(
-        '${s.generated} ${_formatNL(now)} ${now.hour}:${now.minute.toString().padLeft(2, '0')}');
+        '${s.generated} ${_formatNL(now)} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}');
     buf.writeln();
 
     // Settings
@@ -435,19 +471,19 @@ class RapportGenerator {
     buf.writeln();
     buf.writeln('| ${s.metric} | ${s.average} |');
     buf.writeln('|---------|-----------|');
-    if (nQ1 > 0) buf.writeln('| **${s.mood}** (−4..+4) | ${_fmt(sumQ1 / nQ1)} |');
+    if (nQ1 > 0) buf.writeln('| **${s.mood}** (−4 ${s.to} +4) | ${_fmt(sumQ1 / nQ1)} |');
     if (nQ3 > 0) {
-      buf.writeln('| **${s.energyLevel}** (−3..+3) | ${_fmt(sumQ3 / nQ3)} |');
+      buf.writeln('| **${s.energyLevel}** (−3 ${s.to} +3) | ${_fmt(sumQ3 / nQ3)} |');
     }
     if (nQ4 > 0) {
-      buf.writeln('| **${s.sleepNeed}** (−4..+4) | ${_fmt(sumQ4 / nQ4)} |');
+      buf.writeln('| **${s.sleepNeed}** (−4 ${s.to} +4) | ${_fmt(sumQ4 / nQ4)} |');
     }
     if (nQ5 > 0) {
-      buf.writeln('| **${s.importantEvent}** (−4..+4) | ${_fmt(sumQ5 / nQ5)} |');
+      buf.writeln('| **${s.importantEvent}** (−4 ${s.to} +4) | ${_fmt(sumQ5 / nQ5)} |');
     }
     if (nRaw > 0) {
       buf.writeln(
-          '| **${s.calculatedMood}** (−5..+5) | ${_fmt(sumRaw / nRaw)} |');
+          '| **${s.calculatedMood}** (−5 ${s.to} +5) | ${_fmt(sumRaw / nRaw)} |');
     }
     buf.writeln();
 
@@ -585,10 +621,14 @@ class RapportGenerator {
     _PeriodData period,
     Map<String, double> pScores,
     DateTime now,
-    int periodeDagen,
-  ) {
+    int periodeDagen, {
+    bool cutoffIsToday = true,
+    bool periodIncludesToday = true,
+  }) {
     final totals = _WeeklyTotals();
     totals.calendarDays = periodeDagen;
+    totals.medicationCutoffIsToday = cutoffIsToday;
+    totals.periodIncludesToday = periodIncludesToday;
     for (final d in period.allDays) {
       final dateStr = _dateStr(d);
 
@@ -706,7 +746,7 @@ class RapportGenerator {
       final weekStart = week.first;
       final weekEnd = week.last;
       final weekLabel =
-          '${weekStart.day}/${weekStart.month} – ${weekEnd.day}/${weekEnd.month}';
+          '${RapportStrings.fmtDatumKort(weekStart)} ${s.dateRangeJoiner} ${RapportStrings.fmtDatumKort(weekEnd)}';
       final moodStr = wMoodN > 0 ? RapportStrings.fmt1(wMood / wMoodN) : '-';
       final sleepStr = wSleepN > 0 ? s.formatHours(wSleep / wSleepN) : '-';
       final pStr = wPN > 0 ? RapportStrings.fmt1(wP / wPN) : '-';
@@ -731,7 +771,7 @@ class RapportGenerator {
             if (sc <= 2) {
               final dStr = e['date']?.toString() ?? '';
               if (dStr.length >= 10) {
-                lageDagen.add('${int.tryParse(dStr.substring(8, 10)) ?? ''}/${int.tryParse(dStr.substring(5, 7)) ?? ''}');
+                lageDagen.add(RapportStrings.fmtDatumKortStr(dStr));
               }
             }
           }
@@ -819,14 +859,16 @@ class RapportGenerator {
   ) {
     double shortSum = 0, longSum = 0;
     int shortCount = 0, longCount = 0;
+    int activeDays = 0;
 
     // Alleen dagen met zowel geldige stemming als geldige slaap (> 0) doen
     // mee. Elke dag valt in precies één bucket (< 6 uur of >= 6 uur), dus
     // shortCount + longCount == het aantal gepaarde dagen.
     for (final d in period.allDays) {
       final mood = period.moodOn(d);
-      if (mood == null) continue;
       final sleep = period.sleepOn(d);
+      if (mood != null || sleep != null) activeDays++;
+      if (mood == null) continue;
       if (sleep == null) continue;
       if (sleep < 6.0) {
         shortSum += mood;
@@ -856,7 +898,7 @@ class RapportGenerator {
     }
     if (pairedCount > 0) {
       buf.writeln();
-      buf.writeln(s.sleepMoodPaired(pairedCount));
+      buf.writeln(s.sleepMoodPaired(pairedCount, activeDays));
     }
     buf.writeln();
   }
@@ -889,16 +931,19 @@ class RapportGenerator {
     }
     if (totals.intakeCount > 0) {
       final pct = (totals.takenCount * 100 / totals.intakeCount).round();
-      final suffix = (totals.todayHasOpenDoses && totals.calendarDays > 1)
-          ? ', ${s.dosesUntilYesterday}'
+      final suffix = (totals.periodIncludesToday && totals.calendarDays > 1)
+          ? ', ${totals.medicationCutoffIsToday ? s.dosesUntilToday : s.dosesUntilYesterday}'
           : '';
       buf.writeln(
           '| **${s.medicationAdherence}** | ${totals.takenCount}/${totals.intakeCount} ${s.taken} ($pct%$suffix) |');
     } else if (totals.hasScheduledDoses) {
       // Nog geen enkele dosis aan de beurt (bijv. rapport vóór de eerste
       // innametijd): toon 0/0 zonder percentage (geen deling door nul).
+      final suffix = (totals.periodIncludesToday && totals.calendarDays > 1)
+          ? ' (${totals.medicationCutoffIsToday ? s.dosesUntilToday : s.dosesUntilYesterday})'
+          : '';
       buf.writeln(
-          '| **${s.medicationAdherence}** | 0/0 ${s.taken}${totals.todayHasOpenDoses ? ' (${s.dosesUntilYesterday})' : ''} |');
+          '| **${s.medicationAdherence}** | 0/0 ${s.taken}$suffix |');
     }
 
     buf.writeln();
@@ -939,7 +984,7 @@ class RapportGenerator {
       buf.writeln();
     }
     for (final entry in dagboekEntries.reversed) {
-      final dateStr = entry['date']?.toString() ?? '?';
+      final dateStr = RapportStrings.fmtDatumStr(entry['date']?.toString() ?? '?');
       final tekst = entry['tekst']?.toString() ?? '';
       final score = _extractDouble(entry['score']);
       if (tekst.isNotEmpty) {
@@ -999,7 +1044,7 @@ class RapportGenerator {
         }
       }
 
-      final dosis = (group.first['dosering']?.toString() ?? '').trim();
+      final dosis = RapportStrings.fmtDose(group.first['dosering']?.toString() ?? '');
       final eenheid = (group.first['eenheid']?.toString() ?? '').trim();
       final dosisLabel = [dosis, eenheid].where((x) => x.isNotEmpty).join(' ');
       final takenCount = byDate.values.where(_isTaken).length;
@@ -1066,7 +1111,8 @@ class RapportGenerator {
         final takenToday = row != null && _isTaken(row);
         if (takenToday) {
           final raw = row['dosering']?.toString().trim() ?? '';
-          takenByDate[d] = raw.isNotEmpty ? raw : (dosis.isNotEmpty ? dosis : '?');
+          takenByDate[d] =
+              RapportStrings.fmtDose(raw.isNotEmpty ? raw : (dosis.isNotEmpty ? dosis : '?'));
         }
         for (final t in period.doseTimesOn(group, d)) {
           if (takenToday) {
@@ -1196,16 +1242,9 @@ class RapportGenerator {
     buf.writeln();
   }
 
-  String _shortDate(DateTime d) => '${d.day}-${d.month}';
+  String _shortDate(DateTime d) => RapportStrings.fmtDatumKort(d);
 
-  String _shortDateStr(String iso) {
-    final p = iso.split('-');
-    if (p.length != 3) return iso;
-    final day = int.tryParse(p[2]);
-    final month = int.tryParse(p[1]);
-    if (day == null || month == null) return iso;
-    return '$day-$month';
-  }
+  String _shortDateStr(String iso) => RapportStrings.fmtDatumKortStr(iso);
 
   bool _isTaken(Map<String, dynamic> row) {
     final v = row['aantal_ingenomen'];
@@ -1260,7 +1299,7 @@ class RapportGenerator {
       final id = _asInt(med['id']);
       final name = formatMedName(med['naam']?.toString() ?? '');
       if (name.isEmpty) continue;
-      final dosis = med['dosering']?.toString() ?? '?';
+      final dosis = RapportStrings.fmtDose(med['dosering']?.toString() ?? '?');
       final eenheid = med['eenheid']?.toString() ?? '';
       final scheds = period.schedulesFor(id);
       final times = scheds
@@ -1300,7 +1339,8 @@ class RapportGenerator {
     for (var day in recentWarnings) {
       final count = day['warning_count'] as int? ?? 0;
       if (count > 0) {
-        buf.writeln('- ${day['date']}: ${s.warningsCount(count)}');
+        buf.writeln(
+            '- ${RapportStrings.fmtDatumStr(day['date']?.toString() ?? '')}: ${s.warningsCount(count)}');
       }
     }
     buf.writeln();
@@ -1412,19 +1452,10 @@ class RapportGenerator {
     return buf.toString();
   }
 
-  String _formatNL(DateTime d) {
-    return '${d.day}-${d.month}-${d.year}';
-  }
+  String _formatNL(DateTime d) => RapportStrings.fmtDatum(d);
 
-  String _formatDateStr(String? dateStr) {
-    if (dateStr == null) return '...';
-    try {
-      final d = DateTime.parse(dateStr);
-      return '${d.day}-${d.month}-${d.year}';
-    } catch (_) {
-      return dateStr;
-    }
-  }
+  String _formatDateStr(String? dateStr) =>
+      dateStr == null ? '...' : RapportStrings.fmtDatumStr(dateStr);
 
 }
 
