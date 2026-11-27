@@ -103,8 +103,8 @@ void main() {
 
     // 12 geldige stemmingen van +2; de 8 (oude P-score×2) en de ontbrekende
     // dag tellen niet mee. Beide correlaties moeten dus 2.0 met n=12 tonen.
-    expect(md, contains('Bij hoge trouw (>90%): gemiddelde stemming 2.0 (n=12 dagen; geen dagen met lage trouw in deze periode).'));
-    expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=12 | 2.0 |'));
+    expect(md, contains('Bij hoge trouw (>90%): gemiddelde stemming +2.0 (n=12 dagen; geen dagen met lage trouw in deze periode).'));
+    expect(md, contains('| Normale slaap (6.0 – 9.5 uur) | n=12 | +2.0 |'));
     expect(md, isNot(contains('gemiddelde stemming 0.0 (n=29')));
   });
 }

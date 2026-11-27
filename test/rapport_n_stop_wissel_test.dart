@@ -152,13 +152,13 @@ void main() {
 
     // Slaap: 10 geldige dagen (4 kort + 6 normaal), P-Score: 6.
     expect(md, contains('### Slaap vs Stemming (n=10)'));
-    expect(md, contains('| Korte slaap (< 6 uur) | n=4 | 1.0 |'));
-    expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=6 | 1.0 |'));
-    expect(md, contains('| Lange slaap / sedatie (> 9,5 uur) | n=0 | – |'));
+    expect(md, contains('| Korte slaap (< 6 uur) | n=4 | +1.0 |'));
+    expect(md, contains('| Normale slaap (6.0 – 9.5 uur) | n=6 | +1.0 |'));
+    expect(md, contains('| Lange slaap / sedatie (> 9.5 uur) | n=0 | – |'));
 
     expect(md, contains('### Dagritme (P-Score) vs. Stemming (n=6)'));
-    expect(md, contains('| Hoog ritme (P-Score ≥ 3.5) | n=3 | 1.0 |'));
-    expect(md, contains('| Lager ritme (P-Score < 3.5) | n=3 | 1.0 |'));
+    expect(md, contains('| Hoog ritme (P-Score ≥ 3.5) | n=3 | +1.0 |'));
+    expect(md, contains('| Lager ritme (P-Score < 3.5) | n=3 | +1.0 |'));
 
     expect(md, contains('### Medicatie-trouw vs Stemming (n=10)'));
   });
@@ -189,6 +189,22 @@ void main() {
           'deleted': '1',
           'stopped_at': _iso(stopCodeine),
         },
+        {
+          'id': 9,
+          'naam': 'Quetiapine',
+          'dosering': '50',
+          'eenheid': 'mg',
+          'deleted': '1',
+          'stopped_at': _iso(DateTime(today.year, today.month, today.day - 4)),
+        },
+      ],
+      schedules: [
+        {
+          'id': 12,
+          'medication_id': 9,
+          'reminder_time': '21:00',
+          'days_of_week': '1,2,3,4,5,6,7',
+        },
       ],
       intakes: [
         {'medication_id': 7, 'date': _iso(laatsteTramadol), 'aantal_ingenomen': 1},
@@ -198,6 +214,18 @@ void main() {
           'aantal_ingenomen': 1,
         },
         {'medication_id': 8, 'date': _iso(stopCodeine), 'aantal_ingenomen': 1},
+        {
+          'medication_id': 9,
+          'date': _iso(DateTime(today.year, today.month, today.day - 6)),
+          'aantal_ingenomen': 1,
+          'dosering': '50',
+        },
+        {
+          'medication_id': 9,
+          'date': _iso(DateTime(today.year, today.month, today.day - 5)),
+          'aantal_ingenomen': 1,
+          'dosering': '25',
+        },
       ],
     ));
 
@@ -210,12 +238,14 @@ void main() {
 
     expect(
       md,
-      contains('**Tramadol** (laatste inname: ${_kort(laatsteTramadol)}, '
+      contains('**Tramadol** (PRN, laatste inname: ${_kort(laatsteTramadol)}, '
           'gestopt: ${_kort(stopTramadol)}) — 2× ingenomen op:'),
     );
     // Laatste inname == stopdatum: geen dubbele datumaanduiding.
-    expect(md, contains('**Codeine** (gestopt: ${_kort(stopCodeine)})'));
-    expect(md, isNot(contains('**Codeine** (laatste inname:')));
+    expect(md, contains('**Codeine** (PRN, gestopt: ${_kort(stopCodeine)})'));
+    expect(md, isNot(contains('**Codeine** (PRN, laatste inname:')));
+    // Vast middel met meerdere doseringen: als afbouw gemarkeerd.
+    expect(md, contains('**Quetiapine** — 2/5 doses (40%) · afbouw · gestopt op'));
   });
 
   test('weekcontext comprimeert >2 wissels tussen twee doseringen', () async {
@@ -276,11 +306,56 @@ void main() {
     // Vijf wissels (17 t/m 22) tussen 1000 en 800 → één regel.
     expect(
       md,
-      contains('*17-11 t/m 22-11: Lithium → 1000 / 800 mg (afwisselend)*'),
+      contains('*16-11 t/m 22-11: Lithium → 800 / 1000 mg (afwisselend)*'),
     );
     // Twee wissels blijven los zichtbaar.
     expect(md, contains('*18-11: Sertraline → 100 mg*'));
     expect(md, contains('*20-11: Sertraline → 50 mg*'));
     expect(md, isNot(contains('Sertraline → 50 / 100')));
+    // Meerdere wijzigingen in dezelfde week staan in één cel, gescheiden
+    // door <br>.
+    expect(md, contains('Dagboek & alerts | Medicatiewijzigingen'));
+    expect(md, contains('<br>'));
+  });
+
+  test('wisselreeks stopt op de dag vóór een nieuw doseringsblok', () async {
+    // 16-11 t/m 20-11: 800/1000 afwisselend; 21-11 start een nieuw
+    // constant blok van 1000 mg. De reeks mag daarom t/m 20-11 lopen.
+    final intakes = <Map<String, dynamic>>[];
+    const doses = [800, 1000, 800, 1000, 800, 1000, 1000];
+    for (int i = 0; i < 7; i++) {
+      intakes.add({
+        'medication_id': 1,
+        'date': _iso(DateTime(2026, 11, 16 + i)),
+        'aantal_ingenomen': 1,
+        'dosering': '${doses[i]}',
+      });
+    }
+
+    setDbForTesting(_Db(
+      configs: [
+        {'id': 1, 'naam': 'Lithium', 'dosering': '800', 'eenheid': 'mg'},
+      ],
+      schedules: [
+        {
+          'id': 10,
+          'medication_id': 1,
+          'reminder_time': '08:00',
+          'days_of_week': '1,2,3,4,5,6,7',
+        },
+      ],
+      intakes: intakes,
+    ));
+
+    final md = await RapportGenerator.instance.generateLCMReport(
+      localeCode: 'nl',
+      now: DateTime(2026, 11, 22, 20),
+      startDate: DateTime(2026, 11, 16),
+      endDate: DateTime(2026, 11, 22),
+    );
+
+    expect(md, contains('*16-11 t/m 20-11: Lithium → 800 / 1000 mg'));
+    expect(md, isNot(contains('16-11 t/m 21-11')));
+    expect(md, contains('*21-11: Lithium → 1000 mg*'));
   });
 }

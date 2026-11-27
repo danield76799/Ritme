@@ -257,7 +257,7 @@ void main() {
     });
 
     test('de samenvatting toont actieve en kalenderdagen binnen de periode', () {
-      expect(report, contains('| **Dagen met data** | 14 / 14 kalenderdagen |'));
+      expect(report, contains('| **Dagen met data** | 13 / 13 afgeronde dagen | 100% compleet · vandaag al deels ingevuld |'));
     });
 
     group('medicatie-noemer', () {
@@ -272,7 +272,7 @@ void main() {
         expect(report, contains('| 14/14 |'));
         // Samenvatting: 26/26 ingenomen.
         expect(
-          RegExp(r'\*\*Verwachte doses\*\* \| 26 / 26 ingenomen \(100%\) \| Vaste medicatie t/m gisteravond')
+          RegExp(r'\*\*Vaste medicatie\*\* \| 26 / 26 doses \(100%\) \| T/m gisteravond')
               .hasMatch(report),
           isTrue,
         );

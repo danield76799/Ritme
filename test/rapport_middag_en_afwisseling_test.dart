@@ -125,15 +125,15 @@ void main() {
     final md = await RapportGenerator.instance
         .generateLCMReport(days: 30, localeCode: 'nl');
 
-    expect(md, contains('| **Dagen met data** | 28 / 30 kalenderdagen |'));
-    expect(md, contains('| **Gem. P-Score** | 4.0 / 5 (SRT: 80%, n=28) |'));
+    expect(md, contains('| **Dagen met data** | 28 / 29 afgeronde dagen | 97% compleet |'));
+    expect(md, contains('| **Gem. P-Score** | 4.0 / 5.0 (SRT: 80%, n=28) |'));
     // Vandaag (23:59) is nog niet aan de beurt: 28 verwachte doses.
     expect(
-      RegExp(r'\*\*Verwachte doses\*\* \| 29 / 29 ingenomen \(100%\) \| Vaste medicatie t/m gisteravond')
+      RegExp(r'\*\*Vaste medicatie\*\* \| 29 / 29 doses \(100%\) \| T/m gisteravond')
           .hasMatch(md),
       isTrue,
     );
-    expect(md, contains('t/m gisteravond'));
+    expect(md, contains('T/m gisteravond'));
   });
 
   test('afwisselende dosering wordt één regel, nieuwste eerst', () async {

@@ -247,7 +247,7 @@ void main() {
         logs: logs,
       );
       expect(md, contains('| Korte slaap (< 6 uur) | n=0 | – |'));
-      expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=7 | 1.0 |'));
+      expect(md, contains('| Normale slaap (6.0 – 9.5 uur) | n=7 | +1.0 |'));
       expect(md, isNot(contains('Verschil in stemming:')));
     });
 

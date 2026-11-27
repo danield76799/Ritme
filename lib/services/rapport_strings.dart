@@ -32,27 +32,27 @@ class RapportStrings {
       nl ? 'gestopt: $gestopt' : 'stopped: $gestopt';
 
   String correlationHighAdherence(double v, int n) =>
-      nl ? 'Bij hoge trouw (>90%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
-         : 'With high adherence (>90%): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
+      nl ? 'Bij hoge trouw (>90%): gemiddelde stemming ${fmtMood(v)} (n=$n ${_dagen(n)})'
+         : 'With high adherence (>90%): average mood ${fmtMood(v)} (n=$n ${_dagen(n)})';
 
   String get correlationNoHighData => nl
       ? 'Bij hoge trouw (>90%): geen data in deze periode'
       : 'With high adherence (>90%): no data in this period';
 
   String correlationLowAdherence(double v, int n) =>
-      nl ? 'Bij lage trouw (<70%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
-         : 'With low adherence (<70%): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
+      nl ? 'Bij lage trouw (<70%): gemiddelde stemming ${fmtMood(v)} (n=$n ${_dagen(n)})'
+         : 'With low adherence (<70%): average mood ${fmtMood(v)} (n=$n ${_dagen(n)})';
 
   String get correlationNoLowData => nl
       ? 'Bij lage trouw (<70%): geen data in deze periode'
       : 'With low adherence (<70%): no data in this period';
 
   String correlationHighOnly(double v, int n) => nl
-      ? 'Bij hoge trouw (>90%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)}; geen dagen met lage trouw in deze periode).'
-      : 'With high adherence (>90%): average mood ${fmt1(v)} (n=$n ${_dagen(n)}; no low-adherence days in this period).';
+      ? 'Bij hoge trouw (>90%): gemiddelde stemming ${fmtMood(v)} (n=$n ${_dagen(n)}; geen dagen met lage trouw in deze periode).'
+      : 'With high adherence (>90%): average mood ${fmtMood(v)} (n=$n ${_dagen(n)}; no low-adherence days in this period).';
   String correlationLowOnly(double v, int n) => nl
-      ? 'Bij lage trouw (<70%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)}; geen dagen met hoge trouw in deze periode).'
-      : 'With low adherence (<70%): average mood ${fmt1(v)} (n=$n ${_dagen(n)}; no high-adherence days in this period).';
+      ? 'Bij lage trouw (<70%): gemiddelde stemming ${fmtMood(v)} (n=$n ${_dagen(n)}; geen dagen met hoge trouw in deze periode).'
+      : 'With low adherence (<70%): average mood ${fmtMood(v)} (n=$n ${_dagen(n)}; no high-adherence days in this period).';
 
   String get patientLabel => nl ? 'Patiënt' : 'Patient';
   String get summaryTitle => nl ? '📈 Samenvatting' : '📈 Summary';
@@ -71,19 +71,19 @@ class RapportStrings {
 
 
   String correlationDiff(double v) =>
-      nl ? 'Verschil in stemming: ${fmt1(v)}' : 'Mood difference: ${fmt1(v)}';
+      nl ? 'Verschil in stemming: ${fmtMood(v)}' : 'Mood difference: ${fmtMood(v)}';
 
   String get sleepMoodTitle =>
       nl ? 'Slaap vs Stemming' : 'Sleep vs Mood';
   String sleepMoodShortSleep(double v, int n) => nl
-      ? 'Bij korte slaap (<6 uur): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
-      : 'Short sleep (<6h): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
+      ? 'Bij korte slaap (<6 uur): gemiddelde stemming ${fmtMood(v)} (n=$n ${_dagen(n)})'
+      : 'Short sleep (<6h): average mood ${fmtMood(v)} (n=$n ${_dagen(n)})';
   String get sleepMoodShortNoData => nl
       ? 'Bij korte slaap (<6 uur): geen data in deze periode (n=0 dagen).'
       : 'Short sleep (<6h): no data in this period (n=0 days).';
   String sleepMoodLongSleep(double v, int n) => nl
-      ? 'Bij voldoende slaap (6+ uur): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
-      : 'Enough sleep (6h+): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';
+      ? 'Bij voldoende slaap (6+ uur): gemiddelde stemming ${fmtMood(v)} (n=$n ${_dagen(n)})'
+      : 'Enough sleep (6h+): average mood ${fmtMood(v)} (n=$n ${_dagen(n)})';
   String get sleepMoodLongNoData => nl
       ? 'Bij voldoende slaap (6+ uur): geen data in deze periode (n=0 dagen).'
       : 'Enough sleep (6h+): no data in this period (n=0 days).';
@@ -111,8 +111,8 @@ class RapportStrings {
   String get calculatedMood => nl ? 'Berekende stemming' : 'Calculated mood';
 
   String get legendaLine => nl
-      ? '_Legenda: Stemming (-5 t/m +5) · P-Score (1–5, stabiliteit dagritme) · SRT (Social Rhythm Therapy-doelpercentage) · Dagboekscore (1 = zwaar, 5 = goed) · ⚠ = dagboeknotitie met score ≤ 2._'
-      : '_Legend: Mood (-5 to +5) · P-score (1–5, day rhythm stability) · SRT (Social Rhythm Therapy goal percentage) · Journal score (1 = heavy, 5 = good) · ⚠ = journal note with score ≤ 2._';
+      ? '_Legenda: Stemming (-5 t/m +5) · P-Score (1.0–5.0, ritmestabiliteit) · SRT (Social Rhythm Therapy-doel) · Dagboek (1/5 = zwaar, 5/5 = goed) · ⚠ = score ≤ 2/5._'
+      : '_Legend: Mood (-5 to +5) · P-score (1.0–5.0, rhythm stability) · SRT (Social Rhythm Therapy goal) · Journal (1/5 = heavy, 5/5 = good) · ⚠ = score ≤ 2/5._';
   String get weekAnchors => nl ? 'Dagboek & Alerts' : 'Journal & Alerts';
   String notitieCount(int n) => nl
       ? '$n ${n == 1 ? 'notitie' : 'notities'}'
@@ -148,6 +148,13 @@ class RapportStrings {
   String prnTakenOn(int n) => nl ? '$n× ingenomen op:' : '$n× taken on:';
   String get dateRangeJoiner => nl ? 't/m' : '–';
 
+  /// Stemmingswaarde met expliciet teken: +0.8, 0.0, -0.7.
+  static String fmtMood(double v) {
+    final r = (v * 10).round() / 10;
+    final tekst = (r == 0 ? 0.0 : r).toStringAsFixed(1);
+    return r > 0 ? '+$tekst' : tekst;
+  }
+
   /// Getal met één decimaal, zonder negatieve nul ('-0.0' → '0.0').
   static String fmt1(double v) {
     final r = (v * 10).round() / 10;
@@ -182,7 +189,9 @@ class RapportStrings {
   String get noDagboek => nl ? 'Geen dagboek-entries in deze periode.' : 'No journal entries in this period.';
   String dagboekEntryLabel(String date, double? score) {
     if (score != null) {
-      return nl ? '$date — score: ${score.toStringAsFixed(0)}' : '$date — score: ${score.toStringAsFixed(0)}';
+      return nl
+          ? '$date — score: ${score.toStringAsFixed(0)}/5'
+          : '$date — score: ${score.toStringAsFixed(0)}/5';
     }
     return date;
   }
@@ -190,6 +199,34 @@ class RapportStrings {
   // --- Uitgebreid rapport: bandbreedtes, context en correlatietabellen ---
   String get bandwidth => nl ? 'Bandbreedte (min – max)' : 'Range (min – max)';
   String completePct(int pct) => nl ? '$pct% compleet' : '$pct% complete';
+  String afgerondeDagen(int n) =>
+      nl ? '$n afgeronde dagen' : '$n completed days';
+  String dagenVanAfgeronde(int actief, int totaal) => nl
+      ? '$actief / $totaal afgeronde dagen'
+      : '$actief / $totaal completed days';
+  String get vandaagDeels =>
+      nl ? '· vandaag al deels ingevuld' : '· today partly filled in';
+  String get weekMoodColumn => nl ? 'Stemming (min / max)' : 'Mood (min / max)';
+  String get weekSleepColumn => nl ? 'Slaap (min – max)' : 'Sleep (min – max)';
+  String get weekPColumn => nl ? 'P-Score' : 'P-Score';
+  String get weekMedsColumn => nl ? 'Meds' : 'Meds';
+  String get journalAlertsColumn => nl ? 'Dagboek & alerts' : 'Journal & alerts';
+  String get medChangesColumn =>
+      nl ? 'Medicatiewijzigingen' : 'Medication changes';
+  String get medRangeToday => nl ? 'T/m vandaag' : 'Through today';
+  String get medRangeYesterday =>
+      nl ? 'T/m gisteravond' : 'Through yesterday evening';
+  String get prnTag => nl ? 'PRN' : 'PRN';
+  String get taperTag => nl ? 'afbouw' : 'taper';
+  String correlationSleepNote(int n) => nl
+      ? '_n=$n dagen waarop zowel slaapduur als stemming zijn gelogd._'
+      : '_n=$n days with both sleep duration and mood recorded._';
+  String correlationRhythmNote(int n) => nl
+      ? '_n=$n dagen waarop zowel P-Score als stemming zijn gelogd._'
+      : '_n=$n days with both P-Score and mood recorded._';
+  String correlationAdherenceNote(int n) => nl
+      ? '_n=$n dagen waarop zowel medicatietrouw als stemming zijn gelogd._'
+      : '_n=$n days with both medication adherence and mood recorded._';
   String get contextColumn =>
       nl ? 'Context, dagboek & alerts' : 'Context, journal & alerts';
   String get medicationCourseTitle =>
@@ -202,9 +239,9 @@ class RapportStrings {
   String get sleepShortLabel =>
       nl ? 'Korte slaap (< 6 uur)' : 'Short sleep (< 6 hours)';
   String get sleepNormalLabel =>
-      nl ? 'Normale slaap (6 – 9,5 uur)' : 'Normal sleep (6 – 9.5 hours)';
+      nl ? 'Normale slaap (6.0 – 9.5 uur)' : 'Normal sleep (6.0 – 9.5 hours)';
   String get sleepLongLabel =>
-      nl ? 'Lange slaap / sedatie (> 9,5 uur)' : 'Long sleep / sedation (> 9.5 hours)';
+      nl ? 'Lange slaap / sedatie (> 9.5 uur)' : 'Long sleep / sedation (> 9.5 hours)';
   String get rhythmMoodTitle =>
       nl ? 'Dagritme (P-Score) vs. Stemming' : 'Day rhythm (P-Score) vs. Mood';
   String get rhythmHighLabel =>
@@ -233,7 +270,6 @@ class RapportStrings {
     final h = min ~/ 60;
     final m = min % 60;
     final u = nl ? 'u' : 'h';
-    if (m == 0) return '$h$u';
     return '$h$u ${m.toString().padLeft(2, '0')}m';
   }
 

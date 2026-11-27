@@ -112,9 +112,9 @@ void main() {
     // tellen niet mee.
     expect(md, contains('## 🧬 Correlaties'));
     expect(md, contains('### Slaap vs Stemming (n=12)'));
-    expect(md, contains('| Korte slaap (< 6 uur) | n=6 | 1.0 |'));
-    expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=6 | -1.0 |'));
-    expect(md, contains('| Lange slaap / sedatie (> 9,5 uur) | n=0 | – |'));
+    expect(md, contains('| Korte slaap (< 6 uur) | n=6 | +1.0 |'));
+    expect(md, contains('| Normale slaap (6.0 – 9.5 uur) | n=6 | -1.0 |'));
+    expect(md, contains('| Lange slaap / sedatie (> 9.5 uur) | n=0 | – |'));
   });
 
   test('P-Score telt alleen gelogde ankers en sluit een lege huidige dag uit', () async {
@@ -139,7 +139,7 @@ void main() {
     final md = await RapportGenerator.instance
         .generateLCMReport(days: 14, localeCode: 'nl');
 
-    expect(md, contains('| **Gem. P-Score** | 4.0 / 5 (SRT: 80%, n=10) |'));
+    expect(md, contains('| **Gem. P-Score** | 4.0 / 5.0 (SRT: 80%, n=10) |'));
   });
 
   test('dagboek toont een blockquote-samenvatting, geen tabel', () async {

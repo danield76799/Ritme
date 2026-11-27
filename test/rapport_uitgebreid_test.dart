@@ -147,18 +147,18 @@ void main() {
   });
 
   test('samenvatting toont echte min/max-bandbreedtes', () {
-    expect(md, contains('| **Dagen met data** | 6 / 7 kalenderdagen | 86% compleet |'));
-    expect(md, contains('| **Gem. stemming** | 0.0 (n=6) | -2.0 t/m 2.0 (-5 t/m +5) |'));
-    expect(md, contains('| **Gem. slaapduur** | 7u 45m (n=6) | 5u – 10u |'));
-    expect(md, contains('| **Gem. P-Score** | 3.3 / 5 (SRT: 67%, n=6) | 2.0 – 4.0 |'));
-    expect(md, contains('6 / 6 ingenomen (100%)'));
-    expect(md, contains('Vaste medicatie t/m gisteravond'));
+    expect(md, contains('| **Dagen met data** | 6 / 6 afgeronde dagen | 100% compleet |'));
+    expect(md, contains('| **Gem. stemming** | 0.0 (n=6) | -2.0 t/m +2.0 |'));
+    expect(md, contains('| **Gem. slaapduur** | 7u 45m (n=6) | 5u 00m – 10u 00m |'));
+    expect(md, contains('| **Gem. P-Score** | 3.3 / 5.0 (SRT: 67%, n=6) | 2.0 – 4.0 |'));
+    expect(md, contains('6 / 6 doses (100%)'));
+    expect(md, contains('T/m gisteravond'));
   });
 
   test('weekoverzicht toont bereik en context met wijzigingen', () {
-    expect(md, contains('Gem. stemming (min / max)'));
-    expect(md, contains('(-2.0 / 2.0)'));
-    expect(md, contains('(5u – 10u)'));
+    expect(md, contains('Stemming (min / max)'));
+    expect(md, contains('(-2.0 / +2.0)'));
+    expect(md, contains('(5u 00m – 10u 00m)'));
     // Dosiswijziging en stop horen in de weekcontext, niet als placeholders.
     expect(md, contains('*23-11: Lithium → 800 mg*'));
     expect(md, contains('*23-11: Olanzapine gestopt*'));
@@ -168,21 +168,29 @@ void main() {
     expect(md, contains('*(sinds 18-11-2026)*'));
   });
 
+  test('legenda staat boven de samenvatting en n is toegelicht', () {
+    expect(md.indexOf('_Legenda:'), lessThan(md.indexOf('## 📈 Samenvatting')));
+    expect(md, contains('(6 afgeronde dagen)'));
+    expect(md, contains('_n=6 dagen waarop zowel slaapduur als stemming zijn gelogd._'));
+    expect(md, contains('_n=6 dagen waarop zowel P-Score als stemming zijn gelogd._'));
+    expect(md, contains('_n=6 dagen waarop zowel medicatietrouw als stemming zijn gelogd._'));
+  });
+
   test('correlaties vullen alle slaap- en ritmebuckets', () {
     expect(md, contains('### Slaap vs Stemming (n=6)'));
     expect(md, contains('### Dagritme (P-Score) vs. Stemming (n=6)'));
     expect(md, contains('### Medicatie-trouw vs Stemming (n=6)'));
     expect(md, contains('| Korte slaap (< 6 uur) | n=1 | -2.0 |'));
-    expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=4 | 0.8 |'));
-    expect(md, contains('| Lange slaap / sedatie (> 9,5 uur) | n=1 | -1.0 |'));
+    expect(md, contains('| Normale slaap (6.0 – 9.5 uur) | n=4 | +0.8 |'));
+    expect(md, contains('| Lange slaap / sedatie (> 9.5 uur) | n=1 | -1.0 |'));
     expect(md, contains('| Hoog ritme (P-Score ≥ 3.5) | n=4 | -0.3 |'));
-    expect(md, contains('| Lager ritme (P-Score < 3.5) | n=2 | 0.5 |'));
+    expect(md, contains('| Lager ritme (P-Score < 3.5) | n=2 | +0.5 |'));
   });
 
   test('dagboek markeert lage scores met ⚠', () {
     expect(md, contains('## 📓 Dagboek *(nieuwste bovenaan)*'));
-    expect(md, contains('**21-11-2026 — score: 1 ⚠**'));
-    expect(md, isNot(contains('**23-11-2026 — score: 4 ⚠**')));
+    expect(md, contains('**21-11-2026 — score: 1/5 ⚠**'));
+    expect(md, isNot(contains('**23-11-2026 — score: 4/5 ⚠**')));
   });
 
   test('nergens in het rapport staan sjabloon-placeholders', () {

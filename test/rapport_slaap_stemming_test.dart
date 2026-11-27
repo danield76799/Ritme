@@ -91,6 +91,6 @@ void main() {
 
     expect(md, contains('Slaap vs Stemming'));
     expect(md, contains('| Korte slaap (< 6 uur) | n=7 | -2.0 |'));
-    expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=7 | 2.0 |'));
+    expect(md, contains('| Normale slaap (6.0 – 9.5 uur) | n=6 | +2.0 |'));
   });
 }
