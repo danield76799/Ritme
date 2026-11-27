@@ -221,6 +221,22 @@ class _DoseBlock {
   final String dose;
 }
 
+/// Eén medicatiegebeurtenis in de weekcontext.
+class _MedEvent {
+  _MedEvent.change(this.datum, this.naam, this.dosis, this.eenheid)
+      : stop = false;
+  _MedEvent.stop(this.datum, this.naam)
+      : dosis = '',
+        eenheid = '',
+        stop = true;
+
+  final DateTime datum;
+  final String naam;
+  final String dosis;
+  final String eenheid;
+  final bool stop;
+}
+
 class _WeeklyTotals {
   double totalMood = 0;
   int moodCount = 0;
@@ -719,7 +735,7 @@ class RapportGenerator {
 
     // Gebeurtenissen in het medicatieverloop (dosiswijziging of stop) die
     // als context in de weekrij horen.
-    final medEvents = _medicationEvents(period, s);
+    final medEvents = _medicationEvents(period);
 
     // Loop per week (nieuwste week eerst). De weken bestrijken exact de
     // rapportperiode: dezelfde grenzen als de header en de samenvatting.
@@ -816,12 +832,12 @@ class RapportGenerator {
           anchorStr += ' · ⚠ ${lageDagen.join(', ')}';
         }
       }
-      final weekEvents = <String>[];
+      final weekEvents = <_MedEvent>[];
       for (final d in week) {
-        weekEvents.addAll(medEvents[_dateStr(d)] ?? const <String>[]);
+        weekEvents.addAll(medEvents[_dateStr(d)] ?? const <_MedEvent>[]);
       }
       if (weekEvents.isNotEmpty) {
-        final events = weekEvents.map((e) => '*$e*').join(' · ');
+        final events = _formatWeekEvents(weekEvents, s);
         anchorStr = anchorStr == '–' ? events : '$anchorStr · $events';
       }
       buf.writeln('| $weekLabel | $moodStr | $sleepStr | $pStr | $medStr | $anchorStr |');
@@ -832,19 +848,43 @@ class RapportGenerator {
     buf.writeln();
   }
 
+  /// Label voor een gestopt middel: met laatste inname als die afwijkt van
+  /// de officiële stopdatum.
+  String? _gestoptLabel(
+    _PeriodData period,
+    List<Map<String, dynamic>> group,
+    String? laatsteInnameIso,
+  ) {
+    DateTime? stop;
+    for (final m in group) {
+      final d = period.stopDateOf(m);
+      if (d != null && (stop == null || d.isAfter(stop))) stop = d;
+    }
+    if (stop == null) return null;
+    final stopStr = RapportStrings.fmtDatumKort(stop);
+    final laatste = laatsteInnameIso == null
+        ? null
+        : DateTime.tryParse(laatsteInnameIso);
+    if (laatste != null &&
+        (laatste.year != stop.year ||
+            laatste.month != stop.month ||
+            laatste.day != stop.day)) {
+      return 'laatste inname: ${RapportStrings.fmtDatumKort(laatste)}, '
+          'gestopt: $stopStr';
+    }
+    return 'gestopt: $stopStr';
+  }
+
   /// Medicatiegebeurtenissen per dag: dosiswijzigingen (afgeleid uit de
   /// dosering die bij de inname is vastgelegd) en stopmomenten.
-  Map<String, List<String>> _medicationEvents(
-    _PeriodData period,
-    RapportStrings s,
-  ) {
-    final events = <String, List<String>>{};
+  Map<String, List<_MedEvent>> _medicationEvents(_PeriodData period) {
+    final events = <String, List<_MedEvent>>{};
     final start = _dateStr(period.startDate);
     final eind = _dateStr(period.endDate);
 
-    void voegToe(String datum, String tekst) {
+    void voegToe(String datum, _MedEvent event) {
       if (datum.compareTo(start) < 0 || datum.compareTo(eind) > 0) return;
-      events.putIfAbsent(datum, () => []).add(tekst);
+      events.putIfAbsent(datum, () => []).add(event);
     }
 
     for (final groep in period.medicationGroups) {
@@ -853,14 +893,13 @@ class RapportGenerator {
                   orElse: () => groep.first)['naam'] ??
               '').toString());
       if (naam.isEmpty) continue;
-      final eenheid =
-          (groep.first['eenheid']?.toString() ?? '').trim();
+      final eenheid = (groep.first['eenheid']?.toString() ?? '').trim();
 
       // Stopmoment.
       for (final m in groep) {
         final stop = period.stopDateOf(m);
         if (stop != null) {
-          voegToe(_dateStr(stop), '${RapportStrings.fmtDatumKort(stop)}: ${s.stoppedEvent(naam)}');
+          voegToe(_dateStr(stop), _MedEvent.stop(stop, naam));
         }
       }
 
@@ -880,10 +919,10 @@ class RapportGenerator {
       for (final d in datums) {
         final dosis = perDag[d]!;
         if (vorige != null && dosis != vorige) {
-          voegToe(
-              d,
-              '${RapportStrings.fmtDatumKortStr(d)}: '
-              '${s.doseChangeEvent(naam, dosis, eenheid)}');
+          final datum = DateTime.tryParse(d);
+          if (datum != null) {
+            voegToe(d, _MedEvent.change(datum, naam, dosis, eenheid));
+          }
         }
         vorige = dosis;
       }
@@ -891,7 +930,51 @@ class RapportGenerator {
     return events;
   }
 
-  // === CORRELATIES ===
+  /// Formatteert de gebeurtenissen van één week. Meer dan twee wissels
+  /// tussen exact twee doseringen worden één afwisselende regel.
+  String _formatWeekEvents(List<_MedEvent> events, RapportStrings s) {
+    final uit = <String>[];
+    final perMiddel = <String, List<_MedEvent>>{};
+    for (final e in events) {
+      if (e.stop) {
+        uit.add('*${RapportStrings.fmtDatumKort(e.datum)}: '
+            '${s.stoppedEvent(e.naam)}*');
+      } else {
+        perMiddel.putIfAbsent(e.naam, () => []).add(e);
+      }
+    }
+    perMiddel.forEach((naam, wijzigingen) {
+      wijzigingen.sort((a, b) => a.datum.compareTo(b.datum));
+      final doses = wijzigingen.map((e) => e.dosis).toList();
+      final uniek = doses.toSet();
+      var afwisselend = uniek.length == 2 && wijzigingen.length > 2;
+      if (afwisselend) {
+        for (var i = 2; i < doses.length; i++) {
+          if (doses[i] != doses[i - 2] || doses[i] == doses[i - 1]) {
+            afwisselend = false;
+            break;
+          }
+        }
+      }
+      if (afwisselend) {
+        final eenheid = wijzigingen.first.eenheid.isEmpty
+            ? ''
+            : ' ${wijzigingen.first.eenheid}';
+        uit.add('*${RapportStrings.fmtDatumKort(wijzigingen.first.datum)} '
+            '${s.to} ${RapportStrings.fmtDatumKort(wijzigingen.last.datum)}: '
+            '$naam → ${doses.first} / ${doses[1]}$eenheid '
+            '(${s.alternatingWord})*');
+      } else {
+        for (final e in wijzigingen) {
+          uit.add('*${RapportStrings.fmtDatumKort(e.datum)}: '
+              '${s.doseChangeEvent(naam, e.dosis, e.eenheid)}*');
+        }
+      }
+    });
+    return uit.join(' · ');
+  }
+
+  // === CORRELATIES ===  // === CORRELATIES ===
 
   void _buildCorrelation(
     StringBuffer buf,
@@ -940,6 +1023,7 @@ class RapportGenerator {
     // Medicatietrouw vs stemming.
     double highAdhMood = 0, lowAdhMood = 0;
     int highAdhCount = 0, lowAdhCount = 0;
+    int adherenceDays = 0;
     for (final d in period.allDays.reversed) {
       final mood = period.moodOn(d);
       if (mood == null) continue;
@@ -950,6 +1034,7 @@ class RapportGenerator {
         dExpected += dose.expected;
       }
       if (dExpected == 0) continue;
+      adherenceDays++;
       final pct = dTaken * 100 / dExpected;
       if (pct >= 90) {
         highAdhMood += mood;
@@ -963,10 +1048,10 @@ class RapportGenerator {
     String gem(double? som, int n) =>
         n == 0 ? '–' : RapportStrings.fmt1(som! / n);
 
-    buf.writeln('## ${s.correlationHeader(paired)}');
+    buf.writeln('## ${s.correlationsTitle}');
     buf.writeln();
 
-    buf.writeln('### ${s.sleepMoodTitle}');
+    buf.writeln('### ${s.sleepMoodTitle} (n=$paired)');
     buf.writeln();
     buf.writeln('| ${s.sleepCategory} | ${s.daysColumn} | ${s.avgMood} |');
     buf.writeln('|----------------|-------|---------------|');
@@ -975,7 +1060,7 @@ class RapportGenerator {
     buf.writeln('| ${s.sleepLongLabel} | n=$langN | ${gem(langSom, langN)} |');
     buf.writeln();
 
-    buf.writeln('### ${s.rhythmMoodTitle}');
+    buf.writeln('### ${s.rhythmMoodTitle} (n=${hoogPN + laagPN})');
     buf.writeln();
     buf.writeln('| ${s.rhythmStability} | ${s.daysColumn} | ${s.avgMood} |');
     buf.writeln('|----------------|-------|---------------|');
@@ -983,7 +1068,7 @@ class RapportGenerator {
     buf.writeln('| ${s.rhythmLowLabel} | n=$laagPN | ${gem(laagPSom, laagPN)} |');
     buf.writeln();
 
-    buf.writeln('### ${s.correlationTitle}');
+    buf.writeln('### ${s.correlationTitle} (n=$adherenceDays)');
     buf.writeln();
     if (highAdhCount > 0 && lowAdhCount > 0) {
       buf.writeln(s.correlationHighAdherence(highAdhMood / highAdhCount, highAdhCount));
@@ -1197,8 +1282,10 @@ class RapportGenerator {
               .toList()
             ..sort();
           laatste = DateTime.tryParse(takenDays.last);
+          final stopLabel =
+              _gestoptLabel(period, group, takenDays.last) ?? s.stoppedTag;
           regels.add(
-              '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.reversed.map(_shortDateStr).join(', ')}');
+              '- **$name** ($stopLabel) — $takenCount× ingenomen op: ${takenDays.reversed.map(_shortDateStr).join(', ')}');
         }
         if (regels.isNotEmpty) uitvoer.add((laatste: laatste, regels: regels));
         continue;
@@ -1247,8 +1334,10 @@ class RapportGenerator {
             .toList()
           ..sort();
         laatste = DateTime.tryParse(takenDays.last);
+        final stopLabel =
+            _gestoptLabel(period, group, takenDays.last) ?? s.stoppedTag;
         regels.add(
-            '- **$name** (${s.stoppedTag}) — $takenCount× ingenomen op: ${takenDays.reversed.map(_shortDateStr).join(', ')}');
+            '- **$name** ($stopLabel) — $takenCount× ingenomen op: ${takenDays.reversed.map(_shortDateStr).join(', ')}');
         uitvoer.add((laatste: laatste, regels: regels));
         continue;
       }

@@ -25,6 +25,12 @@ class RapportStrings {
       ? 'Medicatie-trouw vs Stemming'
       : 'Medication Adherence vs Mood';
 
+  String stoppedAndLastIntake(String laatste, String gestopt) => nl
+      ? 'laatste inname: $laatste, gestopt: $gestopt'
+      : 'last intake: $laatste, stopped: $gestopt';
+  String stoppedOnly(String gestopt) =>
+      nl ? 'gestopt: $gestopt' : 'stopped: $gestopt';
+
   String correlationHighAdherence(double v, int n) =>
       nl ? 'Bij hoge trouw (>90%): gemiddelde stemming ${fmt1(v)} (n=$n ${_dagen(n)})'
          : 'With high adherence (>90%): average mood ${fmt1(v)} (n=$n ${_dagen(n)})';

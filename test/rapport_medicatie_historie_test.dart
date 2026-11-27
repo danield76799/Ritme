@@ -114,7 +114,8 @@ void main() {
         reason: 'innames van beide configs moeten samengeteld worden');
 
     // Tramadol: alleen gestopt, met 1 inname in de periode → zichtbaar als (gestopt)
-    expect(md, contains('**Tramadol** (gestopt)'));
+    expect(md, contains('**Tramadol** (laatste inname:'));
+    expect(md, contains('gestopt: 01-09)'));
     expect(md, contains('1× ingenomen'));
   });
 }

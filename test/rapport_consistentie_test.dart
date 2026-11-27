@@ -110,7 +110,8 @@ void main() {
 
     // 6 korte + 6 lange = 12 gepaarde dagen; slaap 0 en ontbrekende stemming
     // tellen niet mee.
-    expect(md, contains('## 🧬 Correlaties (n=12 complete dagen)'));
+    expect(md, contains('## 🧬 Correlaties'));
+    expect(md, contains('### Slaap vs Stemming (n=12)'));
     expect(md, contains('| Korte slaap (< 6 uur) | n=6 | 1.0 |'));
     expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=6 | -1.0 |'));
     expect(md, contains('| Lange slaap / sedatie (> 9,5 uur) | n=0 | – |'));

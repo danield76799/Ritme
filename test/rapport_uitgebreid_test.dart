@@ -169,7 +169,9 @@ void main() {
   });
 
   test('correlaties vullen alle slaap- en ritmebuckets', () {
-    expect(md, contains('## 🧬 Correlaties (n=6 complete dagen)'));
+    expect(md, contains('### Slaap vs Stemming (n=6)'));
+    expect(md, contains('### Dagritme (P-Score) vs. Stemming (n=6)'));
+    expect(md, contains('### Medicatie-trouw vs Stemming (n=6)'));
     expect(md, contains('| Korte slaap (< 6 uur) | n=1 | -2.0 |'));
     expect(md, contains('| Normale slaap (6 – 9,5 uur) | n=4 | 0.8 |'));
     expect(md, contains('| Lange slaap / sedatie (> 9,5 uur) | n=1 | -1.0 |'));
